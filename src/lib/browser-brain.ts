@@ -24,6 +24,7 @@ declare global {
 
 let worker:Worker|null=null;
 let loadedTier:NeuralTier|null=null;
+let loadedBackend:'webgpu'|'wasm'|null=null;
 let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
@@ -250,6 +251,7 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
       }
       if(msg.type==='ready'&&msg.tier===tier){
         loadedTier=tier;
+        loadedBackend=msg.backend==='webgpu'?'webgpu':'wasm';
         lastNeuralError='';
         onProgress?.({progress:100,status:'pronto · '+String(msg.backend||'local')});
         finish(resolve);
@@ -265,7 +267,7 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
   });
 }
 
-export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,lastError:lastNeuralError||null};}
+export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null};}
 
 async function neuralGenerate(system:string,prompt:string,messages:{role:string;content:string}[]){
   if(!worker||!loadedTier)throw new Error('Neural model not loaded');
