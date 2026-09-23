@@ -74,6 +74,11 @@ function ensureWorker(){
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2';
     env.allowLocalModels=false;
     env.useBrowserCache=true;
+    try{
+      if(env.backends?.onnx?.wasm){
+        env.backends.onnx.wasm.numThreads=1;
+      }
+    }catch{}
 
     let generator=null;
     let tier=null;
@@ -263,11 +268,25 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
     };
 
     w.addEventListener('message',onMessage);
-    w.postMessage({type:'load',tier,webgpu:realWebgpu});
+    // Lite is intentionally CPU/WASM-first to avoid freezing low-end office PCs.
+    // Smart may use WebGPU, with WASM fallback if the adapter is unavailable.
+    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu});
   });
 }
 
 export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null};}
+
+export function unloadNeuralModel(){
+  if(worker){
+    worker.terminate();
+    worker=null;
+  }
+  loadedTier=null;
+  loadedBackend=null;
+  lastNeuralError='';
+  for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
+  pending.clear();
+}
 
 async function neuralGenerate(system:string,prompt:string,messages:{role:string;content:string}[]){
   if(!worker||!loadedTier)throw new Error('Neural model not loaded');
