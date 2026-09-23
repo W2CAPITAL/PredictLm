@@ -91,7 +91,7 @@ export function captureAdaptiveExperience(prompt:string,answer:string,source:Exp
   save(rows.sort((x,y)=>(y.confidence-y.confidence)||(y.updatedAt-x.updatedAt)));
 }
 
-export function adaptiveContext(query:string,limit=4){
+export function adaptiveRecall(query:string,limit=4){
   const q=terms(query);
   const now=Date.now();
   return load()
@@ -104,7 +104,12 @@ export function adaptiveContext(query:string,limit=4){
     .filter(x=>x.trusted&&x.score>=.78)
     .sort((a,b)=>b.score-a.score)
     .slice(0,limit)
-    .map(x=>'Experiência local relevante:\nPedido: '+x.row.prompt.slice(0,420)+'\nResultado útil: '+x.row.answer.slice(0,900))
+    .map(x=>x.row);
+}
+
+export function adaptiveContext(query:string,limit=4){
+  return adaptiveRecall(query,limit)
+    .map(row=>'Experiência local relevante:\nPedido: '+row.prompt.slice(0,420)+'\nResultado útil: '+row.answer.slice(0,900))
     .join('\n\n');
 }
 
