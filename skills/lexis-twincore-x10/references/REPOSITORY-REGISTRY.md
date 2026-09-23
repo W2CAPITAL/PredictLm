@@ -237,3 +237,30 @@ A presença aqui não significa copiar código. O uso deve respeitar licença, p
 8. DataJud/DJEN usam fontes oficiais;
 9. CNJ não vira lista de prospecção de pessoas;
 10. todo repo novo passa por Skill Federation antes de entrar no core.
+
+
+## Legal agent expansion — v3.1 intake
+
+- `autodevx/legal-skills` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `neimaciel/gestao-escritorio` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `neimaciel/resumo-autos` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `neimaciel/execucao-patrimonial` — agent/self-improve core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `simiao-cavalcante/proprio-punho` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `brunoflma/jusmanizer` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `pizaniadv/auditor-estrategico-juridico` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `carloslimadv/biblioteca-prompts-juridicos` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `emidio-trancoso/advocacia-aberta` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `marcelogcardozo/processa-ai` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `JeffersonMFti/agente-dra-julia-advocacia` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `sickn33/agentic-awesome-skills` — agent/self-improve core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `lawve-ai/awesome-legal-skills` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `rohasnagpal/legal-ai-skills` — legal core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `harness/harness-ai` — agent/self-improve core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `harness/harness` — agent/self-improve core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+- `harness/harness-skills` — agent/self-improve core-pattern; auditar licença e integrar via adapter/padrões antes de copiar código.
+
+## External learning references
+
+- Nous Research Portal — reference for open agent/model ecosystem patterns.
+- Prepara / Alura / Adapta introductory AI guides — reference-only educational material.
+- r/brdev discussion on training from scratch vs using existing models — community-opinion reference, never treated as authoritative documentation.
