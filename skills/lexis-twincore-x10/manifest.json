@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.5.2",
+  "version": "5.6.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -24,7 +24,8 @@
     "predictlm-app",
     "media-repository",
     "dossier-pro",
-    "general-assistant"
+    "general-assistant",
+    "fraud-defense"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -71,7 +72,13 @@
     "retrieval-stopword-gate",
     "deep-two-pass",
     "deep-forge-aegis",
-    "council-x10-dossier-required"
+    "council-x10-dossier-required",
+    "fraud-shield",
+    "source-provenance",
+    "multi-source-research",
+    "transaction-graph-triage",
+    "dossier-fraud-section",
+    "threat-reference-gate"
   ],
   "hosts": [
     "PredictLM",
