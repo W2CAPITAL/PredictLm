@@ -1,55 +1,125 @@
-# PredictLM Studio
+# PredictLM
 
-PredictLM Studio is a local-first agentic app builder designed to remain useful **without API keys and without Ollama**.
+PredictLM has two distinct product surfaces:
 
-## Predict DeepThink v4
+- **Chat** — the default assistant experience for normal questions, explanations, research, planning and coding help.
+- **Build** — the developer workspace for creating and modifying applications with files, editor, preview, project memory, review gates and runnable export.
 
-The default engine is deterministic and runs in the browser/app runtime. It does not pretend to be a foundation model: it analyzes the request, scores supported intents, extracts functional requirements, chooses a blueprint, generates editable files, wires state/actions, and prepares the project for review.
+The product is local-first and does not require Ollama or an API key for its main workflow.
 
-Supported functional blueprints currently include:
+## Chat
 
-- premium calculator with history, memory, keyboard controls, percent, sign, backspace and theme
-- CRM/pipeline
-- dashboard
-- todo/task manager
-- notes workspace
-- Pomodoro/timer
-- unit converter
-- store/cart
-- portfolio
-- functional landing/generic starter
+Chat is intentionally separate from the IDE. It includes:
 
-DeepThink depth can be set to **Fast / Deep / Max**.
+- normal multi-turn conversations and local history
+- DeepThink knowledge retrieval
+- optional zero-key web research
+- optional **Neural Local** inference in the browser
+- Chat ↔ Build switch
 
-## Zero-API features
+### Neural Local
 
-- Build with Predict DeepThink
-- Plan mode
-- deterministic Council review
-- Vibe Security static gate
-- Knowledge Graph
-- visual DOM Inspect
-- free Research fallback using public Wikipedia, DuckDuckGo and GitHub endpoints
-- Browser Lab smoke tests
-- Media pre-production: storyboard, launch script and image prompt pack
-- project ZIP import/export
-- local project clone + restorable snapshots
-- searchable skills
+When available, PredictLM first tries a browser-native language model. Users can also load a quantized local model directly in the browser:
+
+- **Lite** — Qwen 0.5B-class local inference for weaker machines
+- **Smart** — Qwen 1.5B-class local inference when WebGPU is available
+
+Model weights are downloaded on demand and are not bundled into the Vercel deployment. Ollama is not required.
+
+The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
+
+## Build
+
+Build follows a multi-pass workflow instead of a one-shot template generator:
+
+```
+intent/context
+  → product spec
+  → architecture
+  → frontend
+  → backend/data decision
+  → env/setup
+  → smoke test
+  → Council/Security
+  → runnable packaging
+```
+
+Short incremental requests such as **“cor rosa”** are interpreted against the current project and patch it instead of creating a new generic template.
+
+### Prompt Enhancer
+
+The Build composer includes presets:
+
+- Aprimorar
+- Full-stack
+- Setup repo
+- Frontend
+- Backend/API
+- Database
+- Test & Ship
+- Security
+
+Example input:
+
+```
+Set up trycompai/crm
+```
+
+Using **Setup repo** expands it into a task that asks the agent to inspect manifests/docs, install dependencies, identify/start required services such as Postgres, create safe environment configuration, list missing credentials, and run build/test/typecheck rather than merely generating UI.
+
+## Runnable ZIP
+
+Export creates a clean Vite/React project, not the internal preview files.
+
+Typical export:
+
+```
+package.json
+index.html
+src/
+  main.jsx
+  App.jsx
+  styles.css
+  App.test.jsx
+vite.config.js
+.env.example
+RUNME.md
+```
+
+For domains that justify a server, such as CRM, the export also includes a functional local backend:
+
+```
+server/
+  index.mjs
+  data.json
+src/lib/api.ts
+```
+
+The CRM preview works with local state when no server is present and can connect to the exported server when it is running.
+
+## Deeper CRM blueprint
+
+CRM generation now draws architectural lessons from mature and agent-native open-source systems such as SuiteCRM, trycompai/crm and Relaticle. The starter includes Dashboard, Pipeline, Clientes and Financeiro views, search, client creation, stage movement, financial metrics, invoice visibility and agent-oriented activity context. The Build orchestrator also exposes backend/data/setup decisions in the Explorer.
+
+## Zero-API capabilities
+
+- Predict DeepThink
+- Chat knowledge engine
+- optional browser-local neural model
+- Build orchestration
+- runnable project export/import
+- local project snapshots
+- free Research fallback
+- Council review
+- security static gate
+- knowledge graph
+- visual inspect
+- smoke tests
+- prompt enhancement
+- media pre-production
 - Second Brain memory
-- capability self-test endpoint
 
-## Optional providers
-
-External providers are upgrades, not requirements:
-
-- Puter / Grok
-- OpenAI-compatible server provider
-- Firecrawl for deeper research
-- local Ollama/llama.cpp bridge (advanced only)
-
-If an optional AI provider fails and **Automatic fallback** is enabled, PredictLM reruns the task through Predict DeepThink instead of ending with a provider error.
-
-## Optional environment variables
+## Optional cloud upgrades
 
 ```bash
 FIRECRAWL_API_KEY=
@@ -59,22 +129,16 @@ AI_API_KEY=
 AI_MODEL=
 ```
 
-Secrets remain server-side.
+All are optional. If an optional AI provider fails and automatic fallback is enabled, Build continues through the local orchestrator.
 
-## Recommended flow
+## Validation
 
-```
-prompt
-  → DeepThink
-  → functional files
-  → live preview
-  → visual inspect
-  → smoke test
-  → knowledge graph
-  → council/security review
-  → snapshot/export
-```
+`GET /api/health` self-tests:
 
-## Health/self-test
+- premium calculator generation
+- multi-pass orchestration
+- functional smoke checks
+- runnable package file structure
+- CRM backend packaging
 
-`GET /api/health` generates a premium calculator through DeepThink and runs the local smoke-test suite against the generated workspace. This validates the zero-API generator path itself.
+GitHub Actions still runs `npm ci` and `npm run build` against PredictLM itself before changes are merged.
