@@ -189,15 +189,10 @@ export interface Invoice{
 
 function serverProxy(req:ProductRequirements){
   const allowed=req.integrations;
-  return `import http from 'node:http';
-
-const PORT=Number(process.env.PORT||8787);
-const ORIGIN=process.env.CORS_ORIGIN||'http://localhost:5173';
-const json=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':ORIGIN,'Vary':'Origin','Access-Control-Allow-Headers':'Content-Type,Authorization','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});res.end(JSON.stringify(body));};
-const allow=${JSON.stringify(allowed)};
+  return `const allow=${JSON.stringify(allowed)};
 
 function env(name){return String(process.env[name]||'').trim()}
-function configured(id){
+export function integrationConfigured(id){
   if(id==='rest-api')return !!env('EXTERNAL_API_BASE_URL');
   if(id==='supabase')return !!env('SUPABASE_URL')&&!!(env('SUPABASE_SERVICE_ROLE_KEY')||env('SUPABASE_ANON_KEY'));
   if(id==='firebase')return !!env('FIREBASE_REST_BASE_URL')&&!!env('FIREBASE_ACCESS_TOKEN');
@@ -215,7 +210,7 @@ function headersFor(id){
     return {apikey:key,Authorization:'Bearer '+key};
   }
   if(id==='firebase')return {Authorization:'Bearer '+env('FIREBASE_ACCESS_TOKEN')};
-  if(id==='datajud')return {'Authorization':'APIKey '+env('DATAJUD_API_KEY')};
+  if(id==='datajud')return {Authorization:'APIKey '+env('DATAJUD_API_KEY')};
   if(id==='github')return {Authorization:'Bearer '+env('GITHUB_TOKEN'),'User-Agent':'Predict-App'};
   if(id==='vercel')return {Authorization:'Bearer '+env('VERCEL_TOKEN')};
   if(id==='stripe')return {Authorization:'Bearer '+env('STRIPE_SECRET_KEY')};
@@ -237,60 +232,40 @@ function safePath(value){
   if(!path.startsWith('/')||path.includes('://')||path.includes('..'))throw new Error('Invalid proxy path');
   return path;
 }
-async function readBody(req){
-  let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>1_000_000)throw new Error('Payload too large')}
-  return raw;
+
+export function integrationStatuses(){
+  return allow.map(id=>({id,configured:integrationConfigured(id),mode:'server-proxy'}));
 }
-async function proxy(req,res,url){
-  const id=String(url.searchParams.get('integration')||'');
-  if(!allow.includes(id))return json(res,400,{error:'Integration not allowed'});
-  if(!configured(id))return json(res,503,{error:'Integration '+id+' is missing environment configuration'});
-  const path=safePath(url.searchParams.get('path')||'/');
-  const target=baseFor(id).replace(/\\/$/,'')+path;
-  const method=String(req.method||'GET').toUpperCase();
-  if(!['GET','POST','PATCH','PUT','DELETE'].includes(method))return json(res,405,{error:'Method not allowed'});
-  const raw=['POST','PATCH','PUT'].includes(method)?await readBody(req):'';
+
+export async function proxyIntegration({id,path='/',method='GET',body=''}){
+  if(!allow.includes(id))return {status:400,payload:{error:'Integration not allowed'}};
+  if(!integrationConfigured(id))return {status:503,payload:{error:'Integration '+id+' is missing environment configuration'}};
+  const target=baseFor(id).replace(/\\/$/,'')+safePath(path);
+  const verb=String(method||'GET').toUpperCase();
+  if(!['GET','POST','PATCH','PUT','DELETE'].includes(verb))return {status:405,payload:{error:'Method not allowed'}};
   const upstream=await fetch(target,{
-    method,
+    method:verb,
     headers:{Accept:'application/json','Content-Type':'application/json',...headersFor(id)},
-    ...(raw?{body:raw}:{})
+    ...(['POST','PATCH','PUT'].includes(verb)&&body?{body}:{})
   });
   const text=await upstream.text();
   let payload;try{payload=text?JSON.parse(text):null}catch{payload={raw:text.slice(0,5000)}}
-  return json(res,upstream.status,payload);
+  return {status:upstream.status,payload};
 }
-async function test(id){
+
+export async function testIntegration(id){
   if(!allow.includes(id))return {ok:false,error:'Integration not allowed'};
-  if(!configured(id))return {ok:false,configured:false,error:'Missing environment configuration'};
+  if(!integrationConfigured(id))return {ok:false,configured:false,error:'Missing environment configuration'};
+  if(id==='datajud')return {ok:true,configured:true,detail:'API key present; use a tribunal-specific _search endpoint for live validation.'};
   let path='/';
   if(id==='github')path='/rate_limit';
   if(id==='stripe')path='/v1/account';
   if(id==='djen')path='/comunicacao?pagina=1&itensPorPagina=1';
-  if(id==='datajud')return {ok:true,configured:true,detail:'API key present; use a tribunal-specific _search endpoint for live validation.'};
-  if(id==='supabase')path='/';
   try{
-    const r=await fetch(baseFor(id).replace(/\\/$/,'')+path,{headers:{Accept:'application/json',...headersFor(id)}});
-    return {ok:r.ok,configured:true,status:r.status,detail:r.ok?'Provider reachable':'Provider returned '+r.status};
+    const result=await proxyIntegration({id,path,method:'GET'});
+    return {ok:result.status>=200&&result.status<400,configured:true,status:result.status,detail:result.status<400?'Provider reachable':'Provider returned '+result.status};
   }catch(error){return {ok:false,configured:true,error:error?.message||String(error)}}
 }
-
-http.createServer(async(req,res)=>{
-  try{
-    if(req.method==='OPTIONS')return json(res,204,{});
-    const url=new URL(req.url||'/', 'http://localhost');
-    if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-app'});
-    if(url.pathname==='/api/integrations'&&req.method==='GET'){
-      return json(res,200,{items:allow.map(id=>({id,configured:configured(id),mode:'server-proxy'}))});
-    }
-    if(url.pathname==='/api/integrations/test'&&req.method==='POST'){
-      const raw=await readBody(req);let body={};try{body=raw?JSON.parse(raw):{}}catch{}
-      const result=await test(String(body.integration||''));
-      return json(res,result.ok?200:503,result);
-    }
-    if(url.pathname==='/api/proxy')return proxy(req,res,url);
-    return json(res,404,{error:'Not found'});
-  }catch(error){return json(res,error?.message==='Payload too large'?413:400,{error:error?.message||'Request failed'})}
-}).listen(PORT,()=>console.log('API http://localhost:'+PORT));
 `;
 }
 
