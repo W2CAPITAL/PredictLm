@@ -87,6 +87,14 @@ function ensureWorker(){
             device,
             progress_callback:(p)=>self.postMessage({type:'progress',tier,progress:p?.progress??null,status:p?.status||p?.file||'loading'})
           });
+          self.postMessage({type:'progress',tier,progress:100,status:'validating inference'});
+          const probe=await generator([
+            {role:'system',content:'You are a health check. Reply only OK.'},
+            {role:'user',content:'OK?'}
+          ],{max_new_tokens:6,do_sample:false,repetition_penalty:1.0});
+          const probeResult=probe?.[0]?.generated_text;
+          const probeText=Array.isArray(probeResult)?String(probeResult[probeResult.length-1]?.content||''):String(probeResult||'');
+          if(!probeText.trim())throw new Error('Model loaded but inference self-test returned empty output');
           self.postMessage({type:'ready',tier});
         }
         if(msg.type==='generate'){
