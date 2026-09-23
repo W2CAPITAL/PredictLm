@@ -142,3 +142,20 @@ All are optional. If an optional AI provider fails and automatic fallback is ena
 - CRM backend packaging
 
 GitHub Actions still runs `npm ci` and `npm run build` against PredictLM itself before changes are merged.
+
+
+## Conversational intelligence
+
+Chat routes each turn before deciding whether to search or generate:
+
+- greetings, acknowledgements and personal/casual questions stay in conversation and never trigger random web searches
+- contextual replies such as "já está ativo" use the preceding conversation instead of treating the phrase as a new topic
+- stable factual questions such as "quem é..." or "o que é..." can fetch source material and synthesize a direct answer instead of dumping result links
+- current questions use fresh research when needed
+- technical/general prompts prefer Neural Local when it is available and fall back to DeepThink/knowledge honestly
+
+Neural Local is considered active only after a real inference self-test succeeds. If later generation fails, PredictLM labels the response as a local fallback instead of silently pretending the neural model answered.
+
+## Project continuity
+
+Once a project exists, Build treats it as the source of truth. Normal prompts continue from the current files. Repeating "crie um CRM financeiro", saying only "crie", or giving an ambiguous follow-up does not reset the app. A destructive rebuild requires explicit language such as "novo projeto" or "do zero".
