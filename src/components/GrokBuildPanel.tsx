@@ -43,7 +43,9 @@ export function GrokBuildPanel(){
       s.addMessage({role:'assistant',content:result.explanation+'\n\n'+result.plan.join('\n')});
       s.addRun({title:task,status:'done',steps:result.plan});
     }catch(e:any){
-      s.addMessage({role:'assistant',content:'Erro no Build: '+(e?.message||'falha desconhecida')});
+      const message='Erro no Build: '+(e?.message||'falha desconhecida');
+      s.addMessage({role:'assistant',content:message});
+      fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'build',message,metadata:{task,project:s.projectName}})}).catch(()=>{});
     }finally{setBusy(false)}
   }
 
