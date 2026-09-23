@@ -5,6 +5,7 @@ import { persist } from 'zustand/middleware';
 import type { AgentRun, ChatMessage, MemoryNote, PanelId, ProviderId, StudioMode, WorkspaceFile } from './types';
 
 export type DeepThinkLevel = 'fast' | 'deep' | 'max';
+export interface ProjectSnapshot { id:string; name:string; files:WorkspaceFile[]; createdAt:number; }
 
 const starterFiles: Record<string, WorkspaceFile> = {
   'App.tsx': { path:'App.tsx', language:'typescript', content:`export default function App(){const [started,setStarted]=useState(false);return <main className="app"><div className="shell"><span className="pill">Predict DeepThink · zero API</span><h1>O que você quer construir?</h1><p>Descreva calculadora, CRM, dashboard, tarefas, timer, conversor, loja ou outro app. O modo padrão não precisa de API nem Ollama.</p><button className="btn" onClick={()=>setStarted(true)}>{started?'Pronto. Use o agente à esquerda.':'Testar interação'}</button></div></main>}` },
@@ -17,6 +18,7 @@ interface StudioState {
   messages: ChatMessage[];
   notes: MemoryNote[];
   runs: AgentRun[];
+  snapshots: ProjectSnapshot[];
   provider: ProviderId;
   mode: StudioMode;
   activePanel: PanelId;
@@ -44,6 +46,9 @@ interface StudioState {
   addMessage(m:Omit<ChatMessage,'id'|'createdAt'>):void;
   addNote(n:Omit<MemoryNote,'id'|'createdAt'>):void;
   addRun(r:Omit<AgentRun,'id'|'createdAt'>):void;
+  saveSnapshot(name?:string):void;
+  restoreSnapshot(id:string):void;
+  deleteSnapshot(id:string):void;
   cloneProject():void;
   clearProject():void;
 }
@@ -57,6 +62,7 @@ export const useStudio = create<StudioState>()(persist((set) => ({
   messages:[],
   notes:[],
   runs:[],
+  snapshots:[],
   provider:'predict-core',
   mode:'build',
   activePanel:'agent',
@@ -84,7 +90,22 @@ export const useStudio = create<StudioState>()(persist((set) => ({
   addMessage:(m)=>set((s)=>({messages:[...s.messages,{...m,id:id(),createdAt:Date.now()}]})),
   addNote:(n)=>set((s)=>({notes:[{...n,id:id(),createdAt:Date.now()},...s.notes].slice(0,160)})),
   addRun:(r)=>set((s)=>({runs:[{...r,id:id(),createdAt:Date.now()},...s.runs].slice(0,100)})),
-  cloneProject:()=>set((s)=>({projectName:(s.projectName||'Untitled App')+' Copy',messages:[],runs:[],notes:[{id:id(),title:'Project cloned',body:'Local project snapshot duplicated. No Firebase or backend required.',tags:['clone','local'],kind:'decision',createdAt:Date.now()},...s.notes]})),
+  saveSnapshot:(name)=>set((s)=>{
+    const snapshot:ProjectSnapshot={id:id(),name:name?.trim()||s.projectName||'Snapshot',files:Object.values(s.files).map(f=>({...f})),createdAt:Date.now()};
+    return {snapshots:[snapshot,...s.snapshots].slice(0,8),notes:[{id:id(),title:'Snapshot saved',body:snapshot.name+' · '+snapshot.files.length+' file(s).',tags:['snapshot','local'],kind:'decision',createdAt:Date.now()},...s.notes]};
+  }),
+  restoreSnapshot:(snapshotId)=>set((s)=>{
+    const snap=s.snapshots.find(x=>x.id===snapshotId);
+    if(!snap)return {};
+    const files=asMap(snap.files.map(f=>({...f})));
+    return {files,activeFile:files['App.tsx']?'App.tsx':Object.keys(files)[0]||'',projectName:snap.name+' Restored',messages:[],runs:[],notes:[{id:id(),title:'Snapshot restored',body:snap.name+' foi restaurado localmente.',tags:['snapshot','restore'],kind:'run',createdAt:Date.now()},...s.notes]};
+  }),
+  deleteSnapshot:(snapshotId)=>set((s)=>({snapshots:s.snapshots.filter(x=>x.id!==snapshotId)})),
+  cloneProject:()=>set((s)=>{
+    const original=s.projectName||'Untitled App';
+    const snapshot:ProjectSnapshot={id:id(),name:original,files:Object.values(s.files).map(f=>({...f})),createdAt:Date.now()};
+    return {snapshots:[snapshot,...s.snapshots].slice(0,8),projectName:original+' Copy',messages:[],runs:[],notes:[{id:id(),title:'Project cloned',body:'Snapshot “'+original+'” salvo; você está editando a cópia.',tags:['clone','snapshot','local'],kind:'decision',createdAt:Date.now()},...s.notes]};
+  }),
   clearProject:()=>set({files:starterFiles,activeFile:'App.tsx',messages:[],runs:[],projectName:'Untitled App'})
 }),{
   name:'predictlm-studio-v2',
@@ -94,6 +115,7 @@ export const useStudio = create<StudioState>()(persist((set) => ({
     if(next.provider==='local') next.provider='predict-core';
     if(!next.deepThinkLevel) next.deepThinkLevel='deep';
     if(typeof next.autoFallback!=='boolean') next.autoFallback=true;
+    if(!Array.isArray(next.snapshots)) next.snapshots=[];
     return next;
   }
 }));
