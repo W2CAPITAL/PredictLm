@@ -69,6 +69,14 @@ export function GrokImaginePanel(){
   );
   const motionPlan=useMemo(()=>buildLocalMotionPlan(prompt,ratio.label),[prompt,ratio.label]);
 
+  function reportMediaError(message:string,metadata:Record<string,any>={}){
+    fetch('/api/feedback',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind:'error',surface:'media',message,metadata:{mode,videoProvider,videoVariant,...metadata}})
+    }).catch(()=>{});
+  }
+
   useEffect(()=>{
     let live=true;
     Promise.all([
@@ -220,7 +228,9 @@ export function GrokImaginePanel(){
       });
       return blob;
     }catch(e:any){
-      setError(e?.message||'Não foi possível gerar o vídeo no navegador.');
+      const message=e?.message||'Não foi possível gerar o vídeo no navegador.';
+      setError(message);
+      reportMediaError(message,{stage:'single-motion'});
       return null;
     }finally{
       setMotionBusy(false);
@@ -268,7 +278,9 @@ export function GrokImaginePanel(){
       });
       return blob;
     }catch(e:any){
-      setError(e?.message||'Não foi possível gerar o storyboard em vídeo.');
+      const message=e?.message||'Não foi possível gerar o storyboard em vídeo.';
+      setError(message);
+      reportMediaError(message,{stage:'storyboard'});
       return null;
     }finally{
       setVideoStage('');
@@ -334,7 +346,9 @@ export function GrokImaginePanel(){
       });
       return videoUrl;
     }catch(e:any){
-      setError(e?.message||'Não foi possível gerar o vídeo IA.');
+      const message=e?.message||'Não foi possível gerar o vídeo IA.';
+      setError(message);
+      reportMediaError(message,{stage:'remote-video',provider:videoProvider});
       return null;
     }finally{
       setVideoStage('');
@@ -387,7 +401,9 @@ export function GrokImaginePanel(){
       setLoading(false);
       await renderStoryboard(urls,frames.map(x=>x.label));
     }catch(e:any){
-      setError(e?.message||'Não foi possível gerar o vídeo.');
+      const message=e?.message||'Não foi possível gerar o vídeo.';
+      setError(message);
+      reportMediaError(message,{stage:'video-orchestration'});
       setLoading(false);
       setVideoStage('');
     }
@@ -430,7 +446,11 @@ export function GrokImaginePanel(){
   }
 
   function imageFailed(){
-    setError('A imagem não carregou. O app agora usa um proxy same-origin; tente gerar novamente para substituir esta geração antiga.');
+    const message='A imagem não carregou. Tente gerar novamente; gerações novas usam o proxy same-origin.';
+    setGenerated('');
+    setGeneratedPrompt('');
+    setError(message);
+    reportMediaError(message,{stage:'image-load'});
   }
 
   const mainBusy=loading||motionBusy;
