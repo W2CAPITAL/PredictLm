@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -253,3 +253,12 @@ Repos de leaks/red-team/copyleft/licença incerta podem servir como referência/
 - falha só aparece se afetar a conclusão;
 - manter fatos e inferências separados;
 - ser incisivo sobre erro real, fragilidade, incentivo ruim e contra-caso, sem inventar intenção ou fato.
+
+
+## Learning pack
+
+Antes de responder/construir, o runtime pode recuperar padrões do corpus aprovado em `modules/LEARNING.md`.
+
+As fontes novas de Chat/UI, browser models, agents, transformers, design, extração estruturada, provider adapters e mídia foram incorporadas ao source registry. Fontes com licença desconhecida permanecem referência-only; MIT/Apache e material do usuário podem alimentar corpus/SFT.
+
+Memória adaptativa aceita por feedback/repetição deve continuar útil mesmo quando o runtime neural precisar ser restaurado após refresh.
