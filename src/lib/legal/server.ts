@@ -186,22 +186,51 @@ async function queryDatajud(digits:string,alias:string){
 }
 
 async function queryDjen(digits:string){
-  const url=new URL('https://comunicaapi.pje.jus.br/api/v1/comunicacao');
-  url.searchParams.set('numeroProcesso',digits);
-  url.searchParams.set('pagina','1');
-  url.searchParams.set('itensPorPagina','50');
-  try{
-    const r=await retryFetch(url.toString(),{headers:{Accept:'application/json',Referer:'https://comunica.pje.jus.br/',...BROWSER_HEADERS}},[12000,18000]);
-    const text=await r.text();
-    if(!r.ok){
-      const geo=r.status===403?' A API pública de consulta DJEN exige origem de rede brasileira; o deployment está configurado para gru1, mas o provedor ainda pode negar alguns egressos.':'';
-      return {ok:false,endpoint:url.toString(),count:0,items:[] as any[],error:'DJEN HTTP '+r.status+'.'+geo};
+  const candidates=[maskCnj(digits),digits];
+  let last:any=null;
+
+  for(const processNumber of candidates){
+    const url=new URL('https://comunicaapi.pje.jus.br/api/v1/comunicacao');
+    url.searchParams.set('numeroProcesso',processNumber);
+    url.searchParams.set('pagina','1');
+    url.searchParams.set('itensPorPagina','100');
+
+    try{
+      const r=await retryFetch(url.toString(),{
+        headers:{
+          Accept:'application/json, text/plain, */*',
+          Referer:'https://comunica.pje.jus.br/',
+          Origin:'https://comunica.pje.jus.br',
+          ...BROWSER_HEADERS
+        }
+      },[9000,15000]);
+      const text=await r.text();
+
+      if(!r.ok){
+        const geo=r.status===403?' O DJEN recusou o egress desta execução.':'';
+        last={ok:false,endpoint:url.toString(),count:0,items:[] as any[],error:'DJEN HTTP '+r.status+'.'+geo,status:r.status};
+        if(r.status===403||r.status===401)break;
+        continue;
+      }
+
+      let json:any;
+      try{json=JSON.parse(text)}catch{
+        last={ok:false,endpoint:url.toString(),count:0,items:[] as any[],error:'DJEN respondeu conteúdo não JSON.',status:r.status};
+        continue;
+      }
+
+      const items=Array.isArray(json?.items)?json.items:Array.isArray(json?.content)?json.content:[];
+      const count=Number(json?.count??json?.total??items.length??0);
+      if(items.length||count>0)return {ok:true,endpoint:url.toString(),count:Math.max(count,items.length),items,error:''};
+
+      // resposta vazia válida; tenta a segunda forma do CNJ antes de encerrar.
+      last={ok:true,endpoint:url.toString(),count:0,items:[] as any[],error:''};
+    }catch(error:any){
+      last={ok:false,endpoint:url.toString(),count:0,items:[] as any[],error:error?.name==='AbortError'?'DJEN excedeu o tempo de resposta.':String(error?.message||error)};
     }
-    const json=JSON.parse(text);
-    return {ok:true,endpoint:url.toString(),count:Number(json?.count||0),items:Array.isArray(json?.items)?json.items:[],error:''};
-  }catch(error:any){
-    return {ok:false,endpoint:url.toString(),count:0,items:[] as any[],error:error?.name==='AbortError'?'DJEN excedeu o tempo de resposta.':String(error?.message||error)};
   }
+
+  return last||{ok:false,endpoint:'https://comunicaapi.pje.jus.br/api/v1/comunicacao',count:0,items:[] as any[],error:'DJEN indisponível.'};
 }
 
 function parseEsajMovements(lines:string[]):LegalMovement[]{
@@ -231,51 +260,112 @@ function firstProcessLink(html:string){
 
 async function queryEsajTjsp(digits:string):Promise<LegalPortalResult>{
   const masked=maskCnj(digits);
-  const prefix=masked.slice(0,20); // NNNNNNN-DD.AAAA
+  const prefix=masked.slice(0,20);
   const foro=digits.slice(16,20);
-  const params=new URLSearchParams();
-  params.set('conversationId','');
-  params.set('cbPesquisa','NUMPROC');
-  params.set('numeroDigitoAnoUnificado',prefix);
-  params.set('foroNumeroUnificado',foro);
-  params.append('dadosConsulta.valorConsultaNuUnificado',masked);
-  params.append('dadosConsulta.valorConsultaNuUnificado','UNIFICADO');
-  params.set('dadosConsulta.valorConsulta','');
-  params.set('dadosConsulta.tipoNuProcesso','UNIFICADO');
-  const endpoint='https://esaj.tjsp.jus.br/cpopg/search.do?'+params.toString();
+  const openUrl='https://esaj.tjsp.jus.br/cpopg/open.do';
+  let endpoint=openUrl;
 
-  try{
-    let r=await retryFetch(endpoint,{headers:{Accept:'text/html,application/xhtml+xml',...BROWSER_HEADERS}},[12000,20000]);
-    let html=await r.text();
-    if(!r.ok)return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:false,found:false,endpoint,message:'e-SAJ HTTP '+r.status,movements:[]};
+  const parseCookie=(headers:Headers)=>{
+    const all=(headers as any).getSetCookie?.() as string[]|undefined;
+    const raw=all?.length?all:[headers.get('set-cookie')||''];
+    return raw.filter(Boolean).map(x=>x.split(';')[0]).join('; ');
+  };
 
-    const noInfo=/Não existem informações disponíveis para os parâmetros informados/i.test(html);
-    if(noInfo){
-      return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:true,found:false,endpoint,message:'Não existem informações disponíveis para os parâmetros informados.',movements:[]};
+  const inspectHtml=(html:string,currentEndpoint:string):LegalPortalResult|null=>{
+    if(/Não existem informações disponíveis para os parâmetros informados/i.test(html)){
+      return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:true,found:false,endpoint:currentEndpoint,message:'Não existem informações públicas disponíveis para esse número na consulta realizada.',movements:[]};
     }
-
-    const link=firstProcessLink(html);
-    if(link){
-      const detail=new URL(decodeEntities(link),'https://esaj.tjsp.jus.br/cpopg/').toString();
-      r=await retryFetch(detail,{headers:{Accept:'text/html,application/xhtml+xml',...BROWSER_HEADERS}},[12000,20000]);
-      if(r.ok){html=await r.text();}
-    }
-
     const lines=htmlLines(html);
-    const found=lines.some(x=>x.includes(masked))||(/Classe/i.test(lines.join(' '))&&/Assunto/i.test(lines.join(' ')));
-    const secret=/segredo de justiça|sigilo absoluto|senha do processo/i.test(lines.join(' '));
+    const joined=lines.join(' ');
+    const found=lines.some(x=>x.includes(masked))||(/Classe/i.test(joined)&&/Assunto/i.test(joined)&&/Movimenta/i.test(joined));
+    const secret=/segredo de justiça|sigilo absoluto|senha do processo/i.test(joined);
     const metadata:Record<string,string>={};
-    const labels=['Classe','Assunto','Foro','Vara','Juiz','Área','Distribuição','Controle','Valor da ação'];
-    for(const label of labels){
+    for(const label of ['Classe','Assunto','Foro','Vara','Juiz','Área','Distribuição','Controle','Valor da ação']){
       const value=labelValue(lines,label);
       if(value)metadata[label]=value;
     }
     const movements=parseEsajMovements(lines);
-    const message=found
-      ? (secret?'Processo localizado com acesso público limitado/possível sigilo.':'Processo localizado na consulta pública do e-SAJ.')
-      : 'A página respondeu, mas não foi possível confirmar detalhes públicos do processo.';
+    if(found||movements.length||Object.keys(metadata).length){
+      return {
+        id:'esaj-tjsp',
+        name:'e-SAJ TJSP',
+        ok:true,
+        found:true,
+        endpoint:currentEndpoint,
+        message:secret?'Processo localizado; a consulta pública indica acesso limitado/possível sigilo.':'Processo localizado na consulta pública do e-SAJ.',
+        metadata,
+        movements
+      };
+    }
+    return null;
+  };
 
-    return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:true,found,endpoint:r.url||endpoint,message,metadata,movements};
+  try{
+    // 1) abre a consulta para obter sessão/CSRF como o navegador real.
+    const open=await retryFetch(openUrl,{headers:{Accept:'text/html,application/xhtml+xml',...BROWSER_HEADERS}},[9000,15000]);
+    const openHtml=await open.text();
+    const cookie=parseCookie(open.headers);
+    const csrf=openHtml.match(/name=["']_csrf["'][^>]*value=["']([^"']+)["']/i)?.[1]||'';
+
+    // 2) POST com os mesmos campos usados pelo formulário oficial.
+    const form=new URLSearchParams();
+    if(csrf)form.set('_csrf',csrf);
+    form.set('conversationId','');
+    form.set('cbPesquisa','NUMPROC');
+    form.set('numeroDigitoAnoUnificado',prefix);
+    form.set('foroNumeroUnificado',foro);
+    form.append('dadosConsulta.valorConsultaNuUnificado',masked);
+    form.set('dadosConsulta.tipoNuProcesso','UNIFICADO');
+    form.set('dadosConsulta.valorConsulta','');
+    form.set('cdForo','-1');
+
+    endpoint='https://esaj.tjsp.jus.br/cpopg/search.do';
+    let r=await retryFetch(endpoint,{
+      method:'POST',
+      headers:{
+        Accept:'text/html,application/xhtml+xml',
+        'Content-Type':'application/x-www-form-urlencoded',
+        Referer:openUrl,
+        ...(cookie?{Cookie:cookie}:{}),
+        ...BROWSER_HEADERS
+      },
+      body:form.toString(),
+      redirect:'follow'
+    },[12000,20000]);
+
+    let html=await r.text();
+    if(r.ok){
+      const first=inspectHtml(html,r.url||endpoint);
+      if(first?.found||first?.message?.includes('Não existem'))return first;
+
+      const link=firstProcessLink(html);
+      if(link){
+        const detail=new URL(decodeEntities(link),'https://esaj.tjsp.jus.br/cpopg/').toString();
+        const detailR=await retryFetch(detail,{headers:{Accept:'text/html,application/xhtml+xml',Referer:endpoint,...(cookie?{Cookie:cookie}:{}),...BROWSER_HEADERS}},[12000,20000]);
+        if(detailR.ok){
+          html=await detailR.text();
+          const detailed=inspectHtml(html,detailR.url||detail);
+          if(detailed)return detailed;
+        }
+      }
+    }
+
+    // 3) Fallback GET reproduzível para mudanças do formulário/CSRF.
+    const params=new URLSearchParams();
+    params.set('conversationId','');
+    params.set('cbPesquisa','NUMPROC');
+    params.set('numeroDigitoAnoUnificado',prefix);
+    params.set('foroNumeroUnificado',foro);
+    params.append('dadosConsulta.valorConsultaNuUnificado',masked);
+    params.set('dadosConsulta.tipoNuProcesso','UNIFICADO');
+    endpoint='https://esaj.tjsp.jus.br/cpopg/search.do?'+params.toString();
+    r=await retryFetch(endpoint,{headers:{Accept:'text/html,application/xhtml+xml',...(cookie?{Cookie:cookie}:{}),...BROWSER_HEADERS}},[10000,18000]);
+    html=await r.text();
+    if(!r.ok)return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:false,found:false,endpoint,message:'e-SAJ HTTP '+r.status,movements:[]};
+
+    const final=inspectHtml(html,r.url||endpoint);
+    if(final)return final;
+    return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:true,found:false,endpoint,message:'A consulta pública respondeu, mas não foi possível confirmar dados desse processo.',movements:[]};
   }catch(error:any){
     return {id:'esaj-tjsp',name:'e-SAJ TJSP',ok:false,found:false,endpoint,message:error?.name==='AbortError'?'e-SAJ excedeu o tempo de resposta.':String(error?.message||error),movements:[]};
   }

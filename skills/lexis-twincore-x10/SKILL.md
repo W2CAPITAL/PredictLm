@@ -6,14 +6,14 @@ description: >
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "3.0.0"
+  version: "5.0.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v3.0
+# LEXIS TwinCore X10 v5.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -126,3 +126,29 @@ Metadado não é inteiro teor. Ausência em API não prova ausência no tribunal
 
 A saída forte responde a pergunta real, preserva contexto, separa fato/inferência/opinião,
 mostra risco e trade-off, deixa próximo passo executável e não inventa ferramenta, fonte, teste ou deploy.
+
+
+## PredictLM application layer
+
+A meta-skill está integrada ao próprio app:
+- `skills/predictlm/SKILL.md`
+- `skills/predictlm-scanner/SKILL.md`
+- `modules/PREDICTLM-APP.md`
+- `modules/PROMPT-OS.md`
+- `modules/AUTODEV-RUNTIME.md`
+
+Regra adicional: a resposta final não deve despejar nomes de skill, fallback, engine, provider, rota, trace ou Council se isso não foi pedido. Essas estruturas existem para melhorar a resposta, não para substituir a resposta.
+
+## Estratégia adversarial lícita
+
+"Malícia" operacional significa procurar:
+- incentivo oculto;
+- argumento adverso mais forte;
+- prova faltante;
+- inconsistência;
+- custo de erro;
+- vulnerabilidade técnica/contratual;
+- reação provável da outra parte;
+- melhor e pior caso plausível.
+
+Isso não autoriza assédio, sabotagem, doxxing, fraude, acesso indevido, bypass de controle, uso de e-CPF de terceiro ou protocolo silencioso.

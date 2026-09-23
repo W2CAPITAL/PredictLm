@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useRef, useState } from 'react';
-import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, X, Zap } from 'lucide-react';
+import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, type NeuralTier } from '@/lib/browser-brain';
 import { classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
@@ -66,7 +66,7 @@ export function ChatShell({onOpenLegal}:Props){
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
     setBusy(true);
-    setActivity(processNumber?['Recall local do CNJ','Roteando tribunal e fontes oficiais','Consultando DataJud + DJEN','Acionando fallback oficial quando necessário','Preparando Council X10 e síntese']:['Analisando contexto e escolhendo a melhor rota']);
+    setActivity(processNumber?['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']:['Analisando contexto']);
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
@@ -85,7 +85,7 @@ export function ChatShell({onOpenLegal}:Props){
         s.addMessage({
           role:'assistant',
           content:legalChatAnswer(legal,prompt,{count:recalls.length,titles:recalls.map(x=>x.title)}),
-          engine:'LEXIS TwinCore X10 · Processos',
+          engine:'PredictLM · Processos',
           sources:legalSources(legal)
         });
         return;
@@ -108,10 +108,12 @@ export function ChatShell({onOpenLegal}:Props){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,4);
       }
 
-      const engineLabel=reply.engine==='knowledge-fallback'?'fallback local':reply.engine==='knowledge'?'Predict Core':reply.engine;
+      const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine;
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources});
     }catch(err:any){
-      s.addMessage({role:'assistant',content:'Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.'});
+      const message='Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.';
+      s.addMessage({role:'assistant',content:message});
+      fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
     }finally{
       setBusy(false);
       setActivity([]);
@@ -130,6 +132,14 @@ export function ChatShell({onOpenLegal}:Props){
   function openChat(id?:string){
     if(id)s.setActive(id);
     setScreen('chat');
+  }
+
+  function sendFeedback(kind:'positive'|'negative',message:string){
+    fetch('/api/feedback',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({kind,surface:'chat',message,metadata:{sessionId:active?.id||null}})
+    }).catch(()=>{});
   }
 
   const hasMessages=!!active?.messages.length;
@@ -156,8 +166,13 @@ export function ChatShell({onOpenLegal}:Props){
         <button className={screen==='research'?'active':''} onClick={()=>setScreen('research')}><span><Globe2 size={16}/></span>Research</button>
       </nav>
 
-      <div className="grok-history-label">Recentes</div>
-      <div className="grok-history">{visibleSessions.map(chat=><button key={chat.id} className={chat.id===s.activeId&&screen==='chat'?'active':''} onClick={()=>openChat(chat.id)} title={chat.title}>{chat.title}</button>)}</div>
+      <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
+      <div className="grok-history">{visibleSessions.map(chat=><div className={'grok-history-row '+(chat.id===s.activeId&&screen==='chat'?'active':'')} key={chat.id}>
+        <button className="grok-history-open" onClick={()=>openChat(chat.id)} title={chat.title}>{chat.title}</button>
+        <button className="grok-history-delete" title="Apagar conversa" onClick={()=>{
+          if(window.confirm('Apagar a conversa “'+chat.title+'”?'))s.deleteSession(chat.id);
+        }}><Trash2 size={11}/></button>
+      </div>)}</div>
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='plugins'?'active':''} onClick={()=>setScreen('plugins')}><FolderOpen size={16}/> Plugins</button>
@@ -169,7 +184,7 @@ export function ChatShell({onOpenLegal}:Props){
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
       <div className="grok-status"><span className="private-dot"/> Private</div>
 
-      {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat}/>:
+      {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat} deleteChat={s.deleteSession} createChat={()=>{s.createChat();setScreen('chat')}}/>:
       screen==='build'?<GrokBuildPanel/>:
       screen==='research'?<GrokResearchPanel/>:
       screen==='imagine'?<GrokImaginePanel/>:
@@ -181,7 +196,7 @@ export function ChatShell({onOpenLegal}:Props){
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
         <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
@@ -207,8 +222,16 @@ function Composer(props:any){
   </div>
 }
 
-function LibraryScreen({sessions,openChat}:{sessions:any[];openChat:(id:string)=>void}){
-  return <section className="grok-library"><div><span>Library</span><h1>Suas conversas</h1><p>Histórico local do PredictLM.</p></div><div className="grok-library-grid">{sessions.map(chat=><button key={chat.id} onClick={()=>openChat(chat.id)}><Sparkles size={16}/><b>{chat.title}</b><span>{chat.messages.length} mensagens</span></button>)}</div></section>
+function LibraryScreen({sessions,openChat,deleteChat,createChat}:{sessions:any[];openChat:(id:string)=>void;deleteChat:(id:string)=>void;createChat:()=>void}){
+  return <section className="grok-library">
+    <div className="grok-library-head"><div><span>Library</span><h1>Suas conversas</h1><p>Histórico local do PredictLM.</p></div><button onClick={createChat}><Plus size={14}/>Nova conversa</button></div>
+    <div className="grok-library-grid">{sessions.map(chat=><article key={chat.id}>
+      <button className="grok-library-open" onClick={()=>openChat(chat.id)}><Sparkles size={16}/><b>{chat.title}</b><span>{chat.messages.length} mensagens</span></button>
+      <button className="grok-library-delete" title="Apagar conversa" onClick={()=>{
+        if(window.confirm('Apagar a conversa “'+chat.title+'”?'))deleteChat(chat.id);
+      }}><Trash2 size={13}/>Apagar</button>
+    </article>)}</div>
+  </section>
 }
 
 function renderText(text:string){

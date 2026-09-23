@@ -1,4 +1,6 @@
 import { knowledgeContext, retrieveKnowledge } from './assistant-knowledge';
+import { compileSystemPrompt } from './prompt-os/compiler';
+import { cleanUserFacingAnswer } from './prompt-os/response-contract';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -166,24 +168,29 @@ function knowledgeReply(prompt:string){
     return best.map((x,i)=>(i===0?'**'+x.title+'**\n':'**Relacionado: '+x.title+'**\n')+x.body).join('\n\n');
   }
   if(/^(como|explique|por que|porque|qual|quais)/i.test(p)){
-    return 'Posso explicar isso, mas não encontrei contexto local suficiente para produzir uma resposta confiável só pelo fallback leve. Posso usar pesquisa quando o assunto for factual ou continuar com o modelo neural local quando ele estiver disponível.';
+    return 'Não tenho contexto local suficiente para responder isso com segurança sem consultar uma fonte ou um modelo carregado.';
   }
-  return 'Entendi o que você perguntou, mas meu fallback local leve não tem contexto suficiente para responder com segurança. Não vou inventar uma resposta nem transformar sua mensagem em uma busca sem relação.';
+  return 'Não tenho evidência suficiente para responder isso com segurança nesta execução.';
 }
-
-const SYSTEM=`Você é PredictLM, um assistente geral e de desenvolvimento. Converse naturalmente e mantenha continuidade com as mensagens anteriores. Responda em português quando o usuário escrever em português. Dê primeiro a resposta útil, sem despejar links nem mandar o usuário ativar outro modo. Use fontes recuperadas para fundamentar fatos, mas sintetize em linguagem natural. Não invente fatos, execução de ferramentas, sentimentos humanos ou resultados não verificados. Em perguntas afetivas, seja caloroso sem alegar emoções humanas reais. Quando a tarefa for construir ou editar software, preserve o projeto existente e só sugira o modo Build quando isso ajudar.`;
 
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const recent=messages.slice(-10).map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
-  const system=SYSTEM+(recent?'\n\nHistórico recente:\n'+recent:'')+(context?'\n\nContexto recuperado:\n'+context:'');
+  const compiled=compileSystemPrompt({
+    userText:prompt,
+    extra:[
+      recent?'Histórico recente:\n'+recent:'',
+      context?'Contexto recuperado:\n'+context:''
+    ].filter(Boolean)
+  });
+  const system=compiled.system;
   const sources=retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}));
   let fallbackReason='';
 
   if(typeof window!=='undefined'&&options?.preferNative!==false){
     try{
       const content=await nativeGenerate(system,prompt);
-      if(content.trim())return {content,engine:'native',sources};
+      if(content.trim())return {content:cleanUserFacingAnswer(content),engine:'native',sources};
     }catch(error:any){
       fallbackReason=String(error?.message||'Browser native model unavailable');
     }
@@ -194,7 +201,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       const content=await neuralGenerate(system,prompt,messages);
       if(content.trim()){
         lastNeuralError='';
-        return {content,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+        return {content:cleanUserFacingAnswer(content),engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
       }
       fallbackReason='Local neural model returned an empty response';
       lastNeuralError=fallbackReason;

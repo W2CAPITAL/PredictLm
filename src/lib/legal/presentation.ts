@@ -1,123 +1,111 @@
 import type { LegalProcessBundle } from './types';
+import { legalAttackFramework, tjspFilingChecklist } from './filing';
 
 function dateBR(value?:string){
   if(!value)return '';
   const d=new Date(value);
   return Number.isNaN(d.getTime())?value:d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:value.includes('T')?'short':undefined});
 }
-
-function compact(text:string,max=700){
+function compact(text:string,max=720){
   const clean=String(text||'').replace(/\s+/g,' ').trim();
   return clean.length<=max?clean:clean.slice(0,max).trim()+'…';
 }
-
-function statusIcon(status:string){
-  return status==='done'?'✓':status==='skip'?'–':status==='warn'?'△':'×';
-}
-
 function strategyRequested(prompt:string){
-  return /\b(atacar|processar|ajuizar|entrar com a[cç][aã]o|abrir processo|peticionar|medida judicial|medida cab[ií]vel|qual a[cç][aã]o|como mover a[cç][aã]o)\b/i.test(prompt);
+  return /\b(atacar|processar|ajuizar|entrar com a[cç][aã]o|abrir processo|peticionar|medida judicial|medida cab[ií]vel|qual a[cç][aã]o|como mover a[cç][aã]o|estrat[eé]gia)\b/i.test(prompt);
+}
+function councilRequested(prompt:string){
+  return /council|x10|red.?team|tese e contra|pior caso|auditar|an[aá]lise profunda/i.test(prompt);
 }
 
-function filingGuidance(bundle:LegalProcessBundle){
-  if(bundle.tribunalAlias!=='tjsp'){
-    return [
-      '**Se a intenção for ajuizar/peticionar**',
-      '• Primeiro identifique o sistema eletrônico usado pelo tribunal e pela competência concreta (PJe, eproc, e-SAJ ou outro).',
-      '• Para advogado, o peticionamento eletrônico normalmente exige cadastro profissional e autenticação/certificado conforme a plataforma.',
-      '• A TwinCore pode preparar checklist, minuta, documentos e validação; o protocolo final deve ocorrer na conta autorizada do profissional/parte e com confirmação explícita.'
-    ].join('\n');
-  }
+function filingGuidance(bundle:LegalProcessBundle,prompt:string){
+  if(bundle.tribunalAlias==='tjsp')return [legalAttackFramework(prompt),tjspFilingChecklist(prompt)].filter(Boolean).join('\n\n');
   return [
-    '**Se a intenção for ajuizar/peticionar no TJSP**',
-    '• Não assuma automaticamente e-SAJ ou eproc: o TJSP mantém uma página oficial que informa qual sistema usar por foro e competência.',
-    '• No e-SAJ, o peticionamento de advogado exige cadastro profissional; para uso do certificado digital o portal utiliza Web Signer e certificado ICP-Brasil.',
-    '• No eproc, o TJSP publica fluxos separados para advogado e, quando juridicamente cabível, cidadão/Jus Postulandi.',
-    '• Antes de qualquer protocolo: competência, legitimidade, pedidos, valor da causa, custas/justiça gratuita, documentos essenciais, procuração e risco de sucumbência precisam ser conferidos.',
-    '• O PredictLM pode montar a estratégia, minuta, checklist e pacote documental; não deve protocolar silenciosamente nem usar certificado de terceiro.'
-  ].join('\n');
+    legalAttackFramework(prompt),
+    '### Como transformar a estratégia em protocolo',
+    '- Identifique competência, rito e sistema eletrônico do tribunal.',
+    '- Feche fatos, prova, pedidos, valor da causa, procuração e custas/gratuidade.',
+    '- Confirme cadastro/autenticação exigidos pelo sistema oficial.',
+    '- Prepare a minuta e anexos; assinatura, pagamento e protocolo exigem confirmação do titular autorizado.'
+  ].filter(Boolean).join('\n');
 }
 
-function councilX10(bundle:LegalProcessBundle,prompt:string){
+function councilX10(bundle:LegalProcessBundle){
   const found=bundle.timeline.length>0;
   const portal=bundle.officialPortals[0];
-  const datajudState=bundle.datajud.ok?(bundle.datajud.found?'encontrou o processo':'não retornou hit'):'falhou';
-  const djenState=bundle.djen.ok?(bundle.djen.count+' publicação(ões)'):'falhou';
-  const wantsAction=strategyRequested(prompt);
   return [
-    ['1 · Product / North Star',wantsAction?'Objetivo aparente: decidir uma medida jurídica útil, não apenas localizar dados. Primeiro é preciso fechar fatos, prova e competência.':'Objetivo aparente: entender o estado público do processo com a maior cobertura verificável.'],
-    ['2 · Architecture / Evidence','Cobertura atual: DataJud '+datajudState+', DJEN '+djenState+(portal?' e '+portal.name+' '+(portal.found?'localizou informação':'não confirmou informação pública'):'')+'. Nenhuma fonte isolada é tratada como verdade absoluta.'],
-    ['3 · Builder / Implementation','O pipeline executa CNJ → tribunal → DataJud/DJEN → fallback oficial → normalização → timeline → síntese. Falha de uma etapa não encerra silenciosamente a investigação.'],
-    ['4 · UX / Human Factors',found?'Há eventos públicos suficientes para exibir uma linha do tempo, mas o usuário ainda precisa distinguir evento, publicação e inferência.':'A resposta deve explicar por que não há dados, em vez de mostrar apenas “0 movimentos”.'],
-    ['5 · Research / Domain',bundle.tribunalAlias==='tjsp'?'O número aponta para TJSP; quando as APIs centrais não resolvem, a consulta pública do e-SAJ é uma fonte oficial adicional.':'O número foi roteado para '+bundle.tribunalLabel+'; adapters adicionais dependem do sistema oficial desse tribunal.'],
-    ['6 · Security / Abuse','A investigação fica em fontes públicas/autorizadas. Não há bypass de CAPTCHA, autenticação, sigilo ou uso de certificado de terceiro.'],
-    ['7 · Failure / QA',found?'Mesmo com eventos, pode haver atraso de indexação ou ausência de peças/decisões integrais.':'Hipóteses de falha: atraso de indexação, indisponibilidade, sigilo, migração de sistema, número incorreto ou processo ainda não publicizado.'],
-    ['8 · Legal / Privacy',bundle.datajud.confidentiality&&bundle.datajud.confidentiality>0?'Há indicação de nível de sigilo nos metadados; acesso adicional depende de autorização.':'Ausência pública não autoriza inferir conteúdo protegido nem revelar dados não retornados.'],
-    ['9 · Operations / Cost / Reliability','Fontes externas têm timeout, bloqueio geográfico e mudanças de portal. O sistema registra a falha e mantém fallback/rollback em vez de inventar resultado.'],
-    ['10 · Devil\'s Advocate / Countercase',found?'Mesmo um evento público pode estar desatualizado ou incompleto; a tese mais forte contra a leitura atual é o inteiro teor mostrar contexto diferente.':'A hipótese mais incômoda é simples: o CNJ pode estar errado ou não corresponder a processo publicamente consultável. Ela deve ser testada, não escondida.']
+    ['Produto','A pergunta real é decidir com base em evidência processual, não exibir logs de API.'],
+    ['Arquitetura','DataJud, DJEN e portal oficial são fontes independentes; resultado parcial deve ser preservado.'],
+    ['Implementação',found?'Há eventos suficientes para montar timeline.':'Sem evento normalizado, o sistema deve manter hipóteses abertas e buscar fonte oficial adicional.'],
+    ['UX','A resposta final deve trazer fatos e implicação, deixando detalhes técnicos recolhidos.'],
+    ['Domínio',portal?.found?'O portal oficial localizou o processo e deve pesar mais que ausência em agregadores.':'Ausência pública ainda pode significar atraso, sigilo, migração ou número incorreto.'],
+    ['Segurança','Sem bypass de CAPTCHA/WAF, sem acesso a sigilo e sem credencial/certificado de terceiro.'],
+    ['Falhas','Timeout/403 não são “zero resultados”; são falhas de fonte.'],
+    ['Jurídico/privacidade','Metadados não substituem teor de decisão quando mérito/prazo depende do texto.'],
+    ['Operações','Retry deve ser seletivo e com backoff para não martelar fonte externa.'],
+    ['Contra-caso','Mesmo um evento público pode estar desatualizado; a conclusão forte exige confronto com o ato/inteiro teor quando necessário.']
   ];
 }
 
 export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{count:number;titles?:string[]}){
   const d=bundle.datajud;
-  const latest=bundle.timeline.slice(0,7);
-  const portal=bundle.officialPortals[0];
-  const noPublicEvents=!latest.length;
+  const latest=bundle.timeline.slice(0,8);
+  const portal=bundle.officialPortals.find(x=>x.found)||bundle.officialPortals[0];
   const parts:string[]=[];
 
-  parts.push('**LEXIS TwinCore X10 — Modo processos + Recall**');
-  parts.push([
-    '**Processo consultado**',
-    '**'+bundle.processNumber+'**',
-    '• Tribunal: '+bundle.tribunalLabel,
-    '• CNJ: '+(bundle.validCnj?'dígito verificador consistente':'dígito verificador não confirmado'),
-    recall?.count?'• Recall local: '+recall.count+' registro(s) anterior(es) encontrado(s).':'• Recall local: sem registro anterior deste CNJ.'
-  ].join('\n'));
+  parts.push('**'+bundle.processNumber+' · '+bundle.tribunalLabel+'**');
 
-  parts.push('**Execução das fontes**\n'+bundle.trace.map(x=>'['+statusIcon(x.status)+'] **'+x.label+'** — '+x.detail).join('\n'));
+  const metadata=[
+    d.class?.name?('Classe: **'+d.class.name+'**'):'',
+    d.court?.name?('Órgão/vara: **'+d.court.name+'**'):'',
+    d.filedAt?('Ajuizamento: **'+dateBR(d.filedAt)+'**'):'',
+    d.lastUpdate?('Última atualização pública: **'+dateBR(d.lastUpdate)+'**'):''
+  ].filter(Boolean);
+  if(metadata.length)parts.push(metadata.join(' · '));
 
-  if(portal?.ok){
-    parts.push('**Resultado oficial adicional — '+portal.name+'**\n> '+(portal.message||'Consulta concluída.'));
-  }
-
-  if(!noPublicEvents){
-    parts.push('**Situação pública**\n'+bundle.summary.status+'.\n\n'+
-      (d.filedAt?'Ajuizamento: '+dateBR(d.filedAt)+'.\n':'')+
-      (d.lastUpdate?'Última atualização DataJud: '+dateBR(d.lastUpdate)+'.\n':'')+
-      'Fontes consolidadas: '+bundle.summary.sourceSummary+'.');
-    parts.push('**Eventos mais recentes**\n'+latest.map((x,i)=>(i+1)+'. '+dateBR(x.date)+' — **'+x.title+'**'+(x.body?' · '+compact(x.body,320):'')+' ['+x.source+']').join('\n'));
+  if(latest.length){
+    parts.push('**Situação pública:** '+bundle.summary.status+'.');
+    parts.push('### Eventos mais recentes\n'+latest.map((x,i)=>
+      (i+1)+'. **'+dateBR(x.date)+' — '+x.title+'**'+(x.body?'\n   '+compact(x.body,430):'')+' · '+x.source
+    ).join('\n'));
+    if(bundle.djen.publications.length){
+      const pubs=bundle.djen.publications.slice(0,4);
+      parts.push('### Publicações DJEN\n'+pubs.map(p=>
+        '- **'+dateBR(p.availableAt||p.publishedAt)+' · '+(p.type||'Publicação')+'**'+
+        (p.courtUnit?' · '+p.courtUnit:'')+
+        (p.text?'\n  '+compact(p.text,650):'')
+      ).join('\n'));
+    }
   }else{
+    const sourceLines=[
+      'DataJud: '+(d.ok?(d.found?'processo localizado, sem movimento normalizado':'consulta respondeu sem hit'):'não respondeu'+(d.error?' — '+compact(d.error,220):'')),
+      'DJEN: '+(bundle.djen.ok?(bundle.djen.count+' publicação(ões)'):'não respondeu'+(bundle.djen.error?' — '+compact(bundle.djen.error,220):'')),
+      portal?(portal.name+': '+(portal.found?(portal.message||'processo localizado'):(portal.message||'sem informação pública confirmada'))):''
+    ].filter(Boolean);
+    parts.push('Não encontrei evento público suficiente para descrever a fase do processo com segurança nesta consulta.');
+    parts.push(sourceLines.map(x=>'- '+x).join('\n'));
     parts.push([
-      '**O que isso significa — FORGE + AEGIS**',
-      '• **Research/Domain (FORGE):** nenhuma movimentação/publicação pública foi normalizada agora. Isso não autoriza concluir que o processo inexiste.',
-      '• **Architecture/Evidence (FORGE):** DataJud e DJEN falharam ou não trouxeram dados; por isso o adapter oficial do tribunal foi acionado como fallback quando disponível.',
-      '• **Legal/Privacy (AEGIS):** sigilo, limitação de consulta pública ou acesso restrito podem esconder dados que existem nos autos.',
-      '• **Failure/QA (AEGIS):** atraso de indexação, migração de sistema, indisponibilidade temporária, parâmetro incorreto ou número ainda não publicado são hipóteses concorrentes.',
-      '• **Devil’s Advocate:** o número também pode estar incorreto ou ainda não corresponder a processo publicamente consultável. A resposta correta é manter as hipóteses abertas.'
+      'Isso **não prova que o processo inexista**. As hipóteses que continuam abertas são: atraso de indexação, limitação/sigilo de consulta pública, migração de sistema, indisponibilidade da fonte ou erro no número informado.'
     ].join('\n'));
   }
 
-  const critical=bundle.lenses.filter(x=>x.level==='high');
+  const critical=bundle.lenses.filter(x=>x.level==='high').flatMap(x=>x.findings.slice(0,2));
   if(critical.length&&latest.length){
-    parts.push('**Council — pontos de atenção**\n'+critical.flatMap(x=>x.findings.slice(0,2).map(f=>'• **'+x.title+':** '+f)).join('\n'));
+    parts.push('### Pontos que merecem atenção\n'+critical.slice(0,5).map(x=>'- '+x).join('\n'));
   }
 
-  const council=councilX10(bundle,prompt);
-  parts.push('**Council X10 — FORGE + AEGIS**\n'+council.map(([name,text])=>'• **'+name+':** '+text).join('\n'));
+  if(strategyRequested(prompt))parts.push(filingGuidance(bundle,prompt));
 
-  if(strategyRequested(prompt))parts.push(filingGuidance(bundle));
+  if(councilRequested(prompt)){
+    parts.push('### Revisão X10\n'+councilX10(bundle).map(([name,text])=>'- **'+name+':** '+text).join('\n'));
+  }
 
-  parts.push([
-    '**Próximos passos**',
-    '1. Confirmar o CNJ com a fonte original/protocolo.',
-    bundle.tribunalAlias==='tjsp'?'2. Repetir a consulta pública no e-SAJ/TJSP e verificar no portal de Peticionamento Eletrônico se a competência já usa eproc.':'2. Conferir também o portal processual oficial do tribunal.',
-    '3. Se houver acesso autorizado de parte/advogado, consultar o processo autenticado para dados não públicos.',
-    '4. Para prazo, mérito ou estratégia, obter o inteiro teor das decisões/publicações e documentos dos autos.',
-    '5. Se você fornecer classe, parte, OAB, data aproximada ou documento do processo, a TwinCore pode cruzar esses dados sem inventar o que não foi encontrado.'
-  ].join('\n'));
+  // Só pede confirmação adicional quando a própria pergunta depende dela.
+  if((/prazo|recurso|senten[cç]a|decis[aã]o|mérito|merito/i.test(prompt))&&!latest.length){
+    parts.push('Para responder **prazo, recurso ou mérito**, falta o teor do ato/decisão. Nessa situação, preciso do documento ou de uma fonte oficial que o exponha.');
+  }
 
-  if(bundle.summary.caveats.length){
-    parts.push('**Limitações verificadas**\n'+bundle.summary.caveats.map(x=>'• '+x).join('\n'));
+  if(recall?.count){
+    parts.push('_Há '+recall.count+' registro(s) anterior(es) deste CNJ na memória local do app._');
   }
 
   return parts.join('\n\n');
@@ -127,11 +115,7 @@ export function legalSources(bundle:LegalProcessBundle){
   const out:{title:string;source:string}[]=[];
   if(bundle.datajud.endpoint)out.push({title:'DataJud · '+bundle.tribunalLabel,source:bundle.datajud.endpoint});
   if(bundle.djen.endpoint)out.push({title:'DJEN · Comunicações do processo',source:bundle.djen.endpoint});
-  for(const portal of bundle.officialPortals){
-    if(portal.endpoint)out.push({title:portal.name+' · consulta oficial',source:portal.endpoint});
-  }
-  for(const p of bundle.djen.publications.slice(0,2)){
-    if(p.certificateUrl)out.push({title:'Certidão DJEN · '+(p.type||'Publicação'),source:p.certificateUrl});
-  }
+  for(const portal of bundle.officialPortals)if(portal.endpoint)out.push({title:portal.name+' · consulta oficial',source:portal.endpoint});
+  for(const p of bundle.djen.publications.slice(0,2))if(p.certificateUrl)out.push({title:'Certidão DJEN · '+(p.type||'Publicação'),source:p.certificateUrl});
   return Array.from(new Map(out.map(x=>[x.source,x])).values()).slice(0,6);
 }

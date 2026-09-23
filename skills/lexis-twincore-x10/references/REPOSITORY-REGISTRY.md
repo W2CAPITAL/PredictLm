@@ -264,3 +264,74 @@ A presença aqui não significa copiar código. O uso deve respeitar licença, p
 - Nous Research Portal — reference for open agent/model ecosystem patterns.
 - Prepara / Alura / Adapta introductory AI guides — reference-only educational material.
 - r/brdev discussion on training from scratch vs using existing models — community-opinion reference, never treated as authoritative documentation.
+
+
+## PredictLM v5/v6 — prompt, agent and response-control intake
+
+- `phodal/auto-dev` — core-pattern: agent-as-tool, subagents, project rules, recovery, codebase investigation, QA.
+- `elder-plinius/CL4R1T4S` — restricted/reference: system-prompt architecture/red-team; do not copy leaked instructions into runtime.
+- `asgeirtj/system_prompts_leaks` — restricted/reference: architecture/eval only.
+- `liangshanbo789/aidaicai` — reference: provider/model routing patterns.
+- `szczyglis-dev/py-gpt` — core-pattern: multi-provider chat/plugin surface.
+- `Anil-matcha/awesome-gpt-6-astra` — prompt-corpus: permissive prompt patterns/evals.
+- `TripoGrowthLab/awesome-astra-prompts` — media-reference: visual/3D prompt patterns.
+- `m4vic/promptxploit` — eval-only: prompt-injection/tool-abuse red-team.
+- `regaan/basilisk` — eval-only: adversarial LLM security.
+- `Eulex0x/cleanmyprompt` — core-pattern: sanitization/privacy.
+- `Agenta-AI/agenta` — core-pattern: prompt versioning, tracing, evals.
+- `arc53/DocsGPT` — core-pattern: RAG, grounding, citations.
+- `nocode-js/sequential-workflow-designer` — core-pattern: visual workflow composition.
+- `LiteLLM-Labs/litellm-agent-control-plane` — core-pattern: model/provider policy plane.
+- `giselles-ai/giselle` — core-pattern: multi-agent workflows.
+- `vibesurf-ai/VibeSurf` — adapter: browser/web workflows.
+- `inkeep/agents` — reference: typed agents/subagents/MCP/observability.
+- `TransformerOptimus/SuperAGI` — reference: multi-agent/tool/memory architecture.
+- `reworkd/AgentGPT` — reference: task-decomposition loop.
+- `agno-agi/agno` — core-pattern: agents, knowledge, memory, RBAC, human approval.
+- `instructa/viber3d` — media-reference.
+- `Soul-Brews-Studio/shrimp-oracle` — reference: research/external-brain loop.
+- `pkollaritsch/Brainiac-Systems` — reference.
+- `spillai/agi-pack` — core-pattern: reproducible agent environments.
+- `microsoft/PowerApps-Samples` — reference: business workflows/connectors.
+- `screenpipe/screenpipe` — reference: local context/activity memory.
+
+## PredictLM v6 — video/media intake
+
+- `lcy362/agnes-video-generator` — core-pattern/reference: multi-scene generation, narration, subtitles, resume.
+- `calesthio/OpenMontage` — reference: agentic video production, research → script → assets → timeline → render.
+- `HBAI-Ltd/Toonflow-app` — core-pattern: storyboard/agent collaboration/persistent production graph.
+- `ATH-MaaS/Pixelle-Video` — reference: node-based video workflows.
+- `mutonby/openshorts` — reference: shorts pipeline.
+- `Anil-matcha/AI-Youtube-Shorts-Generator` — reference: short-form generation pipeline.
+- `xixihhhh/hotclip` — reference: clipping/composition.
+- `mountsea-ai/veo-api` — adapter: optional hosted video provider.
+- `seedance2-api/seedance2-api` — adapter: optional hosted video provider.
+- `mountsea-ai/sora-api` — adapter: optional hosted video provider.
+- `HiAPIAI/awesome-seedance-2-0-prompts` — media-reference.
+- `SurgeBowRetreat/invideo-ai-nexus` — reference: video workflow/product patterns.
+- `F-R-L/forge-film` — reference: film orchestration.
+- `PKU-YuanGroup/Helios` — reference: long-video model; not a low-resource Vercel runtime.
+- `gyoridavid/short-video-maker` — core-pattern/reference: local TTS/captions/background/Remotion pipeline.
+- `PKU-YuanGroup/ConsisID` — reference: identity-preserving video generation.
+
+## PredictLM legal expansion
+
+- `autodevx/legal-skills`
+- `neimaciel/gestao-escritorio`
+- `neimaciel/resumo-autos`
+- `neimaciel/execucao-patrimonial`
+- `simiao-cavalcante/proprio-punho`
+- `brunoflma/jusmanizer`
+- `pizaniadv/auditor-estrategico-juridico`
+- `carloslimadv/biblioteca-prompts-juridicos`
+- `emidio-trancoso/advocacia-aberta`
+- `marcelogcardozo/processa-ai`
+- `JeffersonMFti/agente-dra-julia-advocacia`
+- `sickn33/agentic-awesome-skills`
+- `lawve-ai/awesome-legal-skills`
+- `rohasnagpal/legal-ai-skills`
+- `harness/harness-ai`
+- `harness/harness`
+- `harness/harness-skills`
+
+Legal intake is used as patterns/adapters after license review; official court sources remain authoritative for process facts.
