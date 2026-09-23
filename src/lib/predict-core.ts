@@ -373,19 +373,31 @@ function buildSpecFile(spec:CoreSpec,prompt:string,depth:DeepThinkLevel){
 
 function maybeRefineExisting(prompt:string,currentFiles:WorkspaceFile[]){
   if(!currentFiles.length)return null;
-  const p=prompt.toLowerCase();
-  const isEdit=/mude|troque|altere|deixe|melhore|aumente|diminua|remova|adicione|corrija|fix|change|improve|make it/i.test(p);
-  if(!isEdit)return null;
+  const p=prompt.toLowerCase().trim();
+  const hasProject=currentFiles.some(f=>/(^|\/)App\.(tsx|jsx|js|ts)$/.test(f.path));
+  const styleSignal=/\b(cor|tema|fundo|background|accent|rosa|pink|azul|blue|verde|green|vermelh|red|roxo|purple|violet|laranja|orange|amarelo|yellow|preto|black|branco|white|arredond|rounded|compact|menor|maior|fonte|font)\b/i.test(p);
+  const editVerb=/mude|troque|altere|deixe|melhore|aumente|diminua|remova|adicione|corrija|fix|change|improve|make it|quero .* (rosa|azul|verde|roxo|vermelh)/i.test(p);
+  const shortContextual=hasProject&&p.split(/\s+/).length<=8&&styleSignal;
+  if(!(editVerb||shortContextual))return null;
   const css=currentFiles.find(f=>/styles?\.css$|globals\.css$/.test(f.path));
   if(!css)return null;
   let next=css.content;
   const changes:string[]=[];
-  if(/azul|blue/.test(p)){next=next.replace(/--accent:[^;]+;/,'--accent:#3b82f6;');changes.push('accent → blue');}
-  if(/verde|green/.test(p)){next=next.replace(/--accent:[^;]+;/,'--accent:#22c55e;');changes.push('accent → green');}
-  if(/vermelh|red/.test(p)){next=next.replace(/--accent:[^;]+;/,'--accent:#ef4444;');changes.push('accent → red');}
-  if(/roxo|purple|violet/.test(p)){next=next.replace(/--accent:[^;]+;/,'--accent:#7c5cff;');changes.push('accent → violet');}
+  const setVar=(name:string,value:string)=>{
+    const re=new RegExp(name+':[^;]+;');
+    if(re.test(next))next=next.replace(re,name+':'+value+';');
+    else next=':root{'+name+':'+value+';}\n'+next;
+  };
+  if(/rosa|pink/.test(p)){setVar('--accent','#ec4899');setVar('--accent2','#f9a8d4');next += '\n.keypad .equal,.btn{background:linear-gradient(135deg,#ec4899,#be185d)!important}.keypad .op{background:#3a1630!important;color:#fbcfe8!important;border-color:#6b214e!important}';changes.push('accent → pink');}
+  if(/azul|blue/.test(p)){setVar('--accent','#3b82f6');setVar('--accent2','#60a5fa');changes.push('accent → blue');}
+  if(/verde|green/.test(p)){setVar('--accent','#22c55e');setVar('--accent2','#6ee7b7');changes.push('accent → green');}
+  if(/vermelh|red/.test(p)){setVar('--accent','#ef4444');setVar('--accent2','#fb7185');changes.push('accent → red');}
+  if(/roxo|purple|violet/.test(p)){setVar('--accent','#7c5cff');setVar('--accent2','#a78bfa');changes.push('accent → violet');}
+  if(/laranja|orange/.test(p)){setVar('--accent','#f97316');setVar('--accent2','#fdba74');changes.push('accent → orange');}
+  if(/amarelo|yellow/.test(p)){setVar('--accent','#eab308');setVar('--accent2','#fde047');changes.push('accent → yellow');}
   if(/mais arredond|rounded/.test(p)){next += '\n.card,.btn,button,input{border-radius:18px!important}';changes.push('more rounded UI');}
   if(/compact|menor|smaller/.test(p)){next += '\n.shell{padding-top:14px!important;padding-bottom:14px!important}.card{padding:12px!important}';changes.push('compact density');}
+  if(/fonte maior|texto maior|bigger font/.test(p)){next += '\nbody{font-size:17px!important}';changes.push('larger typography');}
   if(!changes.length)return null;
   return {changes,file:{...css,content:next}};
 }
