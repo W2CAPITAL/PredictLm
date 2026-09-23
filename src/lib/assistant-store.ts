@@ -10,6 +10,9 @@ export interface AssistantMessage {
   createdAt:number;
   engine?:string;
   sources?:{title:string;source:string}[];
+  actions?:string[];
+  status?:'done'|'partial'|'error';
+  media?:{kind:'image'|'video';url:string;label?:string;temporary?:boolean}[];
 }
 export interface ChatSession {
   id:string;
