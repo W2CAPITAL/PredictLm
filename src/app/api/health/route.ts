@@ -108,6 +108,14 @@ export async function GET(){
   };
   const standardDossier=createLegalDossier(dossierFixture,{mode:'standard'});
   const aggressiveDossier=createLegalDossier(dossierFixture,{mode:'aggressive'});
+  const enrichedDossier=createLegalDossier(dossierFixture,{mode:'standard',evidence:{
+    documents:[{title:'Contrato de prestação',source:'anexo do usuário',summary:'Contrato fornecido para cruzamento com o processo.',confidence:'high'}],
+    favorable:['Documento contratual assinado disponível para análise.'],
+    adverse:['Resultado processual público não demonstra vitória de mérito.'],
+    failures:[{actor:'Operação',title:'Ponto documental a revisar',detail:'Conferir se obrigação contratual e execução efetiva coincidem.',basis:'Contrato fornecido'}],
+    risks:[{title:'Decisão sem inventário documental',level:'high',detail:'Sem cruzar contrato e comprovantes, atribuição de responsabilidade é prematura.'}],
+    recommendations:[{phase:'immediate',title:'Indexar anexos',detail:'Relacionar contrato, comprovantes e comunicações por data e origem.'}]
+  }});
   const legalArtifactBehavior={
     dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
     normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
@@ -115,7 +123,10 @@ export async function GET(){
     explicitAttackEnablesAggressive:isAggressiveLegalRequest('ataque isso com AEGIS total'),
     standardOmitsAggressiveBlock:!standardDossier.includes('Revisão adversarial — pedido expresso'),
     aggressiveIncludesAggressiveBlock:aggressiveDossier.includes('Revisão adversarial — pedido expresso'),
-    dossierKeepsLiteralSourceErrors:standardDossier.includes('DataJud excedeu o tempo')&&standardDossier.includes('DJEN HTTP 403')
+    dossierKeepsLiteralSourceErrors:standardDossier.includes('DataJud excedeu o tempo')&&standardDossier.includes('DJEN HTTP 403'),
+    dossierRichStructure:['Documentos e material suplementar','Balanço de forças','Pontos críticos','Mapa qualitativo de risco','Síntese do Chair','Próximos passos'].every(x=>standardDossier.includes(x)),
+    dossierShowsEvidenceGap:standardDossier.includes('Lacunas de evidência')&&standardDossier.includes('não serão preenchidas por inferência'),
+    dossierUsesSupplementalEvidence:enrichedDossier.includes('Contrato de prestação')&&enrichedDossier.includes('anexo do usuário')&&enrichedDossier.includes('Ponto documental a revisar')
   };
 
   const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean);

@@ -1,5 +1,6 @@
 import { createLegalDossier } from '@/lib/legal/dossier';
 import type { LegalDossierMode } from '@/lib/legal/mode';
+import type { LegalDossierEvidence } from '@/lib/legal/dossier';
 import { queryLegalProcess } from '@/lib/legal/server';
 
 export const runtime='nodejs';
@@ -11,9 +12,9 @@ function modeOf(value:any):LegalDossierMode{
   return value==='aggressive'?'aggressive':'standard';
 }
 
-async function generate(number:string,mode:LegalDossierMode){
+async function generate(number:string,mode:LegalDossierMode,evidence?:LegalDossierEvidence){
   const bundle=await queryLegalProcess(number);
-  const html=createLegalDossier(bundle,{mode});
+  const html=createLegalDossier(bundle,{mode,evidence});
   return new Response(html,{
     headers:{
       'Content-Type':'text/html; charset=utf-8',
@@ -40,7 +41,8 @@ export async function POST(req:Request){
     const body=await req.json();
     return await generate(
       String(body?.number||body?.processo||''),
-      modeOf(body?.mode)
+      modeOf(body?.mode),
+      body?.evidence&&typeof body.evidence==='object'?body.evidence:undefined
     );
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:400,headers:{'Cache-Control':'no-store'}});
