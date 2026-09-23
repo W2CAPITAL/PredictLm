@@ -1,9 +1,11 @@
+export type LegalSource='DataJud'|'DJEN'|'e-SAJ TJSP';
+
 export interface LegalMovement {
   date:string;
   code?:number|string;
   name:string;
   details?:string[];
-  source:'DataJud';
+  source:'DataJud'|'e-SAJ TJSP';
 }
 
 export interface LegalPublication {
@@ -27,7 +29,7 @@ export interface LegalTimelineItem {
   type:'movement'|'publication';
   title:string;
   body?:string;
-  source:'DataJud'|'DJEN';
+  source:LegalSource;
 }
 
 export interface LegalLens {
@@ -35,6 +37,25 @@ export interface LegalLens {
   title:string;
   level:'info'|'attention'|'high';
   findings:string[];
+}
+
+export interface LegalTraceStep {
+  id:string;
+  label:string;
+  status:'done'|'warn'|'error'|'skip';
+  detail:string;
+  source?:string;
+}
+
+export interface LegalPortalResult {
+  id:string;
+  name:string;
+  ok:boolean;
+  found:boolean;
+  endpoint:string;
+  message?:string;
+  metadata?:Record<string,string>;
+  movements:LegalMovement[];
 }
 
 export interface LegalProcessBundle {
@@ -69,6 +90,8 @@ export interface LegalProcessBundle {
     count:number;
     publications:LegalPublication[];
   };
+  officialPortals:LegalPortalResult[];
+  trace:LegalTraceStep[];
   timeline:LegalTimelineItem[];
   lenses:LegalLens[];
   summary:{
@@ -79,5 +102,6 @@ export interface LegalProcessBundle {
     publicationCount:number;
     movementCount:number;
     caveats:string[];
+    sourceSummary:string;
   };
 }

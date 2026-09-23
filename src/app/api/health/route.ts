@@ -52,7 +52,8 @@ export async function GET(){
     detectsCnj:findCnjNumber('fale sobre 4000338-89.2026.8.26.0002')==='4000338-89.2026.8.26.0002',
     validatesCnj:isValidCnj('4000338-89.2026.8.26.0002'),
     mapsTjsp:datajudTribunal('4000338-89.2026.8.26.0002')?.alias==='tjsp',
-    masksDigits:maskCnj('40003388920268260002')==='4000338-89.2026.8.26.0002'
+    masksDigits:maskCnj('40003388920268260002')==='4000338-89.2026.8.26.0002',
+    exampleTjspForum:datajudTribunal('4000338-89.2026.8.26.0002')?.label==='TJSP'
   };
 
   const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean);
@@ -60,8 +61,8 @@ export async function GET(){
   return Response.json({
     ok,
     service:'predictlm-studio',
-    version:'5.1',
-    surfaces:{chat:true,build:true,processos:true},
+    version:'5.3',
+    surfaces:{chat:true,build:true,research:true,imagine:true,plugins:true,processos:true},
     zeroApi:{
       deepThink:true,
       council:true,
@@ -75,7 +76,11 @@ export async function GET(){
       projectContinuity:true,
       datajudDjenModule:true,
       cnjAutoRouting:true,
-      legalDossier:true
+      legalDossier:true,
+      officialCourtFallback:true,
+      twinCoreX10:true,
+      grokUnifiedShell:true,
+      saoPauloFunctions:true
     },
     selfTest:{
       calculatorIntent:calculator.packageSummary.intent,

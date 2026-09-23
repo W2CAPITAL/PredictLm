@@ -8,28 +8,33 @@ import { classifyConversation, directConversationReply, shouldSearchConversation
 import { findCnjNumber } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import type { LegalProcessBundle } from '@/lib/legal/types';
+import { useStudio } from '@/lib/store';
+import { GrokBuildPanel } from '@/components/GrokBuildPanel';
+import { GrokResearchPanel } from '@/components/GrokResearchPanel';
+import { GrokImaginePanel } from '@/components/GrokImaginePanel';
+import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
 
 interface Props{
-  onOpenBuild:()=>void;
-  onOpenMedia?:()=>void;
-  onOpenResearch?:()=>void;
-  onOpenPlugins?:()=>void;
   onOpenLegal?:()=>void;
 }
 
-export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,onOpenLegal}:Props){
+type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'plugins';
+
+export function ChatShell({onOpenLegal}:Props){
   const s=useAssistantStore();
+  const studio=useStudio();
   const active=s.sessions.find(x=>x.id===s.activeId)||s.sessions[0];
   const [input,setInput]=useState('');
   const [busy,setBusy]=useState(false);
   const [sidebar,setSidebar]=useState(true);
-  const [screen,setScreen]=useState<'chat'|'library'>('chat');
+  const [screen,setScreen]=useState<GrokScreen>('chat');
   const [searching,setSearching]=useState(false);
   const [search,setSearch]=useState('');
   const [plusOpen,setPlusOpen]=useState(false);
   const [modelMenu,setModelMenu]=useState(false);
   const [loadState,setLoadState]=useState<{tier:NeuralTier;progress:number|null;status:string}|null>(null);
   const [modelError,setModelError]=useState('');
+  const [activity,setActivity]=useState<string[]>([]);
   const bottom=useRef<HTMLDivElement>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=neuralStatus();
@@ -61,15 +66,28 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
     setBusy(true);
+    setActivity(processNumber?['Recall local do CNJ','Roteando tribunal e fontes oficiais','Consultando DataJud + DJEN','Acionando fallback oficial quando necessário','Preparando Council X10 e síntese']:['Analisando contexto e escolhendo a melhor rota']);
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
       if(processNumber){
+        const recalls=studio.notes.filter(n=>(n.title+' '+n.body).includes(processNumber)).slice(-5);
         const r=await fetch('/api/legal/process?number='+encodeURIComponent(processNumber),{cache:'no-store'});
         const data=await r.json();
-        if(!r.ok)throw new Error(data?.error||'Falha na consulta DataJud/DJEN');
+        if(!r.ok)throw new Error(data?.error||'Falha na consulta processual');
         const legal=data as LegalProcessBundle;
-        s.addMessage({role:'assistant',content:legalChatAnswer(legal),engine:'Lexis · DataJud + DJEN',sources:legalSources(legal)});
+        studio.addNote({
+          title:'Processo '+legal.processNumber,
+          body:legal.summary.sourceSummary+'\n'+legal.summary.status+'\nConsultado em '+legal.fetchedAt,
+          tags:['processo','datajud','djen',legal.tribunalLabel.toLowerCase()],
+          kind:'note'
+        });
+        s.addMessage({
+          role:'assistant',
+          content:legalChatAnswer(legal,prompt,{count:recalls.length,titles:recalls.map(x=>x.title)}),
+          engine:'LEXIS TwinCore X10 · Processos',
+          sources:legalSources(legal)
+        });
         return;
       }
 
@@ -96,6 +114,7 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,
       s.addMessage({role:'assistant',content:'Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.'});
     }finally{
       setBusy(false);
+      setActivity([]);
       setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
     }
   }
@@ -130,18 +149,18 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,
 
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
-        <button onClick={onOpenBuild}><span><Code2 size={16}/></span>Build</button>
+        <button className={screen==='build'?'active':''} onClick={()=>setScreen('build')}><span><Code2 size={16}/></span>Build</button>
         <button onClick={onOpenLegal}><span><Scale size={16}/></span>Processos</button>
-        <button onClick={onOpenMedia}><span><ImageIcon size={16}/></span>Imagine</button>
+        <button className={screen==='imagine'?'active':''} onClick={()=>setScreen('imagine')}><span><ImageIcon size={16}/></span>Imagine</button>
         <button className={screen==='library'?'active':''} onClick={()=>setScreen('library')}><span><Library size={16}/></span>Library</button>
-        <button onClick={onOpenResearch}><span><Globe2 size={16}/></span>Research</button>
+        <button className={screen==='research'?'active':''} onClick={()=>setScreen('research')}><span><Globe2 size={16}/></span>Research</button>
       </nav>
 
       <div className="grok-history-label">Recentes</div>
       <div className="grok-history">{visibleSessions.map(chat=><button key={chat.id} className={chat.id===s.activeId&&screen==='chat'?'active':''} onClick={()=>openChat(chat.id)} title={chat.title}>{chat.title}</button>)}</div>
 
       <div className="grok-sidebar-bottom">
-        <button onClick={onOpenPlugins}><FolderOpen size={16}/> Plugins</button>
+        <button className={screen==='plugins'?'active':''} onClick={()=>setScreen('plugins')}><FolderOpen size={16}/> Plugins</button>
         <div className="grok-profile"><div>P</div><span><b>Predict Local</b><small>private · local-first</small></span></div>
       </div>
     </aside>
@@ -151,15 +170,19 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,
       <div className="grok-status"><span className="private-dot"/> Private</div>
 
       {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat}/>:
+      screen==='build'?<GrokBuildPanel/>:
+      screen==='research'?<GrokResearchPanel/>:
+      screen==='imagine'?<GrokImaginePanel/>:
+      screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia} onOpenLegal={onOpenLegal}/>
-        <button className="grok-build-card" onClick={onOpenBuild}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie sites, apps, sistemas e dashboards sem sair do PredictLM.</span></div><strong>Experimentar</strong></button>
-        <div className="grok-home-foot"><span className="private-dot"/> Sem API obrigatória · memória local · projeto persistente</div>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
+        <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>thinking</span></div><div className="grok-thinking"><i/><i/><i/> analisando contexto</div></div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia} onOpenLegal={onOpenLegal}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
       {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
