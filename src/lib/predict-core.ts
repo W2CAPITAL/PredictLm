@@ -423,9 +423,13 @@ function maybeRefineExisting(prompt:string,currentFiles:WorkspaceFile[]){
   return {changes,file:{...css,content:next}};
 }
 
-function existingProjectIntent(files:WorkspaceFile[]){
+function existingProjectIntent(files:WorkspaceFile[]):CoreIntent|''{
   const spec=files.find(f=>f.path==='predict.spec.json');
-  try{return spec?String(JSON.parse(spec.content)?.spec?.intent||''):''}catch{return ''}
+  try{
+    const value=spec?String(JSON.parse(spec.content)?.spec?.intent||''):'';
+    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','generic'];
+    return allowed.includes(value as CoreIntent)?value as CoreIntent:'';
+  }catch{return ''}
 }
 
 function explicitFreshStart(prompt:string){
