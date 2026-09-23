@@ -22,8 +22,26 @@ function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
   if(!backendNeeded(intent,spec))return [];
   const entity=intent==='crm'?'leads':'orders';
   const seed=intent==='crm'
-    ? JSON.stringify([{id:1,name:'Marina Costa',status:'Novo',value:2400},{id:2,name:'Rafael Lima',status:'Em análise',value:5200}],null,2)
+    ? JSON.stringify([
+        {id:1,name:'Marina Costa',company:'Atlas Consultoria',email:'marina@atlas.com',phone:'11988776655',status:'Novo',value:2400,mrr:490,owner:'Ana',source:'Indicação',last:'Hoje'},
+        {id:2,name:'Rafael Lima',company:'Nova Capital',email:'rafael@novacapital.com',phone:'11990001122',status:'Qualificado',value:8200,mrr:890,owner:'Davi',source:'Site',last:'Ontem'}
+      ],null,2)
     : JSON.stringify([],null,2);
+
+  const validation=intent==='crm'
+    ? [
+      "function validate(input){",
+      " const errors={};",
+      " if(!String(input?.name||'').trim())errors.name='Nome é obrigatório';",
+      " if(input?.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(input.email)))errors.email='Email inválido';",
+      " const phone=String(input?.phone||'').replace(/\\D/g,'');if(phone&&phone.length<10)errors.phone='Telefone inválido';",
+      " for(const key of ['value','mrr']){if(input?.[key]!=null&&input[key]!==''&&(!Number.isFinite(Number(input[key]))||Number(input[key])<0))errors[key]=key+' inválido';}",
+      " return errors;",
+      "}",
+      "function normalize(input,current={}){return {...current,...input,name:String(input?.name??current.name??'').trim(),company:String(input?.company??current.company??'Sem empresa').trim()||'Sem empresa',email:String(input?.email??current.email??'').trim(),phone:String(input?.phone??current.phone??'').replace(/\\D/g,'').slice(0,13),value:Number(input?.value??current.value??0),mrr:Number(input?.mrr??current.mrr??0),status:String(input?.status??current.status??'Novo'),owner:String(input?.owner??current.owner??'Você'),source:String(input?.source??current.source??'Manual'),last:'Agora',updatedAt:new Date().toISOString()};}"
+    ].join("\n")
+    : "function validate(){return {}}\nfunction normalize(input,current={}){return {...current,...input,updatedAt:new Date().toISOString()}}";
+
   const server=[
     "import http from 'node:http';",
     "import fs from 'node:fs/promises';",
@@ -34,35 +52,78 @@ function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
     "const __dirname=path.dirname(fileURLToPath(import.meta.url));",
     "const dataFile=path.join(__dirname,'data.json');",
     "const PORT=Number(process.env.PORT||8787);",
+    "const ORIGIN=process.env.CORS_ORIGIN||'http://localhost:5173';",
+    validation,
     "",
     "async function readData(){",
     "  if(!existsSync(dataFile))await fs.writeFile(dataFile,'[]');",
-    "  return JSON.parse(await fs.readFile(dataFile,'utf8'));",
+    "  try{return JSON.parse(await fs.readFile(dataFile,'utf8'))}catch{return []}",
     "}",
-    "async function writeData(rows){await fs.writeFile(dataFile,JSON.stringify(rows,null,2));}",
-    "const json=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});res.end(JSON.stringify(body));};",
+    "async function writeData(rows){",
+    "  const tmp=dataFile+'.tmp';",
+    "  await fs.writeFile(tmp,JSON.stringify(rows,null,2));",
+    "  await fs.rename(tmp,dataFile);",
+    "}",
+    "async function body(req){",
+    "  let raw='';",
+    "  for await(const chunk of req){raw+=chunk;if(raw.length>1_000_000)throw new Error('Payload too large')}",
+    "  try{return raw?JSON.parse(raw):{}}catch{throw new Error('JSON inválido')}",
+    "}",
+    "const json=(res,status,payload)=>{",
+    " res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':ORIGIN,'Vary':'Origin','Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});",
+    " res.end(JSON.stringify(payload));",
+    "};",
     "",
     "http.createServer(async(req,res)=>{",
+    " try{",
     "  if(req.method==='OPTIONS')return json(res,204,{});",
     "  const url=new URL(req.url||'/', 'http://localhost');",
-    "  if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-backend'});",
+    "  if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-backend',entity:'"+entity+"'});",
     "  if(url.pathname==='/api/"+entity+"'&&req.method==='GET')return json(res,200,await readData());",
     "  if(url.pathname==='/api/"+entity+"'&&req.method==='POST'){",
-    "    let raw='';for await(const chunk of req)raw+=chunk;",
-    "    const body=JSON.parse(raw||'{}');const rows=await readData();",
-    "    const item={id:Date.now(),...body,createdAt:new Date().toISOString()};",
+    "    const input=await body(req);const errors=validate(input);",
+    "    if(Object.keys(errors).length)return json(res,422,{error:'Validation failed',errors});",
+    "    const rows=await readData();const item=normalize(input,{id:Date.now(),createdAt:new Date().toISOString()});",
     "    rows.unshift(item);await writeData(rows);return json(res,201,item);",
     "  }",
-    "  const match=url.pathname.match(/^\\/api\\/"+entity+"\\/(\\d+)$/);",
-    "  if(match&&req.method==='DELETE'){const id=Number(match[1]);const rows=(await readData()).filter(x=>x.id!==id);await writeData(rows);return json(res,200,{ok:true});}",
+    "  const match=url.pathname.match(/^\\/api\\/"+entity+"\\/([^/]+)$/);",
+    "  if(match&&req.method==='PATCH'){",
+    "    const id=decodeURIComponent(match[1]);const input=await body(req);const rows=await readData();const index=rows.findIndex(x=>String(x.id)===id);",
+    "    if(index<0)return json(res,404,{error:'Record not found'});",
+    "    const candidate=normalize(input,rows[index]);const errors=validate(candidate);",
+    "    if(Object.keys(errors).length)return json(res,422,{error:'Validation failed',errors});",
+    "    rows[index]=candidate;await writeData(rows);return json(res,200,candidate);",
+    "  }",
+    "  if(match&&req.method==='DELETE'){",
+    "    const id=decodeURIComponent(match[1]);const rows=await readData();const next=rows.filter(x=>String(x.id)!==id);",
+    "    if(next.length===rows.length)return json(res,404,{error:'Record not found'});",
+    "    await writeData(next);return json(res,200,{ok:true,id});",
+    "  }",
     "  return json(res,404,{error:'Not found'});",
+    " }catch(error){return json(res,error?.message==='Payload too large'?413:400,{error:error?.message||'Request failed'})}",
     "}).listen(PORT,()=>console.log('Predict backend http://localhost:'+PORT));",
     ""
   ].join('\n');
+
+  const client=[
+    "const API=import.meta.env.VITE_API_URL||'http://localhost:8787';",
+    "export class ApiError extends Error{constructor(message,status=0,payload=null){super(message);this.status=status;this.payload=payload}}",
+    "export async function api(path:string,init?:RequestInit){",
+    " const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),12000);",
+    " try{",
+    "  const r=await fetch(API+path,{...init,signal:controller.signal,headers:{Accept:'application/json','Content-Type':'application/json',...(init?.headers||{})}});",
+    "  const payload=await r.json().catch(()=>null);",
+    "  if(!r.ok)throw new ApiError(payload?.error||('API '+r.status),r.status,payload);",
+    "  return payload;",
+    " }finally{clearTimeout(timer)}",
+    "}",
+    ""
+  ].join('\n');
+
   return [
     {path:'server/index.mjs',content:server,language:'javascript'},
     {path:'server/data.json',content:seed,language:'json'},
-    {path:'src/lib/api.ts',content:"const API=import.meta.env.VITE_API_URL||'http://localhost:8787';\nexport async function api(path:string,init?:RequestInit){const r=await fetch(API+path,{...init,headers:{'Content-Type':'application/json',...(init?.headers||{})}});if(!r.ok)throw new Error('API '+r.status);return r.json()}\n",language:'typescript'}
+    {path:'src/lib/api.ts',content:client,language:'typescript'}
   ];
 }
 
