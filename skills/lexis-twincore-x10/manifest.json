@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -45,7 +45,10 @@
     "media-repository",
     "local-motion-video",
     "feedback-loop",
-    "autodev-runtime"
+    "autodev-runtime",
+    "procedural-state-interpretation",
+    "legal-outcome-explainer",
+    "djen-text-sanitization"
   ],
   "hosts": [
     "PredictLM",

@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v3.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.1. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.0.0"
+  version: "5.1.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.0
+# LEXIS TwinCore X10 v5.1
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -118,9 +118,22 @@ Quando faltar capacidade:
 ## Lexis Revisional / Processos
 
 Número CNJ ativa:
-CNJ → tribunal → DataJud + DJEN → timeline → cinco lentes revisional → Council X10 quando necessário → dossiê.
+CNJ → tribunal → DataJud + DJEN → portal oficial → timeline → **interpretação processual** → cinco lentes revisional → Council X10 quando necessário → dossiê.
 
-Metadado não é inteiro teor. Ausência em API não prova ausência no tribunal.
+A resposta processual deve dizer, nesta ordem:
+1. **como está agora**;
+2. **o que aconteceu**;
+3. **se é favorável/desfavorável e para quem**;
+4. **o que fazer agora**;
+5. linha do tempo essencial;
+6. detalhes crus somente quando forem pedidos.
+
+Regras de interpretação:
+- “Intimação” mais recente não apaga uma sentença/extinção anterior.
+- “Custas satisfeitas” depois de trânsito em julgado não significa reabertura por si só.
+- Extinção por art. 290 + trânsito em julgado deve ser tratada como encerramento do processo, salvo ato posterior expresso de retomada.
+- HTML, CSS e entidades do DJEN devem ser limpos antes da resposta.
+- Metadado não é inteiro teor. Ausência em API não prova ausência no tribunal.
 
 ## Critério de qualidade
 

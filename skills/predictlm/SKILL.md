@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -34,9 +34,16 @@ Se existe build/chat/processo/contexto atual:
 4. reiniciar somente com ordem explícita.
 
 ## Processo
-CNJ → tribunal → DataJud + DJEN → portal oficial → timeline → análise.
+CNJ → tribunal → DataJud + DJEN → portal oficial → timeline → interpretação processual → resposta prática.
 
-Falha de uma fonte não apaga as demais. Erro não é zero resultados. Ausência pública não prova inexistência.
+Para processo, a resposta padrão é:
+- como está agora;
+- o que aconteceu;
+- se é bom/ruim e para qual parte;
+- o que fazer agora;
+- linha do tempo essencial.
+
+Falha de uma fonte não apaga as demais. Erro não é zero resultados. Ausência pública não prova inexistência. Evento administrativo posterior não deve esconder sentença, extinção ou trânsito em julgado.
 
 ## Jurídico
 Pode:
