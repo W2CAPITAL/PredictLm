@@ -3,7 +3,7 @@ import { runLocalSmokeTest } from '@/lib/local-tools';
 import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
-import { classifyConversation, directConversationReply } from '@/lib/chat-intelligence';
+import { classifyConversation, directConversationReply, filterRelevantResearchItems } from '@/lib/chat-intelligence';
 import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj } from '@/lib/legal/cnj';
 
 export const runtime = 'nodejs';
@@ -42,10 +42,22 @@ export async function GET(){
   const chatHistory:any[]=[
     {id:'1',role:'assistant',content:'Ative o Neural Local para respostas generativas.',createdAt:Date.now(),engine:'Predict Core'}
   ];
+  const companyPrompt='como posso criar uma empresa do zero';
+  const companyReply=directConversationReply(companyPrompt,[],{loaded:false,tier:null})||'';
+  const relevanceFixture=[
+    {title:'Como abrir uma empresa no Brasil',description:'Passos para formalização, CNPJ, registro empresarial e organização do negócio.',url:'https://example.test/empresa',source:'fixture'},
+    {title:'Phantom Blade Zero',description:'Jogo de RPG de ação wuxia.',url:'https://example.test/game',source:'fixture'},
+    {title:'Prova de conhecimento zero',description:'Protocolo criptográfico de zero knowledge.',url:'https://example.test/zkp',source:'fixture'},
+    {title:'Criador de conteúdo e empresário',description:'Biografia de um youtuber brasileiro.',url:'https://example.test/youtuber',source:'fixture'}
+  ];
+  const relevantCompany=filterRelevantResearchItems(companyPrompt,relevanceFixture,6);
+
   const chatIntelligence={
     affectionIsCasual:classifyConversation('você me ama?',[])==='casual'&&!!directConversationReply('você me ama?',[],{loaded:false,tier:null}),
     activeIsContext:classifyConversation('já está ativo',chatHistory)==='context'&&!!directConversationReply('já está ativo',chatHistory,{loaded:true,tier:'lite'}),
-    whoIsIsFactual:classifyConversation('quem é Elon Musk',[])==='factual'
+    whoIsIsFactual:classifyConversation('quem é Elon Musk',[])==='factual',
+    companyHowToIsSpecific:companyReply.includes('CNPJ')&&companyReply.includes('clientes'),
+    companyResearchRejectsNoise:relevantCompany.length===1&&relevantCompany[0]?.title==='Como abrir uma empresa no Brasil'
   };
 
   const legalModule={

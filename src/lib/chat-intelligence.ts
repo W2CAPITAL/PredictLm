@@ -20,6 +20,25 @@ function lastAssistant(history:AssistantMessage[]){
   return [...history].reverse().find(m=>m.role==='assistant')?.content||'';
 }
 
+function companyHowTo(){
+  return [
+    '**Para criar uma empresa do zero, separe validação do negócio de formalização.** Primeiro confirme o que vai vender e para quem; depois escolha a estrutura jurídica adequada ao caso.',
+    '',
+    '1. **Defina atividade, cliente e oferta.** Escreva em uma frase o que a empresa vende, para quem e como recebe.',
+    '2. **Valide demanda antes de gastar muito.** Converse com clientes potenciais, teste uma oferta simples e confirme se existe disposição real de pagar.',
+    '3. **Escolha a forma de operação.** Avalie se cabe atuação como pessoa física/MEI ou se precisa de sociedade/empresa; isso depende da atividade, faturamento, sócios e restrições.',
+    '4. **Organize nome, endereço e atividades.** Separe nome empresarial/marca, endereço viável e atividades econômicas compatíveis.',
+    '5. **Formalize nos órgãos corretos.** No Brasil, o fluxo normalmente envolve registro empresarial quando aplicável, CNPJ, inscrições/licenças conforme atividade e município/estado.',
+    '6. **Abra conta e organize financeiro.** Separe dinheiro pessoal do empresarial, defina emissão de notas, fluxo de caixa e rotina contábil/fiscal.',
+    '7. **Crie o mínimo comercial.** Proposta, contrato/termos, canal de atendimento, cobrança e uma forma simples de captar clientes.',
+    '8. **Só escale depois de vender.** Automatize marketing, CRM, equipe e sistemas quando o processo básico já funcionar.',
+    '',
+    '**Checklist inicial:** atividade · público · oferta · preço · sócios · endereço · regime/estrutura · CNPJ/licenças · conta · notas · contrato · primeiros clientes.',
+    '',
+    'Para uma abertura real, regras fiscais, enquadramento e licenças variam por atividade e local; a etapa formal deve ser conferida em fontes oficiais/contador antes do protocolo.'
+  ].join('\n');
+}
+
 function startupHowTo(){
   return [
     '**Comece pelo problema, não pela empresa.** Uma startup nasce quando você tenta resolver um problema real de forma repetível e escalável.',
@@ -40,6 +59,7 @@ function startupHowTo(){
 
 function practicalHowTo(prompt:string){
   const p=clean(prompt);
+  if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
   if(/startup|start-up/.test(p))return startupHowTo();
   if(/criar.*(app|aplicativo|sistema|site)|fazer.*(app|aplicativo|sistema|site)/.test(p)){
     return [
@@ -115,6 +135,47 @@ export interface ResearchItem{
   site?:string;
 }
 
+const RESEARCH_STOPWORDS=new Set([
+  'como','posso','pode','podem','quero','preciso','criar','fazer','montar','comecar','começar','passo','passos',
+  'zero','sobre','para','com','sem','uma','uns','umas','que','qual','quais','onde','quando','porque','por','dos','das',
+  'isso','isto','esse','essa','meu','minha','seu','sua','hoje','agora','atual','atualmente'
+]);
+
+function relevanceTokens(text:string){
+  return clean(text).split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!RESEARCH_STOPWORDS.has(x));
+}
+
+function expandResearchTokens(tokens:string[]){
+  const out=new Set(tokens);
+  if(tokens.includes('empresa'))['negocio','cnpj','sociedade','empreendimento','empresarial','mei'].forEach(x=>out.add(x));
+  if(tokens.includes('programacao')||tokens.includes('codigo'))['software','developer','javascript','typescript','python'].forEach(x=>out.add(x));
+  return [...out];
+}
+
+export function researchItemRelevance(query:string,item:ResearchItem){
+  const raw=relevanceTokens(query);
+  const tokens=expandResearchTokens(raw);
+  if(!tokens.length)return {score:0,matches:0,titleMatches:0,relevant:false};
+  const titleTokens=new Set(relevanceTokens(item.title||''));
+  const bodyTokens=new Set(relevanceTokens((item.summary||item.description||'')+' '+(item.site||'')+' '+(item.source||'')));
+  let score=0,matches=0,titleMatches=0;
+  for(const token of tokens){
+    if(titleTokens.has(token)){score+=5;matches++;titleMatches++;}
+    else if(bodyTokens.has(token)){score+=2;matches++;}
+  }
+  const coreCount=Math.max(1,raw.length);
+  const relevant=coreCount===1 ? (titleMatches>=1||score>=2) : (matches>=2||(titleMatches>=1&&score>=5));
+  return {score,matches,titleMatches,relevant};
+}
+
+export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=6){
+  return items.map(item=>({item,...researchItemRelevance(query,item)}))
+    .filter(x=>x.relevant)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,limit)
+    .map(x=>x.item);
+}
+
 function trimSentence(text:string,max=1150){
   const cleanText=String(text||'').replace(/\s+/g,' ').trim();
   if(cleanText.length<=max)return cleanText;
@@ -124,7 +185,7 @@ function trimSentence(text:string,max=1150){
 }
 
 export function synthesizeResearch(prompt:string,items:ResearchItem[]){
-  const useful=items.filter(x=>(x.summary||x.description)?.trim()).slice(0,5);
+  const useful=filterRelevantResearchItems(prompt,items.filter(x=>(x.summary||x.description)?.trim()),5);
   if(!useful.length)return null;
   const kind=classifyConversation(prompt);
   const first=useful[0];

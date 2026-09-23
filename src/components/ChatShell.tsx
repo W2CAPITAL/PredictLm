@@ -5,7 +5,7 @@ import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, Pa
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveMemoryStats, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -96,7 +96,8 @@ export function ChatShell({onOpenLegal}:Props){
       const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:6})});
       const data=await r.json();
       if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
-      const items=[...(data.web||[]),...(data.news||[])].slice(0,6);
+      const rawItems=[...(data.web||[]),...(data.news||[])];
+      const items=filterRelevantResearchItems(query,rawItems,6);
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
