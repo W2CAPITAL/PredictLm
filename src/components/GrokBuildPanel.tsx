@@ -14,6 +14,7 @@ import { buildPreview } from '@/lib/preview';
 import { buildRunnableProject } from '@/lib/project-packager';
 import { promptPresets, enhanceBuildPrompt, type PromptPreset } from '@/lib/prompt-enhancer';
 import { answerLocally, generateNeuralBuildPatch, neuralStatus } from '@/lib/browser-brain';
+import { runExecutableCouncilX10 } from '@/lib/council-runtime';
 
 export function GrokBuildPanel(){
   const s=useStudio();
@@ -58,6 +59,24 @@ export function GrokBuildPanel(){
         }else{
           const phase=finalPhases.find(x=>x.id==='neural-refine');
           if(phase){phase.status='skip';phase.detail='No valid structured patch was produced; deterministic production scaffold was preserved.'}
+        }
+      }
+
+      const wantsCouncil=s.deepThinkLevel==='max'||/council\s*x?10|war\s*room|pressure.?test|red.?team/i.test(task);
+      if(wantsCouncil){
+        finalPhases.push({id:'council-x10-runtime',label:'Council X10 executable',status:'warn',detail:'Running independent review lenses and Chair.'});
+        const council=await runExecutableCouncilX10(task,finalFiles);
+        const phase=finalPhases.find(x=>x.id==='council-x10-runtime');
+        if(council.executed){
+          const report={path:'COUNCIL_X10.md',language:'markdown',content:council.markdown};
+          const map=new Map(finalFiles.map(file=>[file.path,file]));
+          map.set(report.path,report);
+          finalFiles=Array.from(map.values());
+          if(phase){phase.status='done';phase.detail='10 review lenses + Chair completed; report saved to COUNCIL_X10.md.'}
+          finalPlan.push('DONE · Council X10 — executable review saved to COUNCIL_X10.md');
+        }else{
+          if(phase){phase.status='skip';phase.detail=council.reason||'Executable Council unavailable; static quality gate remains active.'}
+          finalPlan.push('SKIP · Council X10 executable — '+(council.reason||'local model unavailable'));
         }
       }
 
