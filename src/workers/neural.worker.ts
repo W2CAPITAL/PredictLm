@@ -26,7 +26,7 @@ let modelId='';
 
 function post(data:any){(self as DedicatedWorkerGlobalScope).postMessage(data)}
 
-async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:boolean){
+async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:boolean,models?:Partial<Record<Tier,string>>){
   const attempts:{tier:Tier;device:'webgpu'|'wasm'|'default';dtype:'q4'|'q8';label:string}[]=[];
 
   // Prefer explicit backends. On Windows, a navigator.gpu object can exist even
@@ -57,12 +57,13 @@ async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:
       };
       if(attempt.device!=='default')options.device=attempt.device;
 
-      const next=await pipeline('text-generation',MODELS[attempt.tier],options);
+      const selectedModel=String(models?.[attempt.tier]||MODELS[attempt.tier]);
+      const next=await pipeline('text-generation',selectedModel,options);
       return {
         generator:next,
         backend:attempt.device==='webgpu'?'webgpu':'wasm',
         actualTier:attempt.tier,
-        modelId:MODELS[attempt.tier],
+        modelId:selectedModel,
         label:attempt.label
       };
     }catch(error:any){
@@ -106,7 +107,7 @@ async function infer(messages:any[],maxNewTokens:number,temperature:number){
       tier=msg.tier;
       backend='none';
       modelId='';
-      const opened=await openGenerator(msg.tier,!!msg.webgpu,!!msg.allowSmartWasm);
+      const opened=await openGenerator(msg.tier,!!msg.webgpu,!!msg.allowSmartWasm,msg.models);
       generator=opened.generator;
       backend=opened.backend;
       modelId=opened.modelId;
