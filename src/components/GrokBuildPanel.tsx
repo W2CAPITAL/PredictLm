@@ -6,7 +6,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { css } from '@codemirror/lang-css';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { Code2, Download, Eye, FileCode2, Play, Send, Sparkles, WandSparkles } from 'lucide-react';
+import { ChevronDown, Code2, Download, Eye, FileCode2, Play, Plus, Send, Sparkles, Trash2, WandSparkles } from 'lucide-react';
 import { useStudio } from '@/lib/store';
 import { resolveBuildTurn } from '@/lib/build-turn';
 import { orchestrateBuild, type BuildPhase } from '@/lib/build-orchestrator';
@@ -24,6 +24,7 @@ export function GrokBuildPanel(){
   const [phases,setPhases]=useState<BuildPhase[]>([]);
   const [view,setView]=useState<'preview'|'code'>('preview');
   const [busy,setBusy]=useState(false);
+  const [buildMenu,setBuildMenu]=useState(false);
 
   async function run(){
     const task=prompt.trim(); if(!task||busy)return;
@@ -62,8 +63,31 @@ export function GrokBuildPanel(){
 
   return <section className="gtool build-tool">
     <header className="gtool-head">
-      <div><span>Build Mode</span><h1>{s.projectName}</h1><p>Continuidade real · TwinCore X10 · runnable export</p></div>
+      <div className="gbuild-title">
+        <span>Build Mode</span>
+        <div className="gbuild-title-row">
+          <h1>{s.projectName}</h1>
+          <div className="gbuild-switcher">
+            <button className="gbuild-switcher-trigger" onClick={()=>setBuildMenu(v=>!v)} title="Trocar build">
+              {s.builds.length} build{s.builds.length===1?'':'s'} <ChevronDown size={13}/>
+            </button>
+            {buildMenu&&<div className="gbuild-switcher-menu">
+              <div className="gbuild-switcher-head"><b>Suas builds</b><button onClick={()=>{s.newBuild();setBuildMenu(false)}}><Plus size={12}/>Nova</button></div>
+              {s.builds.map(build=><div className={'gbuild-switcher-item '+(build.id===s.activeBuildId?'active':'')} key={build.id}>
+                <button className="gbuild-open" onClick={()=>{s.switchBuild(build.id);setBuildMenu(false)}}>
+                  <b>{build.name}</b><small>{Object.keys(build.files).length} arquivos · {build.messages.length} mensagens</small>
+                </button>
+                <button className="gbuild-delete" title="Apagar build" onClick={()=>{
+                  if(window.confirm('Apagar a build “'+build.name+'”? Esta ação remove o projeto salvo deste navegador.'))s.deleteBuild(build.id);
+                }}><Trash2 size={12}/></button>
+              </div>)}
+            </div>}
+          </div>
+        </div>
+        <p>Continuidade real · TwinCore X10 · runnable export</p>
+      </div>
       <div className="gtool-head-actions">
+        <button onClick={()=>s.newBuild()}><Plus size={14}/>Nova build</button>
         <button className={view==='preview'?'active':''} onClick={()=>setView('preview')}><Eye size={14}/>Preview</button>
         <button className={view==='code'?'active':''} onClick={()=>setView('code')}><Code2 size={14}/>Code</button>
         <button onClick={exportZip}><Download size={14}/>Export ZIP</button>
