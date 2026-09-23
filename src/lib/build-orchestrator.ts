@@ -4,6 +4,7 @@ import { explainDeepThink, runPredictCore } from './predict-core';
 import { runLocalCouncil } from './council';
 import { runLocalSmokeTest } from './local-tools';
 import { buildRunnableProject, packagingSummary } from './project-packager';
+import { buildProjectScaffold, inferProductRequirements } from './app-scaffolder';
 
 export type BuildPhaseStatus='done'|'skip'|'warn';
 export interface BuildPhase {
@@ -117,10 +118,19 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
     merged.push({path:'predict.spec.json',language:'json',content:JSON.stringify({engine:'Predict DeepThink',version:5,prompt,spec:{intent:beforeIntent,title:'Current Project',confidence:1,features:['preserved-project-context']}},null,2)});
   }
 
+  const scaffold=buildProjectScaffold(prompt,String(effectiveIntent));
+  for(const file of scaffold){
+    if(!mergedMap.has(file.path))mergedMap.set(file.path,file);
+  }
+  merged=Array.from(mergedMap.values());
+
+  const requirements=inferProductRequirements(prompt,String(effectiveIntent));
   const tentativePack=buildRunnableProject(merged);
   const packageSummary=packagingSummary(merged);
   phases.push({id:'architecture',label:'Architecture',status:'done',detail:packageSummary.backend?packageSummary.backendReason:'Frontend-only decision: '+packageSummary.backendReason});
-  phases.push({id:'frontend',label:'Frontend',status:'done',detail:'Interactive React surface preserved/generated and prepared for Vite export.'});
+  phases.push({id:'frontend',label:'Frontend',status:'done',detail:'Interactive React surface preserved/generated with navigation, responsive states and domain flows.'});
+  phases.push({id:'validation',label:'Validation & domain rules',status:requirements.needsValidation?'done':'skip',detail:requirements.needsValidation?'Validation module added for user/business data before mutation.':'Only basic validation is required for this product.'});
+  phases.push({id:'integrations',label:'Integrations',status:requirements.integrations.length?'done':'skip',detail:requirements.integrations.length?'Adapters/config planned for: '+requirements.integrations.join(', ')+'. Secrets stay server-side.':'No external integration was explicitly required.'});
   phases.push({id:'backend',label:'Backend & data',status:packageSummary.backend?'done':'skip',detail:packageSummary.backendReason});
 
   const intent=String(packageSummary.intent||effectiveIntent);
@@ -137,7 +147,10 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
     f.path==='RUNME.md'||
     f.path==='vite.config.js'||
     f.path.startsWith('server/')||
-    f.path==='src/lib/api.ts'
+    f.path==='src/lib/api.ts'||
+    f.path.startsWith('src/integrations/')||
+    f.path.startsWith('src/domain/')||
+    f.path.startsWith('src/types/')
   );
   for(const file of infraPreview)mergedMap.set(file.path,file);
   merged=Array.from(mergedMap.values());
