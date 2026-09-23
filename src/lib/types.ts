@@ -1,6 +1,6 @@
 export type ProviderId = 'predict-core' | 'puter' | 'local' | 'server';
 export type StudioMode = 'build' | 'plan' | 'review' | 'research' | 'media';
-export type PanelId = 'agent' | 'explorer' | 'browser' | 'skills' | 'memory' | 'media' | 'connectors' | 'settings';
+export type PanelId = 'agent' | 'explorer' | 'research' | 'council' | 'graph' | 'browser' | 'skills' | 'memory' | 'media' | 'connectors' | 'settings';
 
 export interface WorkspaceFile { path: string; content: string; language: string; }
 export interface ChatMessage { id: string; role: 'user' | 'assistant' | 'system'; content: string; createdAt: number; }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import JSZip from 'jszip';
 import { Bot, Box, Brain, ChevronDown, Code2, Download, FileCode2, Film, FolderTree, Globe2, Hammer, Layers3, MemoryStick, PanelLeft, Play, Plug, RotateCcw, Search, Send, Settings2, ShieldCheck, Sparkles, TerminalSquare, WandSparkles } from 'lucide-react';
 import CodeMirror from '@uiw/react-codemirror';
@@ -12,10 +12,24 @@ import { skills } from '@/lib/skills';
 import { runPredictCore } from '@/lib/predict-core';
 import { runLocal, runPuter, runServer } from '@/lib/providers';
 import { buildPreview } from '@/lib/preview';
+import { runLocalCouncil } from '@/lib/council';
+import { CouncilPanel } from '@/components/CouncilPanel';
+import { GraphPanel } from '@/components/GraphPanel';
+import { ResearchPanel } from '@/components/ResearchPanel';
 import type { PanelId, ProviderId, StudioMode } from '@/lib/types';
 
 const panels: {id:PanelId;label:string;icon:any}[] = [
-  {id:'agent',label:'Agent',icon:Bot},{id:'explorer',label:'Files',icon:FolderTree},{id:'browser',label:'Browser',icon:Globe2},{id:'skills',label:'Skills',icon:Sparkles},{id:'memory',label:'Memory',icon:Brain},{id:'media',label:'Media',icon:Film},{id:'connectors',label:'Connectors',icon:Plug},{id:'settings',label:'Settings',icon:Settings2}
+  {id:'agent',label:'Agent',icon:Bot},
+  {id:'explorer',label:'Files',icon:FolderTree},
+  {id:'research',label:'Research',icon:Search},
+  {id:'council',label:'Council',icon:ShieldCheck},
+  {id:'graph',label:'Graph',icon:Layers3},
+  {id:'browser',label:'Browser',icon:Globe2},
+  {id:'skills',label:'Skills',icon:Sparkles},
+  {id:'memory',label:'Memory',icon:Brain},
+  {id:'media',label:'Media',icon:Film},
+  {id:'connectors',label:'Connectors',icon:Plug},
+  {id:'settings',label:'Settings',icon:Settings2}
 ];
 const providers: {id:ProviderId;label:string;desc:string}[] = [
   {id:'predict-core',label:'Predict Core',desc:'Offline · sem API'},
@@ -31,10 +45,34 @@ export function StudioShell(){
   const [providerOpen,setProviderOpen]=useState(false);
   const [previewKey,setPreviewKey]=useState(0);
   const [memoryQuery,setMemoryQuery]=useState('');
+  const [skillQuery,setSkillQuery]=useState('');
+  const [inspectMode,setInspectMode]=useState(false);
+  const [selectedElement,setSelectedElement]=useState<{tag:string;id:string;classes:string[];text:string;rect:{x:number;y:number;width:number;height:number}}|null>(null);
+  const iframeRef=useRef<HTMLIFrameElement>(null);
   const files = Object.values(s.files);
   const active = s.files[s.activeFile];
   const preview = useMemo(()=>buildPreview(files),[files]);
   const filteredNotes=s.notes.filter(n=>`${n.title} ${n.body} ${n.tags.join(' ')}`.toLowerCase().includes(memoryQuery.toLowerCase()));
+  const filteredSkills=skills.filter(k=>(k.name+' '+k.category+' '+k.description+' '+k.source).toLowerCase().includes(skillQuery.toLowerCase()));
+  const council=useMemo(()=>runLocalCouncil(files),[files]);
+
+  useEffect(()=>{
+    const handler=(event:MessageEvent)=>{
+      if(event.source!==iframeRef.current?.contentWindow)return;
+      if(event.data?.type==='predictlm:inspect')setSelectedElement(event.data.payload);
+    };
+    window.addEventListener('message',handler);
+    return ()=>window.removeEventListener('message',handler);
+  },[]);
+
+  useEffect(()=>{
+    const frame=iframeRef.current;
+    if(!frame)return;
+    const send=()=>frame.contentWindow?.postMessage({type:'predictlm:set-inspect',enabled:inspectMode},'*');
+    frame.addEventListener('load',send);
+    send();
+    return ()=>frame.removeEventListener('load',send);
+  },[inspectMode,previewKey,preview]);
 
   async function run(){
     if(!prompt.trim()||s.isRunning)return;
@@ -42,7 +80,10 @@ export function StudioShell(){
     const recall=s.notes.filter(n=>task.toLowerCase().split(/\s+/).some(w=>w.length>4&&`${n.title} ${n.body}`.toLowerCase().includes(w))).slice(0,4);
     try{
       let result:any;
-      if(s.mode==='plan'&&s.provider==='predict-core') result={explanation:'Plano criado localmente.',plan:['Definir resultado observável','Mapear arquivos e integrações','Construir menor fatia funcional','Validar preview e estados','Executar audit de qualidade','Preparar deploy'],files:[]};
+      if(s.mode==='review'&&s.provider==='predict-core'){
+        const review=runLocalCouncil(files);
+        result={explanation:'Council local: '+review.score+'/100. '+review.consensus.join(' '),plan:review.consensus,files:[]};
+      } else if(s.mode==='plan'&&s.provider==='predict-core') result={explanation:'Plano criado localmente.',plan:['Definir resultado observável','Mapear arquivos e integrações','Construir menor fatia funcional','Validar preview e estados','Executar audit de qualidade','Preparar deploy'],files:[]};
       else if(s.provider==='predict-core') result=runPredictCore(task);
       else if(s.provider==='puter') result=await runPuter(`${task}\nMemory recall: ${JSON.stringify(recall)}`,files);
       else if(s.provider==='local') result=await runLocal(`${task}\nMemory recall: ${JSON.stringify(recall)}`,files,s.localEndpoint,s.localModel);
@@ -72,8 +113,11 @@ export function StudioShell(){
       <section className="left-panel">
         {s.activePanel==='agent' && <><PanelTitle icon={Bot} title="Agent" subtitle="build with context"/><div className="provider-wrap"><button className="provider-btn" onClick={()=>setProviderOpen(!providerOpen)}><div><b>{providers.find(p=>p.id===s.provider)?.label}</b><span>{providers.find(p=>p.id===s.provider)?.desc}</span></div><ChevronDown size={15}/></button>{providerOpen&&<div className="provider-menu">{providers.map(p=><button key={p.id} onClick={()=>{s.setProvider(p.id);setProviderOpen(false)}}><b>{p.label}</b><span>{p.desc}</span></button>)}</div>}</div><div className="chat-list">{s.messages.length===0?<EmptyAgent/>:s.messages.map(m=><div className={`msg ${m.role}`} key={m.id}><span>{m.role==='user'?'YOU':'AI'}</span><p>{m.content}</p></div>)}{s.isRunning&&<div className="thinking"><span/><span/><span/> executing tools</div>}</div><PromptBox value={prompt} setValue={setPrompt} run={run} disabled={s.isRunning}/></>}
         {s.activePanel==='explorer' && <><PanelTitle icon={FolderTree} title="Explorer" subtitle={`${files.length} files`}/><div className="file-list">{files.map(f=><button key={f.path} className={s.activeFile===f.path?'active':''} onClick={()=>s.setActiveFile(f.path)}><FileCode2 size={14}/><span>{f.path}</span><small>{Math.ceil(f.content.length/1024)}k</small></button>)}</div></>}
+        {s.activePanel==='research' && <><PanelTitle icon={Search} title="Research" subtitle="web · news · images"/><ResearchPanel/></>}
+        {s.activePanel==='council' && <><PanelTitle icon={ShieldCheck} title="Council" subtitle="review before ship"/><CouncilPanel/></>}
+        {s.activePanel==='graph' && <><PanelTitle icon={Layers3} title="Knowledge Graph" subtitle="codebase relationships"/><GraphPanel/></>}
         {s.activePanel==='browser' && <><PanelTitle icon={Globe2} title="Agent Browser" subtitle="bridge ready"/><InfoCard icon={Globe2} title="Browser execution" text="No Vercel, o studio monta planos e scripts. Para automação real de navegador, conecte agent-browser/MCP no desktop bridge."/><ToolRows rows={[[ 'Inspect page','DOM + screenshot context'],['Run test','browser-driven acceptance'],['Capture flow','convert interaction into reusable skill']]}/></>}
-        {s.activePanel==='skills' && <><PanelTitle icon={Sparkles} title="Skills" subtitle={`${skills.length} capabilities`}/><div className="skill-list">{skills.map(k=><div className="skill" key={k.id}><div><b>{k.name}</b><span>{k.description}</span></div><small>{k.runtime}</small></div>)}</div></>}
+        {s.activePanel==='skills' && <><PanelTitle icon={Sparkles} title="Skills" subtitle={filteredSkills.length+' / '+skills.length+' capabilities'}/><div className="searchbox"><Search size={14}/><input value={skillQuery} onChange={e=>setSkillQuery(e.target.value)} placeholder="Filter skills, sources or categories"/></div><div className="skill-list">{filteredSkills.map(k=><div className="skill" key={k.id}><div><b>{k.name}</b><span>{k.description}</span><em>{k.source}</em></div><small>{k.runtime}</small></div>)}</div></>}
         {s.activePanel==='memory' && <><PanelTitle icon={Brain} title="Second Brain" subtitle="recall → capture"/><div className="searchbox"><Search size={14}/><input value={memoryQuery} onChange={e=>setMemoryQuery(e.target.value)} placeholder="Search memory"/></div><button className="capture" onClick={()=>s.addNote({title:'Decision',body:'New durable project decision.',tags:['decision'],kind:'decision'})}>+ Capture decision</button><div className="memory-list">{filteredNotes.map(n=><article key={n.id}><div><b>{n.title}</b><small>{n.kind}</small></div><p>{n.body}</p><div>{n.tags.map(t=><span key={t}>#{t}</span>)}</div></article>)}</div></>}
         {s.activePanel==='media' && <><PanelTitle icon={Film} title="Media Studio" subtitle="video · image · avatar"/><ToolRows rows={[[ 'HeyGen','avatar, voice and launch-video pipelines'],['DaVinci Resolve MCP','local timeline automation bridge'],['AI Cinema','shots, scenes, continuity and assembly'],['Nano Banana Lab','image prompt recipes'],['ClipMake','short-form production workflow']]}/></>}
         {s.activePanel==='connectors' && <><PanelTitle icon={Plug} title="Connectors" subtitle="optional services"/><ToolRows rows={[[ 'Vercel','deploy + runtime'],['GitHub','repo + patch + PR'],['DataJud / DJEN','public legal data workflows'],['Snov','commercial enrichment with user credentials'],['GREY','agent bridge'],['APK Inspector','local Android analysis']]}/></>}
@@ -82,10 +126,10 @@ export function StudioShell(){
 
       <main className="workbench">
         <div className="editor-pane"><div className="pane-head"><div><Code2 size={14}/><b>{active?.path||'No file'}</b></div><span>{active?.language}</span></div><div className="editor-area">{active&&<CodeMirror value={active.content} theme={oneDark} height="100%" extensions={[active.language==='css'?css():javascript({jsx:true,typescript:true})]} onChange={v=>s.updateFile(active.path,v)} basicSetup={{lineNumbers:true,foldGutter:true,highlightActiveLine:true}}/>}</div><div className="terminal-strip"><TerminalSquare size={13}/><span>Terminal bridge</span><code>desktop runtime required for shell access</code></div></div>
-        <div className="preview-pane"><div className="pane-head"><div><Globe2 size={14}/><b>Preview</b></div><div className="preview-badges"><span>responsive</span><span>sandbox</span></div></div><iframe key={previewKey} srcDoc={preview} sandbox="allow-scripts allow-forms allow-modals allow-popups" title="Predict preview"/></div>
+        <div className="preview-pane"><div className="pane-head"><div><Globe2 size={14}/><b>Preview</b></div><div className="preview-badges"><button className={inspectMode?'active':''} onClick={()=>{setInspectMode(v=>!v);setSelectedElement(null)}}>Inspect</button><span>responsive</span><span>sandbox</span></div></div><iframe ref={iframeRef} key={previewKey} srcDoc={preview} sandbox="allow-scripts allow-forms allow-modals allow-popups" title="Predict preview"/></div>
       </main>
 
-      <aside className="context-panel"><PanelTitle icon={Layers3} title="Context" subtitle="live run state"/><div className="context-stats"><Stat icon={FileCode2} label="Files" value={String(files.length)}/><Stat icon={MemoryStick} label="Memory" value={String(s.notes.length)}/><Stat icon={Box} label="Skills" value={String(skills.length)}/><Stat icon={Hammer} label="Runs" value={String(s.runs.length)}/></div><h4>Recent runs</h4><div className="runs">{s.runs.slice(0,7).map(r=><div key={r.id}><span className={`run-dot ${r.status}`}/><div><b>{r.title}</b><small>{r.steps.length} steps · {r.status}</small></div></div>)}</div><h4>Quality gates</h4><ul className="checks"><li><ShieldCheck/> secrets isolated</li><li><PanelLeft/> responsive shell</li><li><Sparkles/> design audit ready</li><li><Brain/> memory capture on runs</li></ul></aside>
+      <aside className="context-panel"><PanelTitle icon={Layers3} title="Context" subtitle="live run state"/><div className="context-stats"><Stat icon={FileCode2} label="Files" value={String(files.length)}/><Stat icon={MemoryStick} label="Memory" value={String(s.notes.length)}/><Stat icon={ShieldCheck} label="Ship score" value={String(council.score)}/><Stat icon={Hammer} label="Runs" value={String(s.runs.length)}/></div>{selectedElement&&<><h4>Inspected element</h4><div className="inspect-card"><b>{selectedElement.tag}{selectedElement.id?'#'+selectedElement.id:''}</b><span>{selectedElement.classes.join(' · ')||'no classes'}</span><p>{selectedElement.text||'No text content'}</p><small>{selectedElement.rect.width}×{selectedElement.rect.height} at {selectedElement.rect.x},{selectedElement.rect.y}</small></div></>}<h4>Recent runs</h4><div className="runs">{s.runs.slice(0,7).map(r=><div key={r.id}><span className={`run-dot ${r.status}`}/><div><b>{r.title}</b><small>{r.steps.length} steps · {r.status}</small></div></div>)}</div><h4>Quality gates</h4><ul className="checks"><li><ShieldCheck/> secrets isolated</li><li><PanelLeft/> responsive shell</li><li><Sparkles/> design audit ready</li><li><Brain/> memory capture on runs</li></ul></aside>
     </div>
   </div>
 }
@@ -94,5 +138,5 @@ function PanelTitle({icon:Icon,title,subtitle}:{icon:any,title:string,subtitle:s
 function EmptyAgent(){return <div className="empty-agent"><div className="empty-logo"><WandSparkles size={22}/></div><h3>Build with an agent,<br/>not a blank canvas.</h3><p>Predict Core can create starters offline. Connect a local model or cloud provider for deeper multi-file work.</p><div className="suggestions"><span>Build a CRM</span><span>Create a SaaS dashboard</span><span>Review this UI</span></div></div>}
 function PromptBox({value,setValue,run,disabled}:{value:string,setValue:(v:string)=>void,run:()=>void,disabled:boolean}){return <div className="prompt-box"><textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}}} placeholder="Describe an app, feature, fix, research task..."/><div><span><Sparkles size={13}/> context aware</span><button onClick={run} disabled={disabled||!value.trim()}><Send size={14}/></button></div></div>}
 function InfoCard({icon:Icon,title,text}:{icon:any,title:string,text:string}){return <div className="info-card"><Icon size={17}/><div><b>{title}</b><p>{text}</p></div></div>}
-function ToolRows({rows}:{rows:string[][]}){return <div className="tool-rows">{rows.map(([a,b])=><div key={a}><div><b>{a}</b><span>{b}</span></div><button>Configure</button></div>)}</div>}
+function ToolRows({rows}:{rows:string[][]}){return <div className="tool-rows">{rows.map(([a,b])=><div key={a}><div><b>{a}</b><span>{b}</span></div><small className="runtime-tag">bridge</small></div>)}</div>}
 function Stat({icon:Icon,label,value}:{icon:any,label:string,value:string}){return <div><Icon size={14}/><span>{label}</span><b>{value}</b></div>}
