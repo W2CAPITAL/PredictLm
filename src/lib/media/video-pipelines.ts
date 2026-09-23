@@ -33,3 +33,36 @@ export function buildLocalMotionPlan(prompt:string,aspect:string){
     prompt.trim()?('Direção visual: '+prompt.trim()):'Manter a composição original.'
   ];
 }
+
+
+export type StoryboardFrame={
+  id:string;
+  label:string;
+  prompt:string;
+  seedOffset:number;
+};
+
+export function buildStoryboardFrames(prompt:string,style:string,aspect:string):StoryboardFrame[]{
+  const subject=prompt.trim()||'cinematic subject';
+  const continuity='same subject identity, same wardrobe/materials, same environment, same color palette, '+style.toLowerCase()+', '+aspect+', coherent continuity, high detail, no watermark';
+  return [
+    {
+      id:'establishing',
+      label:'Plano geral',
+      seedOffset:0,
+      prompt:subject+', wide establishing shot, clear environment, cinematic depth, '+continuity
+    },
+    {
+      id:'action',
+      label:'Ação',
+      seedOffset:17,
+      prompt:subject+', medium dynamic action shot, stronger motion cues, consistent subject and environment, '+continuity
+    },
+    {
+      id:'reveal',
+      label:'Revelação',
+      seedOffset:31,
+      prompt:subject+', close cinematic reveal, expressive detail, dramatic lighting peak, consistent subject and environment, '+continuity
+    }
+  ];
+}
