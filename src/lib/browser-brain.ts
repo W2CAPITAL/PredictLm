@@ -93,18 +93,43 @@ function ensureWorker(){
 }
 
 const PREF_KEY='predictlm-neural-preference-v1';
+const PROFILE_KEY='predictlm-neural-profile-v2';
+
+type NeuralProfile={
+  requested:NeuralTier;
+  actual:NeuralTier;
+  backend:'webgpu'|'wasm';
+  readyAt:number;
+};
+
+function readNeuralProfile():NeuralProfile|null{
+  if(typeof window==='undefined')return null;
+  try{
+    const raw=localStorage.getItem(PROFILE_KEY);
+    if(!raw)return null;
+    const value=JSON.parse(raw);
+    if((value?.requested==='lite'||value?.requested==='smart')&&(value?.actual==='lite'||value?.actual==='smart')&&(value?.backend==='webgpu'||value?.backend==='wasm')){
+      return value as NeuralProfile;
+    }
+  }catch{}
+  return null;
+}
 
 export function preferredNeuralTier():NeuralTier|null{
   if(typeof window==='undefined')return null;
+  const profile=readNeuralProfile();
+  if(profile?.actual)return profile.actual;
   const value=localStorage.getItem(PREF_KEY);
   return value==='lite'||value==='smart'?value:null;
 }
 
-function saveNeuralPreference(tier:NeuralTier|null){
+function saveNeuralPreference(tier:NeuralTier|null,profile?:NeuralProfile){
   if(typeof window==='undefined')return;
   try{
     if(tier)localStorage.setItem(PREF_KEY,tier);
     else localStorage.removeItem(PREF_KEY);
+    if(profile)localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));
+    else if(!tier)localStorage.removeItem(PROFILE_KEY);
   }catch{}
 }
 
@@ -183,7 +208,14 @@ export async function loadNeuralModel(
         loadedTier=msg.actualTier==='smart'?'smart':'lite';
         loadedBackend=msg.backend==='webgpu'?'webgpu':'wasm';
         lastNeuralError='';
-        if(options?.persistPreference!==false)saveNeuralPreference(tier);
+        if(options?.persistPreference!==false){
+          saveNeuralPreference(loadedTier,{
+            requested:tier,
+            actual:loadedTier,
+            backend:loadedBackend,
+            readyAt:Date.now()
+          });
+        }
         const compatibility=tier==='smart'&&loadedTier==='lite'?' · compatibilidade Lite':'';
         onProgress?.({progress:100,status:'pronto · '+String(msg.label||msg.backend||'local')+compatibility});
         finish(resolve);
@@ -197,11 +229,15 @@ export async function loadNeuralModel(
     w.addEventListener('message',onMessage);
     // Lite is intentionally CPU/WASM-first to avoid freezing low-end office PCs.
     // Smart may use WebGPU, with WASM fallback if the adapter is unavailable.
-    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu});
+    const allowSmartWasm=tier==='smart'&&!realWebgpu&&caps.memory>=8&&caps.cores>=8;
+    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm});
   });
 }
 
-export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null};}
+export function neuralStatus(){
+  const profile=typeof window!=='undefined'?readNeuralProfile():null;
+  return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null,profile};
+}
 
 export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   if(worker){
