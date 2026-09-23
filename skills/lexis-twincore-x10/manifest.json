@@ -1,0 +1,23 @@
+{
+  "name": "lexis-twincore-x10",
+  "displayName": "LEXIS TwinCore X10",
+  "version": "3.0.0",
+  "cores": [
+    "FORGE",
+    "AEGIS"
+  ],
+  "councilLenses": 10,
+  "modules": [
+    "build",
+    "research",
+    "processos",
+    "legal-revisional",
+    "memory",
+    "self-improve",
+    "skill-federation",
+    "gtm",
+    "media"
+  ],
+  "entry": "SKILL.md",
+  "policy": "templates/improvement-policy.yml"
+}
