@@ -1,19 +1,23 @@
 'use client';
 
 import React, { useMemo, useRef, useState } from 'react';
-import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Search, Send, Sparkles, X, Zap } from 'lucide-react';
+import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, type NeuralTier } from '@/lib/browser-brain';
 import { classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { findCnjNumber } from '@/lib/legal/cnj';
+import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
+import type { LegalProcessBundle } from '@/lib/legal/types';
 
 interface Props{
   onOpenBuild:()=>void;
   onOpenMedia?:()=>void;
   onOpenResearch?:()=>void;
   onOpenPlugins?:()=>void;
+  onOpenLegal?:()=>void;
 }
 
-export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}:Props){
+export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins,onOpenLegal}:Props){
   const s=useAssistantStore();
   const active=s.sessions.find(x=>x.id===s.activeId)||s.sessions[0];
   const [input,setInput]=useState('');
@@ -47,6 +51,7 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
     const prompt=input.trim();
     if(!prompt||busy)return;
     const history=active?.messages||[];
+    const processNumber=findCnjNumber(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded,tier:currentNeural.tier});
@@ -59,6 +64,15 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(processNumber){
+        const r=await fetch('/api/legal/process?number='+encodeURIComponent(processNumber),{cache:'no-store'});
+        const data=await r.json();
+        if(!r.ok)throw new Error(data?.error||'Falha na consulta DataJud/DJEN');
+        const legal=data as LegalProcessBundle;
+        s.addMessage({role:'assistant',content:legalChatAnswer(legal),engine:'Lexis · DataJud + DJEN',sources:legalSources(legal)});
+        return;
+      }
+
       const web=needsWeb?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
@@ -117,6 +131,7 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
         <button onClick={onOpenBuild}><span><Code2 size={16}/></span>Build</button>
+        <button onClick={onOpenLegal}><span><Scale size={16}/></span>Processos</button>
         <button onClick={onOpenMedia}><span><ImageIcon size={16}/></span>Imagine</button>
         <button className={screen==='library'?'active':''} onClick={()=>setScreen('library')}><span><Library size={16}/></span>Library</button>
         <button onClick={onOpenResearch}><span><Globe2 size={16}/></span>Research</button>
@@ -138,13 +153,13 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
       {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat}/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={onOpenBuild}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie sites, apps, sistemas e dashboards sem sair do PredictLM.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> Sem API obrigatória · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
         <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>thinking</span></div><div className="grok-thinking"><i/><i/><i/> analisando contexto</div></div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={onOpenBuild} onOpenResearch={onOpenResearch} onOpenMedia={onOpenMedia} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
       {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
@@ -154,11 +169,11 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,caps,neural,onOpenBuild,onOpenResearch,onOpenMedia,compact}=props;
+  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,caps,neural,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — ou use Build Mode para criar apps"/>
     <div className="grok-composer-actions">
-      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenResearch}><Globe2 size={14}/><span><b>Research</b><small>Pesquisar fontes atuais</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
+      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenLegal}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenResearch}><Globe2 size={14}/><span><b>Research</b><small>Pesquisar fontes atuais</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>

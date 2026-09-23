@@ -1,6 +1,7 @@
 import type { SkillSpec } from './types';
 
 export const skills: SkillSpec[] = [
+  { id:'lexis-twincore-x10', name:'LEXIS TwinCore X10', category:'Meta Agent', description:'Dupla perspectiva FORGE + AEGIS, Council X10, memória, Red Team, autoavaliação, skill federation, Lexis Revisional e continuidade de projeto.', source:'Lexis Unified 2.1 + Lexis Revisional + Segundo Cérebro + 169 repo references', runtime:'built-in' },
   { id:'second-brain', name:'Segundo Cérebro', category:'Memory', description:'Recall → execute → capture. Memória local-first para decisões, notas e runs.', source:'uploaded:segundo-cerebro + Digital-Process-Tools/claude-remember + vshulcz/deja-vu + swarmclawai/swarmvault', runtime:'built-in' },
   { id:'research-engine', name:'Research Engine', category:'Research', description:'Pesquisa web/news/images com fontes e ingestão de contexto no workspace.', source:'firecrawl/fireplexity', runtime:'external' },
   { id:'open-lovable', name:'Website Reconstruction', category:'Build', description:'Fluxo para transformar referências web em apps React editáveis, com sandbox/provider opcional.', source:'firecrawl/open-lovable', runtime:'built-in' },
@@ -27,7 +28,7 @@ export const skills: SkillSpec[] = [
   { id:'vercel-skills', name:'Vercel Agent Skills', category:'Build', description:'Padrões de skill packaging, deploy e agentes para projetos web.', source:'vercel-labs/skills + vercel-labs/agent-skills', runtime:'built-in' },
   { id:'agent-browser', name:'Agent Browser', category:'Browser', description:'Bridge para navegação e validação browser-driven quando um runtime local/MCP estiver conectado.', source:'vercel-labs/agent-browser', runtime:'bridge' },
   { id:'impeccable', name:'Impeccable UI Audit', category:'Design', description:'Checklist de consistência visual, densidade, contraste e qualidade antes do ship.', source:'pbakaus/impeccable', runtime:'built-in' },
-  { id:'datajud', name:'DataJud + DJEN', category:'Legal', description:'Conector de pesquisa processual pública e diário eletrônico.', source:'rvsanches/skills-datajud-djen + abjur/datajudScraper + ulisses-jurisdev/datajud-process-scraper + sobeitnow0/extensao-djen-advogado', runtime:'external' },
+  { id:'datajud', name:'DataJud + DJEN', category:'Legal', description:'Módulo nativo de consulta processual pública: CNJ → tribunal → DataJud + DJEN → timeline → Council → dossiê.', source:'PredictLM native + rvsanches/skills-datajud-djen + abjur/datajudScraper + ulisses-jurisdev/datajud-process-scraper + sobeitnow0/extensao-djen-advogado', runtime:'built-in' },
   { id:'apk', name:'APK Inspector', category:'Mobile', description:'Pipeline de inspeção de APK e artefatos Android em ambiente local.', source:'SyscallX-18113/Apkx-Hunter', runtime:'bridge' },
   { id:'llamacpp', name:'llama.cpp Local', category:'AI', description:'Runtime local opcional para modelos GGUF em máquinas compatíveis.', source:'PrismML-Eng/llama.cpp', runtime:'bridge' },
   { id:'heygen', name:'HeyGen Production', category:'Media', description:'Skills, CLI, avatar, launch-video, Hyperframes e recipes de produção.', source:'heygen-com/skills + heygen-com/heygen-cli + heygen-com/hyperframes-launch-video + heygen-com/hyperframes-launches + heygen-com/liveavatar-gpt-live-demos', runtime:'external' },

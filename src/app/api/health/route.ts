@@ -4,6 +4,7 @@ import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
 import { classifyConversation, directConversationReply } from '@/lib/chat-intelligence';
+import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj } from '@/lib/legal/cnj';
 
 export const runtime = 'nodejs';
 
@@ -47,13 +48,20 @@ export async function GET(){
     whoIsIsFactual:classifyConversation('quem é Elon Musk',[])==='factual'
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean);
+  const legalModule={
+    detectsCnj:findCnjNumber('fale sobre 4000338-89.2026.8.26.0002')==='4000338-89.2026.8.26.0002',
+    validatesCnj:isValidCnj('4000338-89.2026.8.26.0002'),
+    mapsTjsp:datajudTribunal('4000338-89.2026.8.26.0002')?.alias==='tjsp',
+    masksDigits:maskCnj('40003388920268260002')==='4000338-89.2026.8.26.0002'
+  };
+
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean);
 
   return Response.json({
     ok,
     service:'predictlm-studio',
     version:'5.1',
-    surfaces:{chat:true,build:true},
+    surfaces:{chat:true,build:true,processos:true},
     zeroApi:{
       deepThink:true,
       council:true,
@@ -64,7 +72,10 @@ export async function GET(){
       promptEnhancer:true,
       buildOrchestrator:true,
       browserNeural:true,
-      projectContinuity:true
+      projectContinuity:true,
+      datajudDjenModule:true,
+      cnjAutoRouting:true,
+      legalDossier:true
     },
     selfTest:{
       calculatorIntent:calculator.packageSummary.intent,
@@ -74,6 +85,7 @@ export async function GET(){
       crmBackend,
       continuity,
       chatIntelligence,
+      legalModule,
       packagedFiles:packaged.length
     },
     optional:{
