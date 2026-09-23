@@ -142,3 +142,28 @@ export function assessFraudRisk(input:{texts?:string[];urls?:string[];transactio
     disclaimer:'Triagem heurística defensiva. Sinal de risco não comprova fraude, autoria ou crime; confirme com fonte oficial, evidência primária e análise humana.'
   };
 }
+
+
+export function isFraudAnalysisRequest(prompt:string){
+  const p=normalize(prompt);
+  return /\b(golpe|fraude|fraud|phishing|scam|suspeit|roubo de conta|conta falsa|link falso|pix falso|crime digital|engenharia social)\b/.test(p);
+}
+
+export function formatFraudAssessment(result:FraudAssessment){
+  const signals=result.signals.length
+    ? result.signals.map(x=>'- **'+x.label+'**: '+x.evidence).join('\n')
+    : '- Nenhum sinal heurístico forte foi detectado no material fornecido.';
+  const actions=result.recommendations.map(x=>'- '+x).join('\n');
+  return [
+    '**Triagem antifraude**',
+    '**Nível heurístico:** '+result.level.toUpperCase()+' · '+result.score+'/100',
+    '',
+    '**Sinais**',
+    signals,
+    '',
+    '**Verificações recomendadas**',
+    actions,
+    '',
+    result.disclaimer
+  ].join('\n');
+}
