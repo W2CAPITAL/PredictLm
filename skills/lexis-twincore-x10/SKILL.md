@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.5. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.5.2. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.5.0"
+  version: "5.5.2"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.5
+# LEXIS TwinCore X10 v5.5.2
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -118,7 +118,7 @@ Quando faltar capacidade:
 ## Lexis Revisional / Processos
 
 Número CNJ ativa:
-CNJ → tribunal → DataJud + DJEN → portal oficial → timeline → **interpretação processual** → cinco lentes revisional → Council X10 quando necessário → dossiê.
+CNJ → tribunal → DataJud + DJEN → portal oficial → timeline → **interpretação processual** → Council X10 obrigatório (10 lentes) no dossiê → dossiê.
 
 A resposta processual deve dizer, nesta ordem:
 1. **como está agora**;
@@ -230,7 +230,7 @@ O padrão mínimo anterior (síntese + fontes + timeline + lentes) é insuficien
 5. **Balanço de forças**: elementos favoráveis e adversos para a tese/parte analisada.
 6. **Pontos críticos/falhas**: ator + fato + consequência + base documental.
 7. **Mapa qualitativo de riscos**: Alto/Médio/Baixo sem fingir probabilidade estatística.
-8. Council multi-lente + síntese do Chair: consenso, divergência, recomendação e risco residual.
+8. Council X10 (10 lentes) + síntese do Chair: consenso, divergência, recomendação e risco residual.
 9. Plano de ação em três faixas: imediato, médio prazo e “não fazer”.
 10. Confiança por fonte, DJEN, caveats e lacunas de prova.
 11. Modo AEGIS agressivo somente com opt-in explícito.
@@ -258,3 +258,37 @@ Um dossiê forte não é apenas um “status do processo em HTML”. Ele transfo
 Evitar porcentagens de risco decorativas. Se não existe modelo quantitativo ou dado estatístico, usar somente prioridade qualitativa.
 
 O runtime TypeScript aceita LegalDossierEvidence em createLegalDossier(bundle,{mode,evidence}). O endpoint POST /api/legal/dossier aceita o mesmo pacote suplementar quando disponível.
+
+## IA geral — gate de assunto e Deep real
+
+O host não pode usar um bloco de knowledge apenas porque ele compartilha verbos genéricos com a pergunta.
+
+### Retrieval
+Antes de recuperar knowledge, training ou prompt pattern:
+1. remover termos instrucionais genéricos como `como`, `criar`, `fazer`, `do zero`, `passo`;
+2. extrair o substantivo/assunto central;
+3. exigir correspondência temática real no título/tags ou evidência suficiente no corpo;
+4. se não houver correspondência, retornar **nenhum contexto** em vez de injetar um assunto diferente.
+
+Exemplo de regressão:
+`como posso criar um carro do zero` **não** pode recuperar `Agent lifecycle` só porque ambos falam de “criar”.
+
+### Deep
+Quando o Neural Local estiver carregado e o usuário ativar Deep:
+1. RECALL — recuperar somente contexto relevante;
+2. ROUTE — identificar assunto e intenção;
+3. FORGE — gerar um primeiro rascunho neural;
+4. AEGIS — revisar aderência, genericidade, contradições e desvios;
+5. VERIFY — só entregar se a resposta ainda cobrir o assunto central.
+
+Deep não significa atraso artificial. Significa **mais de uma passagem real de inferência/verificação**.
+
+Se a resposta neural sair do assunto:
+- rejeitar a geração;
+- usar fallback específico/research relevante quando existir;
+- nunca substituir por knowledge desconectado.
+
+### Council X10
+Council X10 é obrigatório em dossiês jurídicos completos e continua disponível para arquitetura, alto custo, risco jurídico/privacidade, segurança, migração, conflito de fontes, falha recorrente ou pedido explícito.
+
+Para perguntas simples, não executar 10 chamadas apenas para parecer “mais inteligente”.

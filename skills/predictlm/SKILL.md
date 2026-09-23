@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -170,3 +170,18 @@ Dois erros têm gate permanente:
 A camada `workspace-repair.ts` recupera projetos antigos preservando escapes deliberados dentro de strings, como o `'\\n'` usado na exportação CSV. A normalização é aplicada no preview, exportação e migração da store.
 
 O smoke test e o `/api/health` devem falhar se qualquer uma dessas regressões reaparecer.
+
+## Deep real e gate de assunto
+No Chat, Deep com Neural Local ativo executa duas passagens:
+FORGE (rascunho) → AEGIS (revisão) → VERIFY (aderência ao pedido).
+
+Não adicionar espera artificial.
+
+Retrieval de knowledge/training/prompt patterns remove palavras instrucionais genéricas e exige correspondência com o assunto central. Se o usuário perguntar `como posso criar um carro do zero`, conteúdo de agents/CRM/Prompt OS não pode entrar apenas por compartilhar verbos genéricos.
+
+O gate final rejeita resposta que não mencione o tópico central ou um sinônimo de domínio reconhecido. Se o neural falhar, preferir fallback específico/research relevante; nunca um bloco aleatório do corpus.
+
+Regressões obrigatórias no `/api/health`:
+- carro → resposta sobre engenharia veicular;
+- carro → não recuperar `Agent lifecycle`;
+- resposta de agentes para pergunta de carro → reprovada por relevância.

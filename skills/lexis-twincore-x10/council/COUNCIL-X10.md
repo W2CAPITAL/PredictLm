@@ -1,7 +1,7 @@
 # Council X10
 
 Ative para arquitetura, alto custo, risco jurídico/privacidade, segurança, migração,
-produto novo, conflito de fontes, falha recorrente ou pedido explícito.
+produto novo, conflito de fontes, falha recorrente, dossiê jurídico completo ou pedido explícito.
 
 ## Rodada 0
 Pergunta, critério de pronto, restrições, fatos, ausências e irreversibilidades.
@@ -48,3 +48,6 @@ AEGIS questiona FORGE com contradições/fatos. FORGE responde com evidência ou
 - confiança
 
 O Chair não inventa unanimidade.
+
+## Regra de custo
+Council X10 não deve ser usado em conversa trivial apenas para aumentar latência. O gatilho precisa ser risco/complexidade real, dossiê completo ou pedido explícito.
