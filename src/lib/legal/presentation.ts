@@ -1,4 +1,5 @@
 import type { LegalProcessBundle } from './types';
+import { legalAttackFramework, tjspFilingChecklist } from './filing';
 
 function dateBR(value?:string){
   if(!value)return '';
@@ -16,23 +17,16 @@ function councilRequested(prompt:string){
   return /council|x10|red.?team|tese e contra|pior caso|auditar|an[aá]lise profunda/i.test(prompt);
 }
 
-function filingGuidance(bundle:LegalProcessBundle){
-  if(bundle.tribunalAlias==='tjsp'){
-    return [
-      '### Se a medida for no TJSP',
-      '- Primeiro confirme **competência, foro e sistema eletrônico** aplicável à classe/vara; TJSP usa fluxos distintos e a competência concreta define o portal.',
-      '- Para advogado, o peticionamento normalmente exige **cadastro profissional** e autenticação compatível com o sistema; quando houver assinatura com certificado, use apenas certificado/e-CPF autorizado do titular.',
-      '- Checklist mínimo: legitimidade, interesse processual, pedidos, valor da causa, procuração, documentos essenciais, custas ou pedido de gratuidade, endereço/qualificação das partes e prova que sustenta cada fato relevante.',
-      '- O app pode montar minuta, checklist e pacote de documentos, mas **protocolo, assinatura e pagamento ficam atrás de confirmação humana**.'
-    ].join('\n');
-  }
+function filingGuidance(bundle:LegalProcessBundle,prompt:string){
+  if(bundle.tribunalAlias==='tjsp')return [legalAttackFramework(prompt),tjspFilingChecklist(prompt)].filter(Boolean).join('\n\n');
   return [
-    '### Se a intenção for ajuizar/peticionar',
-    '- Identifique a competência e o sistema eletrônico do tribunal (PJe, eproc, e-SAJ ou outro).',
-    '- Confirme cadastro/autenticação exigidos para advogado ou parte e use apenas credencial/certificado autorizado.',
-    '- Prepare legitimidade, pedidos, valor da causa, documentos, procuração e custas/gratuidade antes do protocolo.',
-    '- O app pode preparar tudo até o ato externo; protocolo/assinatura/pagamento exigem confirmação humana.'
-  ].join('\n');
+    legalAttackFramework(prompt),
+    '### Como transformar a estratégia em protocolo',
+    '- Identifique competência, rito e sistema eletrônico do tribunal.',
+    '- Feche fatos, prova, pedidos, valor da causa, procuração e custas/gratuidade.',
+    '- Confirme cadastro/autenticação exigidos pelo sistema oficial.',
+    '- Prepare a minuta e anexos; assinatura, pagamento e protocolo exigem confirmação do titular autorizado.'
+  ].filter(Boolean).join('\n');
 }
 
 function councilX10(bundle:LegalProcessBundle){
@@ -99,7 +93,7 @@ export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{cou
     parts.push('### Pontos que merecem atenção\n'+critical.slice(0,5).map(x=>'- '+x).join('\n'));
   }
 
-  if(strategyRequested(prompt))parts.push(filingGuidance(bundle));
+  if(strategyRequested(prompt))parts.push(filingGuidance(bundle,prompt));
 
   if(councilRequested(prompt)){
     parts.push('### Revisão X10\n'+councilX10(bundle).map(([name,text])=>'- **'+name+':** '+text).join('\n'));
