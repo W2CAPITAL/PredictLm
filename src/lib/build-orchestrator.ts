@@ -116,6 +116,18 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   mergedMap.set(planFile.path,planFile);
   merged=Array.from(mergedMap.values());
 
+  // Surface the infrastructure decisions in the workspace instead of hiding them only inside Export.
+  const infraPreview=buildRunnableProject(merged).filter(f=>
+    f.path==='package.json'||
+    f.path==='.env.example'||
+    f.path==='RUNME.md'||
+    f.path==='vite.config.js'||
+    f.path.startsWith('server/')||
+    f.path==='src/lib/api.ts'
+  );
+  for(const file of infraPreview)mergedMap.set(file.path,file);
+  merged=Array.from(mergedMap.values());
+
   const smoke=runLocalSmokeTest(merged);
   phases.push({id:'smoke',label:'Functional smoke test',status:smoke.ok?'done':'warn',detail:smoke.score+'/100 · '+smoke.checks.filter(x=>!x.ok).map(x=>x.name).join(', ')});
 
