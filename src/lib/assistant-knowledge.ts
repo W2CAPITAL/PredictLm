@@ -38,17 +38,41 @@ export const assistantKnowledge:KnowledgeEntry[]=[
 ];
 
 const tokenize=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/[^a-z0-9]+/).filter(x=>x.length>2);
+const RETRIEVAL_STOPWORDS=new Set([
+  'como','posso','pode','podem','quero','preciso','criar','fazer','montar','comecar','começar','aprender','ensine',
+  'passo','passos','zero','sobre','para','uma','umas','uns','que','qual','quais','isso','isto','esse','essa','este',
+  'esta','meu','minha','seu','sua','agora','hoje','ajuda','ajude','explica','explique'
+]);
+
+export function knowledgeQueryTokens(query:string){
+  return tokenize(query).filter(x=>!RETRIEVAL_STOPWORDS.has(x));
+}
 
 export function retrieveKnowledge(query:string,limit=6){
-  const q=tokenize(query);
+  const q=knowledgeQueryTokens(query);
+  if(!q.length)return [];
   return assistantKnowledge.map(entry=>{
-    const hay=tokenize(entry.title+' '+entry.tags.join(' ')+' '+entry.body+' '+entry.source);
-    const set=new Set(hay);
+    const title=tokenize(entry.title);
+    const tags=tokenize(entry.tags.join(' '));
+    const body=tokenize(entry.body+' '+entry.source);
+    const titleSet=new Set(title);
+    const tagSet=new Set(tags);
+    const bodySet=new Set(body);
     let score=0;
-    for(const token of q) if(set.has(token)) score+=3; else if(hay.some(x=>x.startsWith(token)||token.startsWith(x))) score+=1;
-    if(query.toLowerCase().includes(entry.id.replace(/-/g,' ')))score+=6;
-    return {entry,score};
-  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.entry);
+    let strong=0;
+    let bodyHits=0;
+    for(const token of q){
+      if(titleSet.has(token)){score+=7;strong++;continue;}
+      if(tagSet.has(token)){score+=8;strong++;continue;}
+      if(bodySet.has(token)){score+=3;bodyHits++;continue;}
+      if(token.length>=5&&(title.some(x=>x.startsWith(token)||token.startsWith(x))||tags.some(x=>x.startsWith(token)||token.startsWith(x)))){
+        score+=3;strong++;
+      }
+    }
+    if(query.toLowerCase().includes(entry.id.replace(/-/g,' '))){score+=8;strong++;}
+    const relevant=q.length===1?(strong>=1||bodyHits>=1):(strong>=1||bodyHits>=2);
+    return {entry,score,relevant};
+  }).filter(x=>x.relevant&&x.score>=3).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.entry);
 }
 
 export function knowledgeContext(query:string,limit=5){
