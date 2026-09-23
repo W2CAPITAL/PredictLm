@@ -52,6 +52,9 @@ export function MediaToolsPanel(){
 export function ConnectorsToolsPanel(){
   const addFile=useStudio(s=>s.addFile);
   const cloneProject=useStudio(s=>s.cloneProject);
+  const snapshots=useStudio(s=>s.snapshots);
+  const restoreSnapshot=useStudio(s=>s.restoreSnapshot);
+  const deleteSnapshot=useStudio(s=>s.deleteSnapshot);
   const [health,setHealth]=useState<any>(null);
   const [error,setError]=useState('');
 
@@ -71,6 +74,7 @@ export function ConnectorsToolsPanel(){
     <div className="action-card"><div><b>Integration Manifest</b><span>Cria um mapa JSON de recursos locais, opcionais e bridges nativos.</span></div><button onClick={()=>addFile('predict.integrations.json',createIntegrationManifest(),'json')}>Criar</button></div>
     <div className="action-card"><div><b>.env.example</b><span>Gera somente placeholders opcionais; o app continua funcionando sem eles.</span></div><button onClick={()=>addFile('.env.example',createEnvExample(),'text')}>Criar</button></div>
     <div className="action-card"><div><b>Clone Project</b><span>Duplica o snapshot local do workspace, inspirado em workflows de clone de projetos.</span></div><button onClick={cloneProject}>Clonar</button></div>
+    {snapshots.length>0&&<><h4 className="section-label">Local snapshots</h4><div className="snapshot-list">{snapshots.map(s=><div key={s.id}><div><b>{s.name}</b><span>{s.files.length} files · {new Date(s.createdAt).toLocaleString()}</span></div><div><button onClick={()=>restoreSnapshot(s.id)}>Restaurar</button><button className="ghost-danger" onClick={()=>deleteSnapshot(s.id)}>×</button></div></div>)}</div></>}
     {error&&<div className="research-error">{error}</div>}
     {health&&<div className="health-grid">
       <div><b>DeepThink</b><span>{health.zeroApi?.deepThink?'ativo':'indisponível'}</span></div>
