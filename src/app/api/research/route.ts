@@ -3,6 +3,16 @@ export const runtime='nodejs';
 function safeHost(url:string){try{return new URL(url).hostname}catch{return ''}}
 function stripHtml(input:string){return String(input||'').replace(/<[^>]+>/g,' ').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&amp;/g,'&').replace(/\s+/g,' ').trim()}
 
+async function wikiIntro(title:string){
+  try{
+    const url='https://pt.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(title.replace(/ /g,'_'));
+    const r=await fetch(url,{headers:{'User-Agent':'PredictLM-Studio/5.1'}});
+    if(!r.ok)return '';
+    const data=await r.json();
+    return String(data?.extract||data?.description||'').replace(/\s+/g,' ').trim().slice(0,1800);
+  }catch{return ''}
+}
+
 async function firecrawlSearch(query:string,limit:number,key:string){
   const response=await fetch('https://api.firecrawl.dev/v2/search',{
     method:'POST',
@@ -35,8 +45,12 @@ async function freeSearch(query:string,limit:number){
   ]);
 
   if(wiki.status==='fulfilled'){
-    for(const item of wiki.value?.query?.search||[]){
-      web.push({type:'web',url:'https://pt.wikipedia.org/?curid='+item.pageid,title:item.title,description:stripHtml(item.snippet),site:'wikipedia.org',source:'Wikipedia'});
+    const searchItems=(wiki.value?.query?.search||[]).slice(0,Math.max(limit,3));
+    const intros=await Promise.all(searchItems.slice(0,3).map((item:any)=>wikiIntro(item.title)));
+    for(let i=0;i<searchItems.length;i++){
+      const item=searchItems[i];
+      const summary=intros[i]||'';
+      web.push({type:'web',url:'https://pt.wikipedia.org/?curid='+item.pageid,title:item.title,description:summary||stripHtml(item.snippet),summary,site:'wikipedia.org',source:'Wikipedia'});
     }
   }else warnings.push('Wikipedia indisponível');
 

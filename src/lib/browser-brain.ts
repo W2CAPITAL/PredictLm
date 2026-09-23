@@ -1,12 +1,13 @@
 import { knowledgeContext, retrieveKnowledge } from './assistant-knowledge';
 
 export type NeuralTier='lite'|'smart';
-export type BrainEngine='native'|'neural-lite'|'neural-smart'|'knowledge';
+export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
 
 export interface BrainReply {
   content:string;
   engine:BrainEngine;
   sources?:{title:string;source:string}[];
+  fallbackReason?:string;
 }
 
 declare global {
@@ -21,6 +22,7 @@ declare global {
 
 let worker:Worker|null=null;
 let loadedTier:NeuralTier|null=null;
+let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
 
@@ -85,6 +87,14 @@ function ensureWorker(){
             device,
             progress_callback:(p)=>self.postMessage({type:'progress',tier,progress:p?.progress??null,status:p?.status||p?.file||'loading'})
           });
+          self.postMessage({type:'progress',tier,progress:100,status:'validating inference'});
+          const probe=await generator([
+            {role:'system',content:'You are a health check. Reply only OK.'},
+            {role:'user',content:'OK?'}
+          ],{max_new_tokens:6,do_sample:false,repetition_penalty:1.0});
+          const probeResult=probe?.[0]?.generated_text;
+          const probeText=Array.isArray(probeResult)?String(probeResult[probeResult.length-1]?.content||''):String(probeResult||'');
+          if(!probeText.trim())throw new Error('Model loaded but inference self-test returned empty output');
           self.postMessage({type:'ready',tier});
         }
         if(msg.type==='generate'){
@@ -113,7 +123,7 @@ function ensureWorker(){
   worker.onmessage=(event)=>{
     const msg=event.data;
     if(msg.type==='result'&&pending.has(msg.id)){pending.get(msg.id)!.resolve(String(msg.text||''));pending.delete(msg.id);}
-    if(msg.type==='error'&&msg.id&&pending.has(msg.id)){pending.get(msg.id)!.reject(new Error(msg.message));pending.delete(msg.id);}
+    if(msg.type==='error'&&msg.id&&pending.has(msg.id)){lastNeuralError=String(msg.message||'Local neural generation failed');pending.get(msg.id)!.reject(new Error(lastNeuralError));pending.delete(msg.id);}
   };
   return worker;
 }
@@ -125,15 +135,15 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
     const onMessage=(event:MessageEvent)=>{
       const msg=event.data;
       if(msg.type==='progress'&&msg.tier===tier)onProgress?.({progress:typeof msg.progress==='number'?msg.progress:null,status:String(msg.status||'loading')});
-      if(msg.type==='ready'&&msg.tier===tier){loadedTier=tier;w.removeEventListener('message',onMessage);resolve();}
-      if(msg.type==='error'&&!msg.id){w.removeEventListener('message',onMessage);reject(new Error(msg.message));}
+      if(msg.type==='ready'&&msg.tier===tier){loadedTier=tier;lastNeuralError='';w.removeEventListener('message',onMessage);resolve();}
+      if(msg.type==='error'&&!msg.id){lastNeuralError=String(msg.message||'Local neural model failed to load');w.removeEventListener('message',onMessage);reject(new Error(lastNeuralError));}
     };
     w.addEventListener('message',onMessage);
     w.postMessage({type:'load',tier,webgpu:caps.webgpu});
   });
 }
 
-export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier};}
+export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,lastError:lastNeuralError||null};}
 
 async function neuralGenerate(system:string,prompt:string,messages:{role:string;content:string}[]){
   if(!worker||!loadedTier)throw new Error('Neural model not loaded');
@@ -149,37 +159,56 @@ function knowledgeReply(prompt:string){
   const math=parseMath(prompt);
   if(math!==null)return 'O resultado é **'+math.toLocaleString('pt-BR',{maximumFractionDigits:10})+'**.';
   const p=prompt.toLowerCase().trim();
-  if(/^(oi|ol[aá]|bom dia|boa tarde|boa noite|hey|hello)\b/.test(p))return 'Olá. Posso conversar normalmente, explicar um assunto, pesquisar na web ou, quando você quiser construir software, mudar para o modo **Build**.';
-  if(/quem (é|e) voc[eê]|o que voc[eê] (é|e)/.test(p))return 'Sou o **PredictLM**, com duas superfícies: Chat para assistência geral e Build para desenvolvimento. Sem API, uso conhecimento local, memória e DeepThink; quando o Neural Local está ativado, a geração de linguagem roda no seu próprio navegador.';
+  if(/quem (é|e) voc[eê]|o que voc[eê] (é|e)/.test(p))return 'Sou o **PredictLM**. No Chat eu converso e pesquiso; no Build eu continuo projetos, edito arquivos, reviso arquitetura e preparo exportação executável. Meu modo principal é local-first.';
   const hits=retrieveKnowledge(prompt,5);
   if(hits.length){
-    const intro='Encontrei conhecimento interno relevante sobre isso:';
-    const body=hits.map((x,i)=>(i+1)+'. **'+x.title+'** — '+x.body).join('\n\n');
-    return intro+'\n\n'+body+'\n\nSe quiser, eu também posso transformar isso em um plano, comparar abordagens ou abrir a implementação no modo **Build**.';
+    const best=hits.slice(0,3);
+    return best.map((x,i)=>(i===0?'**'+x.title+'**\n':'**Relacionado: '+x.title+'**\n')+x.body).join('\n\n');
   }
-  if(/como|explique|o que|porque|por que|qual|quais|programa|c[oó]digo|javascript|typescript|react|next|python/i.test(p)){
-    return 'Consigo trabalhar nisso pelo motor local, mas esta pergunta é ampla para o fallback determinístico. Ative **Neural Local** para uma resposta generativa completa, ou use **Web** para eu buscar fontes atuais. O modo Build continua disponível para tarefas de código.';
+  if(/^(como|explique|por que|porque|qual|quais)/i.test(p)){
+    return 'Posso explicar isso, mas não encontrei contexto local suficiente para produzir uma resposta confiável só pelo fallback leve. Posso usar pesquisa quando o assunto for factual ou continuar com o modelo neural local quando ele estiver disponível.';
   }
-  return 'Entendi: “'+prompt.slice(0,220)+'”. No modo sem modelo neural carregado eu uso DeepThink + memória + knowledge packs. Para conversa aberta e respostas mais flexíveis, ative **Neural Local**; ele roda no navegador e não usa Ollama nem uma API de inferência.';
+  return 'Entendi o que você perguntou, mas meu fallback local leve não tem contexto suficiente para responder com segurança. Não vou inventar uma resposta nem transformar sua mensagem em uma busca sem relação.';
 }
 
-const SYSTEM=`Você é PredictLM, um assistente geral e de desenvolvimento. Responda em português quando o usuário escrever em português. Seja direto, competente e útil. Não invente que executou ferramentas que não foram executadas. Use o contexto de conhecimento quando for relevante, mas não diga que repositórios equivalem a treinamento do modelo. Quando a tarefa for construir/editar software, você pode sugerir o modo Build, mas ainda responda à pergunta normal do usuário.`;
+const SYSTEM=`Você é PredictLM, um assistente geral e de desenvolvimento. Converse naturalmente e mantenha continuidade com as mensagens anteriores. Responda em português quando o usuário escrever em português. Dê primeiro a resposta útil, sem despejar links nem mandar o usuário ativar outro modo. Use fontes recuperadas para fundamentar fatos, mas sintetize em linguagem natural. Não invente fatos, execução de ferramentas, sentimentos humanos ou resultados não verificados. Em perguntas afetivas, seja caloroso sem alegar emoções humanas reais. Quando a tarefa for construir ou editar software, preserve o projeto existente e só sugira o modo Build quando isso ajudar.`;
 
-export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean}):Promise<BrainReply>{
+export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
-  const system=SYSTEM+(context?'\n\nContexto recuperado:\n'+context:'');
+  const recent=messages.slice(-10).map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
+  const system=SYSTEM+(recent?'\n\nHistórico recente:\n'+recent:'')+(context?'\n\nContexto recuperado:\n'+context:'');
   const sources=retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}));
+  let fallbackReason='';
+
   if(typeof window!=='undefined'&&options?.preferNative!==false){
     try{
       const content=await nativeGenerate(system,prompt);
       if(content.trim())return {content,engine:'native',sources};
-    }catch{}
+    }catch(error:any){
+      fallbackReason=String(error?.message||'Browser native model unavailable');
+    }
   }
+
   if(loadedTier){
     try{
       const content=await neuralGenerate(system,prompt,messages);
-      if(content.trim())return {content,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
-    }catch{}
+      if(content.trim()){
+        lastNeuralError='';
+        return {content,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+      }
+      fallbackReason='Local neural model returned an empty response';
+      lastNeuralError=fallbackReason;
+    }catch(error:any){
+      fallbackReason=String(error?.message||'Local neural generation failed');
+      lastNeuralError=fallbackReason;
+    }
   }
-  return {content:knowledgeReply(prompt),engine:'knowledge',sources};
+
+  const content=options?.fallbackText||knowledgeReply(prompt);
+  return {
+    content,
+    engine:loadedTier?'knowledge-fallback':'knowledge',
+    sources,
+    fallbackReason:loadedTier?(fallbackReason||lastNeuralError||'Neural Local did not answer this turn'):undefined
+  };
 }

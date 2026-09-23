@@ -13,6 +13,8 @@ import { explainDeepThink, runPredictCore } from '@/lib/predict-core';
 import { orchestrateBuild, type BuildPhase } from '@/lib/build-orchestrator';
 import { buildRunnableProject } from '@/lib/project-packager';
 import { enhanceBuildPrompt, promptPresets, type PromptPreset } from '@/lib/prompt-enhancer';
+import { resolveBuildTurn } from '@/lib/build-turn';
+import { answerLocally } from '@/lib/browser-brain';
 import { runLocal, runPuter, runServer } from '@/lib/providers';
 import { buildPreview } from '@/lib/preview';
 import { runLocalCouncil } from '@/lib/council';
@@ -138,31 +140,48 @@ export function StudioShell({onExitToChat}:{onExitToChat?:()=>void}){
   async function run(){
     if(!prompt.trim()||s.isRunning)return;
     const task=prompt.trim();
+    const turn=resolveBuildTurn(task,files,s.messages);
     setPrompt('');
     s.addMessage({role:'user',content:task});
+
+    if(turn.kind==='conversation'){
+      s.setRunning(true);
+      setBuildPhases([]);
+      try{
+        const history=s.messages.slice(-10).map(m=>({role:m.role,content:m.content}));
+        const reply=await answerLocally(task+'\n\n'+(turn.context||''),history,{preferNative:true,knowledge:true});
+        s.addMessage({role:'assistant',content:reply.content});
+      }catch(err:any){
+        s.addMessage({role:'assistant',content:'Posso continuar conversando sem alterar o projeto. '+(err?.message||'')});
+      }finally{s.setRunning(false)}
+      return;
+    }
+
+    const effectiveTask=turn.effectivePrompt;
     s.setRunning(true);
-    setBuildPhases([{id:'intent',label:'Intent & context',status:'done',detail:'Starting multi-pass analysis…'}]);
-    const recall=s.notes.filter(n=>task.toLowerCase().split(/\s+/).some(w=>w.length>4&&(`${n.title} ${n.body}`).toLowerCase().includes(w))).slice(0,4);
+    setBuildPhases([{id:'intent',label:'Intent & context',status:'done',detail:turn.kind==='continue'?'Continuing the active project from current files…':'Starting multi-pass analysis…'}]);
+    const recall=s.notes.filter(n=>effectiveTask.toLowerCase().split(/\s+/).some(w=>w.length>4&&(`${n.title} ${n.body}`).toLowerCase().includes(w))).slice(0,4);
+
     try{
       let result:any;
       if(s.mode==='review'&&s.provider==='predict-core'){
         const review=runLocalCouncil(files);
         result={explanation:'Council local: '+review.score+'/100. '+review.consensus.join(' '),plan:review.consensus,files:[],phases:[{id:'review',label:'Council & security',status:review.score>=75?'done':'warn',detail:review.score+'/100'}]};
       }else if(s.mode==='plan'&&s.provider==='predict-core'){
-        const info=explainDeepThink(task);
-        const planned=orchestrateBuild(task,files,s.deepThinkLevel);
-        result={explanation:'Plano multi-pass preparado para “'+info.intent+'”. Nenhum arquivo foi aplicado neste modo.',plan:planned.plan,files:[],phases:planned.phases};
+        const info=explainDeepThink(effectiveTask);
+        const planned=orchestrateBuild(effectiveTask,files,s.deepThinkLevel);
+        result={explanation:'Plano multi-pass preparado para o projeto atual (“'+(turn.activeIntent||info.intent)+'”). Nenhum arquivo foi aplicado porque você está em PLAN.',plan:planned.plan,files:[],phases:planned.phases};
       }else if(s.provider==='predict-core'){
-        result=orchestrateBuild(task,files,s.deepThinkLevel);
+        result=orchestrateBuild(effectiveTask,files,s.deepThinkLevel);
       }else{
         try{
-          if(s.provider==='puter')result=await runPuter(task+'\nMemory recall: '+JSON.stringify(recall),files);
-          else if(s.provider==='local')result=await runLocal(task+'\nMemory recall: '+JSON.stringify(recall),files,s.localEndpoint,s.localModel);
-          else result=await runServer(task+'\nMemory recall: '+JSON.stringify(recall),files,s.mode);
+          if(s.provider==='puter')result=await runPuter(effectiveTask+'\nMemory recall: '+JSON.stringify(recall),files);
+          else if(s.provider==='local')result=await runLocal(effectiveTask+'\nMemory recall: '+JSON.stringify(recall),files,s.localEndpoint,s.localModel);
+          else result=await runServer(effectiveTask+'\nMemory recall: '+JSON.stringify(recall),files,s.mode);
         }catch(externalError:any){
           if(!s.autoFallback)throw externalError;
-          const fallback=orchestrateBuild(task,files,s.deepThinkLevel);
-          result={...fallback,explanation:'Provider opcional indisponível ('+(externalError?.message||'erro')+'). O Build continuou no orquestrador local. '+fallback.explanation};
+          const fallback=orchestrateBuild(effectiveTask,files,s.deepThinkLevel);
+          result={...fallback,explanation:'Provider opcional indisponível ('+(externalError?.message||'erro')+'). O Build continuou localmente. '+fallback.explanation};
           s.setProvider('predict-core');
         }
       }
@@ -172,12 +191,13 @@ export function StudioShell({onExitToChat}:{onExitToChat?:()=>void}){
         if(result.packageFiles)s.replaceFiles(result.files);
         else s.mergeFiles(result.files);
       }
+
       const phaseText=result.phases?.length?'\n\nExecution\n'+result.phases.map((p:any)=>'['+String(p.status).toUpperCase()+'] '+p.label+' — '+p.detail).join('\n'):'';
       const planText=result.plan?.length?'\n\nPlan\n'+result.plan.map((x:string,i:number)=>(i+1)+'. '+x).join('\n'):'';
       const body=String(result.explanation||'Tarefa concluída.')+phaseText+planText;
       s.addMessage({role:'assistant',content:body});
       s.addRun({title:task,status:'done',steps:result.plan||result.phases?.map((p:any)=>p.label)||[]});
-      s.addNote({title:'Run: '+task.slice(0,50),body:'Provider: '+s.provider+'\nMode: '+s.mode+'\n'+String(result.explanation||''),tags:['run',s.mode,s.provider],kind:'run'});
+      s.addNote({title:'Run: '+task.slice(0,50),body:'Provider: '+s.provider+'\nMode: '+s.mode+'\nTurn: '+turn.kind+'\n'+String(result.explanation||''),tags:['run',s.mode,s.provider,turn.kind],kind:'run'});
       setPreviewKey(x=>x+1);
     }catch(err:any){
       s.addMessage({role:'assistant',content:'Erro: '+(err?.message||'falha desconhecida')});
@@ -241,9 +261,11 @@ function EmptyAgent({setPrompt}:{setPrompt:(v:string)=>void}){const ideas=['Crie
 function PromptBox({value,setValue,run,disabled,files}:{value:string,setValue:(v:string)=>void,run:()=>void,disabled:boolean,files:any[]}){
   const [open,setOpen]=useState(false);
   const apply=(preset:PromptPreset)=>{setValue(enhanceBuildPrompt(value,preset,files));setOpen(false)};
+  const quick=promptPresets.filter(p=>['enhance','fullstack','setup-repo','test-ship','security'].includes(p.id));
   return <div className="prompt-area">
     {open&&<div className="prompt-enhancer"><div className="enhancer-head"><div><Sparkles size={13}/><b>Aprimorar prompt</b></div><span>Transforma uma frase em instrução de agente multi-etapas</span></div><div className="enhancer-grid">{promptPresets.map(p=><button key={p.id} onClick={()=>apply(p.id)}><b>{p.label}</b><span>{p.hint}</span></button>)}</div></div>}
-    <div className="prompt-box"><textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}}} placeholder="Descreva o app, mudança, repositório ou tarefa..."/><div><button className="enhance-trigger" onClick={()=>setOpen(v=>!v)}><Sparkles size={13}/> Aprimorar</button><span>context + spec + quality gates</span><button onClick={run} disabled={disabled||!value.trim()}><Send size={14}/></button></div></div>
+    <div className="prompt-quick">{quick.map(p=><button key={p.id} onClick={()=>apply(p.id)} title={p.hint}>{p.label}</button>)}</div>
+    <div className="prompt-box"><textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}}} placeholder="Descreva o app ou continue de onde parou…"/><div><button className="enhance-trigger" onClick={()=>setOpen(v=>!v)}><Sparkles size={13}/> Mais opções</button><span>preserva contexto + spec + quality gates</span><button onClick={run} disabled={disabled||!value.trim()}><Send size={14}/></button></div></div>
   </div>
 }
 function InfoCard({icon:Icon,title,text}:{icon:any,title:string,text:string}){return <div className="info-card"><Icon size={17}/><div><b>{title}</b><p>{text}</p></div></div>}

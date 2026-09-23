@@ -389,7 +389,7 @@ function buildCss(spec:CoreSpec){
 }
 
 function buildSpecFile(spec:CoreSpec,prompt:string,depth:DeepThinkLevel){
-  return JSON.stringify({engine:'Predict DeepThink',version:4,depth,prompt,spec,generatedAt:new Date().toISOString()},null,2);
+  return JSON.stringify({engine:'Predict DeepThink',version:5,depth,prompt,spec,generatedAt:new Date().toISOString()},null,2);
 }
 
 function maybeRefineExisting(prompt:string,currentFiles:WorkspaceFile[]){
@@ -423,6 +423,19 @@ function maybeRefineExisting(prompt:string,currentFiles:WorkspaceFile[]){
   return {changes,file:{...css,content:next}};
 }
 
+function existingProjectIntent(files:WorkspaceFile[]):CoreIntent|''{
+  const spec=files.find(f=>f.path==='predict.spec.json');
+  try{
+    const value=spec?String(JSON.parse(spec.content)?.spec?.intent||''):'';
+    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','generic'];
+    return allowed.includes(value as CoreIntent)?value as CoreIntent:'';
+  }catch{return ''}
+}
+
+function explicitFreshStart(prompt:string){
+  return /\b(novo projeto|nova aplicação|nova aplicacao|do zero|from scratch|recrie do zero|recomece do zero|reset project)\b/i.test(prompt);
+}
+
 export function runPredictCore(prompt: string, currentFiles:WorkspaceFile[] = [], depth:DeepThinkLevel='deep'): CoreResult {
   const normalized=cleanPrompt(prompt);
   const refinement=maybeRefineExisting(normalized,currentFiles);
@@ -435,6 +448,31 @@ export function runPredictCore(prompt: string, currentFiles:WorkspaceFile[] = []
   }
 
   const spec=analyzePrompt(normalized);
+  const existingIntent=existingProjectIntent(currentFiles);
+  if(existingIntent&&!explicitFreshStart(normalized)){
+    const requestedIntent=spec.intent;
+    const sameOrAmbiguous=requestedIntent==='generic'||requestedIntent===existingIntent;
+    if(sameOrAmbiguous){
+      return {
+        explanation:'O projeto atual foi preservado. O pedido foi tratado como continuação de “'+existingIntent+'”, então o DeepThink não recriou App.tsx nem styles.css.',
+        plan:[
+          'Ler o estado atual do projeto',
+          'Manter o intent existente: '+existingIntent,
+          'Preservar arquivos e funcionalidades já concluídos',
+          'Continuar pelas etapas incompletas de arquitetura, backend, testes ou acabamento'
+        ],
+        files:[],
+        spec:{...spec,intent:existingIntent,confidence:Math.max(spec.confidence,.96)}
+      };
+    }
+    return {
+      explanation:'Existe um projeto “'+existingIntent+'” ativo. Para evitar substituir o trabalho atual por “'+requestedIntent+'”, nenhuma reconstrução foi aplicada. Use “novo projeto” ou “do zero” apenas quando quiser realmente trocar o app.',
+      plan:['Preservar o projeto atual','Não substituir App.tsx automaticamente','Tratar o novo pedido como extensão ou solicitar um novo projeto explícito'],
+      files:[],
+      spec:{...spec,intent:existingIntent,confidence:Math.max(spec.confidence,.9)}
+    };
+  }
+
   const stages=depth==='fast'
     ? ['Classificar objetivo','Selecionar blueprint funcional','Gerar preview']
     : depth==='max'
@@ -445,7 +483,7 @@ export function runPredictCore(prompt: string, currentFiles:WorkspaceFile[] = []
     {path:'App.tsx',content:buildApp(spec,normalized),language:'typescript'},
     {path:'styles.css',content:buildCss(spec),language:'css'},
     {path:'predict.spec.json',content:buildSpecFile(spec,normalized,depth),language:'json'},
-    {path:'README.md',content:'# '+spec.title+'\n\nGerado pelo Predict DeepThink v4 sem API externa.\n\n**Intent:** '+spec.intent+'\n\n**Features:** '+spec.features.join(', ')+'\n\n**Prompt:** '+normalized+'\n',language:'markdown'}
+    {path:'README.md',content:'# '+spec.title+'\n\nGerado pelo Predict DeepThink v5 sem API externa.\n\n**Intent:** '+spec.intent+'\n\n**Features:** '+spec.features.join(', ')+'\n\n**Prompt:** '+normalized+'\n',language:'markdown'}
   ];
 
   return {
