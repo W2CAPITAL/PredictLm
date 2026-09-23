@@ -5,11 +5,15 @@ function clamp(value:number,min:number,max:number){
   return Math.max(min,Math.min(max,Math.round(value||0)));
 }
 
-function publicUrl(prompt:string,width:number,height:number,seed:number,model:string){
-  const base=process.env.PREDICT_PUBLIC_IMAGE_URL || 'https://image.pollinations.ai/prompt/';
-  const root=base.endsWith('/')?base:base+'/';
-  return root+encodeURIComponent(prompt)+
-    '?width='+width+'&height='+height+'&seed='+seed+'&nologo=true&model='+encodeURIComponent(model||'flux');
+function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string){
+  const q=new URLSearchParams({
+    prompt,
+    width:String(width),
+    height:String(height),
+    seed:String(seed),
+    model:model||'flux'
+  });
+  return '/api/media/render?'+q.toString();
 }
 
 export async function POST(req:Request){
@@ -41,9 +45,11 @@ export async function POST(req:Request){
       return Response.json({url:remoteUrl||dataUrl,provider:'configured',model,width,height,seed});
     }
 
+    // O navegador nunca recebe a URL externa diretamente. O proxy same-origin
+    // evita CORS/canvas tainted e permite que a mesma imagem vire vídeo local.
     return Response.json({
-      url:publicUrl(prompt,width,height,seed,model),
-      provider:'pollinations',
+      url:localRenderUrl(prompt,width,height,seed,model),
+      provider:'pollinations-proxy',
       model,
       width,
       height,
