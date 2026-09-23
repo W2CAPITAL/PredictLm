@@ -272,3 +272,6 @@ button,input,textarea{font:inherit}
 .gmedia-video-options button.active{border-color:#e5e5e5;background:#e9e9e9;color:#111}
 .gmedia-video-generate{background:#f2f2f2!important;color:#111!important}
 .gmedia-video-meta{display:block;margin-top:7px!important;color:#636363!important}
+
+.gmedia-provider-row button:disabled{opacity:.32;cursor:not-allowed;text-decoration:line-through;text-decoration-thickness:1px}
+.gmedia-provider-note{display:block!important;color:#666!important;font-size:7px!important;line-height:1.45!important;margin-top:2px!important}
