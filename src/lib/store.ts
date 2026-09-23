@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AgentRun, ChatMessage, MemoryNote, PanelId, ProviderId, StudioMode, WorkspaceFile } from './types';
+import { repairLegacyEscapedNewlines } from './workspace-repair';
 
 export type DeepThinkLevel = 'fast' | 'deep' | 'max';
 export interface ProjectSnapshot {
@@ -76,8 +77,9 @@ interface StudioState {
 }
 
 const id = () => `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+const normalizeWorkspaceFile=(f:WorkspaceFile):WorkspaceFile=>/(^|\/)App\.(tsx|jsx|js|ts)$/.test(f.path)?{...f,content:repairLegacyEscapedNewlines(f.content)}:{...f};
 const cloneFiles=(files:Record<string,WorkspaceFile>)=>Object.fromEntries(Object.entries(files).map(([k,f])=>[k,{...f}]));
-const asMap=(incoming:WorkspaceFile[])=>Object.fromEntries(incoming.map(f=>[f.path,{...f}]));
+const asMap=(incoming:WorkspaceFile[])=>Object.fromEntries(incoming.map(f=>{const next=normalizeWorkspaceFile(f);return [next.path,next]}));
 const blankBuild=(name='Untitled App'):StudioBuild=>{
   const now=Date.now();
   return {id:id(),name,files:cloneFiles(starterFiles),messages:[],runs:[],createdAt:now,updatedAt:now};
@@ -120,7 +122,7 @@ export const useStudio = create<StudioState>()(persist((set) => ({
   setActiveFile:(activeFile)=>set({activeFile}),
   mergeFiles:(incoming)=>set((s)=>{
     const files={...s.files};
-    incoming.forEach(f=>{files[f.path]={...f}});
+    incoming.forEach(f=>{const next=normalizeWorkspaceFile(f);files[next.path]=next});
     return {...syncBuild(s,{files}),activeFile:incoming[0]?.path||s.activeFile};
   }),
   replaceFiles:(incoming)=>set((s)=>{
@@ -248,7 +250,7 @@ export const useStudio = create<StudioState>()(persist((set) => ({
   })
 }),{
   name:'predictlm-studio-v2',
-  version:6,
+  version:7,
   migrate:(persisted:any)=>{
     const next={...(persisted||{})};
     if(next.provider==='local') next.provider='predict-core';
@@ -272,6 +274,7 @@ export const useStudio = create<StudioState>()(persist((set) => ({
     if(!next.activeBuildId||!next.builds.some((b:StudioBuild)=>b.id===next.activeBuildId)){
       next.activeBuildId=next.builds[0].id;
     }
+    next.builds=next.builds.map((b:StudioBuild)=>({...b,files:asMap(Object.values(b.files||{}))}));
     const active=next.builds.find((b:StudioBuild)=>b.id===next.activeBuildId)||next.builds[0];
     next.files=active.files||cloneFiles(starterFiles);
     next.messages=active.messages||[];

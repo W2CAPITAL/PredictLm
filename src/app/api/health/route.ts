@@ -5,6 +5,7 @@ import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
 import { classifyConversation, directConversationReply, filterRelevantResearchItems } from '@/lib/chat-intelligence';
 import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj } from '@/lib/legal/cnj';
+import { hasLegacyEscapedNewlines, repairLegacyEscapedNewlines } from '@/lib/workspace-repair';
 
 export const runtime = 'nodejs';
 
@@ -31,6 +32,14 @@ export async function GET(){
 
   const crmPackage=buildRunnableProject(crm.files);
   const crmBackend=crmPackage.some(f=>f.path==='server/index.mjs')&&crmPackage.some(f=>f.path==='server/data.json');
+  const legacyCrm="function App(){\\n const csv='\\\\n';\\n return <main/>\\n}";
+  const repairedLegacy=repairLegacyEscapedNewlines(legacyCrm);
+  const crmTemplateSerialization={
+    crmSmokePasses:crm.smoke.ok,
+    realStructuralNewlines:crmApp.includes("function App(){\n const statuses="),
+    noLegacyEncodedStructure:!hasLegacyEscapedNewlines(crmApp),
+    legacyRepairWorks:!hasLegacyEscapedNewlines(repairedLegacy)&&repairedLegacy.includes("function App(){\n const csv='\\n';\n return <main/>")
+  };
 
   const continuity={
     repeatPreservesApp:crmApp.length>0&&crmRepeatApp===crmApp&&!crmRepeat.appChanged,
@@ -68,7 +77,7 @@ export async function GET(){
     exampleTjspForum:datajudTribunal('4000338-89.2026.8.26.0002')?.label==='TJSP'
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean);
 
   return Response.json({
     ok,
@@ -100,6 +109,7 @@ export async function GET(){
       orchestratorPhases:calculator.phases.map(p=>({id:p.id,status:p.status})),
       runnablePackage:packageChecks,
       crmBackend,
+      crmTemplateSerialization,
       continuity,
       chatIntelligence,
       legalModule,

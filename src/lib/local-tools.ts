@@ -1,4 +1,5 @@
 import type { WorkspaceFile } from './types';
+import { hasLegacyEscapedNewlines } from './workspace-repair';
 
 export interface SmokeCheck { name:string; ok:boolean; detail:string; }
 export interface SmokeReport { ok:boolean; score:number; checks:SmokeCheck[]; }
@@ -14,6 +15,7 @@ export function runLocalSmokeTest(files:WorkspaceFile[]):SmokeReport{
     {name:'Styles',ok:!!css,detail:css?'Stylesheet found.':'No stylesheet found.'},
     {name:'Interactive actions',ok:buttonCount===0||handlerCount>0,detail:buttonCount+' button(s), '+handlerCount+' event handler(s).'},
     {name:'No placeholder CTA',ok:!/<button[^>]*>\s*Começar\s*<\/button>/i.test(code),detail:'Detects the old inert Começar button pattern.'},
+    {name:'Valid structural newlines',ok:!hasLegacyEscapedNewlines(code),detail:hasLegacyEscapedNewlines(code)?'App contains literal \\n separators outside strings and will fail Babel preview.':'No legacy escaped structural newlines detected.'},
     {name:'Responsive hints',ok:/@media|max-width|grid-template|flex-wrap/.test((css?.content||'')+code),detail:'Responsive CSS/layout heuristic.'},
     {name:'No external-model requirement',ok:!/(ollama|localhost:11434)/i.test(code),detail:'Generated app itself does not require a local model.'}
   ];
