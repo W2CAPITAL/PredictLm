@@ -143,7 +143,7 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   const hasMessages=!!active?.messages.length;
-  const modeLabel=neural.loaded?'Local '+(neural.tier==='smart'?'Smart':'Lite'):(s.deepThink?'Deep':'Fast');
+  const modeLabel=neural.loaded?'Local '+(neural.tier==='smart'?'Smart':'Lite')+(neural.backend==='wasm'?' CPU':' GPU'):(s.deepThink?'Deep':'Fast');
 
   return <div className={'grok-shell '+(sidebar?'sidebar-open':'sidebar-closed')}>
     <aside className="grok-sidebar">
@@ -215,7 +215,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'WebGPU detectado':'WASM disponível para Lite'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite</b><span>Mais leve para PC de escritório</span></button><button disabled={!caps.webgpu} onClick={()=>enableNeural('smart')}><b>Qwen Smart</b><span>Mais qualidade com WebGPU</span></button>{neural.loaded&&<small>Modelo local ativo no navegador.</small>}{neural.lastError&&<small>Último fallback: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'WebGPU será testado; se falhar, CPU/WASM entra automaticamente.':'CPU/WASM disponível; não é necessário ativar flag do Chrome.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite · 0.5B</b><span>Recomendado para PC fraco · GPU ou CPU/WASM</span></button><button onClick={()=>enableNeural('smart')}><b>Qwen Smart · 1.5B</b><span>Mais qualidade; usa WebGPU quando existe e CPU/WASM como fallback</span></button>{neural.loaded&&<small>Ativo: {neural.tier==='smart'?'Qwen 1.5B':'Qwen 0.5B'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'}.</small>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
