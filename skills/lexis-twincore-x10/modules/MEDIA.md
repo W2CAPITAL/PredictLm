@@ -12,14 +12,18 @@ Council reduzido:
 Nunca afirmar que mídia foi renderizada quando houve apenas roteiro/prompt.
 
 
-## PredictLM v6 media pipeline
+## PredictLM v8 media pipeline
 
 ### Image
 prompt → enhancement → generation → review → metadata repository → reuse/delete.
 
-### Local motion
-generated image → Ken Burns / pan-zoom → WebM in browser → download.
-No video binary is uploaded to Supabase by default.
+### Local video
+PredictLM now has two working paths:
+- **1 scene + motion:** generated image → pan/zoom/drift → WebM in browser → download.
+- **3-scene storyboard:** prompt → three coherent AI keyframes → crossfade + cinematic motion → WebM in browser → download.
+
+The image path is served through a same-origin render proxy, so browser canvas/video export does not fail because of CORS/tainted-canvas errors.
+No video binary is uploaded to Supabase by default; only lightweight metadata/history is persisted.
 
 ### Advanced video references/adapters
 - lcy362/agnes-video-generator
