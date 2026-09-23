@@ -3,7 +3,8 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { adaptiveMemoryStats, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
@@ -55,12 +56,38 @@ export function ChatShell({onOpenLegal}:Props){
   const [modelMenu,setModelMenu]=useState(false);
   const [loadState,setLoadState]=useState<{tier:NeuralTier;progress:number|null;status:string}|null>(null);
   const [modelError,setModelError]=useState('');
+  const [modelTick,setModelTick]=useState(0);
   const [activity,setActivity]=useState<string[]>([]);
   const bottom=useRef<HTMLDivElement>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
-  const neural=neuralStatus();
+  const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
+  const memoryStats=useMemo(()=>typeof window==='undefined'?{count:0,trusted:0,lastUpdated:null}:adaptiveMemoryStats(),[modelTick]);
 
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
+
+  useEffect(()=>{
+    let cancelled=false;
+    const timer=window.setTimeout(async()=>{
+      try{
+        const restored=await restorePreferredNeuralModel(p=>{
+          if(cancelled)return;
+          setLoadState({tier:'lite',progress:p.progress,status:'Restaurando modelo local · '+p.status});
+        });
+        if(cancelled)return;
+        if(restored){
+          setLoadState(null);
+          setModelError('');
+          setModelTick(x=>x+1);
+        }
+      }catch(err:any){
+        if(cancelled)return;
+        setLoadState(null);
+        setModelError('O modelo salvo não pôde ser restaurado automaticamente. O modo CPU/WASM continua disponível para nova tentativa.');
+        setModelTick(x=>x+1);
+      }
+    },700);
+    return()=>{cancelled=true;window.clearTimeout(timer)};
+  },[]);
 
   async function webContext(query:string){
     try{
@@ -284,7 +311,12 @@ export function ChatShell({onOpenLegal}:Props){
     try{
       await loadNeuralModel(tier,p=>setLoadState({tier,progress:p.progress,status:p.status}));
       setLoadState(null);
-    }catch(err:any){setLoadState(null);setModelError(err?.message||'Falha ao carregar modelo local');}
+      setModelTick(x=>x+1);
+    }catch(err:any){
+      setLoadState(null);
+      setModelTick(x=>x+1);
+      setModelError((err?.message||'Falha ao carregar modelo local')+'. Tente o modo Lite/CPU se o Smart não couber nesta máquina.');
+    }
   }
 
   function openChat(id?:string){
@@ -297,9 +329,12 @@ export function ChatShell({onOpenLegal}:Props){
     setLoadState(null);
     setModelMenu(false);
     setModelError('Modelo local descarregado e memória liberada.');
+    setModelTick(x=>x+1);
   }
 
   function sendFeedback(kind:'positive'|'negative',message:string){
+    rateAdaptiveAnswer(message,kind==='positive');
+    setModelTick(x=>x+1);
     fetch('/api/feedback',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -380,7 +415,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart pode usar WebGPU. Lite usa CPU/WASM econômico para não travar o PC.':'CPU/WASM disponível; nenhuma flag do Chrome é necessária.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite · 0.5B</b><span>1 thread · menor impacto no PC · respostas passam por gate de qualidade</span></button><button onClick={()=>enableNeural('smart')}><b>Qwen Smart · 1.5B</b><span>Mais qualidade; WebGPU quando disponível, CPU/WASM como fallback</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Qwen 1.5B':'Qwen 0.5B'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o modelo do navegador</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
