@@ -35,7 +35,7 @@ export interface CoreResult {
 const INTENTS: Array<{id:CoreIntent; words:RegExp; features:string[]}> = [
   {id:'calculator',words:/calculadora|calculator|calc\b|somar|subtrair|multiplicar|dividir|percentual|porcentagem/i,features:['teclado','histórico','memória','atalhos']},
   {id:'todo',words:/todo|to-do|tarefas?|task list|checklist|afazeres?/i,features:['criar tarefa','concluir','filtrar','excluir']},
-  {id:'notes',words:/notas?|notes?|bloco de notas|anotações?|notebook/i,features:['criar nota','buscar','editar','persistir']},
+  {id:'notes',words:/notas?|notes?|bloco de notas|anotações?|notebook/i,features:['criar nota','buscar','editar','excluir']},
   {id:'timer',words:/timer|cron[oô]metro|pomodoro|contador regressivo|stopwatch/i,features:['iniciar','pausar','resetar','presets']},
   {id:'converter',words:/conversor|converter|câmbio|cambio|moeda|currency|temperatura|medidas?|unidades?/i,features:['converter','trocar unidades','presets']},
   {id:'dashboard',words:/dashboard|painel|analytics|m[eé]trica|metric|kpi|relat[oó]rio executivo/i,features:['KPIs','filtros','atividade','status']},
@@ -247,6 +247,45 @@ function crmCss(){
   ].join(''));
 }
 
+function notesApp(title:string){
+  const safeTitle=JSON.stringify(title);
+  return [
+    "export default function App(){",
+    " const seed=[{id:1,title:'Ideias',body:'Liste decisões e próximos passos aqui.'},{id:2,title:'Projeto',body:'Use busca, edição e exclusão sem backend.'}];",
+    " const [notes,setNotes]=useState(seed);const [selected,setSelected]=useState(1);const [query,setQuery]=useState('');",
+    " const current=notes.find(n=>n.id===selected)||notes[0];const visible=notes.filter(n=>(n.title+' '+n.body).toLowerCase().includes(query.toLowerCase()));",
+    " const add=()=>{const n={id:Date.now(),title:'Nova nota',body:''};setNotes(x=>[n,...x]);setSelected(n.id)};",
+    " const update=(field,value)=>setNotes(xs=>xs.map(n=>n.id===selected?{...n,[field]:value}:n));",
+    " const remove=()=>{if(!current)return;const rest=notes.filter(n=>n.id!==current.id);setNotes(rest);setSelected(rest[0]?.id||0)};",
+    " return <main className='notes-app'><div className='notes-shell'><header><div><span className='pill'>Predict DeepThink · zero API</span><h1>"+safeTitle+"</h1></div><button className='btn' onClick={add}>Nova nota</button></header><section className='notes-grid'><aside className='card notes-list'><input value={query} onChange={e=>setQuery(e.target.value)} placeholder='Buscar notas...'/>{visible.length===0?<div className='empty'>Nada encontrado.</div>:visible.map(n=><button className={selected===n.id?'active':''} onClick={()=>setSelected(n.id)} key={n.id}><b>{n.title}</b><span>{n.body.slice(0,60)||'Sem conteúdo'}</span></button>)}</aside><article className='card editor'>{current?<><input className='note-title' value={current.title} onChange={e=>update('title',e.target.value)}/><textarea value={current.body} onChange={e=>update('body',e.target.value)} placeholder='Escreva sua nota...'/><div className='note-actions'><span>{current.body.length} caracteres</span><button onClick={remove}>Excluir nota</button></div></>:<div className='empty'>Crie uma nota para começar.</div>}</article></section></div></main>",
+    "}"
+  ].join('\n');
+}
+
+function notesCss(){
+  return baseCss([
+    '.notes-app{min-height:100vh;padding:24px}.notes-shell{width:min(1050px,100%);margin:auto}.notes-shell>header{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:15px}.notes-shell h1{font-size:clamp(36px,7vw,62px);letter-spacing:-.06em;margin:8px 0 0}.notes-grid{display:grid;grid-template-columns:280px 1fr;gap:12px;min-height:560px}.notes-list{padding:10px;display:flex;flex-direction:column;gap:6px}.notes-list>input{border:1px solid var(--line);background:#0d0f14;color:var(--text);border-radius:10px;padding:10px;outline:0}.notes-list>button{border:1px solid transparent;background:transparent;color:var(--text);border-radius:10px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:4px}.notes-list>button:hover,.notes-list>button.active{background:#171a22;border-color:#2c3140}.notes-list b{font-size:10px}.notes-list span{font-size:8px;color:var(--muted)}.editor{padding:18px;display:flex;flex-direction:column}.note-title{border:0;background:transparent;color:var(--text);font-size:32px;font-weight:800;letter-spacing:-.04em;outline:0}.editor textarea{flex:1;min-height:360px;border:0;background:transparent;color:#c9cfd9;resize:none;outline:0;padding:18px 0;font-size:14px;line-height:1.65}.note-actions{border-top:1px solid var(--line);padding-top:12px;display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.note-actions button{border:1px solid #4a2932;background:#181014;color:#d77989;border-radius:8px;padding:6px 8px;font-size:9px}@media(max-width:760px){.notes-app{padding:12px}.notes-grid{grid-template-columns:1fr}.notes-list{max-height:220px}.notes-shell>header{align-items:flex-start}.editor textarea{min-height:300px}}'
+  ].join(''));
+}
+
+function portfolioApp(title:string){
+  const safeTitle=JSON.stringify(title);
+  return [
+    "export default function App(){",
+    " const projects=[{name:'Product System',kind:'Product',desc:'Interface, automação e métricas em um único fluxo.'},{name:'AI Workspace',kind:'AI',desc:'Agentes, revisão e ferramentas locais.'},{name:'Mobile Experience',kind:'Mobile',desc:'Fluxo responsivo com foco em execução rápida.'}];",
+    " const [filter,setFilter]=useState('All');const [copied,setCopied]=useState(false);const shown=projects.filter(p=>filter==='All'||p.kind===filter);",
+    " const contact=async()=>{try{await navigator.clipboard.writeText('contact@example.com');setCopied(true);setTimeout(()=>setCopied(false),1200)}catch{setCopied(false)}};",
+    " return <main className='portfolio-app'><div className='portfolio-shell'><nav><b>"+safeTitle+"</b><div className='row'><button onClick={()=>document.getElementById('work')?.scrollIntoView({behavior:'smooth'})}>Projetos</button><button onClick={contact}>{copied?'Email copiado':'Contato'}</button></div></nav><section className='portfolio-hero'><span>DESIGN + DEVELOPMENT</span><h1>Produtos claros.<br/>Interações reais.</h1><p>Portfólio funcional gerado pelo Predict DeepThink sem API externa.</p><button className='btn' onClick={()=>document.getElementById('work')?.scrollIntoView({behavior:'smooth'})}>Ver projetos</button></section><section id='work'><div className='portfolio-head'><h2>Selected work</h2><div className='row'>{['All','Product','AI','Mobile'].map(x=><button className={filter===x?'active':''} onClick={()=>setFilter(x)} key={x}>{x}</button>)}</div></div><div className='portfolio-grid'>{shown.map((p,i)=><article className='card' key={p.name}><div className={'case-art a'+i}/><span>{p.kind}</span><h3>{p.name}</h3><p>{p.desc}</p><button onClick={()=>alert(p.name+' · case aberto')}>Abrir case →</button></article>)}</div></section></div></main>",
+    "}"
+  ].join('\n');
+}
+
+function portfolioCss(){
+  return baseCss([
+    '.portfolio-app{min-height:100vh}.portfolio-shell{width:min(1100px,100%);margin:auto;padding:22px}.portfolio-shell nav{display:flex;justify-content:space-between;align-items:center}.portfolio-shell nav>div button{border:0;background:transparent;color:#8f98a8;font-size:10px}.portfolio-hero{padding:90px 0}.portfolio-hero>span{font-size:9px;letter-spacing:.16em;color:#9a88f1}.portfolio-hero h1{font-size:clamp(54px,10vw,104px);line-height:.88;letter-spacing:-.075em;margin:14px 0}.portfolio-hero p{color:var(--muted);font-size:16px}.portfolio-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:13px}.portfolio-head h2{font-size:32px;letter-spacing:-.04em}.portfolio-head button{border:1px solid var(--line);background:#10131a;color:#7f899b;border-radius:999px;padding:7px 9px;font-size:9px}.portfolio-head button.active{background:#211936;color:#c4b8ff;border-color:#4b3e70}.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-bottom:70px}.portfolio-grid article{padding:13px}.case-art{height:220px;border-radius:14px;background:linear-gradient(135deg,#2d2350,#12141a);margin-bottom:13px}.case-art.a1{background:linear-gradient(135deg,#163936,#12141a)}.case-art.a2{background:linear-gradient(135deg,#3b2c20,#12141a)}.portfolio-grid span{font-size:8px;color:#8f7ee3}.portfolio-grid h3{margin:6px 0}.portfolio-grid p{color:var(--muted);font-size:10px;line-height:1.5}.portfolio-grid article button{border:0;background:transparent;color:#a28ff7;padding:0;font-size:10px}@media(max-width:760px){.portfolio-hero{padding:60px 0}.portfolio-grid{grid-template-columns:1fr}.portfolio-head{align-items:flex-start;flex-direction:column;gap:8px}}'
+  ].join(''));
+}
+
 function storeApp(title:string){
   const safeTitle=JSON.stringify(title);
   return [
@@ -308,6 +347,8 @@ function buildApp(spec:CoreSpec,prompt:string){
   if(spec.intent==='timer')return timerApp(spec.title);
   if(spec.intent==='converter')return converterApp(spec.title);
   if(spec.intent==='crm')return crmApp(spec.title);
+  if(spec.intent==='notes')return notesApp(spec.title);
+  if(spec.intent==='portfolio')return portfolioApp(spec.title);
   if(spec.intent==='store')return storeApp(spec.title);
   if(spec.intent==='dashboard')return dashboardApp(spec.title);
   return genericApp(spec.title,prompt);
@@ -319,6 +360,8 @@ function buildCss(spec:CoreSpec){
   if(spec.intent==='timer')return timerCss();
   if(spec.intent==='converter')return converterCss();
   if(spec.intent==='crm')return crmCss();
+  if(spec.intent==='notes')return notesCss();
+  if(spec.intent==='portfolio')return portfolioCss();
   if(spec.intent==='store')return storeCss();
   if(spec.intent==='dashboard')return dashboardCss();
   return genericCss();
