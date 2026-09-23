@@ -12,11 +12,14 @@ function projectName(files:WorkspaceFile[]){
   const spec=readSpec(files);
   return String(spec?.spec?.title||'Predict App').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'predict-app';
 }
-function backendNeeded(intent:string){
-  return ['crm','store'].includes(intent);
+function backendNeeded(intent:string,spec:any={}){
+  const prompt=String(spec?.prompt||'');
+  const features=Array.isArray(spec?.spec?.features)?spec.spec.features.join(' '):'';
+  return ['crm','store'].includes(intent)||
+    /backend|api|database|banco|postgres|supabase|firebase|auth|login|webhook|integra[cç][aã]o|integration|stripe|datajud|djen/i.test(prompt+' '+features);
 }
-function backendFiles(intent:string):WorkspaceFile[]{
-  if(!backendNeeded(intent))return [];
+function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
+  if(!backendNeeded(intent,spec))return [];
   const entity=intent==='crm'?'leads':'orders';
   const seed=intent==='crm'
     ? JSON.stringify([{id:1,name:'Marina Costa',status:'Novo',value:2400},{id:2,name:'Rafael Lima',status:'Em análise',value:5200}],null,2)
@@ -69,7 +72,7 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
   const app=files.find(f=>/(^|\/)App\.(tsx|jsx|ts|js)$/.test(f.path));
   const css=files.find(f=>/styles?\.css$/.test(f.path));
   const name=projectName(files);
-  const backend=backendNeeded(intent);
+  const backend=backendNeeded(intent,spec);
   const pkg={
     name,
     version:'1.0.0',
@@ -135,14 +138,22 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     {path:'.env.example',content:backend?'VITE_API_URL=http://localhost:8787\nPORT=8787\n':'# No environment variables are required for this app.\n',language:'text'},
     {path:'RUNME.md',content:runme,language:'markdown'}
   ];
-  const preserved=files.filter(f=>['predict.spec.json','ARCHITECTURE.md','README.md'].includes(f.path));
-  return [...base,...backendFiles(intent),...preserved];
+  const preserved=files.filter(f=>
+    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md'].includes(f.path)||
+    f.path.startsWith('src/domain/')||
+    f.path.startsWith('src/integrations/')||
+    f.path.startsWith('src/types/')||
+    f.path.startsWith('server/integrations')
+  );
+  const merged=new Map<string,WorkspaceFile>();
+  for(const file of [...base,...backendFiles(intent,spec),...preserved])merged.set(file.path,file);
+  return Array.from(merged.values());
 }
 
 export function packagingSummary(files:WorkspaceFile[]){
   const spec=readSpec(files);
   const intent=String(spec?.spec?.intent||'generic');
-  const backend=backendNeeded(intent);
+  const backend=backendNeeded(intent,spec);
   return {
     intent,
     backend,
