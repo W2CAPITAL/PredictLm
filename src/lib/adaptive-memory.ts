@@ -15,7 +15,7 @@ export interface AdaptiveExperience{
 }
 
 const KEY='predictlm-adaptive-memory-v1';
-const LIMIT=120;
+const LIMIT=420;
 
 function normalize(text:string){
   return String(text||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
@@ -35,7 +35,13 @@ function safeToStore(text:string){
   if(!s.trim())return false;
   if(/(?:api[_-]?key|secret|token|password|senha)\s*[:=]\s*\S+/i.test(s))return false;
   if(/-----BEGIN [A-Z ]+PRIVATE KEY-----/.test(s))return false;
+  if(/\b(?:sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{20,}\.)/.test(s))return false;
   return true;
+}
+
+function highRiskFactPattern(text:string){
+  const s=String(text||'');
+  return /https?:\/\/|\b\d{2}\/\d{2}\/\d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\bR\$\s?\d|\bUS\$\s?\d|\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/i.test(s);
 }
 function load():AdaptiveExperience[]{
   if(typeof window==='undefined')return [];
@@ -76,7 +82,11 @@ export function captureAdaptiveExperience(prompt:string,answer:string,source:Exp
   }
   rows.unshift({
     id,prompt:p,answer:a,terms:terms(p+' '+a),
-    source,confidence:source==='feedback'?.78:.48,uses:1,createdAt:now,updatedAt:now
+    source,
+    confidence:source==='feedback'?.82:highRiskFactPattern(a)?.34:.5,
+    uses:1,
+    createdAt:now,
+    updatedAt:now
   });
   save(rows.sort((x,y)=>(y.confidence-y.confidence)||(y.updatedAt-x.updatedAt)));
 }
@@ -87,10 +97,11 @@ export function adaptiveContext(query:string,limit=4){
   return load()
     .map(row=>{
       const ageDays=Math.max(0,(now-row.updatedAt)/86400000);
-      const score=similarity(q,row)*2.2+row.confidence+Math.min(.3,row.uses*.03)-Math.min(.25,ageDays*.003);
-      return {row,score};
+      const trusted=row.source==='feedback'||row.confidence>=.68||row.uses>=3;
+      const score=(trusted?similarity(q,row)*2.2:similarity(q,row)*.55)+row.confidence+Math.min(.3,row.uses*.03)-Math.min(.25,ageDays*.003);
+      return {row,score,trusted};
     })
-    .filter(x=>x.score>=.72)
+    .filter(x=>x.trusted&&x.score>=.78)
     .sort((a,b)=>b.score-a.score)
     .slice(0,limit)
     .map(x=>'Experiência local relevante:\nPedido: '+x.row.prompt.slice(0,420)+'\nResultado útil: '+x.row.answer.slice(0,900))
@@ -111,7 +122,7 @@ export function rateAdaptiveAnswer(answer:string,positive:boolean){
     row.confidence=positive?Math.min(.98,row.confidence+.24):Math.max(0,row.confidence-.45);
     row.uses+=positive?1:0;
   }
-  save(rows.filter(x=>x.confidence>.12).sort((a,b)=>b.updatedAt-a.updatedAt));
+  save(rows.filter(x=>x.confidence>.16).sort((a,b)=>b.updatedAt-a.updatedAt));
   return touched;
 }
 
