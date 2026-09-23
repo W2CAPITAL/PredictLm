@@ -9,6 +9,7 @@ import { answerQuality, classifyConversation, directConversationReply, shouldSea
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
+import { trainingRuntimeStats } from '@/lib/training/context';
 import { findCnjNumber } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import type { LegalProcessBundle } from '@/lib/legal/types';
@@ -62,6 +63,7 @@ export function ChatShell({onOpenLegal}:Props){
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
   const memoryStats=useMemo(()=>typeof window==='undefined'?{count:0,trusted:0,lastUpdated:null}:adaptiveMemoryStats(),[modelTick]);
+  const learningStats=useMemo(()=>trainingRuntimeStats(),[]);
 
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
 
@@ -391,7 +393,7 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
@@ -407,7 +409,7 @@ export function ChatShell({onOpenLegal}:Props){
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,unloadNeural,caps,neural,memoryStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,unloadNeural,caps,neural,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — ou use Build Mode para criar apps"/>
     <div className="grok-composer-actions">
@@ -415,7 +417,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span><small>{learningStats?.sources?.total||0} fontes no learning pack · {learningStats?.lessons||0} lições ativas no contexto local.</small></div><button onClick={()=>enableNeural('lite')}><b>Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
