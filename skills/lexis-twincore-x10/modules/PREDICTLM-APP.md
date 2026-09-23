@@ -20,7 +20,10 @@
 - DJEN;
 - e-SAJ TJSP com sessão/CSRF;
 - `gru1`;
-- timeline + apresentação focada;
+- timeline + interpretação processual;
+- resposta em “como está / o que aconteceu / bom ou ruim / o que fazer”;
+- sanitização de CSS/HTML/entidades do DJEN;
+- distinção entre quitação de custas e reabertura real;
 - requisitos de ajuizamento quando solicitados.
 
 ## Imagine / Media
