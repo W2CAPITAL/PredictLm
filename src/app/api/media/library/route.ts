@@ -1,52 +1,55 @@
 import { NextResponse } from 'next/server';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const COOKIE='predictlm_workspace';
+const SECRET_COOKIE='predictlm_workspace_secret';
+const DEFAULT_SUPABASE_URL='https://yzfnfoowbcwrwhhvnypc.supabase.co';
+const DEFAULT_PUBLISHABLE_KEY='sb_publishable_56kl1LgPEEv8wKpjO-mfcg_Qv94Mv2c';
 
 function cfg(){
   const url=String(
     process.env.PREDICT_SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     process.env.SUPABASE_URL ||
-    ''
+    DEFAULT_SUPABASE_URL
   ).replace(/\/$/,'');
-  const key=String(
-    process.env.PREDICT_SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    ''
-  );
-  return {url,key,enabled:!!url&&!!key};
+  const service=String(process.env.PREDICT_SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||'');
+  const publishable=String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||DEFAULT_PUBLISHABLE_KEY);
+  const key=service||publishable;
+  return {url,key,service:!!service,enabled:!!url&&!!key};
 }
 
 function workspace(req:Request){
   const raw=req.headers.get('cookie')||'';
-  const found=raw.match(/(?:^|;\s*)predictlm_workspace=([0-9a-f-]{36})/i)?.[1];
-  return {id:found||randomUUID(),fresh:!found};
+  const idCookie=raw.match(/(?:^|;\s*)predictlm_workspace=([0-9a-f-]{36})/i)?.[1];
+  const secretCookie=raw.match(/(?:^|;\s*)predictlm_workspace_secret=([^;]+)/i)?.[1];
+  const id=idCookie||randomUUID();
+  const secret=secretCookie||randomUUID()+randomUUID();
+  const secretHash=createHash('sha256').update(secret).digest('hex');
+  return {id,secret,secretHash,freshId:!idCookie,freshSecret:!secretCookie};
+}
+
+function applyCookies(res:NextResponse,w:ReturnType<typeof workspace>){
+  const opts={httpOnly:true,sameSite:'lax' as const,secure:process.env.NODE_ENV==='production',path:'/',maxAge:60*60*24*365};
+  if(w.freshId)res.cookies.set(COOKIE,w.id,opts);
+  if(w.freshSecret)res.cookies.set(SECRET_COOKIE,w.secret,opts);
+  return res;
 }
 
 function finish<T>(req:Request,payload:T,init?:ResponseInit){
   const w=workspace(req);
-  const res=NextResponse.json(payload,init);
-  if(w.fresh){
-    res.cookies.set(COOKIE,w.id,{
-      httpOnly:true,
-      sameSite:'lax',
-      secure:process.env.NODE_ENV==='production',
-      path:'/',
-      maxAge:60*60*24*365
-    });
-  }
-  return {res,w};
+  return {res:applyCookies(NextResponse.json(payload,init),w),w};
 }
 
-function headers(key:string,extra:Record<string,string>={}){
+function headers(key:string,w:ReturnType<typeof workspace>,extra:Record<string,string>={}){
   return {
     apikey:key,
     Authorization:'Bearer '+key,
     'Content-Type':'application/json',
+    'x-predict-workspace':w.secretHash,
     ...extra
   };
 }
@@ -65,13 +68,12 @@ export async function GET(req:Request){
     });
     const r=await fetch(url+'/rest/v1/predict_media_generations?'+q.toString(),{
       cache:'no-store',
-      headers:headers(key)
+      headers:headers(key,w)
     });
     if(!r.ok)throw new Error('Supabase '+r.status);
     const items=await r.json();
     const out=NextResponse.json({items,persisted:true});
-    if(w.fresh)out.cookies.set(COOKIE,w.id,{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/',maxAge:60*60*24*365});
-    return out;
+    return applyCookies(out,w);
   }catch{
     return res;
   }
@@ -88,6 +90,7 @@ export async function POST(req:Request){
 
   const row={
     workspace_id:w.id,
+    workspace_secret_hash:w.secretHash,
     kind:['image','video','storyboard'].includes(body?.kind)?body.kind:'image',
     status:['queued','generating','ready','error'].includes(body?.status)?body.status:'ready',
     provider:String(body?.provider||'pollinations').slice(0,80),
@@ -108,7 +111,7 @@ export async function POST(req:Request){
   try{
     const r=await fetch(url+'/rest/v1/predict_media_generations',{
       method:'POST',
-      headers:headers(key,{Prefer:'return=representation'}),
+      headers:headers(key,w,{Prefer:'return=representation'}),
       body:JSON.stringify(row)
     });
     if(!r.ok)throw new Error('Supabase '+r.status);
@@ -124,12 +127,11 @@ export async function POST(req:Request){
     });
     await fetch(url+'/rest/v1/predict_media_generations?'+prune.toString(),{
       method:'DELETE',
-      headers:headers(key,{Prefer:'return=minimal'})
+      headers:headers(key,w,{Prefer:'return=minimal'})
     }).catch(()=>null);
 
     const out=NextResponse.json({item:created,persisted:true});
-    if(w.fresh)out.cookies.set(COOKIE,w.id,{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/',maxAge:60*60*24*365});
-    return out;
+    return applyCookies(out,w);
   }catch{
     return res;
   }
@@ -149,23 +151,22 @@ export async function DELETE(req:Request){
       workspace_id:'eq.'+w.id,
       limit:'1'
     });
-    const lr=await fetch(url+'/rest/v1/predict_media_generations?'+lookup.toString(),{headers:headers(key),cache:'no-store'});
+    const lr=await fetch(url+'/rest/v1/predict_media_generations?'+lookup.toString(),{headers:headers(key,w),cache:'no-store'});
     const item=lr.ok?(await lr.json())?.[0]:null;
 
     if(item?.storage_path){
       const encoded=String(item.storage_path).split('/').map(encodeURIComponent).join('/');
-      await fetch(url+'/storage/v1/object/predict-media/'+encoded,{method:'DELETE',headers:headers(key)}).catch(()=>null);
+      await fetch(url+'/storage/v1/object/predict-media/'+encoded,{method:'DELETE',headers:headers(key,w)}).catch(()=>null);
     }
 
     const q=new URLSearchParams({id:'eq.'+id,workspace_id:'eq.'+w.id});
     const d=await fetch(url+'/rest/v1/predict_media_generations?'+q.toString(),{
       method:'DELETE',
-      headers:headers(key,{Prefer:'return=minimal'})
+      headers:headers(key,w,{Prefer:'return=minimal'})
     });
     if(!d.ok)throw new Error('Supabase '+d.status);
     const out=NextResponse.json({deleted:true,persisted:true});
-    if(w.fresh)out.cookies.set(COOKIE,w.id,{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',path:'/',maxAge:60*60*24*365});
-    return out;
+    return applyCookies(out,w);
   }catch{
     return res;
   }
