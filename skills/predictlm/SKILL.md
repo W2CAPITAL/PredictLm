@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -141,3 +141,23 @@ A origem, licença, formato e destino de runtime ficam centralizados em `src/lib
 - desktop poderá instalar/baixar GGUF separadamente;
 - antes de distribuir qualquer conversão GGUF, verificar licença e procedência do artefato;
 - nunca chamar skill/RAG/memória de “modelo treinado”.
+
+## Gate de relevância de pesquisa
+Pesquisa web nunca entra bruta no contexto do modelo.
+Fluxo: QUERY → NORMALIZE → REMOVE GENERIC TERMS → RELEVANCE SCORE → KEEP/REJECT → SYNTHESIZE.
+
+Regras:
+- palavras genéricas de instrução como “como”, “criar”, “do zero” e “passo” não contam como evidência temática;
+- resultado precisa compartilhar termos centrais da pergunta ou sinônimos explicitamente mapeados;
+- coincidência isolada com “zero” ou prefixo parecido não basta;
+- resultados rejeitados não entram no prompt neural nem nas fontes exibidas;
+- perguntas de empresa não podem aceitar jogo, zero-knowledge ou biografia de “empresário” como contexto apenas por similaridade lexical.
+
+O `/api/health` mantém uma regressão explícita para `como posso criar uma empresa do zero`.
+
+## Benchmark IA Geral
+O benchmark canônico fica em `evals/general-assistant-v1.json`.
+Ele mede 10 casos cegos em conversa geral, raciocínio, empresa, matemática, código, debugging, jurídico processual, pesquisa atual, continuidade contextual e resistência a retrieval irrelevante.
+
+Gerar o pacote cego com `npm run eval:general`.
+Não alterar a rubrica depois de ver respostas de um modelo; mudanças de benchmark exigem nova versão.

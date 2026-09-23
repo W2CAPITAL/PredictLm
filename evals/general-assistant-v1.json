@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "name": "PredictLM General Assistant Blind Benchmark",
+  "scoring": {
+    "scale": "0-10 per case",
+    "dimensions": [
+      "relevance",
+      "correctness",
+      "reasoning",
+      "clarity",
+      "instruction-following",
+      "hallucination-control"
+    ],
+    "note": "Judge the answer only. Do not reveal system/model identity to evaluator."
+  },
+  "cases": [
+    {
+      "id": "general-01",
+      "category": "general",
+      "prompt": "Explique por que o céu é azul para uma pessoa de 12 anos, sem usar mais de 180 palavras.",
+      "criteria": [
+        "explica espalhamento da luz sem jargão excessivo",
+        "não inventa fatos",
+        "respeita limite e público"
+      ]
+    },
+    {
+      "id": "reason-01",
+      "category": "reasoning",
+      "prompt": "Uma loja aumenta um preço em 20% e depois dá 20% de desconto. O preço volta ao original? Explique com um exemplo numérico.",
+      "criteria": [
+        "conclui que não",
+        "exemplo numérico correto",
+        "explica assimetria percentual"
+      ]
+    },
+    {
+      "id": "company-01",
+      "category": "company",
+      "prompt": "Como posso criar uma empresa do zero no Brasil? Quero um roteiro prático, separando validação do negócio e formalização.",
+      "criteria": [
+        "separa validação e formalização",
+        "menciona estrutura/atividade/CNPJ/licenças sem inventar regra específica",
+        "próximos passos claros",
+        "sem contexto irrelevante"
+      ]
+    },
+    {
+      "id": "math-01",
+      "category": "math",
+      "prompt": "Se eu investir R$ 2.500 a 1,2% ao mês por 12 meses com juros compostos e sem aportes, qual o valor aproximado no final? Mostre a fórmula.",
+      "criteria": [
+        "usa M=C(1+i)^n",
+        "resultado aproximado coerente",
+        "mostra cálculo"
+      ]
+    },
+    {
+      "id": "code-01",
+      "category": "code",
+      "prompt": "Escreva uma função TypeScript que agrupe uma lista de pedidos por status sem mutar o array original. Explique a complexidade.",
+      "criteria": [
+        "TypeScript válido",
+        "não muta entrada",
+        "agrupa corretamente",
+        "complexidade coerente"
+      ]
+    },
+    {
+      "id": "debug-01",
+      "category": "debugging",
+      "prompt": "Em React, um useEffect faz fetch e às vezes atualiza estado depois que o componente desmonta. Mostre uma correção simples e explique por quê.",
+      "criteria": [
+        "cleanup/AbortController ou flag correta",
+        "explica race/unmount",
+        "código utilizável"
+      ]
+    },
+    {
+      "id": "legal-01",
+      "category": "legal",
+      "prompt": "Um processo foi extinto por falta de recolhimento de custas e depois aparece 'custas satisfeitas'. Isso sozinho significa que o mérito foi reaberto? Responda com cautela.",
+      "criteria": [
+        "não afirma reabertura automática",
+        "distingue custas de mérito",
+        "recomenda verificar decisão posterior/inteiro teor"
+      ]
+    },
+    {
+      "id": "current-01",
+      "category": "research",
+      "prompt": "Qual é a versão estável atual do Node.js e qual é a LTS atual? Use pesquisa atual e diferencie as duas.",
+      "criteria": [
+        "usa fonte atual",
+        "diferencia Current/LTS",
+        "não responde de memória sem fonte"
+      ]
+    },
+    {
+      "id": "context-01",
+      "category": "context",
+      "prompt": "Contexto anterior: 'O Neural Local já está ativo.' Usuário agora diz: 'sim, já está ativo'. Responda como continuação, sem mandar ativar novamente e sem pesquisar a web.",
+      "criteria": [
+        "mantém contexto",
+        "não repete ativação",
+        "não dispara pesquisa"
+      ]
+    },
+    {
+      "id": "retrieval-01",
+      "category": "retrieval",
+      "prompt": "Como abrir uma empresa do zero?",
+      "criteria": [
+        "não inclui Phantom Blade Zero",
+        "não inclui zero-knowledge",
+        "não usa biografia de youtuber como evidência",
+        "mantém foco em abertura/negócio"
+      ]
+    }
+  ]
+}
