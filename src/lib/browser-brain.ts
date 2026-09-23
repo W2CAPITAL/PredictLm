@@ -457,7 +457,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         }else{
           options?.onStage?.('verify');
           lastNeuralError='';
-          captureAdaptiveExperience(prompt,cleaned,options?.deep?'local-model-deep':'local-model');
+          captureAdaptiveExperience(prompt,cleaned,'local-model');
           return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
         }
       }else{
