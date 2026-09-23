@@ -70,46 +70,95 @@ async function nativeGenerate(system:string,prompt:string){
 function ensureWorker(){
   if(worker)return worker;
   const source=`
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2';
+    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2';
+    env.allowLocalModels=false;
+    env.useBrowserCache=true;
+
     let generator=null;
     let tier=null;
+    let backend=null;
     const MODELS={
       lite:'onnx-community/Qwen2.5-0.5B-Instruct',
       smart:'onnx-community/Qwen2.5-1.5B-Instruct'
     };
+
+    async function createGenerator(requestedTier,preferWebgpu){
+      const attempts=[];
+      if(preferWebgpu)attempts.push('webgpu');
+      attempts.push('wasm');
+
+      let lastError=null;
+      for(const device of [...new Set(attempts)]){
+        try{
+          self.postMessage({type:'progress',tier:requestedTier,progress:null,status:'preparing '+device});
+          const next=await pipeline('text-generation',MODELS[requestedTier],{
+            dtype:'q4',
+            device,
+            progress_callback:(p)=>self.postMessage({
+              type:'progress',
+              tier:requestedTier,
+              progress:typeof p?.progress==='number'?p.progress:null,
+              status:(p?.status||p?.file||'loading')+' · '+device
+            })
+          });
+          return {generator:next,device};
+        }catch(error){
+          lastError=error;
+          self.postMessage({
+            type:'backend-failed',
+            tier:requestedTier,
+            backend:device,
+            message:error?.message||String(error)
+          });
+        }
+      }
+      throw lastError||new Error('No local neural backend available');
+    }
+
     self.onmessage=async(event)=>{
       const msg=event.data;
       try{
         if(msg.type==='load'){
-          if(generator&&tier===msg.tier){self.postMessage({type:'ready',tier});return;}
+          if(generator&&tier===msg.tier){
+            self.postMessage({type:'ready',tier,backend});
+            return;
+          }
+
+          generator=null;
           tier=msg.tier;
-          const device=msg.webgpu?'webgpu':'wasm';
-          generator=await pipeline('text-generation',MODELS[tier],{
-            dtype:'q4',
-            device,
-            progress_callback:(p)=>self.postMessage({type:'progress',tier,progress:p?.progress??null,status:p?.status||p?.file||'loading'})
-          });
-          self.postMessage({type:'progress',tier,progress:100,status:'validating inference'});
+          const loaded=await createGenerator(tier,!!msg.webgpu);
+          generator=loaded.generator;
+          backend=loaded.device;
+
+          self.postMessage({type:'progress',tier,progress:100,status:'validating inference · '+backend});
           const probe=await generator([
-            {role:'system',content:'You are a health check. Reply only OK.'},
+            {role:'system',content:'Reply only OK.'},
             {role:'user',content:'OK?'}
-          ],{max_new_tokens:6,do_sample:false,repetition_penalty:1.0});
+          ],{
+            max_new_tokens:6,
+            do_sample:false,
+            repetition_penalty:1.0
+          });
           const probeResult=probe?.[0]?.generated_text;
-          const probeText=Array.isArray(probeResult)?String(probeResult[probeResult.length-1]?.content||''):String(probeResult||'');
+          const probeText=Array.isArray(probeResult)
+            ? String(probeResult[probeResult.length-1]?.content||'')
+            : String(probeResult||'');
           if(!probeText.trim())throw new Error('Model loaded but inference self-test returned empty output');
-          self.postMessage({type:'ready',tier});
+          self.postMessage({type:'ready',tier,backend});
         }
+
         if(msg.type==='generate'){
           if(!generator)throw new Error('Neural model not loaded');
           const chat=[
             {role:'system',content:msg.system},
-            ...msg.messages.slice(-10),
+            ...msg.messages.slice(-8),
             {role:'user',content:msg.prompt}
           ];
           const out=await generator(chat,{
             max_new_tokens:msg.maxNewTokens||420,
-            temperature:msg.temperature||0.55,
+            temperature:msg.temperature||0.48,
             do_sample:true,
+            top_p:.9,
             repetition_penalty:1.08
           });
           let text='';
@@ -118,14 +167,23 @@ function ensureWorker(){
           else text=String(result||'');
           self.postMessage({type:'result',id:msg.id,text});
         }
-      }catch(error){self.postMessage({type:'error',id:msg.id||0,message:error?.message||String(error)});}
+      }catch(error){
+        self.postMessage({type:'error',id:msg.id||0,message:error?.message||String(error)});
+      }
     };
   `;
   worker=new Worker(URL.createObjectURL(new Blob([source],{type:'text/javascript'})),{type:'module'});
   worker.onmessage=(event)=>{
     const msg=event.data;
-    if(msg.type==='result'&&pending.has(msg.id)){pending.get(msg.id)!.resolve(String(msg.text||''));pending.delete(msg.id);}
-    if(msg.type==='error'&&msg.id&&pending.has(msg.id)){lastNeuralError=String(msg.message||'Local neural generation failed');pending.get(msg.id)!.reject(new Error(lastNeuralError));pending.delete(msg.id);}
+    if(msg.type==='result'&&pending.has(msg.id)){
+      pending.get(msg.id)!.resolve(String(msg.text||''));
+      pending.delete(msg.id);
+    }
+    if(msg.type==='error'&&msg.id&&pending.has(msg.id)){
+      lastNeuralError=String(msg.message||'Local neural generation failed');
+      pending.get(msg.id)!.reject(new Error(lastNeuralError));
+      pending.delete(msg.id);
+    }
   };
   return worker;
 }
@@ -133,15 +191,77 @@ function ensureWorker(){
 export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:number|null;status:string})=>void){
   const w=ensureWorker();
   const caps=browserCapabilities();
+
+  let realWebgpu=false;
+  if(caps.webgpu){
+    try{
+      const gpu=(navigator as any).gpu;
+      const adapter=await Promise.race([
+        gpu.requestAdapter({powerPreference:'high-performance'}),
+        new Promise<null>(resolve=>setTimeout(()=>resolve(null),3500))
+      ]);
+      realWebgpu=!!adapter;
+    }catch{
+      realWebgpu=false;
+    }
+  }
+
+  onProgress?.({
+    progress:null,
+    status:realWebgpu
+      ? 'WebGPU confirmado; preparando modelo'
+      : 'WebGPU indisponível; usando CPU/WASM automaticamente'
+  });
+
   return new Promise<void>((resolve,reject)=>{
+    let settled=false;
+    const timeout=window.setTimeout(()=>{
+      if(settled)return;
+      settled=true;
+      w.removeEventListener('message',onMessage);
+      lastNeuralError='O carregamento local excedeu 8 minutos.';
+      reject(new Error(lastNeuralError));
+    },8*60*1000);
+
+    const finish=(fn:()=>void)=>{
+      if(settled)return;
+      settled=true;
+      window.clearTimeout(timeout);
+      w.removeEventListener('message',onMessage);
+      fn();
+    };
+
     const onMessage=(event:MessageEvent)=>{
       const msg=event.data;
-      if(msg.type==='progress'&&msg.tier===tier)onProgress?.({progress:typeof msg.progress==='number'?msg.progress:null,status:String(msg.status||'loading')});
-      if(msg.type==='ready'&&msg.tier===tier){loadedTier=tier;lastNeuralError='';w.removeEventListener('message',onMessage);resolve();}
-      if(msg.type==='error'&&!msg.id){lastNeuralError=String(msg.message||'Local neural model failed to load');w.removeEventListener('message',onMessage);reject(new Error(lastNeuralError));}
+      if(msg.type==='progress'&&msg.tier===tier){
+        onProgress?.({
+          progress:typeof msg.progress==='number'?msg.progress:null,
+          status:String(msg.status||'loading')
+        });
+      }
+      if(msg.type==='backend-failed'&&msg.tier===tier){
+        const failed=String(msg.backend||'backend');
+        onProgress?.({
+          progress:null,
+          status:failed==='webgpu'
+            ? 'WebGPU falhou; alternando para CPU/WASM'
+            : 'Falha no '+failed
+        });
+      }
+      if(msg.type==='ready'&&msg.tier===tier){
+        loadedTier=tier;
+        lastNeuralError='';
+        onProgress?.({progress:100,status:'pronto · '+String(msg.backend||'local')});
+        finish(resolve);
+      }
+      if(msg.type==='error'&&!msg.id){
+        lastNeuralError=String(msg.message||'Local neural model failed to load');
+        finish(()=>reject(new Error(lastNeuralError)));
+      }
     };
+
     w.addEventListener('message',onMessage);
-    w.postMessage({type:'load',tier,webgpu:caps.webgpu});
+    w.postMessage({type:'load',tier,webgpu:realWebgpu});
   });
 }
 
