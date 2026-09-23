@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Search, Send, Sparkles, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, type NeuralTier } from '@/lib/browser-brain';
+import { classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 
 interface Props{
   onOpenBuild:()=>void;
@@ -32,40 +33,51 @@ export function ChatShell({onOpenBuild,onOpenMedia,onOpenResearch,onOpenPlugins}
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
 
   async function webContext(query:string){
-    if(!s.webEnabled)return {text:'',sources:[] as any[]};
     try{
       const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:6})});
       const data=await r.json();
-      if(!r.ok)return {text:'',sources:[]};
+      if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
       const items=[...(data.web||[]),...(data.news||[])].slice(0,6);
-      const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+x.description+' URL: '+x.url).join('\n');
-      return {text,sources:items.map((x:any)=>({title:x.title,source:x.url}))};
-    }catch{return {text:'',sources:[]}}
+      const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
+      return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
+    }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
   }
 
   async function send(){
     const prompt=input.trim();
     if(!prompt||busy)return;
+    const history=active?.messages||[];
+    const kind=classifyConversation(prompt,history);
+    const currentNeural=neuralStatus();
+    const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded,tier:currentNeural.tier});
+    const needsWeb=shouldSearchConversation(kind,s.webEnabled);
+
     setInput('');
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
     setBusy(true);
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
+
     try{
-      const web=await webContext(prompt);
-      const messages=(active?.messages||[]).slice(-12).map(m=>({role:m.role,content:m.content}));
-      const augmented=web.text?prompt+'\n\nUse estas fontes atuais quando forem relevantes:\n'+web.text:prompt;
-      let reply=await answerLocally(augmented,messages,{preferNative:true,knowledge:s.deepThink});
-      if(web.sources.length&&reply.engine==='knowledge'){
-        reply={
-          ...reply,
-          content:'Encontrei fontes atuais sobre isso:\n\n'+web.sources.map((x:any,i:number)=>(i+1)+'. **'+x.title+'** — '+x.source).join('\n\n')+'\n\nPosso sintetizar melhor com Neural Local ativado.',
-          sources:web.sources
-        };
+      const web=needsWeb?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+      const research=web.items.length?synthesizeResearch(prompt,web.items):null;
+      const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
+      const augmented=web.text
+        ? prompt+'\n\nFontes recuperadas. Responda à pergunta diretamente e use apenas o que for relevante; não liste links sem necessidade:\n'+web.text
+        : prompt;
+      const fallbackText=direct||research?.content||undefined;
+      let reply=await answerLocally(augmented,messages,{preferNative:true,knowledge:s.deepThink,fallbackText});
+
+      if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
+        reply={...reply,content:research.content,sources:research.sources};
+      }else if(direct&&(reply.engine==='knowledge'||reply.engine==='knowledge-fallback')){
+        reply={...reply,content:direct,sources:[]};
       }else if(web.sources.length){
-        reply.sources=[...web.sources,...(reply.sources||[])].slice(0,8);
+        reply.sources=[...web.sources,...(reply.sources||[])].slice(0,4);
       }
-      s.addMessage({role:'assistant',content:reply.content,engine:reply.engine,sources:reply.sources});
+
+      const engineLabel=reply.engine==='knowledge-fallback'?'fallback local':reply.engine==='knowledge'?'Predict Core':reply.engine;
+      s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources});
     }catch(err:any){
       s.addMessage({role:'assistant',content:'Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.'});
     }finally{
@@ -150,7 +162,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'WebGPU detectado':'WASM disponível para Lite'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite</b><span>Mais leve para PC de escritório</span></button><button disabled={!caps.webgpu} onClick={()=>enableNeural('smart')}><b>Qwen Smart</b><span>Mais qualidade com WebGPU</span></button>{neural.loaded&&<small>Modelo local ativo no navegador.</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'WebGPU detectado':'WASM disponível para Lite'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite</b><span>Mais leve para PC de escritório</span></button><button disabled={!caps.webgpu} onClick={()=>enableNeural('smart')}><b>Qwen Smart</b><span>Mais qualidade com WebGPU</span></button>{neural.loaded&&<small>Modelo local ativo no navegador.</small>}{neural.lastError&&<small>Último fallback: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
