@@ -26,31 +26,39 @@ let modelId='';
 
 function post(data:any){(self as DedicatedWorkerGlobalScope).postMessage(data)}
 
-async function openGenerator(requested:Tier,preferWebgpu:boolean){
-  const attempts:{tier:Tier;device:'webgpu'|'wasm';dtype:'q4'|'q8';label:string}[]=[];
+async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:boolean){
+  const attempts:{tier:Tier;device:'webgpu'|'wasm'|'default';dtype:'q4';label:string}[]=[];
   if(requested==='smart'&&preferWebgpu)attempts.push({tier:'smart',device:'webgpu',dtype:'q4',label:'Smart · WebGPU'});
-  if(requested==='smart')attempts.push({tier:'smart',device:'wasm',dtype:'q4',label:'Smart · CPU/WASM'});
-  attempts.push({tier:'lite',device:'wasm',dtype:'q8',label:requested==='smart'?'Compatibilidade · CPU/WASM':'Lite · CPU/WASM'});
+  if(requested==='smart'&&allowSmartWasm)attempts.push({tier:'smart',device:'default',dtype:'q4',label:'Smart · CPU/WASM'});
+  attempts.push({tier:'lite',device:'default',dtype:'q4',label:requested==='smart'?'Compatibilidade Lite · CPU/WASM':'Lite · CPU/WASM'});
+  attempts.push({tier:'lite',device:'wasm',dtype:'q4',label:'Lite · CPU/WASM explícito'});
 
   let lastError:any=null;
   for(const attempt of attempts){
     try{
       post({type:'progress',tier:requested,progress:null,status:'preparando '+attempt.label});
-      const next=await pipeline('text-generation',MODELS[attempt.tier],{
+      const options:any={
         dtype:attempt.dtype,
-        device:attempt.device,
         progress_callback:(p:any)=>post({
           type:'progress',
           tier:requested,
           progress:typeof p?.progress==='number'?p.progress:null,
           status:String(p?.status||p?.file||'carregando')+' · '+attempt.label
         })
-      } as any);
-      return {generator:next,backend:attempt.device,actualTier:attempt.tier,modelId:MODELS[attempt.tier],label:attempt.label};
+      };
+      if(attempt.device!=='default')options.device=attempt.device;
+      const next=await pipeline('text-generation',MODELS[attempt.tier],options);
+      return {
+        generator:next,
+        backend:attempt.device==='webgpu'?'webgpu':'wasm',
+        actualTier:attempt.tier,
+        modelId:MODELS[attempt.tier],
+        label:attempt.label
+      };
     }catch(error:any){
       lastError=error;
       post({type:'backend-failed',tier:requested,backend:attempt.device,message:error?.message||String(error),label:attempt.label});
-      await new Promise(r=>setTimeout(r,150));
+      await new Promise(r=>setTimeout(r,180));
     }
   }
   throw lastError||new Error('Nenhum backend neural local disponível.');
@@ -82,7 +90,7 @@ async function infer(messages:any[],maxNewTokens:number,temperature:number){
       tier=msg.tier;
       backend='none';
       modelId='';
-      const opened=await openGenerator(msg.tier,!!msg.webgpu);
+      const opened=await openGenerator(msg.tier,!!msg.webgpu,!!msg.allowSmartWasm);
       generator=opened.generator;
       backend=opened.backend;
       modelId=opened.modelId;
