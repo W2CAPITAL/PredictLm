@@ -12,7 +12,7 @@ export interface AssistantMessage {
   sources?:{title:string;source:string}[];
   actions?:string[];
   status?:'done'|'partial'|'error';
-  media?:{kind:'image'|'video';url:string;label?:string;temporary?:boolean}[];
+  media?:{kind:'image'|'video'|'file';url:string;label?:string;temporary?:boolean;downloadName?:string;mime?:string}[];
 }
 export interface ChatSession {
   id:string;

@@ -1,5 +1,6 @@
 import type { LegalProcessBundle, LegalTimelineItem } from './types';
 import { legalAttackFramework, tjspFilingChecklist } from './filing';
+import { isAggressiveLegalRequest } from './mode';
 
 function dateBR(value?:string){
   if(!value)return '';
@@ -17,7 +18,7 @@ function strategyRequested(prompt:string){
 }
 
 function councilRequested(prompt:string){
-  return /council|x10|red.?team|tese e contra|pior caso|auditar|an[aá]lise profunda/i.test(prompt);
+  return isAggressiveLegalRequest(prompt)||/council|x10|tese e contra|pior caso|auditar|an[aá]lise profunda/i.test(prompt);
 }
 
 function detailRequested(prompt:string){
@@ -103,6 +104,26 @@ function keyTimeline(bundle:LegalProcessBundle){
   return selected.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 }
 
+function sourceFailureDetails(bundle:LegalProcessBundle){
+  const details:string[]=[];
+  if(!bundle.datajud.ok)details.push('DataJud: '+(bundle.datajud.error||'falha sem detalhe'));
+  if(!bundle.djen.ok)details.push('DJEN: '+(bundle.djen.error||'falha sem detalhe'));
+  for(const p of bundle.officialPortals)if(!p.ok)details.push(p.name+': '+(p.message||'falha sem detalhe'));
+  return details;
+}
+
+function aggressiveReview(bundle:LegalProcessBundle){
+  const findings=bundle.lenses
+    .filter(x=>x.level==='high'||x.level==='attention')
+    .flatMap(x=>x.findings.map(item=>x.title+': '+item))
+    .slice(0,8);
+  const base=[
+    ...findings,
+    ...bundle.interpretation.evidence.slice(0,4).map(x=>'Evidência a conferir: '+x)
+  ];
+  return Array.from(new Set(base)).slice(0,10);
+}
+
 function sourceHealth(bundle:LegalProcessBundle){
   const failed:string[]=[];
   if(!bundle.datajud.ok)failed.push('DataJud');
@@ -170,11 +191,19 @@ export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{cou
   }
 
   const failed=sourceHealth(bundle);
+  const failureDetails=sourceFailureDetails(bundle);
   if(failed.length&&bundle.timeline.length){
-    parts.push('**Limitação desta consulta:** '+failed.join(' e ')+' não responderam corretamente; a leitura acima usa as fontes que retornaram dados.');
+    parts.push('### Falhas de fonte\n'+failureDetails.map(x=>'- '+x).join('\n')+'\n\nA leitura acima preserva apenas as fontes que realmente retornaram dados.');
   }
 
   if(strategyRequested(prompt))parts.push(filingGuidance(bundle,prompt));
+
+  if(isAggressiveLegalRequest(prompt)){
+    const findings=aggressiveReview(bundle);
+    parts.push('### AEGIS — revisão adversarial (pedido expresso)\n'+
+      (findings.length?findings.map(x=>'- '+x).join('\n'):'- Não há evidência pública suficiente para sustentar um ataque técnico além dos caveats já apontados.')+
+      '\n\nO modo adversarial continua limitado aos fatos disponíveis; ausência de dado não vira acusação ou certeza.');
+  }
 
   if(councilRequested(prompt)){
     parts.push('### Revisão X10\n'+councilX10(bundle).map(([name,text])=>'- **'+name+':** '+text).join('\n'));
@@ -195,4 +224,20 @@ export function legalSources(bundle:LegalProcessBundle){
   for(const portal of bundle.officialPortals)if(portal.endpoint)out.push({title:portal.name+' · consulta oficial',source:portal.endpoint});
   for(const p of bundle.djen.publications.slice(0,2))if(p.certificateUrl)out.push({title:'Certidão DJEN · '+(p.type||'Publicação'),source:p.certificateUrl});
   return Array.from(new Map(out.map(x=>[x.source,x])).values()).slice(0,6);
+}
+
+
+export function legalDossierSummary(bundle:LegalProcessBundle,mode:'standard'|'aggressive'='standard'){
+  const i=bundle.interpretation;
+  const lines=[
+    '**Dossiê HTML gerado · '+bundle.processNumber+' · '+bundle.tribunalLabel+'**',
+    '**Modo:** '+(mode==='aggressive'?'AEGIS/agressivo — solicitado expressamente':'standard/neutro-profissional'),
+    '**Estado atual:** '+i.currentState,
+    i.whatHappened[0]?('**Evento-chave:** '+i.whatHappened[0]):'',
+    i.whyItMatters[0]?('**Impacto:** '+i.whyItMatters[0]):'',
+    i.nextActions[0]?('**Próximo passo:** '+i.nextActions[0]):'',
+    '**Fontes:** '+bundle.summary.sourceSummary,
+    (!bundle.datajud.ok||!bundle.djen.ok)?'**Atenção:** há fonte com erro; o HTML registra o erro literal e mantém os dados das fontes que responderam.':''
+  ].filter(Boolean);
+  return lines.join('\n');
 }

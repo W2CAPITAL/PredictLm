@@ -51,7 +51,7 @@ export function LegalModule({onBack,onOpenBuild,initialNumber=''}:{onBack:()=>vo
 
   function downloadDossier(){
     if(!result)return;
-    const html=createLegalDossier(result);
+    const html=createLegalDossier(result,{mode:'standard'});
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
