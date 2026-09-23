@@ -1,92 +1,53 @@
+'use client';
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { AgentRun, ChatMessage, MemoryNote, PanelId, ProviderId, StudioMode, WorkspaceFile } from './types';
 
-export interface FileContent {
-  name: string;
-  content: string;
-  language: string;
-}
+const starterFiles: Record<string, WorkspaceFile> = {
+  'App.tsx': { path:'App.tsx', language:'typescript', content:`export default function App(){return <main className="app"><div className="shell"><span className="pill">PredictLM Studio</span><h1>Descreva o que você quer construir.</h1><p>O Predict Core funciona sem API para starters e pode escalar para modelos locais ou externos.</p></div></main>}` },
+  'styles.css': { path:'styles.css', language:'css', content:`body{margin:0;font-family:Inter,system-ui;background:#08090c;color:#f4f4f5}.shell{max-width:900px;margin:auto;padding:80px 24px}.pill{border:1px solid #292d37;padding:7px 10px;border-radius:999px;color:#9ca3af}h1{font-size:clamp(42px,7vw,78px);letter-spacing:-.06em;line-height:.98;max-width:800px}` }
+};
 
-export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  images?: any[];
-}
-
-interface AppState {
-  files: Record<string, FileContent>;
+interface StudioState {
+  files: Record<string, WorkspaceFile>;
+  activeFile: string;
   messages: ChatMessage[];
-  activeFile: string | null;
-  isGenerating: boolean;
-  activePanel: 'chat' | 'code' | 'preview' | 'settings';
-  showChat: boolean;
-  showCode: boolean;
-  showPreview: boolean;
-  
-  setFiles: (files: Record<string, FileContent>) => void;
-  updateFile: (path: string, content: string) => void;
-  addMessage: (message: ChatMessage) => void;
-  updateLastMessage: (content: string) => void;
-  setActiveFile: (path: string | null) => void;
-  setIsGenerating: (status: boolean) => void;
-  setActivePanel: (panel: 'chat' | 'code' | 'preview' | 'settings') => void;
-  togglePanel: (panel: 'chat' | 'code' | 'preview') => void;
-  resetApp: () => void;
+  notes: MemoryNote[];
+  runs: AgentRun[];
+  provider: ProviderId;
+  mode: StudioMode;
+  activePanel: PanelId;
+  isRunning: boolean;
+  projectName: string;
+  localEndpoint: string;
+  localModel: string;
+  setProvider(v:ProviderId):void;
+  setMode(v:StudioMode):void;
+  setPanel(v:PanelId):void;
+  setRunning(v:boolean):void;
+  setProjectName(v:string):void;
+  setLocalEndpoint(v:string):void;
+  setLocalModel(v:string):void;
+  setActiveFile(v:string):void;
+  mergeFiles(files:WorkspaceFile[]):void;
+  updateFile(path:string, content:string):void;
+  addMessage(m:Omit<ChatMessage,'id'|'createdAt'>):void;
+  addNote(n:Omit<MemoryNote,'id'|'createdAt'>):void;
+  addRun(r:Omit<AgentRun,'id'|'createdAt'>):void;
+  clearProject():void;
 }
 
-export const useAppStore = create<AppState>()(
-  persist(
-    (set) => ({
-      files: {},
-      messages: [],
-      activeFile: null,
-      isGenerating: false,
-      activePanel: 'chat',
-      showChat: true,
-      showCode: true,
-      showPreview: true,
+const id = () => `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
 
-      setFiles: (newFiles) => set((state) => {
-        const currentFiles = state.files || {};
-        const mergedFiles = { ...currentFiles, ...(newFiles || {}) };
-        const paths = Object.keys(mergedFiles);
-        return { 
-          files: mergedFiles,
-          activeFile: state.activeFile && mergedFiles[state.activeFile] ? state.activeFile : (paths[0] || null)
-        };
-      }),
-      updateFile: (path, content) =>
-        set((state) => ({
-          files: {
-            ...(state.files || {}),
-            [path]: state.files?.[path] ? { ...state.files[path], content } : { name: path, content, language: 'javascript' },
-          },
-        })),
-      addMessage: (message) =>
-        set((state) => ({ messages: [...(state.messages || []), message] })),
-      updateLastMessage: (content) =>
-        set((state) => {
-          const currentMessages = state.messages || [];
-          if (currentMessages.length === 0) return { messages: [{ role: 'assistant', content, images: [] }] };
-          const newMessages = [...currentMessages];
-          newMessages[newMessages.length - 1].content = content;
-          return { messages: newMessages };
-        }),
-      setActiveFile: (path) => set({ activeFile: path }),
-      setIsGenerating: (status) => set({ isGenerating: status }),
-      setActivePanel: (panel) => set({ activePanel: panel }),
-      togglePanel: (panel) => set((state) => {
-        if (panel === 'chat') return { showChat: !state.showChat };
-        if (panel === 'code') return { showCode: !state.showCode };
-        if (panel === 'preview') return { showPreview: !state.showPreview };
-        return {};
-      }),
-      resetApp: () => set({ files: {}, messages: [], activeFile: null, isGenerating: false }),
-    }),
-    {
-      name: 'appforge-storage-v7',
-      skipHydration: true,
-    }
-  )
-);
+export const useStudio = create<StudioState>()(persist((set) => ({
+  files:starterFiles,
+  activeFile:'App.tsx', messages:[], notes:[], runs:[], provider:'predict-core', mode:'build', activePanel:'agent', isRunning:false, projectName:'Untitled App', localEndpoint:'http://127.0.0.1:11434', localModel:'qwen2.5-coder:1.5b',
+  setProvider:(provider)=>set({provider}), setMode:(mode)=>set({mode}), setPanel:(activePanel)=>set({activePanel}), setRunning:(isRunning)=>set({isRunning}), setProjectName:(projectName)=>set({projectName}), setLocalEndpoint:(localEndpoint)=>set({localEndpoint}), setLocalModel:(localModel)=>set({localModel}), setActiveFile:(activeFile)=>set({activeFile}),
+  mergeFiles:(incoming)=>set((s)=>{const files={...s.files}; incoming.forEach(f=>{files[f.path]=f}); return {files, activeFile: incoming[0]?.path || s.activeFile};}),
+  updateFile:(path,content)=>set((s)=>({files:{...s.files,[path]:{...(s.files[path]||{path,language:'text'}),content}}})),
+  addMessage:(m)=>set((s)=>({messages:[...s.messages,{...m,id:id(),createdAt:Date.now()}]})),
+  addNote:(n)=>set((s)=>({notes:[{...n,id:id(),createdAt:Date.now()},...s.notes].slice(0,120)})),
+  addRun:(r)=>set((s)=>({runs:[{...r,id:id(),createdAt:Date.now()},...s.runs].slice(0,80)})),
+  clearProject:()=>set({files:starterFiles,activeFile:'App.tsx',messages:[],runs:[],projectName:'Untitled App'})
+}),{name:'predictlm-studio-v2'}));
