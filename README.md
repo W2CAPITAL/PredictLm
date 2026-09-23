@@ -26,6 +26,21 @@ When available, PredictLM first tries a browser-native language model. Users can
 
 Model weights are downloaded on demand and are not bundled into the Vercel deployment. Ollama is not required.
 
+### Model catalog and weight policy
+
+The canonical model map lives in `src/lib/neural-model-catalog.ts`.
+
+| Tier/target | Model | Format | Runtime | License posture |
+| --- | --- | --- | --- | --- |
+| Browser Lite | `onnx-community/Qwen2.5-0.5B-Instruct` | ONNX | Transformers.js / ONNX Runtime Web | upstream Apache-2.0 |
+| Browser Smart | `onnx-community/Qwen2.5-1.5B-Instruct` | ONNX | Transformers.js / ONNX Runtime Web | upstream Apache-2.0 |
+| Desktop planned | Qwen2.5-7B-Instruct | GGUF conversion | embedded llama.cpp | Apache-2.0 |
+| Desktop planned | Phi-4-mini-instruct | GGUF conversion | embedded llama.cpp | MIT |
+| Desktop alternative | Mistral-7B-Instruct-v0.3 | GGUF conversion | embedded llama.cpp | Apache-2.0 |
+| Review only | Qwen2.5-3B-Instruct | GGUF conversion | llama.cpp | Qwen Research; review before distribution |
+
+The web product intentionally does **not** expose 7B as a browser button. A larger model belongs in a future desktop package with embedded llama.cpp and explicit weight installation/download. Skills, retrieval and adaptive memory augment the model; they do not rewrite the foundation weights.
+
 The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
 
 ## Build

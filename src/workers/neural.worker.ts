@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { env, pipeline } from '@huggingface/transformers';
+import { DEFAULT_BROWSER_MODELS } from '../lib/neural-model-catalog';
 
 type Tier='lite'|'smart';
 
@@ -15,8 +16,8 @@ try{
 }catch{}
 
 const MODELS:Record<Tier,string>={
-  lite:'onnx-community/Qwen2.5-0.5B-Instruct',
-  smart:'onnx-community/Qwen2.5-1.5B-Instruct'
+  lite:DEFAULT_BROWSER_MODELS.lite,
+  smart:DEFAULT_BROWSER_MODELS.smart
 };
 
 let generator:any=null;

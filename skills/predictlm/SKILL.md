@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -103,3 +103,41 @@ Regras:
 - DAIV: ciclo issue/plan/edit/test/review/CI, skills, MCP e sandbox/egress explícitos.
 - Assistants Hub: gestão de assistentes, múltiplos providers, histórico, analytics, documentos e funções.
 - Gemini Code, Dr.Ai e GeminiCoder sem licença declarada: somente referência arquitetural até verificação.
+
+
+## Neural Local: pesos, runtime e domínio
+Separar sempre quatro camadas:
+1. **pesos treinados** — o cérebro base open-weight;
+2. **runtime** — código que executa os pesos;
+3. **skills/knowledge/memória** — contexto e procedimentos do PredictLM;
+4. **produto** — Chat, Build, Processos, Media e ferramentas.
+
+Ler/clonar repositórios não equivale a treinar pesos.
+
+### Browser
+- Lite: `onnx-community/Qwen2.5-0.5B-Instruct` · ONNX · Transformers.js · upstream Apache-2.0.
+- Smart: `onnx-community/Qwen2.5-1.5B-Instruct` · ONNX · Transformers.js · upstream Apache-2.0.
+- Lite é CPU/WASM-first.
+- Smart tenta WebGPU e cai para CPU/WASM somente quando a máquina suportar.
+- O modelo carregado só é considerado ativo depois do self-test de inferência.
+- F5 pode restaurar preferência/cache; isso não transforma memória contextual em fine-tune de pesos.
+
+### Desktop planejado
+O salto para 7B não deve ser empurrado para o navegador atual. Para uma edição desktop:
+`GGUF → llama.cpp embutido → adapter PredictLM → skills/memória`.
+
+Candidatos:
+- Qwen2.5-7B-Instruct · Apache-2.0;
+- Phi-4-mini-instruct · MIT;
+- Mistral-7B-Instruct-v0.3 · Apache-2.0.
+- Qwen2.5-3B-Instruct fica em revisão de licença (`qwen-research`) e não entra como default comercial automático.
+
+A origem, licença, formato e destino de runtime ficam centralizados em `src/lib/neural-model-catalog.ts`.
+
+## Regra de distribuição de modelos
+- não commitar pesos grandes no repositório web;
+- browser baixa/cacheia ONNX sob demanda;
+- Vercel hospeda o app, não um 7B embutido;
+- desktop poderá instalar/baixar GGUF separadamente;
+- antes de distribuir qualquer conversão GGUF, verificar licença e procedência do artefato;
+- nunca chamar skill/RAG/memória de “modelo treinado”.

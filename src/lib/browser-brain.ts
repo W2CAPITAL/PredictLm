@@ -4,6 +4,7 @@ import { compileSystemPrompt } from './prompt-os/compiler';
 import { cleanUserFacingAnswer } from './prompt-os/response-contract';
 import { adaptiveContext, adaptiveRecall, captureAdaptiveExperience } from './adaptive-memory';
 import { trainingContext } from './training/context';
+import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -28,6 +29,7 @@ declare global {
 let worker:Worker|null=null;
 let loadedTier:NeuralTier|null=null;
 let loadedBackend:'webgpu'|'wasm'|null=null;
+let loadedModelId:string|null=null;
 let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
@@ -95,8 +97,8 @@ function ensureWorker(){
 }
 
 const NEURAL_MODELS:Record<NeuralTier,string>={
-  lite:process.env.NEXT_PUBLIC_PREDICT_NEURAL_LITE_MODEL||'onnx-community/Qwen2.5-0.5B-Instruct',
-  smart:process.env.NEXT_PUBLIC_PREDICT_NEURAL_SMART_MODEL||'onnx-community/Qwen2.5-1.5B-Instruct'
+  lite:process.env.NEXT_PUBLIC_PREDICT_NEURAL_LITE_MODEL||DEFAULT_BROWSER_MODELS.lite,
+  smart:process.env.NEXT_PUBLIC_PREDICT_NEURAL_SMART_MODEL||DEFAULT_BROWSER_MODELS.smart
 };
 
 const PREF_KEY='predictlm-neural-preference-v1';
@@ -106,6 +108,7 @@ type NeuralProfile={
   requested:NeuralTier;
   actual:NeuralTier;
   backend:'webgpu'|'wasm';
+  modelId:string;
   readyAt:number;
 };
 
@@ -116,6 +119,7 @@ function readNeuralProfile():NeuralProfile|null{
     if(!raw)return null;
     const value=JSON.parse(raw);
     if((value?.requested==='lite'||value?.requested==='smart')&&(value?.actual==='lite'||value?.actual==='smart')&&(value?.backend==='webgpu'||value?.backend==='wasm')){
+      if(!value.modelId)value.modelId=NEURAL_MODELS[value.actual as NeuralTier];
       return value as NeuralProfile;
     }
   }catch{}
@@ -223,12 +227,14 @@ export async function loadNeuralModel(
       if(msg.type==='ready'&&msg.tier===tier){
         loadedTier=msg.actualTier==='smart'?'smart':'lite';
         loadedBackend=msg.backend==='webgpu'?'webgpu':'wasm';
+        loadedModelId=String(msg.modelId||NEURAL_MODELS[loadedTier]);
         lastNeuralError='';
         if(options?.persistPreference!==false){
           saveNeuralPreference(loadedTier,{
             requested:tier,
             actual:loadedTier,
             backend:loadedBackend,
+            modelId:loadedModelId,
             readyAt:Date.now()
           });
         }
@@ -255,7 +261,7 @@ export async function loadNeuralModel(
 
 export function neuralStatus(){
   const profile=typeof window!=='undefined'?readNeuralProfile():null;
-  return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null,profile};
+  return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,modelId:loadedModelId||profile?.modelId||null,lastError:lastNeuralError||null,profile};
 }
 
 export function unloadNeuralModel(options?:{keepPreference?:boolean}){
@@ -265,6 +271,7 @@ export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   }
   loadedTier=null;
   loadedBackend=null;
+  loadedModelId=null;
   lastNeuralError='';
   if(!options?.keepPreference)saveNeuralPreference(null);
   for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
