@@ -3,8 +3,8 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import { Download, Film, Image as ImageIcon, Loader2, Play, RefreshCw, Sparkles, Trash2, WandSparkles } from 'lucide-react';
 import { useStudio } from '@/lib/store';
-import { animateImageToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
-import { buildLocalMotionPlan } from '@/lib/media/video-pipelines';
+import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
+import { buildLocalMotionPlan, buildStoryboardFrames } from '@/lib/media/video-pipelines';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -56,6 +56,8 @@ export function GrokImaginePanel(){
   const [motionSize,setMotionSize]=useState(0);
   const [duration,setDuration]=useState(6000);
   const [motion,setMotion]=useState<LocalMotionStyle>('push-in');
+  const [videoVariant,setVideoVariant]=useState<'storyboard'|'single'>('storyboard');
+  const [videoStage,setVideoStage]=useState('');
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -116,6 +118,17 @@ export function GrokImaginePanel(){
     return saved?.item||null;
   }
 
+  async function createImageUrl(renderPrompt:string,renderSeed:number){
+    const r=await fetch('/api/media/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux'})
+    });
+    const data=await r.json();
+    if(!r.ok||!data?.url)throw new Error(data?.error||'A geração não retornou imagem.');
+    return {url:String(data.url),provider:String(data.provider||''),model:String(data.model||'flux')};
+  }
+
   async function requestImage(){
     if(!enhanced)throw new Error('Descreva a imagem ou vídeo que você quer criar.');
     setLoading(true);
@@ -126,15 +139,8 @@ export function GrokImaginePanel(){
     }
     setMotionSize(0);
     try{
-      const r=await fetch('/api/media/generate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({prompt:enhanced,width:ratio.w,height:ratio.h,seed,model:'flux'})
-      });
-      const data=await r.json();
-      if(!r.ok||!data?.url)throw new Error(data?.error||'A geração não retornou imagem.');
-
-      const url=String(data.url);
+      const data=await createImageUrl(enhanced,seed);
+      const url=data.url;
       setGenerated(url);
       setGeneratedPrompt(enhanced);
       setProvider(data.provider||'');
@@ -216,14 +222,99 @@ export function GrokImaginePanel(){
     }
   }
 
+  async function renderStoryboard(urls:string[],frameLabels:string[]){
+    setMotionBusy(true);
+    setMotionProgress(0);
+    setVideoStage('Carregando cenas');
+    setError('');
+    try{
+      const blob=await animateStoryboardToWebm({
+        imageUrls:urls,
+        width:ratio.w,
+        height:ratio.h,
+        durationMs:Math.max(duration,9000),
+        onFrameLoaded:(loaded,total)=>{
+          setVideoStage('Cena '+loaded+'/'+total+' pronta');
+          setMotionProgress((loaded/total)*0.18);
+        },
+        onProgress:value=>{
+          setVideoStage('Renderizando vídeo');
+          setMotionProgress(.18+value*.82);
+        }
+      });
+      if(motionUrl)URL.revokeObjectURL(motionUrl);
+      const localUrl=URL.createObjectURL(blob);
+      setMotionUrl(localUrl);
+      setMotionMime(blob.type||'video/webm');
+      setMotionSize(blob.size);
+      await saveLibrary({
+        kind:'video',
+        provider:'predict-storyboard',
+        model:'predict-storyboard-v1',
+        url:null,
+        meta:{
+          durationMs:Math.max(duration,9000),
+          variant:'storyboard',
+          frames:urls,
+          frameLabels,
+          mime:blob.type||'video/webm',
+          bytes:blob.size
+        }
+      });
+      return blob;
+    }catch(e:any){
+      setError(e?.message||'Não foi possível gerar o storyboard em vídeo.');
+      return null;
+    }finally{
+      setVideoStage('');
+      setMotionBusy(false);
+    }
+  }
+
   async function generateVideo(){
     if(!enhanced||loading||motionBusy)return;
+    setError('');
+    if(videoVariant==='single'){
+      try{
+        let source=generated;
+        if(!source||generatedPrompt!==enhanced)source=await requestImage();
+        await animate(source);
+      }catch(e:any){
+        setError(e?.message||'Não foi possível gerar o vídeo.');
+      }
+      return;
+    }
+
+    setLoading(true);
+    setVideoStage('Planejando 3 cenas');
     try{
-      let source=generated;
-      if(!source||generatedPrompt!==enhanced)source=await requestImage();
-      await animate(source);
+      const frames=buildStoryboardFrames(prompt,style,ratio.label);
+      const urls:string[]=[];
+      let firstProvider='';
+      for(let i=0;i<frames.length;i++){
+        setVideoStage('Preparando cena '+(i+1)+'/'+frames.length);
+        const frame=frames[i];
+        const result=await createImageUrl(frame.prompt,Math.min(2147483646,seed+frame.seedOffset));
+        urls.push(result.url);
+        if(!firstProvider)firstProvider=result.provider;
+      }
+      if(!urls.length)throw new Error('Nenhuma cena foi criada.');
+      setGenerated(urls[0]);
+      setGeneratedPrompt(enhanced);
+      setProvider(firstProvider||'pollinations-proxy');
+      await saveLibrary({
+        kind:'image',
+        provider:firstProvider||'pollinations-proxy',
+        model:'flux',
+        url:urls[0],
+        meta:{keyframeForVideo:true,storyboard:true,shots:frames.map(x=>x.label)}
+      });
+      setLoading(false);
+      await renderStoryboard(urls,frames.map(x=>x.label));
     }catch(e:any){
       setError(e?.message||'Não foi possível gerar o vídeo.');
+      setLoading(false);
+      setVideoStage('');
     }
   }
 
@@ -287,6 +378,11 @@ export function GrokImaginePanel(){
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
 
         {mode==='video'?<div className="gmedia-video-options">
+          <span>Tipo de vídeo</span>
+          <div>
+            <button className={videoVariant==='storyboard'?'active':''} onClick={()=>setVideoVariant('storyboard')}>3 cenas IA</button>
+            <button className={videoVariant==='single'?'active':''} onClick={()=>setVideoVariant('single')}>1 cena + motion</button>
+          </div>
           <span>Duração</span>
           <div>{durations.map(ms=><button className={duration===ms?'active':''} key={ms} onClick={()=>setDuration(ms)}>{ms/1000}s</button>)}</div>
           <span>Movimento</span>
@@ -302,13 +398,13 @@ export function GrokImaginePanel(){
           </button>
           :<button className="gimagine-generate gmedia-video-generate" onClick={generateVideo} disabled={!prompt.trim()||mainBusy}>
             {mainBusy?<Loader2 size={16} className="spin"/>:<Play size={16}/>}
-            {motionBusy?'Gerando vídeo '+mainProgress+'%':loading?'Criando keyframe…':'Gerar vídeo'}
+            {motionBusy?(videoStage||'Gerando vídeo')+' '+mainProgress+'%':loading?(videoStage||'Criando cenas…'):'Gerar vídeo'}
           </button>}
 
         <button className="gimagine-save" onClick={savePrompt} disabled={!prompt.trim()}>Salvar prompt e plano no projeto</button>
 
         {mode==='video'?<div className="gmedia-motion-card">
-          <div><Film size={15}/><span><b>Vídeo local funcional</b><small>{duration/1000}s · {motion} · WebM · sem upload do binário</small></span></div>
+          <div><Film size={15}/><span><b>{videoVariant==='storyboard'?'Storyboard IA + render local':'Vídeo local funcional'}</b><small>{videoVariant==='storyboard'?'3 keyframes coerentes + transições + WebM':duration/1000+'s · '+motion+' · WebM'} · sem upload do binário</small></span></div>
           {generated?<button onClick={()=>animate(generated)} disabled={motionBusy||loading}>{motionBusy?'Renderizando '+Math.round(motionProgress*100)+'%':'Animar a imagem atual'}</button>:null}
           {motionUrl?<div className="gmedia-motion-actions"><a href={motionUrl} target="_blank" rel="noreferrer">Prévia</a><button onClick={downloadVideo}><Download size={12}/>Baixar vídeo</button></div>:null}
           {motionSize?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
