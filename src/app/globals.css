@@ -259,3 +259,5 @@ button,input,textarea{font:inherit}
 .gmedia-library-empty{border:1px dashed #2a2a2a;border-radius:12px;padding:22px;text-align:center;color:#666;font-size:9px}
 .spin{animation:spin .9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:1100px){.gmedia-gallery{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.gmedia-gallery{grid-template-columns:repeat(2,1fr)}.gbuild-switcher-menu{width:min(310px,82vw)}.gmedia-library-head{align-items:flex-start;flex-direction:column}}@media(max-width:480px){.gmedia-gallery{grid-template-columns:1fr}}
+
+.grok-feedback{display:flex;gap:4px;margin-top:7px;opacity:.55}.grok-feedback:hover{opacity:1}.grok-feedback button{width:27px;height:25px;border:0;background:transparent;color:#747474;border-radius:7px;display:grid;place-items:center}.grok-feedback button:hover{background:#202020;color:#ddd}
