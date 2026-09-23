@@ -50,7 +50,7 @@ function envExample(req:ProductRequirements){
     'VITE_API_URL=http://localhost:8787'
   ];
   if(req.integrations.includes('supabase'))lines.push('SUPABASE_URL=','SUPABASE_ANON_KEY=','SUPABASE_SERVICE_ROLE_KEY=');
-  if(req.integrations.includes('firebase'))lines.push('FIREBASE_PROJECT_ID=','FIREBASE_CLIENT_EMAIL=','FIREBASE_PRIVATE_KEY=');
+  if(req.integrations.includes('firebase'))lines.push('FIREBASE_REST_BASE_URL=','FIREBASE_ACCESS_TOKEN=');
   if(req.integrations.includes('datajud'))lines.push('DATAJUD_API_KEY=');
   if(req.integrations.includes('github'))lines.push('GITHUB_TOKEN=');
   if(req.integrations.includes('vercel'))lines.push('VERCEL_TOKEN=');
