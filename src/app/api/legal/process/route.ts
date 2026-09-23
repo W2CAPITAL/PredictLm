@@ -3,6 +3,7 @@ import { queryLegalProcess } from '@/lib/legal/server';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const preferredRegion='gru1';
+export const maxDuration=60;
 
 export async function GET(req:Request){
   const url=new URL(req.url);
