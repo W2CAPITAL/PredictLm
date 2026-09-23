@@ -16,6 +16,7 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
   const p=String(prompt||'').toLowerCase();
   const business=['crm','store','dashboard'].includes(intent);
   const integrations:string[]=[];
+  if(business)integrations.push('rest-api');
   const known:[string,RegExp][]=[
     ['supabase',/supabase/],
     ['firebase',/firebase/],
