@@ -44,3 +44,13 @@ No video binary is uploaded to Supabase by default; only lightweight metadata/hi
 - PKU-YuanGroup/ConsisID
 
 Padrões incorporados: cena/storyboard, continuidade, provider adapters, keyframes, montagem, caption/TTS e identidade consistente. Modelos pesados como Helios/ConsisID são referência/adapter remoto, não runtime do Vercel.
+
+
+### Optional generative video providers
+
+The default path stays local/free. When server credentials exist, PredictLM exposes normalized async adapters for:
+- Veo 3 / Veo 3 Fast via Mountsea (`/veo/generate` + `/veo/task`);
+- Sora 2 via Mountsea (`/sora/generate` + `/sora/task`);
+- Seedance 2 via Seegen (`/jobs/createTask` + `/jobs/queryTask`).
+
+Provider keys stay server-side. The UI disables providers that are not configured and never pretends an unavailable provider is working.
