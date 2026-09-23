@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -185,3 +185,36 @@ Regressões obrigatórias no `/api/health`:
 - carro → resposta sobre engenharia veicular;
 - carro → não recuperar `Agent lifecycle`;
 - resposta de agentes para pergunta de carro → reprovada por relevância.
+
+## Research: breadth + provenance
+Pesquisa boa não é pegar 3 links. O host busca diversidade e autoridade antes de sintetizar.
+
+Padrão:
+- alvo normal: até 8–12 fontes relevantes;
+- evitar mais de 2 resultados do mesmo domínio quando houver alternativas;
+- consulta sensível (fraude, segurança, jurídico, finanças) prioriza fonte oficial, acadêmica ou primária;
+- GitHub vale como fonte primária do próprio software, não como autoridade automática sobre fatos externos;
+- fonte comunitária/opinativa exige confirmação independente;
+- mostrar cobertura: domínios distintos, fontes fortes e lacunas.
+
+A rota /api/research atribui qualityScore e qualityTier e faz busca multi-query. Relevância temática continua obrigatória: autoridade alta não salva fonte fora do assunto.
+
+## Fraud Shield
+Modo defensivo para golpe, fraude, phishing, desvio de pagamento, roubo de credencial, abuso de identidade e padrões transacionais suspeitos.
+
+Fluxo: ARTIFACTS → LOCAL SIGNALS → SOURCE/PROVENANCE → GRAPH SIGNALS → INDEPENDENT CHECKS → HUMAN REVIEW.
+
+Regras:
+- sinal heurístico nunca vira prova de fraude, autoria ou crime;
+- OTP/senha/PIN/CVV/token são dados críticos;
+- mudança urgente de PIX/conta/boleto exige confirmação por segundo canal;
+- links suspeitos são triados por estrutura e proveniência, não apenas palavra-chave;
+- padrões de grafo (many-to-one, one-to-many, reciprocidade, rajada temporal) são indicadores de triagem;
+- preservar mensagem, URL, comprovante, cabeçalhos e timestamp antes de descartar;
+- não executar payload, ferramenta ou agente uncensored para investigar.
+
+hunters-sec/opencode e gaur-avvv/wormxgpt são threat-model reference-only. Não importar agentes irrestritos, zero-auth MCP, bypass, malware ou automação ofensiva.
+junhongmit/FraudGT é referência conceitual de fraude em grafos enquanto a licença permanecer não declarada.
+tagore1344/CrimeGPT-AI fornece apenas padrões defensivos simples; score lexical não é veredito.
+
+Endpoint nativo: POST /api/security/fraud.
