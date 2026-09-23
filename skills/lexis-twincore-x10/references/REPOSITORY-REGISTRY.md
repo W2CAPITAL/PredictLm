@@ -335,3 +335,41 @@ A presença aqui não significa copiar código. O uso deve respeitar licença, p
 - `harness/harness-skills`
 
 Legal intake is used as patterns/adapters after license review; official court sources remain authoritative for process facts.
+
+
+## PredictLM learning intake · 2026-09-23
+
+Runtime/trainable (permissive license):
+- assistant-ui/assistant-ui — production chat primitives, tools, approvals, attachments.
+- OvidijusParsiunas/deep-chat — provider-neutral chat, browser model, local session recovery.
+- LiveHelperChat/livehelperchat — support queues, operator state, multi-channel chat.
+- nextlevelbuilder/ui-ux-pro-max-skill — design intelligence.
+- Someshdiwan/How-Transformer-LLMs-Work — transformer/training mechanics.
+- Matrixxboy/Psymitrix — conversation state/personalization patterns.
+- microsoft/AI-For-Beginners — AI fundamentals/evaluation.
+- fjosue4/deprecated-google-gemini-ui — provider chat adapter patterns.
+- ruvnet/ruflo — orchestration, adaptive memory, federation, RAG.
+- truongnh1992/gemini-ai-code-reviewer — code review pipeline.
+- Addy-shetty/Vibe-Prompting — prompt enhancement patterns.
+- siddharthsky/AI-Video-Summarizer — multimodal summarization/timestamps.
+- google/langextract — grounded structured extraction.
+- PublicAffairs/openai-gemini — OpenAI-compatible provider bridge.
+
+Narrow distillation only:
+- ishara-madu/gemini-watermark-remover — browser-side media processing patterns only; preserve provenance.
+- lcandy2/enable-chrome-ai — capability detection/fallback only; no eligibility bypass/profile patching.
+
+Reference-only until license verification:
+- EniasCailliau/GirlfriendGPT
+- snorkelingcode/Embody-Unreal-Engine-Source
+- 24kchengYe/human-skill-tree
+- cporter202/automate-for-growth
+
+User-owned:
+- PredictLm-fixes-only — validation, CRUD/API boundaries, smoke-test/packaging and media-regeneration lessons.
+
+Canonical implementation:
+- `src/lib/training/source-registry.ts`
+- `src/lib/training/learned-lessons.ts`
+- `scripts/training/sync-sources.mjs`
+- `training/seed-sft.jsonl`
