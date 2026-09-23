@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import JSZip from 'jszip';
-import { Bot, Brain, ChevronDown, Code2, Download, FileCode2, Film, FolderTree, Globe2, Hammer, Layers3, MemoryStick, PanelLeft, Play, Plug, Plus, RotateCcw, Search, Send, Settings2, ShieldCheck, Sparkles, TerminalSquare, Trash2, Upload, WandSparkles } from 'lucide-react';
+import { Bot, Brain, ChevronDown, Code2, Download, FileCode2, Film, FolderTree, Globe2, Hammer, Layers3, MemoryStick, MessageSquare, PanelLeft, Play, Plug, Plus, RotateCcw, Search, Send, Settings2, ShieldCheck, Sparkles, TerminalSquare, Trash2, Upload, WandSparkles } from 'lucide-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { css } from '@codemirror/lang-css';
@@ -10,6 +10,9 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { useStudio } from '@/lib/store';
 import { skills } from '@/lib/skills';
 import { explainDeepThink, runPredictCore } from '@/lib/predict-core';
+import { orchestrateBuild, type BuildPhase } from '@/lib/build-orchestrator';
+import { buildRunnableProject } from '@/lib/project-packager';
+import { enhanceBuildPrompt, promptPresets, type PromptPreset } from '@/lib/prompt-enhancer';
 import { runLocal, runPuter, runServer } from '@/lib/providers';
 import { buildPreview } from '@/lib/preview';
 import { runLocalCouncil } from '@/lib/council';
@@ -40,7 +43,7 @@ const providers: {id:ProviderId;label:string;desc:string}[] = [
 ];
 const modes: StudioMode[] = ['build','plan','review','research','media'];
 
-export function StudioShell(){
+export function StudioShell({onExitToChat}:{onExitToChat?:()=>void}){
   const s = useStudio();
   const [prompt,setPrompt]=useState('');
   const [providerOpen,setProviderOpen]=useState(false);
@@ -50,6 +53,7 @@ export function StudioShell(){
   const [skillQuery,setSkillQuery]=useState('');
   const [inspectMode,setInspectMode]=useState(false);
   const [selectedElement,setSelectedElement]=useState<{tag:string;id:string;classes:string[];text:string;rect:{x:number;y:number;width:number;height:number}}|null>(null);
+  const [buildPhases,setBuildPhases]=useState<BuildPhase[]>([]);
   const iframeRef=useRef<HTMLIFrameElement>(null);
   const importRef=useRef<HTMLInputElement>(null);
   const files = Object.values(s.files);
