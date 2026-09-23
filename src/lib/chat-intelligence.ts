@@ -160,6 +160,8 @@ export interface ResearchItem{
   url:string;
   source?:string;
   site?:string;
+  qualityScore?:number;
+  qualityTier?:string;
 }
 
 const RESEARCH_STOPWORDS=new Set([
@@ -195,12 +197,29 @@ export function researchItemRelevance(query:string,item:ResearchItem){
   return {score,matches,titleMatches,relevant};
 }
 
-export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=6){
-  return items.map(item=>({item,...researchItemRelevance(query,item)}))
-    .filter(x=>x.relevant)
-    .sort((a,b)=>b.score-a.score)
-    .slice(0,limit)
-    .map(x=>x.item);
+function researchHost(item:ResearchItem){
+  try{return new URL(item.url).hostname.replace(/^www\./,'').toLowerCase()}catch{return item.site||''}
+}
+
+export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=8){
+  const ranked=items.map(item=>{
+    const rel=researchItemRelevance(query,item);
+    const quality=Math.max(0,Math.min(100,Number(item.qualityScore??50)));
+    return {item,...rel,rank:rel.score+Math.floor(quality/15)};
+  }).filter(x=>x.relevant)
+    .sort((a,b)=>b.rank-a.rank);
+
+  const selected:ResearchItem[]=[];
+  const perHost=new Map<string,number>();
+  for(const row of ranked){
+    const host=researchHost(row.item)||row.item.url;
+    const count=perHost.get(host)||0;
+    if(count>=2)continue;
+    selected.push(row.item);
+    perHost.set(host,count+1);
+    if(selected.length>=limit)break;
+  }
+  return selected;
 }
 
 function trimSentence(text:string,max=1150){
@@ -212,12 +231,12 @@ function trimSentence(text:string,max=1150){
 }
 
 export function synthesizeResearch(prompt:string,items:ResearchItem[]){
-  const useful=filterRelevantResearchItems(prompt,items.filter(x=>(x.summary||x.description)?.trim()),5);
+  const useful=filterRelevantResearchItems(prompt,items.filter(x=>(x.summary||x.description)?.trim()),8);
   if(!useful.length)return null;
   const kind=classifyConversation(prompt);
   const first=useful[0];
   const primary=trimSentence(first.summary||first.description||'');
-  const sources=useful.slice(0,4).map(x=>({title:x.title,source:x.url}));
+  const sources=useful.slice(0,6).map(x=>({title:x.title,source:x.url}));
 
   if(kind==='factual'){
     const extra=useful.slice(1,3).map(x=>trimSentence(x.summary||x.description||'',360)).filter(Boolean);
@@ -225,14 +244,14 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
   }
   if(kind==='current'){
     return {
-      content:useful.slice(0,4).map(x=>'**'+x.title+'**\n'+trimSentence(x.summary||x.description||'',560)).join('\n\n'),
+      content:useful.slice(0,6).map(x=>'**'+x.title+'**\n'+trimSentence(x.summary||x.description||'',560)).join('\n\n'),
       sources
     };
   }
   if(kind==='howto'){
     const local=practicalHowTo(prompt);
     if(local)return {content:local,sources};
-    const evidence=useful.slice(0,3).map((x,i)=>(i+1)+'. '+trimSentence(x.summary||x.description||'',320)).join('\n');
+    const evidence=useful.slice(0,5).map((x,i)=>(i+1)+'. '+trimSentence(x.summary||x.description||'',320)).join('\n');
     return {
       content:[
         '**Caminho prático**',
@@ -248,7 +267,7 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
       sources
     };
   }
-  const snippets=useful.slice(0,3).map(x=>trimSentence(x.summary||x.description||'',380)).filter(Boolean);
+  const snippets=useful.slice(0,5).map(x=>trimSentence(x.summary||x.description||'',380)).filter(Boolean);
   return {
     content:snippets.join('\n\n'),
     sources
