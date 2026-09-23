@@ -57,6 +57,9 @@ export function GrokImaginePanel(){
   const [duration,setDuration]=useState(6000);
   const [motion,setMotion]=useState<LocalMotionStyle>('push-in');
   const [videoVariant,setVideoVariant]=useState<'storyboard'|'single'>('storyboard');
+  const [videoProvider,setVideoProvider]=useState<'local'|'veo'|'sora'|'seedance'>('local');
+  const [videoProviders,setVideoProviders]=useState<Record<string,{enabled:boolean;label:string;requiresExternalCredits?:boolean}>>({});
+  const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
   const [videoStage,setVideoStage]=useState('');
   const addFile=useStudio(s=>s.addFile);
 
@@ -68,14 +71,15 @@ export function GrokImaginePanel(){
 
   useEffect(()=>{
     let live=true;
-    fetch('/api/media/library',{cache:'no-store'})
-      .then(r=>r.json())
-      .then(data=>{
-        if(!live)return;
-        setGallery(Array.isArray(data?.items)?data.items:[]);
-        setPersisted(!!data?.persisted);
-      })
-      .catch(()=>{});
+    Promise.all([
+      fetch('/api/media/library',{cache:'no-store'}).then(r=>r.json()).catch(()=>({items:[],persisted:false})),
+      fetch('/api/media/video',{cache:'no-store'}).then(r=>r.json()).catch(()=>({providers:{local:{enabled:true,label:'Local storyboard'}}}))
+    ]).then(([media,video])=>{
+      if(!live)return;
+      setGallery(Array.isArray(media?.items)?media.items:[]);
+      setPersisted(!!media?.persisted);
+      setVideoProviders(video?.providers||{local:{enabled:true,label:'Local storyboard'}});
+    });
     return()=>{live=false};
   },[]);
 
@@ -133,6 +137,7 @@ export function GrokImaginePanel(){
     if(!enhanced)throw new Error('Descreva a imagem ou vídeo que você quer criar.');
     setLoading(true);
     setError('');
+    setRemoteVideoUrl('');
     if(motionUrl){
       URL.revokeObjectURL(motionUrl);
       setMotionUrl('');
@@ -271,9 +276,79 @@ export function GrokImaginePanel(){
     }
   }
 
+  async function generateRemoteVideo(){
+    setMotionBusy(true);
+    setMotionProgress(0);
+    setVideoStage('Enviando para '+videoProvider);
+    setError('');
+    setRemoteVideoUrl('');
+    try{
+      const currentImage=generated&&generatedPrompt===enhanced?generated:undefined;
+      const create=await fetch('/api/media/video',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          provider:videoProvider,
+          prompt:enhanced,
+          duration:Math.max(3,Math.round(duration/1000)),
+          imageUrl:currentImage
+        })
+      });
+      const initial=await create.json();
+      if(!create.ok)throw new Error(initial?.error||'Falha ao iniciar vídeo IA.');
+
+      let videoUrl=initial?.videoUrl||'';
+      const taskId=String(initial?.taskId||'');
+      if(!videoUrl&&!taskId)throw new Error('Provider não retornou uma tarefa válida.');
+
+      if(!videoUrl){
+        for(let attempt=0;attempt<72;attempt++){
+          setVideoStage('Gerando no '+videoProvider+' · '+Math.round((attempt+1)*5)+'s');
+          setMotionProgress(Math.min(.94,.08+(attempt/72)*.86));
+          await new Promise(r=>setTimeout(r,5000));
+          const q=new URLSearchParams({provider:videoProvider,taskId});
+          const poll=await fetch('/api/media/video?'+q.toString(),{cache:'no-store'});
+          const status=await poll.json();
+          if(!poll.ok)throw new Error(status?.error||'Falha ao consultar o vídeo.');
+          if(status?.status==='failed')throw new Error(status?.error||'O provider não conseguiu gerar o vídeo.');
+          if(status?.status==='completed'&&status?.videoUrl){
+            videoUrl=String(status.videoUrl);
+            break;
+          }
+        }
+      }
+      if(!videoUrl)throw new Error('A geração excedeu 6 minutos sem concluir.');
+
+      setRemoteVideoUrl(videoUrl);
+      setMotionProgress(1);
+      await saveLibrary({
+        kind:'video',
+        provider:videoProvider,
+        model:videoProvider,
+        url:videoUrl,
+        meta:{
+          durationMs:duration,
+          variant:'remote-generative-video',
+          sourceImage:currentImage||null
+        }
+      });
+      return videoUrl;
+    }catch(e:any){
+      setError(e?.message||'Não foi possível gerar o vídeo IA.');
+      return null;
+    }finally{
+      setVideoStage('');
+      setMotionBusy(false);
+    }
+  }
+
   async function generateVideo(){
     if(!enhanced||loading||motionBusy)return;
     setError('');
+    if(videoProvider!=='local'){
+      await generateRemoteVideo();
+      return;
+    }
     if(videoVariant==='single'){
       try{
         let source=generated;
@@ -319,6 +394,10 @@ export function GrokImaginePanel(){
   }
 
   async function downloadVideo(){
+    if(remoteVideoUrl){
+      window.open(remoteVideoUrl,'_blank','noopener,noreferrer');
+      return;
+    }
     if(!motionUrl)return;
     const blob=await fetch(motionUrl).then(r=>r.blob());
     const ext=blob.type.includes('mp4')?'mp4':'webm';
@@ -343,7 +422,10 @@ export function GrokImaginePanel(){
     if(next)setRatio(next);
     if(item.seed)setSeed(Number(item.seed));
     setProvider(item.provider||'');
-    if(item.kind==='video')setMode('video');
+    if(item.kind==='video'){
+      setMode('video');
+      if(item.remote_url)setRemoteVideoUrl(item.remote_url);
+    }else setRemoteVideoUrl('');
     setMotionUrl('');
   }
 
@@ -378,6 +460,25 @@ export function GrokImaginePanel(){
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
 
         {mode==='video'?<div className="gmedia-video-options">
+          <span>Motor</span>
+          <div className="gmedia-provider-row">
+            {([
+              ['local','Local grátis'],
+              ['veo','Veo 3'],
+              ['sora','Sora 2'],
+              ['seedance','Seedance 2']
+            ] as const).map(([id,label])=>{
+              const enabled=id==='local'||!!videoProviders[id]?.enabled;
+              return <button
+                key={id}
+                className={videoProvider===id?'active':''}
+                disabled={!enabled}
+                title={!enabled?'Configure a API key no servidor para habilitar este provider.':id==='local'?'Sem custo/API externa':'Provider externo pode consumir créditos.'}
+                onClick={()=>setVideoProvider(id)}
+              >{label}{!enabled?' · off':''}</button>
+            })}
+          </div>
+          {videoProvider==='local'?<>
           <span>Tipo de vídeo</span>
           <div>
             <button className={videoVariant==='storyboard'?'active':''} onClick={()=>setVideoVariant('storyboard')}>3 cenas IA</button>
@@ -387,6 +488,11 @@ export function GrokImaginePanel(){
           <div>{durations.map(ms=><button className={duration===ms?'active':''} key={ms} onClick={()=>setDuration(ms)}>{ms/1000}s</button>)}</div>
           <span>Movimento</span>
           <div>{motions.map(x=><button className={motion===x.id?'active':''} key={x.id} onClick={()=>setMotion(x.id)}>{x.label}</button>)}</div>
+          </>:<>
+          <span>Duração alvo</span>
+          <div>{durations.map(ms=><button className={duration===ms?'active':''} key={ms} onClick={()=>setDuration(ms)}>{ms/1000}s</button>)}</div>
+          <small className="gmedia-provider-note">Veo/Sora/Seedance usam API externa apenas quando a chave correspondente está configurada. O modo Local continua gratuito e funcional.</small>
+          </>}
         </div>:null}
 
         <label className="seed-row"><span>Seed</span><input type="number" value={seed} onChange={e=>setSeed(Number(e.target.value)||1)}/><button onClick={()=>setSeed(Math.floor(Math.random()*999999)+1)}><RefreshCw size={13}/></button></label>
@@ -404,10 +510,10 @@ export function GrokImaginePanel(){
         <button className="gimagine-save" onClick={savePrompt} disabled={!prompt.trim()}>Salvar prompt e plano no projeto</button>
 
         {mode==='video'?<div className="gmedia-motion-card">
-          <div><Film size={15}/><span><b>{videoVariant==='storyboard'?'Storyboard IA + render local':'Vídeo local funcional'}</b><small>{videoVariant==='storyboard'?'3 keyframes coerentes + transições + WebM':duration/1000+'s · '+motion+' · WebM'} · sem upload do binário</small></span></div>
-          {generated?<button onClick={()=>animate(generated)} disabled={motionBusy||loading}>{motionBusy?'Renderizando '+Math.round(motionProgress*100)+'%':'Animar a imagem atual'}</button>:null}
-          {motionUrl?<div className="gmedia-motion-actions"><a href={motionUrl} target="_blank" rel="noreferrer">Prévia</a><button onClick={downloadVideo}><Download size={12}/>Baixar vídeo</button></div>:null}
-          {motionSize?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
+          <div><Film size={15}/><span><b>{videoProvider!=='local'?'Vídeo generativo · '+videoProvider:(videoVariant==='storyboard'?'Storyboard IA + render local':'Vídeo local funcional')}</b><small>{videoProvider!=='local'?'provider externo assíncrono':(videoVariant==='storyboard'?'3 keyframes coerentes + transições + WebM':duration/1000+'s · '+motion+' · WebM')} · histórico leve</small></span></div>
+          {videoProvider==='local'&&generated?<button onClick={()=>animate(generated)} disabled={motionBusy||loading}>{motionBusy?'Renderizando '+Math.round(motionProgress*100)+'%':'Animar a imagem atual'}</button>:null}
+          {motionUrl||remoteVideoUrl?<div className="gmedia-motion-actions"><a href={remoteVideoUrl||motionUrl} target="_blank" rel="noreferrer">Prévia</a><button onClick={downloadVideo}><Download size={12}/>{remoteVideoUrl?'Abrir vídeo':'Baixar vídeo'}</button></div>:null}
+          {motionSize&&!remoteVideoUrl?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
         </div>:null}
 
         {error?<div className="gmedia-error">{error}</div>:null}
@@ -422,7 +528,7 @@ export function GrokImaginePanel(){
           </div>
         </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'O app cria o keyframe e renderiza um clipe local reproduzível.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
-        {motionUrl?<div className="gmedia-video-preview"><video src={motionUrl} controls loop playsInline autoPlay/><span>Vídeo gerado localmente. Use “Baixar vídeo” para salvar o arquivo.</span></div>:null}
+        {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
       </div>
     </div>
 
