@@ -77,18 +77,15 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     type:'module',
     scripts:{
       dev:'vite',
-      build:'tsc -b && vite build',
+      build:'vite build',
       preview:'vite preview',
       test:'vitest run',
       ...(backend?{server:'node server/index.mjs'}:{})
     },
     dependencies:{react:'^19.0.0','react-dom':'^19.0.0'},
     devDependencies:{
-      '@types/react':'^19.0.0',
-      '@types/react-dom':'^19.0.0',
       '@vitejs/plugin-react':'^4.3.4',
       vite:'^6.0.0',
-      typescript:'^5.7.0',
       vitest:'^3.0.0',
       jsdom:'^25.0.0',
       '@testing-library/react':'^16.1.0'
@@ -128,13 +125,12 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
 
   const base:WorkspaceFile[]=[
     {path:'package.json',content:JSON.stringify(pkg,null,2),language:'json'},
-    {path:'index.html',content:'<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Predict App</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>',language:'html'},
-    {path:'src/main.tsx',content:main,language:'typescript'},
-    {path:'src/App.tsx',content:withReactImport(app?.content||'export default function App(){return <main>Predict App</main>}'),language:'typescript'},
+    {path:'index.html',content:'<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Predict App</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>',language:'html'},
+    {path:'src/main.jsx',content:main,language:'javascript'},
+    {path:'src/App.jsx',content:withReactImport(app?.content||'export default function App(){return <main>Predict App</main>}'),language:'javascript'},
     {path:'src/styles.css',content:css?.content||'',language:'css'},
-    {path:'src/App.test.tsx',content:test,language:'typescript'},
-    {path:'vite.config.ts',content:"import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({plugins:[react()]});\n",language:'typescript'},
-    {path:'tsconfig.json',content:JSON.stringify({compilerOptions:{target:'ES2022',useDefineForClassFields:true,lib:['ES2022','DOM','DOM.Iterable'],skipLibCheck:true,esModuleInterop:true,allowSyntheticDefaultImports:true,strict:true,forceConsistentCasingInFileNames:true,module:'ESNext',moduleResolution:'Bundler',resolveJsonModule:true,noEmit:true,jsx:'react-jsx'},include:['src']},null,2),language:'json'},
+    {path:'src/App.test.jsx',content:test,language:'javascript'},
+    {path:'vite.config.js',content:"import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({plugins:[react()],test:{environment:'jsdom'}});\n",language:'javascript'},
     {path:'.gitignore',content:'node_modules\ndist\n.env\n.DS_Store\n',language:'text'},
     {path:'.env.example',content:backend?'VITE_API_URL=http://localhost:8787\nPORT=8787\n':'# No environment variables are required for this app.\n',language:'text'},
     {path:'RUNME.md',content:runme,language:'markdown'}
@@ -150,7 +146,7 @@ export function packagingSummary(files:WorkspaceFile[]){
   return {
     intent,
     backend,
-    frontend:'Vite + React + TypeScript',
+    frontend:'Vite + React',
     tests:'Vitest + Testing Library',
     runnable:true,
     backendReason:backend?'Persistence/shared records justify a server layer.':'The current feature set does not justify a server layer.'
