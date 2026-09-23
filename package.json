@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "prompts:sync": "node scripts/prompts/sync-corpus.mjs",
-    "selfimprove:collect": "node scripts/selfimprove/collect.mjs"
+    "selfimprove:collect": "node scripts/selfimprove/collect.mjs",
+    "train:sync": "node scripts/training/sync-sources.mjs",
+    "train:validate": "node scripts/training/validate-corpus.mjs"
   },
   "dependencies": {
     "next": "15.3.8",
