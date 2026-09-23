@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -62,9 +62,10 @@ Preserva arquivos e projeto atual. Toda alteração deve distinguir:
 - o que ainda é recomendação.
 
 ## Media
-Imagem: geração → review → histórico metadata-only.
-Vídeo leve: imagem → motion local WebM.
-Pipelines avançados: adapters opcionais; nunca fingir que renderizou se apenas preparou roteiro/prompt.
+Imagem: prompt → geração → proxy same-origin → review → histórico metadata-only.
+Vídeo 1 cena: keyframe → motion local WebM → preview/download.
+Vídeo 3 cenas: storyboard coerente → 3 keyframes → transições/movimento → WebM → preview/download.
+O app nunca trata roteiro/prompt como vídeo pronto. Binários grandes ficam locais por padrão; Supabase recebe apenas metadados leves.
 
 ## Prompt OS
 O app compila prompts por intenção e recupera apenas padrões relevantes. Repositórios de leaks, red-team, copyleft ou licença incerta são referência/eval, não instrução runtime copiada.
