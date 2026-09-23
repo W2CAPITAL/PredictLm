@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useRef, useState } from 'react';
-import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, X, Zap } from 'lucide-react';
+import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, type NeuralTier } from '@/lib/browser-brain';
 import { classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
@@ -156,8 +156,13 @@ export function ChatShell({onOpenLegal}:Props){
         <button className={screen==='research'?'active':''} onClick={()=>setScreen('research')}><span><Globe2 size={16}/></span>Research</button>
       </nav>
 
-      <div className="grok-history-label">Recentes</div>
-      <div className="grok-history">{visibleSessions.map(chat=><button key={chat.id} className={chat.id===s.activeId&&screen==='chat'?'active':''} onClick={()=>openChat(chat.id)} title={chat.title}>{chat.title}</button>)}</div>
+      <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
+      <div className="grok-history">{visibleSessions.map(chat=><div className={'grok-history-row '+(chat.id===s.activeId&&screen==='chat'?'active':'')} key={chat.id}>
+        <button className="grok-history-open" onClick={()=>openChat(chat.id)} title={chat.title}>{chat.title}</button>
+        <button className="grok-history-delete" title="Apagar conversa" onClick={()=>{
+          if(window.confirm('Apagar a conversa “'+chat.title+'”?'))s.deleteSession(chat.id);
+        }}><Trash2 size={11}/></button>
+      </div>)}</div>
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='plugins'?'active':''} onClick={()=>setScreen('plugins')}><FolderOpen size={16}/> Plugins</button>
@@ -169,7 +174,7 @@ export function ChatShell({onOpenLegal}:Props){
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
       <div className="grok-status"><span className="private-dot"/> Private</div>
 
-      {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat}/>:
+      {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat} deleteChat={s.deleteSession} createChat={()=>{s.createChat();setScreen('chat')}}/>:
       screen==='build'?<GrokBuildPanel/>:
       screen==='research'?<GrokResearchPanel/>:
       screen==='imagine'?<GrokImaginePanel/>:
@@ -207,8 +212,16 @@ function Composer(props:any){
   </div>
 }
 
-function LibraryScreen({sessions,openChat}:{sessions:any[];openChat:(id:string)=>void}){
-  return <section className="grok-library"><div><span>Library</span><h1>Suas conversas</h1><p>Histórico local do PredictLM.</p></div><div className="grok-library-grid">{sessions.map(chat=><button key={chat.id} onClick={()=>openChat(chat.id)}><Sparkles size={16}/><b>{chat.title}</b><span>{chat.messages.length} mensagens</span></button>)}</div></section>
+function LibraryScreen({sessions,openChat,deleteChat,createChat}:{sessions:any[];openChat:(id:string)=>void;deleteChat:(id:string)=>void;createChat:()=>void}){
+  return <section className="grok-library">
+    <div className="grok-library-head"><div><span>Library</span><h1>Suas conversas</h1><p>Histórico local do PredictLM.</p></div><button onClick={createChat}><Plus size={14}/>Nova conversa</button></div>
+    <div className="grok-library-grid">{sessions.map(chat=><article key={chat.id}>
+      <button className="grok-library-open" onClick={()=>openChat(chat.id)}><Sparkles size={16}/><b>{chat.title}</b><span>{chat.messages.length} mensagens</span></button>
+      <button className="grok-library-delete" title="Apagar conversa" onClick={()=>{
+        if(window.confirm('Apagar a conversa “'+chat.title+'”?'))deleteChat(chat.id);
+      }}><Trash2 size={13}/>Apagar</button>
+    </article>)}</div>
+  </section>
 }
 
 function renderText(text:string){
