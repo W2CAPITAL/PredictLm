@@ -1,6 +1,7 @@
 import type { SkillSpec } from './types';
 
 export const skills: SkillSpec[] = [
+  { id:'predictlm-unified', name:'PredictLM Unified', category:'Meta Agent', description:'Runtime unificado: Chat, Build, Research, Scanner/DataJud/DJEN, Revisional, Council 5/X10, Media, memória, self-improve e skill federation.', source:'skills/predictlm-unified/SKILL.md', runtime:'built-in' },
   { id:'lexis-twincore-x10', name:'LEXIS TwinCore X10', category:'Meta Agent', description:'Dupla perspectiva FORGE + AEGIS, Council X10, memória, Red Team, autoavaliação, skill federation, Lexis Revisional e continuidade de projeto.', source:'Lexis Unified 2.1 + Lexis Revisional + Segundo Cérebro + 169 repo references', runtime:'built-in' },
   { id:'second-brain', name:'Segundo Cérebro', category:'Memory', description:'Recall → execute → capture. Memória local-first para decisões, notas e runs.', source:'uploaded:segundo-cerebro + Digital-Process-Tools/claude-remember + vshulcz/deja-vu + swarmclawai/swarmvault', runtime:'built-in' },
   { id:'research-engine', name:'Research Engine', category:'Research', description:'Pesquisa web/news/images com fontes e ingestão de contexto no workspace.', source:'firecrawl/fireplexity', runtime:'external' },
