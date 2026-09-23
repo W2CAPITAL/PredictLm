@@ -1,3 +1,4 @@
+import type { WorkspaceFile } from './types';
 import { knowledgeContext, retrieveKnowledge } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
 import { cleanUserFacingAnswer } from './prompt-os/response-contract';
@@ -260,6 +261,68 @@ async function neuralGenerate(system:string,prompt:string,messages:{role:string;
     worker!.postMessage({type:'generate',id,system,prompt,messages,maxNewTokens:loadedTier==='smart'?520:360,temperature:0.5});
     setTimeout(()=>{if(pending.has(id)){pending.delete(id);reject(new Error('Local neural generation timed out'));}},120000);
   });
+}
+
+export interface NeuralBuildPatch{
+  explanation:string;
+  plan:string[];
+  files:WorkspaceFile[];
+}
+
+function parseBuildPatch(raw:string):NeuralBuildPatch|null{
+  const text=String(raw||'').replace(/```(?:json)?/gi,'').replace(/```/g,'').trim();
+  const start=text.indexOf('{');
+  const end=text.lastIndexOf('}');
+  if(start<0||end<=start)return null;
+  try{
+    const data=JSON.parse(text.slice(start,end+1));
+    const files=Array.isArray(data?.files)
+      ? data.files
+          .filter((x:any)=>x&&typeof x.path==='string'&&typeof x.content==='string')
+          .map((x:any)=>({
+            path:String(x.path).replace(/^\/+/, '').replace(/\.\.(?:\/|\\)/g,'').slice(0,180),
+            content:String(x.content).slice(0,40000),
+            language:String(x.language||'typescript').slice(0,30)
+          }))
+          .filter((x:WorkspaceFile)=>!!x.path&&!/^(?:\.env|node_modules\/|\.git\/)/.test(x.path))
+          .slice(0,14)
+      : [];
+    if(!files.length)return null;
+    return {
+      explanation:String(data?.explanation||'Refinamento local aplicado.').slice(0,1200),
+      plan:Array.isArray(data?.plan)?data.plan.map(String).slice(0,12):[],
+      files
+    };
+  }catch{return null}
+}
+
+export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile[]):Promise<NeuralBuildPatch|null>{
+  if(!worker||!loadedTier)return null;
+  const system=[
+    'You are the code refinement layer of a local app builder.',
+    'Return ONLY valid JSON with keys explanation, plan, files.',
+    'files must contain only complete files that you actually want to change.',
+    'Preserve the current project. Never replace a working app with a generic starter.',
+    'For business apps, require real navigation/sidebar, domain validation, loading/error/empty states, persistence boundary, API/integration adapters, server-only secrets and tests.',
+    'Do not claim an integration is connected without credentials/handshake.',
+    'Prefer edits that connect generated src modules to real behavior rather than decorative files.'
+  ].join(' ');
+  const snapshot=files
+    .filter(f=>/^(App\.tsx|styles\.css|predict\.spec\.json|ARCHITECTURE\.md|src\/|server\/|\.env\.example)/.test(f.path))
+    .slice(0,12)
+    .map(f=>({path:f.path,content:f.content.slice(0,2600)}));
+  const request=[
+    'TASK: '+prompt,
+    'CURRENT PROJECT:',
+    JSON.stringify(snapshot),
+    'Return a minimal but production-oriented patch. If no safe useful patch is possible, return {"explanation":"no patch","plan":[],"files":[]}.'
+  ].join('\n\n');
+  try{
+    const raw=await neuralGenerate(system,request,[]);
+    return parseBuildPatch(raw);
+  }catch{
+    return null;
+  }
 }
 
 function knowledgeReply(prompt:string){
