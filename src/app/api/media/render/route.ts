@@ -16,6 +16,7 @@ function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:
     nologo:'true',
     private:'true',
     safe:'true',
+    enhance:'true',
     model:model||'flux'
   });
   return root+encodeURIComponent(prompt)+'?'+q.toString();
