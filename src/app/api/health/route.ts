@@ -9,6 +9,8 @@ import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj, resolveCnjFromCont
 import { hasLegacyEscapedNewlines, repairLegacyEscapedNewlines } from '@/lib/workspace-repair';
 import { createLegalDossier } from '@/lib/legal/dossier';
 import { isAggressiveLegalRequest, isLegalDossierRequest } from '@/lib/legal/mode';
+import { assessFraudRisk } from '@/lib/security/fraud-defense';
+import { sourceQuality } from '@/lib/security/source-quality';
 
 export const runtime = 'nodejs';
 
@@ -123,6 +125,29 @@ export async function GET(){
     risks:[{title:'Decisão sem inventário documental',level:'high',detail:'Sem cruzar contrato e comprovantes, atribuição de responsabilidade é prematura.'}],
     recommendations:[{phase:'immediate',title:'Indexar anexos',detail:'Relacionar contrato, comprovantes e comunicações por data e origem.'}]
   }});
+  const fraudFixture=assessFraudRisk({
+    texts:['URGENTE: sua conta foi suspensa. Envie o OTP e faça o PIX para a nova chave agora.'],
+    urls:['https://xn--banc-seguro-9za.example/login/verify'],
+    transactions:[
+      {from:'a',to:'hub',timestamp:'2026-09-23T10:00:00Z'},
+      {from:'b',to:'hub',timestamp:'2026-09-23T10:01:00Z'},
+      {from:'c',to:'hub',timestamp:'2026-09-23T10:02:00Z'},
+      {from:'d',to:'hub',timestamp:'2026-09-23T10:03:00Z'},
+      {from:'e',to:'hub',timestamp:'2026-09-23T10:04:00Z'},
+      {from:'f',to:'hub',timestamp:'2026-09-23T10:05:00Z'}
+    ]
+  });
+  const officialSource=sourceQuality('https://www.bcb.gov.br/estabilidadefinanceira/seguranca','Banco Central');
+  const githubSource=sourceQuality('https://github.com/example/repo','GitHub');
+  const threatSource=sourceQuality('https://github.com/gaur-avvv/wormxgpt','GitHub');
+  const fraudSecurity={
+    flagsCredentialTheft:fraudFixture.signals.some(x=>x.category==='credential-theft'),
+    flagsPaymentDiversion:fraudFixture.signals.some(x=>x.category==='payment-diversion'),
+    flagsGraphPattern:fraudFixture.signals.some(x=>x.category==='transaction-graph'),
+    officialRanksAboveGithub:officialSource.score>githubSource.score,
+    threatRepoIsReference:threatSource.tier==='threat-reference'&&threatSource.score<githubSource.score
+  };
+
   const legalArtifactBehavior={
     dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
     normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
@@ -133,10 +158,11 @@ export async function GET(){
     dossierKeepsLiteralSourceErrors:standardDossier.includes('DataJud excedeu o tempo')&&standardDossier.includes('DJEN HTTP 403'),
     dossierRichStructure:['Documentos e material suplementar','Balanço de forças','Pontos críticos','Mapa qualitativo de risco','Síntese do Chair','Próximos passos'].every(x=>standardDossier.includes(x)),
     dossierShowsEvidenceGap:standardDossier.includes('Lacunas de evidência')&&standardDossier.includes('não serão preenchidas por inferência'),
-    dossierUsesSupplementalEvidence:enrichedDossier.includes('Contrato de prestação')&&enrichedDossier.includes('anexo do usuário')&&enrichedDossier.includes('Ponto documental a revisar')
+    dossierUsesSupplementalEvidence:enrichedDossier.includes('Contrato de prestação')&&enrichedDossier.includes('anexo do usuário')&&enrichedDossier.includes('Ponto documental a revisar'),
+    dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean);
 
   return Response.json({
     ok,
@@ -159,6 +185,8 @@ export async function GET(){
       legalDossier:true,
       officialCourtFallback:true,
       twinCoreX10:true,
+      fraudShield:true,
+      sourceProvenance:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -173,6 +201,7 @@ export async function GET(){
       chatIntelligence,
       legalModule,
       legalArtifactBehavior,
+      fraudSecurity,
       packagedFiles:packaged.length
     },
     optional:{
