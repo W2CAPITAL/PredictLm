@@ -8,10 +8,12 @@
   ],
   "councilLenses": 10,
   "modules": [
+    "agent-architecture",
     "build",
     "research",
     "processos",
     "legal-revisional",
+    "litigation-strategy",
     "memory",
     "self-improve",
     "skill-federation",
@@ -19,5 +21,25 @@
     "media"
   ],
   "entry": "SKILL.md",
-  "policy": "templates/improvement-policy.yml"
+  "policy": "templates/improvement-policy.yml",
+  "capabilities": [
+    "dual-core-forge-aegis",
+    "council-x10",
+    "project-continuity",
+    "second-brain",
+    "datajud-djen",
+    "official-court-fallback",
+    "legal-filing-guidance",
+    "research-synthesis",
+    "self-improve",
+    "skill-federation",
+    "host-adapters"
+  ],
+  "hosts": [
+    "PredictLM",
+    "ChatGPT-compatible",
+    "Grok-compatible",
+    "Claude-compatible",
+    "Gemini-compatible"
+  ]
 }
