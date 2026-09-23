@@ -77,7 +77,7 @@ export function ConnectorsToolsPanel(){
     {snapshots.length>0&&<><h4 className="section-label">Local snapshots</h4><div className="snapshot-list">{snapshots.map(s=><div key={s.id}><div><b>{s.name}</b><span>{s.files.length} files · {new Date(s.createdAt).toLocaleString()}</span></div><div><button onClick={()=>restoreSnapshot(s.id)}>Restaurar</button><button className="ghost-danger" onClick={()=>deleteSnapshot(s.id)}>×</button></div></div>)}</div></>}
     {error&&<div className="research-error">{error}</div>}
     {health&&<div className="health-grid">
-      <div><b>DeepThink</b><span>{health.zeroApi?.deepThink?'ativo':'indisponível'}</span></div>
+      <div><b>DeepThink</b><span>{health.selfTest?.calculatorScore!=null?health.selfTest.calculatorScore+'/100':'ativo'}</span></div>
       <div><b>Research grátis</b><span>{health.zeroApi?.freeResearch?'ativo':'indisponível'}</span></div>
       <div><b>Firecrawl</b><span>{health.optional?.firecrawl?'configurado':'opcional'}</span></div>
       <div><b>Cloud AI</b><span>{health.optional?.serverAI?'configurado':'opcional'}</span></div>
