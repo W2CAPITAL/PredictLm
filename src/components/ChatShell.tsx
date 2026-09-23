@@ -14,6 +14,7 @@ import { resolveCnjFromContext } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalDossierSummary, legalSources } from '@/lib/legal/presentation';
 import { createLegalDossier } from '@/lib/legal/dossier';
 import { isLegalDossierRequest, legalDossierMode } from '@/lib/legal/mode';
+import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '@/lib/security/fraud-defense';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
@@ -95,11 +96,11 @@ export function ChatShell({onOpenLegal}:Props){
 
   async function webContext(query:string){
     try{
-      const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:6})});
+      const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:12})});
       const data=await r.json();
       if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
       const rawItems=[...(data.web||[]),...(data.news||[])];
-      const items=filterRelevantResearchItems(query,rawItems,6);
+      const items=filterRelevantResearchItems(query,rawItems,10);
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
@@ -110,6 +111,7 @@ export function ChatShell({onOpenLegal}:Props){
     if(!prompt||busy)return;
     const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
+    const fraudIntent=isFraudAnalysisRequest(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();
@@ -123,6 +125,8 @@ export function ChatShell({onOpenLegal}:Props){
     setActivity(
       processNumber
         ? ['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']
+        : fraudIntent
+          ? ['Classificando sinais de fraude','Verificando links, credenciais e pagamento','Buscando contexto independente quando habilitado','Separando sinal de prova','Preparando triagem defensiva']
         : mediaKind==='video'
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
@@ -136,6 +140,25 @@ export function ChatShell({onOpenLegal}:Props){
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(fraudIntent&&!processNumber){
+        setActivity(['Classificando sinais de fraude','Verificando links, credenciais e pagamento']);
+        const assessment=assessFraudRisk({texts:[prompt]});
+        const web=s.webEnabled?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+        s.addMessage({
+          role:'assistant',
+          content:formatFraudAssessment(assessment),
+          engine:'PredictLM · Fraud Shield',
+          sources:web.sources,
+          actions:[
+            'Triagem local de engenharia social/credenciais/pagamento/link',
+            ...(web.sources.length?['Pesquisa independente: '+web.sources.length+' fontes relevantes']:['Sem pesquisa web adicional']),
+            'Sinal de risco mantido separado de prova de fraude'
+          ],
+          status:'done'
+        });
+        return;
+      }
+
       if(mediaKind){
         const subject=mediaSubject(prompt);
         const seed=autoVariationSeed();
