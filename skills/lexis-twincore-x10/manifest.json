@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.4.0",
+  "version": "5.5.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -22,7 +22,8 @@
     "prompt-os",
     "autodev-runtime",
     "predictlm-app",
-    "media-repository"
+    "media-repository",
+    "dossier-pro"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -58,7 +59,13 @@
     "dossier-html-artifact",
     "aggressive-legal-opt-in",
     "literal-source-errors",
-    "host-parity-contract"
+    "host-parity-contract",
+    "dossier-pro",
+    "supplemental-evidence-pack",
+    "force-balance",
+    "qualitative-risk-map",
+    "chair-synthesis",
+    "evidence-gap-gate"
   ],
   "hosts": [
     "PredictLM",

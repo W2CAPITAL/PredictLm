@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.4. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.5. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.4.0"
+  version: "5.5.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.4
+# LEXIS TwinCore X10 v5.5
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -210,3 +210,51 @@ Pedido `dossiê`, `dossie`, `relatório processual` ou `relatório do processo`:
 7. devolver resumo curto e fontes.
 
 O HTML inclui síntese, confiança por fonte, timeline, lentes, DJEN, caveats e, somente quando solicitado, bloco AEGIS agressivo.
+
+## Dossiê Pro — padrão de caso completo
+
+O padrão mínimo anterior (síntese + fontes + timeline + lentes) é insuficiente quando o usuário forneceu contratos, conversas, comprovantes, laudos ou contexto operacional.
+
+### Três camadas de evidência
+
+1. **Fonte oficial processual** — DataJud, DJEN, portal oficial, inteiro teor quando disponível.
+2. **Evidência suplementar fornecida** — contratos, WhatsApp, comprovantes, termos, laudos, procurações, reclamações e documentos enviados pelo usuário.
+3. **Análise** — inferências, riscos, balanço, Council e plano de ação. Nunca misturar esta camada com fato documental.
+
+### Estrutura esperada quando há evidência suficiente
+
+1. Capa executiva com caso, CNJ, tribunal, classe e órgão.
+2. Identificação dos processos/caso.
+3. Inventário de evidências e contratos relevantes.
+4. Linha do tempo factual unificada.
+5. **Balanço de forças**: elementos favoráveis e adversos para a tese/parte analisada.
+6. **Pontos críticos/falhas**: ator + fato + consequência + base documental.
+7. **Mapa qualitativo de riscos**: Alto/Médio/Baixo sem fingir probabilidade estatística.
+8. Council multi-lente + síntese do Chair: consenso, divergência, recomendação e risco residual.
+9. Plano de ação em três faixas: imediato, médio prazo e “não fazer”.
+10. Confiança por fonte, DJEN, caveats e lacunas de prova.
+11. Modo AEGIS agressivo somente com opt-in explícito.
+
+### Degradação honesta
+
+Se o host só tem DataJud/DJEN, o HTML continua com a estrutura rica, mas as partes documentais aparecem como **lacuna de evidência**. Não inventar:
+- contrato;
+- consentimento;
+- promessa comercial;
+- pagamento;
+- prejuízo;
+- conversa;
+- culpa de advogado/empresa;
+- valor financeiro;
+- jurisprudência ou artigo não verificado.
+
+Quando houver anexos do usuário, o host deve alimentar o gerador em um pacote suplementar estruturado e marcar a origem de cada afirmação.
+
+### Critério de qualidade do dossiê
+
+Um dossiê forte não é apenas um “status do processo em HTML”. Ele transforma evidência em:
+**fato → cronologia → conflito → risco → opções → ação**, preservando rastreabilidade.
+
+Evitar porcentagens de risco decorativas. Se não existe modelo quantitativo ou dado estatístico, usar somente prioridade qualitativa.
+
+O runtime TypeScript aceita LegalDossierEvidence em createLegalDossier(bundle,{mode,evidence}). O endpoint POST /api/legal/dossier aceita o mesmo pacote suplementar quando disponível.
