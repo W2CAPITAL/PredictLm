@@ -41,6 +41,27 @@ function companyHowTo(){
   ].join('\n');
 }
 
+function carHowTo(){
+  return [
+    '**Criar um carro do zero é um projeto de engenharia completo, não só montar motor e carroceria.** O caminho mais seguro é tratar o veículo como um sistema e validar cada subsistema antes de rodar em via pública.',
+    '',
+    '1. **Defina o objetivo do carro.** Uso urbano, pista, utilitário, protótipo elétrico etc.; isso determina massa, potência, autonomia, custo e requisitos.',
+    '2. **Escolha a arquitetura.** Elétrico ou combustão, tração dianteira/traseira/integral, posição do motor/baterias e quantidade de ocupantes.',
+    '3. **Faça o package do veículo.** Entre-eixos, bitolas, posição de ocupantes, motor/bateria, porta-malas, centro de gravidade e zonas de deformação.',
+    '4. **Projete o chassi/estrutura.** Use CAD e análise estrutural; rigidez, pontos de suspensão e proteção dos ocupantes precisam ser calculados, não improvisados.',
+    '5. **Dimensione suspensão, direção e freios.** Geometria, curso, pneus, distribuição de frenagem e estabilidade devem ser tratados em conjunto.',
+    '6. **Integre o powertrain.** Motor, transmissão/inversor, diferencial, arrefecimento, combustível ou bateria e controles eletrônicos.',
+    '7. **Projete elétrica e eletrônica.** Chicote, fusíveis, sensores, iluminação, ECU/BMS e diagnóstico.',
+    '8. **Faça a carroceria e ergonomia.** Visibilidade, posição de dirigir, cintos, bancos, pedais, portas e acesso para manutenção.',
+    '9. **Construa um protótipo e teste em ambiente controlado.** Primeiro baixa velocidade; depois frenagem, temperatura, vibração, estabilidade, durabilidade e falhas.',
+    '10. **Homologue antes de usar na rua.** Regras de segurança, emissões/ruído quando aplicável, iluminação, identificação veicular e documentação dependem do país.',
+    '',
+    '**Ordem prática:** requisitos → arquitetura → CAD/package → estrutura → suspensão/freios → powertrain → elétrica → protótipo → testes → homologação.',
+    '',
+    'Se a ideia for realmente construir um, comece por um **protótipo de baixa velocidade ou kit-car**, com engenheiro responsável; dirigir um protótipo estruturalmente não validado em via pública é perigoso.'
+  ].join('\n');
+}
+
 function startupHowTo(){
   return [
     '**Comece pelo problema, não pela empresa.** Uma startup nasce quando você tenta resolver um problema real de forma repetível e escalável.',
@@ -62,6 +83,7 @@ function startupHowTo(){
 function practicalHowTo(prompt:string){
   const p=clean(prompt);
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
+  if(/\b(carro|automovel|automóvel|veiculo|veículo)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
   if(/startup|start-up/.test(p))return startupHowTo();
   if(/criar.*(app|aplicativo|sistema|site)|fazer.*(app|aplicativo|sistema|site)/.test(p)){
     return [
@@ -92,6 +114,9 @@ export function answerQuality(prompt:string,content:string){
   if(/^(como posso|como criar|como fazer|como montar)/.test(p)&&text.length<220)score-=2;
   if(/^(como posso|como criar|como fazer|como montar)/.test(p)&&/^(uma |o |a ).{0,80}\b(e|é)\b/.test(clean(text)))score-=1;
   if(/nao tenho contexto|não tenho contexto|ative neural|ative o neural|fallback/i.test(text))score-=3;
+  const topical=responseTopicAlignment(prompt,text);
+  if(!topical.relevant)score-=5;
+  else if(topical.score>=0.66)score+=2;
   return score;
 }
 
@@ -228,4 +253,33 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
     content:snippets.join('\n\n'),
     sources
   };
+}
+
+
+const TOPIC_STOPWORDS=new Set([
+  'como','posso','pode','podem','quero','preciso','criar','fazer','montar','construir','comecar','começar','aprender','ensine',
+  'passo','passos','zero','sobre','para','uma','umas','uns','que','qual','quais','isso','isto','esse','essa','este','esta','agora','hoje'
+]);
+
+const TOPIC_SYNONYMS:Record<string,string[]>={
+  carro:['carro','veiculo','automovel','chassi','motor','suspensao','freios'],
+  veiculo:['veiculo','carro','automovel','chassi','motor'],
+  automovel:['automovel','carro','veiculo','chassi','motor'],
+  empresa:['empresa','negocio','cnpj','sociedade','mei','empresarial'],
+  aplicativo:['aplicativo','app','software','sistema'],
+  app:['app','aplicativo','software','sistema']
+};
+
+export function responseTopicAlignment(prompt:string,content:string){
+  const p=clean(prompt);
+  const c=clean(content);
+  const subject=p.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!TOPIC_STOPWORDS.has(x));
+  if(!subject.length)return {relevant:true,score:1,subject:[] as string[]};
+  let hits=0;
+  for(const token of subject){
+    const variants=TOPIC_SYNONYMS[token]||[token];
+    if(variants.some(v=>new RegExp('\\b'+v+'\\b').test(c)))hits++;
+  }
+  const score=hits/subject.length;
+  return {relevant:hits>=1&&(subject.length===1||score>=0.34),score,subject};
 }

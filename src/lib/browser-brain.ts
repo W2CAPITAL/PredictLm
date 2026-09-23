@@ -5,6 +5,7 @@ import { cleanUserFacingAnswer } from './prompt-os/response-contract';
 import { adaptiveContext, adaptiveRecall, captureAdaptiveExperience } from './adaptive-memory';
 import { trainingContext } from './training/context';
 import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
+import { responseTopicAlignment } from './chat-intelligence';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -278,13 +279,26 @@ export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   pending.clear();
 }
 
-async function neuralGenerate(system:string,prompt:string,messages:{role:string;content:string}[]){
+async function neuralGenerate(
+  system:string,
+  prompt:string,
+  messages:{role:string;content:string}[],
+  generation?:{maxNewTokens?:number;temperature?:number}
+){
   if(!worker||!loadedTier)throw new Error('Neural model not loaded');
   const id=++seq;
   return new Promise<string>((resolve,reject)=>{
     pending.set(id,{resolve,reject});
-    worker!.postMessage({type:'generate',id,system,prompt,messages,maxNewTokens:loadedTier==='smart'?520:360,temperature:0.5});
-    setTimeout(()=>{if(pending.has(id)){pending.delete(id);reject(new Error('Local neural generation timed out'));}},120000);
+    worker!.postMessage({
+      type:'generate',
+      id,
+      system,
+      prompt,
+      messages,
+      maxNewTokens:generation?.maxNewTokens||(loadedTier==='smart'?620:420),
+      temperature:generation?.temperature??0.42
+    });
+    setTimeout(()=>{if(pending.has(id)){pending.delete(id);reject(new Error('Local neural generation timed out'));}},180000);
   });
 }
 
@@ -370,7 +384,7 @@ function knowledgeReply(prompt:string){
   return 'Não tenho evidência suficiente para responder isso com segurança nesta execução.';
 }
 
-export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string}):Promise<BrainReply>{
+export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
   const learned=adaptiveContext(prompt,4);
@@ -403,15 +417,53 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
 
   if(loadedTier){
     try{
-      const content=await neuralGenerate(system,prompt,messages);
-      if(content.trim()){
-        lastNeuralError='';
-        const cleaned=cleanUserFacingAnswer(content);
-        captureAdaptiveExperience(prompt,cleaned,'local-model');
-        return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+      let content='';
+      if(options?.deep){
+        options.onStage?.('plan');
+        const draft=await neuralGenerate(
+          system+'\n\nDEEP PASS 1 — FORGE: identifique o assunto central, restrições e uma resposta útil. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso. Produza um rascunho curto e factual.',
+          prompt,
+          messages,
+          {maxNewTokens:loadedTier==='smart'?320:220,temperature:0.28}
+        );
+        options.onStage?.('aegis');
+        const finalPrompt=[
+          'PEDIDO ORIGINAL:',
+          prompt,
+          '',
+          'RASCUNHO FORGE:',
+          draft.slice(0,5000),
+          '',
+          'DEEP PASS 2 — AEGIS + FINAL:',
+          'Revise o rascunho. Elimine conteúdo fora do assunto, genericidade e afirmações não sustentadas.',
+          'Responda diretamente ao pedido original. Não mencione o processo de revisão, FORGE, AEGIS, skill ou fallback.'
+        ].join('\n');
+        content=await neuralGenerate(
+          system+'\n\nA resposta final deve cobrir explicitamente o substantivo/assunto principal do pedido e ser autocontida.',
+          finalPrompt,
+          messages,
+          {maxNewTokens:loadedTier==='smart'?720:500,temperature:0.34}
+        );
+      }else{
+        options.onStage?.('forge');
+        content=await neuralGenerate(system,prompt,messages);
       }
-      fallbackReason='Local neural model returned an empty response';
-      lastNeuralError=fallbackReason;
+      if(content.trim()){
+        const cleaned=cleanUserFacingAnswer(content);
+        const topical=responseTopicAlignment(prompt,cleaned);
+        if(!topical.relevant){
+          fallbackReason='A geração neural saiu do assunto principal e foi rejeitada pelo gate de relevância.';
+          lastNeuralError=fallbackReason;
+        }else{
+          options.onStage?.('verify');
+          lastNeuralError='';
+          captureAdaptiveExperience(prompt,cleaned,options?.deep?'local-model-deep':'local-model');
+          return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+        }
+      }else{
+        fallbackReason='Local neural model returned an empty response';
+        lastNeuralError=fallbackReason;
+      }
     }catch(error:any){
       fallbackReason=String(error?.message||'Local neural generation failed');
       lastNeuralError=fallbackReason;

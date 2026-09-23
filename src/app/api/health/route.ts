@@ -3,7 +3,8 @@ import { runLocalSmokeTest } from '@/lib/local-tools';
 import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
-import { classifyConversation, directConversationReply, filterRelevantResearchItems } from '@/lib/chat-intelligence';
+import { classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { retrieveKnowledge } from '@/lib/assistant-knowledge';
 import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj, resolveCnjFromContext } from '@/lib/legal/cnj';
 import { hasLegacyEscapedNewlines, repairLegacyEscapedNewlines } from '@/lib/workspace-repair';
 import { createLegalDossier } from '@/lib/legal/dossier';
@@ -55,6 +56,9 @@ export async function GET(){
   ];
   const companyPrompt='como posso criar uma empresa do zero';
   const companyReply=directConversationReply(companyPrompt,[],{loaded:false,tier:null})||'';
+  const carPrompt='como posso criar um carro do zero';
+  const carHowTo=directConversationReply(carPrompt,[],{loaded:false,tier:null})||'';
+  const carKnowledge=retrieveKnowledge(carPrompt,6);
   const relevanceFixture=[
     {title:'Como abrir uma empresa no Brasil',description:'Passos para formalização, CNPJ, registro empresarial e organização do negócio.',url:'https://example.test/empresa',source:'fixture'},
     {title:'Phantom Blade Zero',description:'Jogo de RPG de ação wuxia.',url:'https://example.test/game',source:'fixture'},
@@ -70,7 +74,10 @@ export async function GET(){
     dossierIsContext:classifyConversation('gere um dossiê sobre isso',[{id:'p',role:'assistant',content:'Processo 4000338-89.2026.8.26.0002',createdAt:Date.now()}] as any)==='context',
     dossierContextResolvesCnj:resolveCnjFromContext('gere um dossiê sobre isso',['Processo 4000338-89.2026.8.26.0002'])==='4000338-89.2026.8.26.0002',
     companyHowToIsSpecific:companyReply.includes('CNPJ')&&companyReply.includes('clientes'),
-    companyResearchRejectsNoise:relevantCompany.length===1&&relevantCompany[0]?.title==='Como abrir uma empresa no Brasil'
+    companyResearchRejectsNoise:relevantCompany.length===1&&relevantCompany[0]?.title==='Como abrir uma empresa no Brasil',
+    carHowToAnswersCar:carHowTo.includes('carro')&&carHowTo.includes('chassi')&&carHowTo.includes('homolog'),
+    carRejectsAgentLifecycle:!carKnowledge.some(x=>x.id==='microsoft-agents'),
+    carRejectsOffTopicAnswer:!responseTopicAlignment(carPrompt,'Production agents need a lifecycle with models, tools, memory and observability.').relevant
   };
 
   const legalModule={

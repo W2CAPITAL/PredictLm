@@ -5,7 +5,7 @@ import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, Pa
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveMemoryStats, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -127,7 +127,11 @@ export function ChatShell({onOpenLegal}:Props){
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
             ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
-            : ['Analisando contexto']
+            : s.deepThink&&currentNeural.loaded
+              ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','FORGE · preparando rascunho neural','AEGIS · revisando relevância','VERIFY · preparando resposta']
+              : s.deepThink
+                ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','VERIFY · usando apenas contexto relevante']
+                : ['Analisando contexto']
     );
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
@@ -301,15 +305,32 @@ export function ChatShell({onOpenLegal}:Props){
         ? prompt+'\n\nFontes recuperadas. Responda à pergunta diretamente e use apenas o que for relevante; não liste links sem necessidade:\n'+web.text
         : prompt;
       const fallbackText=direct||research?.content||undefined;
-      let reply=await answerLocally(augmented,messages,{preferNative:true,knowledge:s.deepThink,fallbackText});
+      let reply=await answerLocally(augmented,messages,{
+        preferNative:true,
+        knowledge:s.deepThink,
+        fallbackText,
+        deep:s.deepThink&&currentNeural.loaded,
+        onStage:stage=>{
+          if(!s.deepThink||!currentNeural.loaded)return;
+          const stages={
+            recall:['RECALL · recuperando contexto'],
+            plan:['RECALL · contexto recuperado','ROUTE · assunto identificado','FORGE · gerando rascunho neural'],
+            forge:['FORGE · gerando resposta neural'],
+            aegis:['FORGE · rascunho concluído','AEGIS · criticando resposta e removendo desvios'],
+            verify:['FORGE · concluído','AEGIS · revisão concluída','VERIFY · checando aderência ao pedido']
+          } as const;
+          setActivity([...stages[stage]]);
+        }
+      });
 
       const directScore=direct?answerQuality(prompt,direct):-99;
       const replyScore=answerQuality(prompt,reply.content);
       const researchScore=research?answerQuality(prompt,research.content):-99;
 
-      if(direct&&directScore>=replyScore){
+      const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart')&&responseTopicAlignment(prompt,reply.content).relevant;
+      if(direct&&!neuralRelevant&&directScore>=replyScore){
         reply={...reply,content:direct,sources:web.sources.slice(0,4)};
-      }else if(research&&researchScore>replyScore){
+      }else if(research&&!neuralRelevant&&researchScore>replyScore){
         reply={...reply,content:research.content,sources:research.sources};
       }else if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
         reply={...reply,content:research.content,sources:research.sources};
@@ -321,8 +342,9 @@ export function ChatShell({onOpenLegal}:Props){
       const actions=[
         'Intenção identificada: '+kind,
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
-        ...(currentNeural.loaded?['Modelo local considerado: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
-        'Resposta passou pelo gate de qualidade'
+        ...(currentNeural.loaded?['Modelo local: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
+        ...(s.deepThink&&currentNeural.loaded&&neuralRelevant?['Deep executou duas passagens: FORGE → AEGIS']:[]),
+        'Gate final verificou relevância ao assunto principal'
       ];
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
     }catch(err:any){
