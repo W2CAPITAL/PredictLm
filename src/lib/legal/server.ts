@@ -513,7 +513,7 @@ export async function queryLegalProcess(value:string):Promise<LegalProcessBundle
     interpretation,
     summary:{
       headline:[className,courtName].filter(Boolean).join(' · ')||('Processo '+maskCnj(digits)),
-      status:statusFromTimeline(latest?.title||'',portalMessage),
+      status:interpretation.currentState||statusFromTimeline(latest?.title||'',portalMessage),
       latestEvent:latest?.title,
       latestEventAt:latest?.date,
       publicationCount:djen.count,
