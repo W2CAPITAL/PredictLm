@@ -58,6 +58,19 @@ export interface LegalPortalResult {
   movements:LegalMovement[];
 }
 
+export interface LegalProcessInterpretation {
+  confidence:'high'|'medium'|'low';
+  posture:'favorable'|'unfavorable'|'mixed'|'neutral'|'unknown';
+  postureLabel:string;
+  currentState:string;
+  whatHappened:string[];
+  whyItMatters:string[];
+  nextActions:string[];
+  evidence:string[];
+  inferredPartyRole?:'author'|'defendant'|'unknown';
+  inferredPartyName?:string;
+}
+
 export interface LegalProcessBundle {
   query:string;
   processNumber:string;
@@ -94,6 +107,7 @@ export interface LegalProcessBundle {
   trace:LegalTraceStep[];
   timeline:LegalTimelineItem[];
   lenses:LegalLens[];
+  interpretation:LegalProcessInterpretation;
   summary:{
     headline:string;
     status:string;
