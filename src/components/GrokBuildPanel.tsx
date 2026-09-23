@@ -15,6 +15,8 @@ import { buildRunnableProject } from '@/lib/project-packager';
 import { promptPresets, enhanceBuildPrompt, type PromptPreset } from '@/lib/prompt-enhancer';
 import { answerLocally, generateNeuralBuildPatch, neuralStatus } from '@/lib/browser-brain';
 import { runExecutableCouncilX10 } from '@/lib/council-runtime';
+import { runLocalSmokeTest } from '@/lib/local-tools';
+import { runLocalCouncil } from '@/lib/council';
 
 export function GrokBuildPanel(){
   const s=useStudio();
@@ -60,6 +62,43 @@ export function GrokBuildPanel(){
           const phase=finalPhases.find(x=>x.id==='neural-refine');
           if(phase){phase.status='skip';phase.detail='No valid structured patch was produced; deterministic production scaffold was preserved.'}
         }
+      }
+
+      let finalSmoke=runLocalSmokeTest(finalFiles);
+      let finalCouncil=runLocalCouncil(finalFiles);
+      const verifyPhase:BuildPhase={
+        id:'final-verify',
+        label:'Final verification',
+        status:finalSmoke.ok&&finalCouncil.score>=75?'done':'warn',
+        detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council'
+      };
+      finalPhases.push(verifyPhase);
+
+      if(s.deepThinkLevel==='max'&&local.loaded&&(!finalSmoke.ok||finalCouncil.score<75)){
+        const smokeFailures=finalSmoke.checks.filter(x=>!x.ok).map(x=>x.name+': '+x.detail).join('; ');
+        const repairTask=[
+          'Repair the current project after final verification.',
+          'Original task: '+turn.effectivePrompt,
+          'Smoke failures: '+(smokeFailures||'none'),
+          'Council findings: '+finalCouncil.consensus.join(' '),
+          'Apply only focused code changes that fix real behavior. Do not replace the project or add decorative docs instead of fixes.'
+        ].join('\n');
+        const repair=await generateNeuralBuildPatch(repairTask,finalFiles);
+        if(repair?.files?.length){
+          const map=new Map(finalFiles.map(file=>[file.path,file]));
+          for(const file of repair.files)map.set(file.path,file);
+          finalFiles=Array.from(map.values());
+          finalSmoke=runLocalSmokeTest(finalFiles);
+          finalCouncil=runLocalCouncil(finalFiles);
+          verifyPhase.status=finalSmoke.ok&&finalCouncil.score>=75?'done':'warn';
+          verifyPhase.detail='Repair applied to '+repair.files.length+' file(s) · '+finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council';
+          finalPlan.push('DONE · Verification repair — '+repair.files.map(x=>x.path).join(', '));
+        }else{
+          verifyPhase.detail+=' · repair pass produced no safe structured patch';
+          finalPlan.push('CHECK · Final verification — repair pass produced no safe patch');
+        }
+      }else{
+        finalPlan.push((verifyPhase.status==='done'?'DONE':'CHECK')+' · Final verification — '+verifyPhase.detail);
       }
 
       const wantsCouncil=s.deepThinkLevel==='max'||/council\s*x?10|war\s*room|pressure.?test|red.?team/i.test(task);

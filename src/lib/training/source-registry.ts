@@ -29,6 +29,15 @@ export const TRAINING_SOURCES:TrainingSource[]=[
   {repo:'lcandy2/enable-chrome-ai',license:'MIT',use:'distill',domains:['browser-ai','capability-detection'],lessons:['browser-native AI capability discovery and graceful feature gating; do not patch eligibility or bypass browser controls']},
   {repo:'google/langextract',license:'Apache-2.0',use:'train',domains:['extraction','grounding','documents'],lessons:['source-grounded extraction','schema outputs','chunking/parallel passes','traceable spans']},
   {repo:'PublicAffairs/openai-gemini',license:'MIT',use:'train',domains:['providers','openai-compatible','gemini'],lessons:['OpenAI-compatible adapter','serverless provider proxy','tool/media mapping']},
+  {repo:'raizamartin/gemini-code',license:'unverified',use:'reference',domains:['coding-agent','tools','terminal'],lessons:['terminal coding-assistant architecture','automatic file/command/test tool loop; no source-code training without a declared license']},
+  {repo:'iamakashpc/Gemini-Clone',license:'unverified',use:'reference',domains:['chat','gemini','ui'],lessons:['basic conversational shell and typing feedback; architecture reference only until licensing is declared']},
+  {repo:'RanitManik/Gemini-Clone',license:'MIT',use:'train',domains:['chat','gemini','ui'],lessons:['responsive conversational shell','typing/streaming feedback','provider-key setup boundary']},
+  {repo:'GourangaDasSamrat/Gemini-Clone',license:'MIT',use:'train',domains:['chat','gemini','markdown','ui'],lessons:['responsive AI chat','markdown/code rendering','error feedback and cross-platform interaction']},
+  {repo:'C0deNe0/gemini-clone',license:'unverified',use:'reference',domains:['chat','vite','ui'],lessons:['minimal Vite/React shell reference only; no source-code training without a declared license']},
+  {repo:'MAHMOUDELSAYED7/Dr.Ai',license:'unverified',use:'reference',domains:['assistant','mobile','firebase','privacy'],lessons:['multi-surface assistant architecture, local history, auth/data boundaries and emergency UX as reference only']},
+  {repo:'srtab/daiv',license:'Apache-2.0',use:'train',domains:['coding-agent','git','mcp','sandbox','ci'],lessons:['issue-to-PR execution loop','review-comment repair','CI failure repair','sandbox and egress policy','skills and MCP endpoints']},
+  {repo:'ekramasif/GeminiCoder',license:'unverified',use:'reference',domains:['app-builder','gemini','preview'],lessons:['idea-to-code and live-preview flow as architecture reference only until licensing is declared']},
+  {repo:'assistants-hub/assistantshub.ai',license:'MIT',use:'train',domains:['assistants','multi-provider','analytics','documents','functions'],lessons:['assistant management portal','streaming and conversation logs','multi-provider model catalog','document/function integration','assistant analytics']},
   {repo:'user/PredictLm-fixes-only',license:'user-owned',use:'train',domains:['build','validation','media','packaging'],lessons:['backend validation','real CRUD/API boundaries','smoke tests','high-quality media regeneration with unique variants']}
 ];
 

@@ -29,7 +29,16 @@ const SOURCES=[
   ['ishara-madu/gemini-watermark-remover','main','MIT','distill',['media','client-processing']],
   ['lcandy2/enable-chrome-ai','main','MIT','distill',['browser-ai','capability-detection']],
   ['google/langextract','main','Apache-2.0','train',['extraction','grounding','documents']],
-  ['PublicAffairs/openai-gemini','main','MIT','train',['providers','openai-compatible','gemini']]
+  ['PublicAffairs/openai-gemini','main','MIT','train',['providers','openai-compatible','gemini']],
+  ['raizamartin/gemini-code','main','unverified','reference',['coding-agent','tools','terminal']],
+  ['iamakashpc/Gemini-Clone','main','unverified','reference',['chat','gemini','ui']],
+  ['RanitManik/Gemini-Clone','main','MIT','train',['chat','gemini','ui']],
+  ['GourangaDasSamrat/Gemini-Clone','master','MIT','train',['chat','gemini','markdown','ui']],
+  ['C0deNe0/gemini-clone','main','unverified','reference',['chat','vite','ui']],
+  ['MAHMOUDELSAYED7/Dr.Ai','main','unverified','reference',['assistant','mobile','firebase','privacy']],
+  ['srtab/daiv','main','Apache-2.0','train',['coding-agent','git','mcp','sandbox','ci']],
+  ['ekramasif/GeminiCoder','main','unverified','reference',['app-builder','gemini','preview']],
+  ['assistants-hub/assistantshub.ai','main','MIT','train',['assistants','multi-provider','analytics','documents','functions']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
