@@ -419,14 +419,14 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     try{
       let content='';
       if(options?.deep){
-        options.onStage?.('plan');
+        options?.onStage?.('plan');
         const draft=await neuralGenerate(
           system+'\n\nDEEP PASS 1 — FORGE: identifique o assunto central, restrições e uma resposta útil. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso. Produza um rascunho curto e factual.',
           prompt,
           messages,
           {maxNewTokens:loadedTier==='smart'?320:220,temperature:0.28}
         );
-        options.onStage?.('aegis');
+        options?.onStage?.('aegis');
         const finalPrompt=[
           'PEDIDO ORIGINAL:',
           prompt,
@@ -445,7 +445,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
           {maxNewTokens:loadedTier==='smart'?720:500,temperature:0.34}
         );
       }else{
-        options.onStage?.('forge');
+        options?.onStage?.('forge');
         content=await neuralGenerate(system,prompt,messages);
       }
       if(content.trim()){
@@ -455,7 +455,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
           fallbackReason='A geração neural saiu do assunto principal e foi rejeitada pelo gate de relevância.';
           lastNeuralError=fallbackReason;
         }else{
-          options.onStage?.('verify');
+          options?.onStage?.('verify');
           lastNeuralError='';
           captureAdaptiveExperience(prompt,cleaned,options?.deep?'local-model-deep':'local-model');
           return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
