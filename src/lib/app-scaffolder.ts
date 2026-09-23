@@ -131,15 +131,29 @@ export async function requestJson<T>(url:string,init:RequestInit={},attempts=2):
 }
 
 function integrationModule(req:ProductRequirements){
-  const rows=req.integrations.map(name=>`  {id:'${name}',enabled:true,mode:'server-proxy'}`).join(',\n');
-  return `export type IntegrationStatus={id:string;enabled:boolean;mode:'server-proxy'|'browser-safe'};
+  const rows=req.integrations.map(name=>`  {id:'${name}',required:true}`).join(',\n');
+  return `export type IntegrationState='configured'|'missing'|'error'|'unknown';
+export type IntegrationStatus={id:string;required:boolean;state:IntegrationState;detail?:string};
 
-export const integrationCatalog:IntegrationStatus[]=[
-${rows||"  {id:'rest-api',enabled:false,mode:'server-proxy'}"}
-];
+export const integrationCatalog=[
+${rows||"  {id:'rest-api',required:false}"}
+] as const;
 
-export function integrationSummary(){
-  return integrationCatalog.map(x=>x.id+': '+(x.enabled?'planned':'optional')).join(', ');
+export async function readIntegrationStatus(base='/api'){
+  const response=await fetch(base+'/integrations',{headers:{Accept:'application/json'}});
+  if(!response.ok)throw new Error('Integration status HTTP '+response.status);
+  return response.json();
+}
+
+export async function testIntegration(id:string,base='/api'){
+  const response=await fetch(base+'/integrations/test',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({integration:id})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data?.error||('Integration test HTTP '+response.status));
+  return data;
 }
 `;
 }
@@ -178,27 +192,104 @@ function serverProxy(req:ProductRequirements){
   return `import http from 'node:http';
 
 const PORT=Number(process.env.PORT||8787);
-const json=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json','Access-Control-Allow-Origin':'http://localhost:5173','Access-Control-Allow-Headers':'Content-Type','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});res.end(JSON.stringify(body));};
+const ORIGIN=process.env.CORS_ORIGIN||'http://localhost:5173';
+const json=(res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':ORIGIN,'Vary':'Origin','Access-Control-Allow-Headers':'Content-Type,Authorization','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'});res.end(JSON.stringify(body));};
+const allow=${JSON.stringify(allowed)};
 
-function env(name){const value=process.env[name];if(!value)throw new Error('Missing server variable '+name);return value}
-
-async function externalProxy(req,res){
-  const url=new URL(req.url||'/', 'http://localhost');
-  const integration=url.searchParams.get('integration')||'';
-  const allow=${JSON.stringify(allowed)};
-  if(!allow.includes(integration))return json(res,400,{error:'Integration not allowed'});
-
-  // Provider-specific adapters belong here. Keep service-role/API secrets on server.
-  return json(res,501,{error:'Configure the '+integration+' adapter before production use.'});
+function env(name){return String(process.env[name]||'').trim()}
+function configured(id){
+  if(id==='rest-api')return !!env('EXTERNAL_API_BASE_URL');
+  if(id==='supabase')return !!env('SUPABASE_URL')&&!!(env('SUPABASE_SERVICE_ROLE_KEY')||env('SUPABASE_ANON_KEY'));
+  if(id==='firebase')return !!env('FIREBASE_REST_BASE_URL')&&!!env('FIREBASE_ACCESS_TOKEN');
+  if(id==='datajud')return !!env('DATAJUD_API_KEY');
+  if(id==='djen')return true;
+  if(id==='github')return !!env('GITHUB_TOKEN');
+  if(id==='vercel')return !!env('VERCEL_TOKEN');
+  if(id==='stripe')return !!env('STRIPE_SECRET_KEY');
+  return false;
+}
+function headersFor(id){
+  if(id==='rest-api')return env('EXTERNAL_API_KEY')?{Authorization:'Bearer '+env('EXTERNAL_API_KEY')}:{};
+  if(id==='supabase'){
+    const key=env('SUPABASE_SERVICE_ROLE_KEY')||env('SUPABASE_ANON_KEY');
+    return {apikey:key,Authorization:'Bearer '+key};
+  }
+  if(id==='firebase')return {Authorization:'Bearer '+env('FIREBASE_ACCESS_TOKEN')};
+  if(id==='datajud')return {'Authorization':'APIKey '+env('DATAJUD_API_KEY')};
+  if(id==='github')return {Authorization:'Bearer '+env('GITHUB_TOKEN'),'User-Agent':'Predict-App'};
+  if(id==='vercel')return {Authorization:'Bearer '+env('VERCEL_TOKEN')};
+  if(id==='stripe')return {Authorization:'Bearer '+env('STRIPE_SECRET_KEY')};
+  return {};
+}
+function baseFor(id){
+  if(id==='rest-api')return env('EXTERNAL_API_BASE_URL');
+  if(id==='supabase')return env('SUPABASE_URL').replace(/\\/$/,'')+'/rest/v1';
+  if(id==='firebase')return env('FIREBASE_REST_BASE_URL');
+  if(id==='datajud')return env('DATAJUD_BASE_URL')||'https://api-publica.datajud.cnj.jus.br';
+  if(id==='djen')return 'https://comunicaapi.pje.jus.br/api/v1';
+  if(id==='github')return 'https://api.github.com';
+  if(id==='vercel')return 'https://api.vercel.com';
+  if(id==='stripe')return 'https://api.stripe.com';
+  return '';
+}
+function safePath(value){
+  const path=String(value||'/').trim();
+  if(!path.startsWith('/')||path.includes('://')||path.includes('..'))throw new Error('Invalid proxy path');
+  return path;
+}
+async function readBody(req){
+  let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>1_000_000)throw new Error('Payload too large')}
+  return raw;
+}
+async function proxy(req,res,url){
+  const id=String(url.searchParams.get('integration')||'');
+  if(!allow.includes(id))return json(res,400,{error:'Integration not allowed'});
+  if(!configured(id))return json(res,503,{error:'Integration '+id+' is missing environment configuration'});
+  const path=safePath(url.searchParams.get('path')||'/');
+  const target=baseFor(id).replace(/\\/$/,'')+path;
+  const method=String(req.method||'GET').toUpperCase();
+  if(!['GET','POST','PATCH','PUT','DELETE'].includes(method))return json(res,405,{error:'Method not allowed'});
+  const raw=['POST','PATCH','PUT'].includes(method)?await readBody(req):'';
+  const upstream=await fetch(target,{
+    method,
+    headers:{Accept:'application/json','Content-Type':'application/json',...headersFor(id)},
+    ...(raw?{body:raw}:{})
+  });
+  const text=await upstream.text();
+  let payload;try{payload=text?JSON.parse(text):null}catch{payload={raw:text.slice(0,5000)}}
+  return json(res,upstream.status,payload);
+}
+async function test(id){
+  if(!allow.includes(id))return {ok:false,error:'Integration not allowed'};
+  if(!configured(id))return {ok:false,configured:false,error:'Missing environment configuration'};
+  let path='/';
+  if(id==='github')path='/rate_limit';
+  if(id==='stripe')path='/v1/account';
+  if(id==='djen')path='/comunicacao?pagina=1&itensPorPagina=1';
+  if(id==='datajud')return {ok:true,configured:true,detail:'API key present; use a tribunal-specific _search endpoint for live validation.'};
+  if(id==='supabase')path='/';
+  try{
+    const r=await fetch(baseFor(id).replace(/\\/$/,'')+path,{headers:{Accept:'application/json',...headersFor(id)}});
+    return {ok:r.ok,configured:true,status:r.status,detail:r.ok?'Provider reachable':'Provider returned '+r.status};
+  }catch(error){return {ok:false,configured:true,error:error?.message||String(error)}}
 }
 
 http.createServer(async(req,res)=>{
-  if(req.method==='OPTIONS')return json(res,204,{});
-  const url=new URL(req.url||'/', 'http://localhost');
-  if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-app'});
-  if(url.pathname==='/api/integrations')return json(res,200,{configured:${JSON.stringify(allowed)}});
-  if(url.pathname==='/api/proxy')return externalProxy(req,res);
-  return json(res,404,{error:'Not found'});
+  try{
+    if(req.method==='OPTIONS')return json(res,204,{});
+    const url=new URL(req.url||'/', 'http://localhost');
+    if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-app'});
+    if(url.pathname==='/api/integrations'&&req.method==='GET'){
+      return json(res,200,{items:allow.map(id=>({id,configured:configured(id),mode:'server-proxy'}))});
+    }
+    if(url.pathname==='/api/integrations/test'&&req.method==='POST'){
+      const raw=await readBody(req);let body={};try{body=raw?JSON.parse(raw):{}}catch{}
+      const result=await test(String(body.integration||''));
+      return json(res,result.ok?200:503,result);
+    }
+    if(url.pathname==='/api/proxy')return proxy(req,res,url);
+    return json(res,404,{error:'Not found'});
+  }catch(error){return json(res,error?.message==='Payload too large'?413:400,{error:error?.message||'Request failed'})}
 }).listen(PORT,()=>console.log('API http://localhost:'+PORT));
 `;
 }
@@ -214,6 +305,8 @@ function docs(req:ProductRequirements,prompt:string){
     '- Domain validation before mutation.',
     '- Loading, empty, success and error states.',
     '- API calls isolated from visual components.',
+    '- Sidebar + subbar/navigation model separated from domain rules.',
+    '- Integration screen reflects backend configuration; no fake toggle may claim a provider is connected.',
     '- Server-only secrets never embedded in browser code.',
     '- Persistent/shared business data requires a backend/database.',
     '- Export must contain runnable setup and environment documentation.',
@@ -231,9 +324,81 @@ function docs(req:ProductRequirements,prompt:string){
   ].join('\n');
 }
 
+function moduleSkeletons(req:ProductRequirements):WorkspaceFile[]{
+  const nav=req.intent==='crm'
+    ? ['Dashboard','Pipeline','Clientes','Financeiro','Integrações','Configurações']
+    : req.intent==='store'
+      ? ['Dashboard','Produtos','Pedidos','Clientes','Pagamentos','Configurações']
+      : req.intent==='dashboard'
+        ? ['Visão geral','Relatórios','Fontes','Alertas','Configurações']
+        : ['Workspace','Dados','Integrações','Configurações'];
+
+  const sidebar=`export const APP_NAV=${JSON.stringify(nav)} as const;
+
+export function sidebarModel(active:string){
+  return APP_NAV.map((label,index)=>({
+    id:label.toLowerCase().normalize('NFD').replace(/\\p{M}/gu,'').replace(/[^a-z0-9]+/g,'-'),
+    label,
+    active:label===active,
+    order:index
+  }));
+}
+`;
+
+  const shell=`export interface AppShellState{
+  active:string;
+  subbar:string[];
+  loading:boolean;
+  error:string|null;
+}
+
+export function createShellState(active:string,subbar:string[]=[]):AppShellState{
+  return {active,subbar,loading:false,error:null};
+}
+`;
+
+  const schema=`export const domainContract={
+  intent:${JSON.stringify(req.intent)},
+  entities:${JSON.stringify(req.entities)},
+  needsAuth:${JSON.stringify(req.needsAuth)},
+  needsDatabase:${JSON.stringify(req.needsDatabase)},
+  needsValidation:${JSON.stringify(req.needsValidation)},
+  integrations:${JSON.stringify(req.integrations)}
+} as const;
+`;
+
+  const state=`export interface AsyncState<T>{data:T;loading:boolean;error:string|null;updatedAt:number|null}
+export function idle<T>(data:T):AsyncState<T>{return {data,loading:false,error:null,updatedAt:null}}
+export function loading<T>(state:AsyncState<T>):AsyncState<T>{return {...state,loading:true,error:null}}
+export function failed<T>(state:AsyncState<T>,error:unknown):AsyncState<T>{return {...state,loading:false,error:String((error as any)?.message||error)}}
+export function ready<T>(state:AsyncState<T>,data:T):AsyncState<T>{return {data,loading:false,error:null,updatedAt:Date.now()}}
+`;
+
+  const tests=`import { describe,it,expect } from 'vitest';
+import { required, validEmail, validPhone, validMoney } from './validation';
+
+describe('domain validation',()=>{
+  it('rejects required empty values',()=>expect(required('','Nome')).toBeTruthy());
+  it('accepts valid email',()=>expect(validEmail('user@example.com')).toBeNull());
+  it('rejects short phone',()=>expect(validPhone('123')).toBeTruthy());
+  it('rejects negative money',()=>expect(validMoney(-1)).toBeTruthy());
+});
+`;
+
+  return [
+    {path:'src/components/navigation/sidebar-model.ts',language:'typescript',content:sidebar},
+    {path:'src/layout/app-shell.ts',language:'typescript',content:shell},
+    {path:'src/domain/schema.ts',language:'typescript',content:schema},
+    {path:'src/state/async-state.ts',language:'typescript',content:state},
+    {path:'src/domain/validation.test.ts',language:'typescript',content:tests},
+    {path:'src/pages/README.md',language:'markdown',content:'# Pages\n\nThe live preview is kept in App.tsx for instant sandbox execution. Production modules are split by navigation/domain responsibility for export and continued editing.\n'}
+  ];
+}
+
 export function buildProjectScaffold(prompt:string,intent:string):WorkspaceFile[]{
   const req=inferProductRequirements(prompt,intent);
   const files:WorkspaceFile[]=[
+    ...moduleSkeletons(req),
     {path:'src/types/domain.ts',language:'typescript',content:domainTypes(req)},
     {path:'src/domain/validation.ts',language:'typescript',content:validationModule(intent)},
     {path:'src/integrations/http.ts',language:'typescript',content:httpModule()},
