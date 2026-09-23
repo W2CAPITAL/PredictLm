@@ -36,7 +36,7 @@ export async function POST(req:Request){
   const message=String(body?.message||'').trim();
   const surface=String(body?.surface||'chat').slice(0,50);
   const w=workspace(req);
-  const {url,key,enabled}=cfg();
+  const {url,key,service,enabled}=cfg();
   if(!enabled)return withCookie(NextResponse.json({saved:false,localOnly:true}),w);
 
   const row={
