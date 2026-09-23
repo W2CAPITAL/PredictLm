@@ -66,7 +66,7 @@ export function ChatShell({onOpenLegal}:Props){
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
     setBusy(true);
-    setActivity(processNumber?['Recall local do CNJ','Roteando tribunal e fontes oficiais','Consultando DataJud + DJEN','Acionando fallback oficial quando necessário','Preparando Council X10 e síntese']:['Analisando contexto e escolhendo a melhor rota']);
+    setActivity(processNumber?['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']:['Analisando contexto']);
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
@@ -85,7 +85,7 @@ export function ChatShell({onOpenLegal}:Props){
         s.addMessage({
           role:'assistant',
           content:legalChatAnswer(legal,prompt,{count:recalls.length,titles:recalls.map(x=>x.title)}),
-          engine:'LEXIS TwinCore X10 · Processos',
+          engine:'PredictLM · Processos',
           sources:legalSources(legal)
         });
         return;
@@ -108,7 +108,7 @@ export function ChatShell({onOpenLegal}:Props){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,4);
       }
 
-      const engineLabel=reply.engine==='knowledge-fallback'?'fallback local':reply.engine==='knowledge'?'Predict Core':reply.engine;
+      const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine;
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources});
     }catch(err:any){
       s.addMessage({role:'assistant',content:'Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.'});
