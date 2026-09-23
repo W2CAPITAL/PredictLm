@@ -1,6 +1,7 @@
 import { knowledgeContext, retrieveKnowledge } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
 import { cleanUserFacingAnswer } from './prompt-os/response-contract';
+import { adaptiveContext, captureAdaptiveExperience } from './adaptive-memory';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -70,131 +71,55 @@ async function nativeGenerate(system:string,prompt:string){
 
 function ensureWorker(){
   if(worker)return worker;
-  const source=`
-    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2';
-    env.allowLocalModels=false;
-    env.useBrowserCache=true;
-    try{
-      if(env.backends?.onnx?.wasm){
-        env.backends.onnx.wasm.numThreads=1;
-      }
-    }catch{}
-
-    let generator=null;
-    let tier=null;
-    let backend=null;
-    const MODELS={
-      lite:'onnx-community/Qwen2.5-0.5B-Instruct',
-      smart:'onnx-community/Qwen2.5-1.5B-Instruct'
-    };
-
-    async function createGenerator(requestedTier,preferWebgpu){
-      const attempts=[];
-      if(preferWebgpu)attempts.push('webgpu');
-      attempts.push('wasm');
-
-      let lastError=null;
-      for(const device of [...new Set(attempts)]){
-        try{
-          self.postMessage({type:'progress',tier:requestedTier,progress:null,status:'preparing '+device});
-          const next=await pipeline('text-generation',MODELS[requestedTier],{
-            dtype:'q4',
-            device,
-            progress_callback:(p)=>self.postMessage({
-              type:'progress',
-              tier:requestedTier,
-              progress:typeof p?.progress==='number'?p.progress:null,
-              status:(p?.status||p?.file||'loading')+' · '+device
-            })
-          });
-          return {generator:next,device};
-        }catch(error){
-          lastError=error;
-          self.postMessage({
-            type:'backend-failed',
-            tier:requestedTier,
-            backend:device,
-            message:error?.message||String(error)
-          });
-        }
-      }
-      throw lastError||new Error('No local neural backend available');
-    }
-
-    self.onmessage=async(event)=>{
-      const msg=event.data;
-      try{
-        if(msg.type==='load'){
-          if(generator&&tier===msg.tier){
-            self.postMessage({type:'ready',tier,backend});
-            return;
-          }
-
-          generator=null;
-          tier=msg.tier;
-          const loaded=await createGenerator(tier,!!msg.webgpu);
-          generator=loaded.generator;
-          backend=loaded.device;
-
-          self.postMessage({type:'progress',tier,progress:100,status:'validating inference · '+backend});
-          const probe=await generator([
-            {role:'system',content:'Reply only OK.'},
-            {role:'user',content:'OK?'}
-          ],{
-            max_new_tokens:6,
-            do_sample:false,
-            repetition_penalty:1.0
-          });
-          const probeResult=probe?.[0]?.generated_text;
-          const probeText=Array.isArray(probeResult)
-            ? String(probeResult[probeResult.length-1]?.content||'')
-            : String(probeResult||'');
-          if(!probeText.trim())throw new Error('Model loaded but inference self-test returned empty output');
-          self.postMessage({type:'ready',tier,backend});
-        }
-
-        if(msg.type==='generate'){
-          if(!generator)throw new Error('Neural model not loaded');
-          const chat=[
-            {role:'system',content:msg.system},
-            ...msg.messages.slice(-8),
-            {role:'user',content:msg.prompt}
-          ];
-          const out=await generator(chat,{
-            max_new_tokens:msg.maxNewTokens||420,
-            temperature:msg.temperature||0.48,
-            do_sample:true,
-            top_p:.9,
-            repetition_penalty:1.08
-          });
-          let text='';
-          const result=out?.[0]?.generated_text;
-          if(Array.isArray(result))text=result[result.length-1]?.content||'';
-          else text=String(result||'');
-          self.postMessage({type:'result',id:msg.id,text});
-        }
-      }catch(error){
-        self.postMessage({type:'error',id:msg.id||0,message:error?.message||String(error)});
-      }
-    };
-  `;
-  worker=new Worker(URL.createObjectURL(new Blob([source],{type:'text/javascript'})),{type:'module'});
+  worker=new Worker(new URL('../workers/neural.worker.ts',import.meta.url),{type:'module'});
   worker.onmessage=(event)=>{
-    const msg=event.data;
+    const msg=event.data||{};
     if(msg.type==='result'&&pending.has(msg.id)){
       pending.get(msg.id)!.resolve(String(msg.text||''));
       pending.delete(msg.id);
     }
     if(msg.type==='error'&&msg.id&&pending.has(msg.id)){
-      lastNeuralError=String(msg.message||'Local neural generation failed');
+      lastNeuralError=String(msg.message||'Falha na geração neural local');
       pending.get(msg.id)!.reject(new Error(lastNeuralError));
       pending.delete(msg.id);
     }
   };
+  worker.onerror=(event)=>{
+    lastNeuralError=event.message||'Falha no worker neural local';
+    for(const [,job] of pending)job.reject(new Error(lastNeuralError));
+    pending.clear();
+  };
   return worker;
 }
 
-export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:number|null;status:string})=>void){
+const PREF_KEY='predictlm-neural-preference-v1';
+
+export function preferredNeuralTier():NeuralTier|null{
+  if(typeof window==='undefined')return null;
+  const value=localStorage.getItem(PREF_KEY);
+  return value==='lite'||value==='smart'?value:null;
+}
+
+function saveNeuralPreference(tier:NeuralTier|null){
+  if(typeof window==='undefined')return;
+  try{
+    if(tier)localStorage.setItem(PREF_KEY,tier);
+    else localStorage.removeItem(PREF_KEY);
+  }catch{}
+}
+
+export async function restorePreferredNeuralModel(onProgress?:(p:{progress:number|null;status:string})=>void){
+  const tier=preferredNeuralTier();
+  if(!tier||loadedTier)return false;
+  await loadNeuralModel(tier,onProgress,{persistPreference:false});
+  return true;
+}
+
+export async function loadNeuralModel(
+  tier:NeuralTier,
+  onProgress?:(p:{progress:number|null;status:string})=>void,
+  options?:{persistPreference?:boolean}
+){
   const w=ensureWorker();
   const caps=browserCapabilities();
 
@@ -255,10 +180,12 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
         });
       }
       if(msg.type==='ready'&&msg.tier===tier){
-        loadedTier=tier;
+        loadedTier=msg.actualTier==='smart'?'smart':'lite';
         loadedBackend=msg.backend==='webgpu'?'webgpu':'wasm';
         lastNeuralError='';
-        onProgress?.({progress:100,status:'pronto · '+String(msg.backend||'local')});
+        if(options?.persistPreference!==false)saveNeuralPreference(tier);
+        const compatibility=tier==='smart'&&loadedTier==='lite'?' · compatibilidade Lite':'';
+        onProgress?.({progress:100,status:'pronto · '+String(msg.label||msg.backend||'local')+compatibility});
         finish(resolve);
       }
       if(msg.type==='error'&&!msg.id){
@@ -276,7 +203,7 @@ export async function loadNeuralModel(tier:NeuralTier,onProgress?:(p:{progress:n
 
 export function neuralStatus(){return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,lastError:lastNeuralError||null};}
 
-export function unloadNeuralModel(){
+export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   if(worker){
     worker.terminate();
     worker=null;
@@ -284,6 +211,7 @@ export function unloadNeuralModel(){
   loadedTier=null;
   loadedBackend=null;
   lastNeuralError='';
+  if(!options?.keepPreference)saveNeuralPreference(null);
   for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
   pending.clear();
 }
@@ -316,12 +244,14 @@ function knowledgeReply(prompt:string){
 
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
+  const learned=adaptiveContext(prompt,4);
   const recent=messages.slice(-10).map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
   const compiled=compileSystemPrompt({
     userText:prompt,
     extra:[
       recent?'Histórico recente:\n'+recent:'',
-      context?'Contexto recuperado:\n'+context:''
+      context?'Contexto recuperado:\n'+context:'',
+      learned?'Memória adaptativa local:\n'+learned:''
     ].filter(Boolean)
   });
   const system=compiled.system;
@@ -331,7 +261,11 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   if(typeof window!=='undefined'&&options?.preferNative!==false){
     try{
       const content=await nativeGenerate(system,prompt);
-      if(content.trim())return {content:cleanUserFacingAnswer(content),engine:'native',sources};
+      if(content.trim()){
+        const cleaned=cleanUserFacingAnswer(content);
+        captureAdaptiveExperience(prompt,cleaned,'native-model');
+        return {content:cleaned,engine:'native',sources};
+      }
     }catch(error:any){
       fallbackReason=String(error?.message||'Browser native model unavailable');
     }
@@ -342,7 +276,9 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       const content=await neuralGenerate(system,prompt,messages);
       if(content.trim()){
         lastNeuralError='';
-        return {content:cleanUserFacingAnswer(content),engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+        const cleaned=cleanUserFacingAnswer(content);
+        captureAdaptiveExperience(prompt,cleaned,'local-model');
+        return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
       }
       fallbackReason='Local neural model returned an empty response';
       lastNeuralError=fallbackReason;
