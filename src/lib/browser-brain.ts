@@ -316,6 +316,7 @@ function parseBuildPatch(raw:string):NeuralBuildPatch|null{
 
 export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile[]):Promise<NeuralBuildPatch|null>{
   if(!worker||!loadedTier)return null;
+  const learnedBuild=trainingContext(prompt,6);
   const system=[
     'You are the code refinement layer of a local app builder.',
     'Return ONLY valid JSON with keys explanation, plan, files.',
@@ -323,8 +324,9 @@ export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile
     'Preserve the current project. Never replace a working app with a generic starter.',
     'For business apps, require real navigation/sidebar, domain validation, loading/error/empty states, persistence boundary, API/integration adapters, server-only secrets and tests.',
     'Do not claim an integration is connected without credentials/handshake.',
-    'Prefer edits that connect generated src modules to real behavior rather than decorative files.'
-  ].join(' ');
+    'Prefer edits that connect generated src modules to real behavior rather than decorative files.',
+    learnedBuild?('Approved implementation patterns:\n'+learnedBuild):''
+  ].filter(Boolean).join('\n\n');
   const snapshot=files
     .filter(f=>/^(App\.tsx|styles\.css|predict\.spec\.json|ARCHITECTURE\.md|src\/|server\/|\.env\.example)/.test(f.path))
     .slice(0,12)
