@@ -6,6 +6,8 @@ import { resolveBuildTurn } from '@/lib/build-turn';
 import { classifyConversation, directConversationReply, filterRelevantResearchItems } from '@/lib/chat-intelligence';
 import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj, resolveCnjFromContext } from '@/lib/legal/cnj';
 import { hasLegacyEscapedNewlines, repairLegacyEscapedNewlines } from '@/lib/workspace-repair';
+import { createLegalDossier } from '@/lib/legal/dossier';
+import { isAggressiveLegalRequest, isLegalDossierRequest } from '@/lib/legal/mode';
 
 export const runtime = 'nodejs';
 
@@ -79,7 +81,44 @@ export async function GET(){
     exampleTjspForum:datajudTribunal('4000338-89.2026.8.26.0002')?.label==='TJSP'
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean);
+  const dossierFixture:any={
+    query:'4000338-89.2026.8.26.0002',
+    processNumber:'4000338-89.2026.8.26.0002',
+    digits:'40003388920268260002',
+    validCnj:true,
+    tribunalAlias:'tjsp',
+    tribunalLabel:'TJSP',
+    fetchedAt:new Date().toISOString(),
+    datajud:{ok:false,error:'DataJud excedeu o tempo de resposta após nova tentativa.',found:false,subjects:[],movements:[]},
+    djen:{ok:false,error:'DJEN HTTP 403. O DJEN recusou o egress desta execução.',count:0,publications:[]},
+    officialPortals:[],
+    trace:[],
+    timeline:[],
+    lenses:[],
+    interpretation:{
+      confidence:'low',posture:'unknown',postureLabel:'Inconclusivo',
+      currentState:'Sem dados públicos suficientes nesta execução.',
+      whatHappened:[],whyItMatters:[],nextActions:['Tentar novamente e confirmar no sistema oficial.'],evidence:[]
+    },
+    summary:{
+      headline:'Processo teste',status:'Sem dados públicos suficientes',publicationCount:0,movementCount:0,
+      caveats:['Falhas de fonte devem permanecer explícitas.'],
+      sourceSummary:'DataJud: falhou · DJEN: falhou'
+    }
+  };
+  const standardDossier=createLegalDossier(dossierFixture,{mode:'standard'});
+  const aggressiveDossier=createLegalDossier(dossierFixture,{mode:'aggressive'});
+  const legalArtifactBehavior={
+    dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
+    normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
+    neutralDoesNotEnableAggressive:!isAggressiveLegalRequest('gere um dossiê completo'),
+    explicitAttackEnablesAggressive:isAggressiveLegalRequest('ataque isso com AEGIS total'),
+    standardOmitsAggressiveBlock:!standardDossier.includes('Revisão adversarial — pedido expresso'),
+    aggressiveIncludesAggressiveBlock:aggressiveDossier.includes('Revisão adversarial — pedido expresso'),
+    dossierKeepsLiteralSourceErrors:standardDossier.includes('DataJud excedeu o tempo')&&standardDossier.includes('DJEN HTTP 403')
+  };
+
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean);
 
   return Response.json({
     ok,
@@ -115,6 +154,7 @@ export async function GET(){
       continuity,
       chatIntelligence,
       legalModule,
+      legalArtifactBehavior,
       packagedFiles:packaged.length
     },
     optional:{

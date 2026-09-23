@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -54,7 +54,11 @@
     "multi-keyframe-video",
     "browser-webm-render",
     "optional-veo-sora-seedance",
-    "media-error-feedback"
+    "media-error-feedback",
+    "dossier-html-artifact",
+    "aggressive-legal-opt-in",
+    "literal-source-errors",
+    "host-parity-contract"
   ],
   "hosts": [
     "PredictLM",

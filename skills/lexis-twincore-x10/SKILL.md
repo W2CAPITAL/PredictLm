@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.1. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.4. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.1.0"
+  version: "5.4.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.1
+# LEXIS TwinCore X10 v5.4
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -165,3 +165,48 @@ Regra adicional: a resposta final não deve despejar nomes de skill, fallback, e
 - melhor e pior caso plausível.
 
 Isso não autoriza assédio, sabotagem, doxxing, fraude, acesso indevido, bypass de controle, uso de e-CPF de terceiro ou protocolo silencioso.
+
+
+## Contrato de paridade de host
+
+A skill é o mesmo protocolo, mas cada host executa com ferramentas diferentes.
+
+### PredictLM nativo
+- CNJ/processos: `queryLegalProcess()` / `/api/legal/process`.
+- Dossiê: `createLegalDossier(bundle,{mode})` e `/api/legal/dossier`.
+- DataJud e DJEN são consultados antes da narrativa; e-SAJ é complemento oficial quando aplicável, nunca substituto silencioso.
+- Dossiê no chat é **artefato HTML baixável**, não texto genérico no lugar.
+- Erro de DataJud/DJEN é preservado literalmente como erro; timeout/403 não vira “zero resultados”.
+- Python da skill é adapter para hosts com shell. O browser PredictLM usa o runtime TypeScript equivalente.
+
+### Host com shell/sandbox
+Quando Python estiver disponível:
+`scripts/legal/query_process.py --json CNJ | scripts/legal/build_dossier.py --mode standard`.
+
+O resultado esperado é semanticamente equivalente ao runtime TypeScript, ainda que a implementação seja diferente.
+
+## Gate jurídico v4.2 incorporado
+
+Regras herdadas da v4.2 e obrigatórias nas versões seguintes:
+1. Entregar exatamente o artefato pedido.
+2. Dossiê = consulta real + HTML estruturado.
+3. Modo agressivo é **opt-in explícito**.
+4. Sem pedido agressivo, usar tom neutro-profissional.
+5. Falha de fonte = erro literal + dados das fontes que responderam.
+6. Nunca fechar com fallback “só e-SAJ” quando DataJud/DJEN falharam.
+7. Nada ilegal: sem e-CPF de terceiro, bypass, protocolo silencioso, fraude ou doxxing.
+
+Triggers agressivos aceitos incluem: ataque, malícia, lado ruim, war room, pressure-test, stress-test, red-team e AEGIS total.
+
+## Dossiê no PredictLM
+
+Pedido `dossiê`, `dossie`, `relatório processual` ou `relatório do processo`:
+1. recuperar CNJ explícito ou o último CNJ relevante do histórico;
+2. consultar DataJud + DJEN;
+3. preservar falhas reais por fonte;
+4. interpretar estado/timeline;
+5. gerar HTML;
+6. anexar o arquivo no chat;
+7. devolver resumo curto e fontes.
+
+O HTML inclui síntese, confiança por fonte, timeline, lentes, DJEN, caveats e, somente quando solicitado, bloco AEGIS agressivo.
