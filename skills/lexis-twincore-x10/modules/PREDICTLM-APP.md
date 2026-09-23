@@ -31,7 +31,10 @@
 - Media Library;
 - Supabase metadata-only;
 - exclusão;
-- animação local WebM sem API;
+- proxy same-origin para impedir quebra de imagem/CORS no canvas;
+- vídeo local WebM com push-in/pan/drift;
+- vídeo storyboard com 3 keyframes IA coerentes + transições e render local;
+- download do vídeo sem guardar binário grande no Supabase;
 - adapters de vídeo avançado como referência/opcionais.
 
 ## Storage strategy
