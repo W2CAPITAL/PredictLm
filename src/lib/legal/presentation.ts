@@ -38,6 +38,26 @@ function filingGuidance(bundle:LegalProcessBundle){
   ].join('\n');
 }
 
+function councilX10(bundle:LegalProcessBundle,prompt:string){
+  const found=bundle.timeline.length>0;
+  const portal=bundle.officialPortals[0];
+  const datajudState=bundle.datajud.ok?(bundle.datajud.found?'encontrou o processo':'não retornou hit'):'falhou';
+  const djenState=bundle.djen.ok?(bundle.djen.count+' publicação(ões)'):'falhou';
+  const wantsAction=strategyRequested(prompt);
+  return [
+    ['1 · Product / North Star',wantsAction?'Objetivo aparente: decidir uma medida jurídica útil, não apenas localizar dados. Primeiro é preciso fechar fatos, prova e competência.':'Objetivo aparente: entender o estado público do processo com a maior cobertura verificável.'],
+    ['2 · Architecture / Evidence','Cobertura atual: DataJud '+datajudState+', DJEN '+djenState+(portal?' e '+portal.name+' '+(portal.found?'localizou informação':'não confirmou informação pública'):'')+'. Nenhuma fonte isolada é tratada como verdade absoluta.'],
+    ['3 · Builder / Implementation','O pipeline executa CNJ → tribunal → DataJud/DJEN → fallback oficial → normalização → timeline → síntese. Falha de uma etapa não encerra silenciosamente a investigação.'],
+    ['4 · UX / Human Factors',found?'Há eventos públicos suficientes para exibir uma linha do tempo, mas o usuário ainda precisa distinguir evento, publicação e inferência.':'A resposta deve explicar por que não há dados, em vez de mostrar apenas “0 movimentos”.'],
+    ['5 · Research / Domain',bundle.tribunalAlias==='tjsp'?'O número aponta para TJSP; quando as APIs centrais não resolvem, a consulta pública do e-SAJ é uma fonte oficial adicional.':'O número foi roteado para '+bundle.tribunalLabel+'; adapters adicionais dependem do sistema oficial desse tribunal.'],
+    ['6 · Security / Abuse','A investigação fica em fontes públicas/autorizadas. Não há bypass de CAPTCHA, autenticação, sigilo ou uso de certificado de terceiro.'],
+    ['7 · Failure / QA',found?'Mesmo com eventos, pode haver atraso de indexação ou ausência de peças/decisões integrais.':'Hipóteses de falha: atraso de indexação, indisponibilidade, sigilo, migração de sistema, número incorreto ou processo ainda não publicizado.'],
+    ['8 · Legal / Privacy',bundle.datajud.confidentiality&&bundle.datajud.confidentiality>0?'Há indicação de nível de sigilo nos metadados; acesso adicional depende de autorização.':'Ausência pública não autoriza inferir conteúdo protegido nem revelar dados não retornados.'],
+    ['9 · Operations / Cost / Reliability','Fontes externas têm timeout, bloqueio geográfico e mudanças de portal. O sistema registra a falha e mantém fallback/rollback em vez de inventar resultado.'],
+    ['10 · Devil\'s Advocate / Countercase',found?'Mesmo um evento público pode estar desatualizado ou incompleto; a tese mais forte contra a leitura atual é o inteiro teor mostrar contexto diferente.':'A hipótese mais incômoda é simples: o CNJ pode estar errado ou não corresponder a processo publicamente consultável. Ela deve ser testada, não escondida.']
+  ];
+}
+
 export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{count:number;titles?:string[]}){
   const d=bundle.datajud;
   const latest=bundle.timeline.slice(0,7);
@@ -81,6 +101,9 @@ export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{cou
   if(critical.length&&latest.length){
     parts.push('**Council — pontos de atenção**\n'+critical.flatMap(x=>x.findings.slice(0,2).map(f=>'• **'+x.title+':** '+f)).join('\n'));
   }
+
+  const council=councilX10(bundle,prompt);
+  parts.push('**Council X10 — FORGE + AEGIS**\n'+council.map(([name,text])=>'• **'+name+':** '+text).join('\n'));
 
   if(strategyRequested(prompt))parts.push(filingGuidance(bundle));
 
