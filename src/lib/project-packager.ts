@@ -48,6 +48,7 @@ function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
     "import { existsSync } from 'node:fs';",
     "import path from 'node:path';",
     "import { fileURLToPath } from 'node:url';",
+    "import { integrationStatuses, testIntegration, proxyIntegration } from './integrations.mjs';",
     "",
     "const __dirname=path.dirname(fileURLToPath(import.meta.url));",
     "const dataFile=path.join(__dirname,'data.json');",
@@ -79,6 +80,9 @@ function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
     "  if(req.method==='OPTIONS')return json(res,204,{});",
     "  const url=new URL(req.url||'/', 'http://localhost');",
     "  if(url.pathname==='/api/health')return json(res,200,{ok:true,service:'predict-backend',entity:'"+entity+"'});",
+    "  if(url.pathname==='/api/integrations'&&req.method==='GET')return json(res,200,{items:integrationStatuses()});",
+    "  if(url.pathname==='/api/integrations/test'&&req.method==='POST'){const input=await body(req);const result=await testIntegration(String(input?.integration||''));return json(res,result.ok?200:503,result);}",
+    "  if(url.pathname==='/api/proxy'){const input=['POST','PATCH','PUT'].includes(String(req.method||'').toUpperCase())?await body(req):null;const result=await proxyIntegration({id:String(url.searchParams.get('integration')||''),path:String(url.searchParams.get('path')||'/'),method:String(req.method||'GET'),body:input?JSON.stringify(input):''});return json(res,result.status,result.payload);}",
     "  if(url.pathname==='/api/"+entity+"'&&req.method==='GET')return json(res,200,await readData());",
     "  if(url.pathname==='/api/"+entity+"'&&req.method==='POST'){",
     "    const input=await body(req);const errors=validate(input);",
@@ -204,6 +208,10 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     f.path.startsWith('src/domain/')||
     f.path.startsWith('src/integrations/')||
     f.path.startsWith('src/types/')||
+    f.path.startsWith('src/components/')||
+    f.path.startsWith('src/layout/')||
+    f.path.startsWith('src/pages/')||
+    f.path.startsWith('src/state/')||
     f.path.startsWith('server/integrations')
   );
   const merged=new Map<string,WorkspaceFile>();
