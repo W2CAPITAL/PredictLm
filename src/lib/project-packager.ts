@@ -1,4 +1,5 @@
 import type { WorkspaceFile } from './types';
+import { repairLegacyEscapedNewlines } from './workspace-repair';
 
 function readSpec(files:WorkspaceFile[]){
   const spec=files.find(f=>f.path==='predict.spec.json');
@@ -195,7 +196,7 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     {path:'package.json',content:JSON.stringify(pkg,null,2),language:'json'},
     {path:'index.html',content:'<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Predict App</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>',language:'html'},
     {path:'src/main.jsx',content:main,language:'javascript'},
-    {path:'src/App.jsx',content:withReactImport(app?.content||'export default function App(){return <main>Predict App</main>}'),language:'javascript'},
+    {path:'src/App.jsx',content:withReactImport(repairLegacyEscapedNewlines(app?.content||'export default function App(){return <main>Predict App</main>}')),language:'javascript'},
     {path:'src/styles.css',content:css?.content||'',language:'css'},
     {path:'src/App.test.jsx',content:test,language:'javascript'},
     {path:'vite.config.js',content:"import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({plugins:[react()],test:{environment:'jsdom'}});\n",language:'javascript'},

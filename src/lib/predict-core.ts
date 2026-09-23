@@ -292,7 +292,7 @@ function crmApp(title:string,prompt:string=''){
     "function Field({label,error,children}){return <label className={'field '+(error?'invalid':'')}><span>{label}</span>{children}{error&&<small>{error}</small>}</label>}",
     "function LeadTable({rows,money,edit,remove}){return <div className='lead-table'><div className='lead-row head'><span>Cliente</span><span>Contato</span><span>Estágio</span><span>Valor</span><span>Responsável</span><span></span></div>{rows.length===0?<div className='table-empty'>Nenhum registro corresponde à busca.</div>:rows.map(x=><div className='lead-row' key={x.id}><span><b>{x.name}</b><small>{x.company} · {x.source||'Manual'}</small></span><span><b>{x.email||'—'}</b><small>{x.phone||'sem telefone'}</small></span><span><em>{x.status}</em></span><span><strong>{money(x.value)}</strong><small>MRR {money(x.mrr)}</small></span><span>{x.owner}<small>{x.last}</small></span><span className='table-actions'><button onClick={()=>edit(x)}>Editar</button>{remove&&<button className='danger-mini' onClick={()=>remove(x.id)}>×</button>}</span></div>)}</div>}",
     "function Setting({title,desc,on}){return <div className='setting-row'><div><b>{title}</b><span>{desc}</span></div><i className={on?'on':''}><u/></i></div>}",
-  ].join('\\n');
+  ].join('\n');
 }
 
 function crmCss(){

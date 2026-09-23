@@ -1,7 +1,9 @@
 import type { WorkspaceFile } from './types';
+import { repairLegacyEscapedNewlines } from './workspace-repair';
 
 export function buildPreview(files: WorkspaceFile[]) {
-  const app = files.find(f => /(^|\/)App\.(tsx|jsx|js|ts)$/.test(f.path))?.content || '';
+  const rawApp = files.find(f => /(^|\/)App\.(tsx|jsx|js|ts)$/.test(f.path))?.content || '';
+  const app = repairLegacyEscapedNewlines(rawApp);
   const css = files.find(f => /styles?\.css$|globals\.css$/.test(f.path))?.content || '';
   const stripped = app
     .replace(/^\s*['"]use client['"];?\s*/,'')
