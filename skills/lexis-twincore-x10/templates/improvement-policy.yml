@@ -1,0 +1,19 @@
+version: 3
+mode: proposal_first
+autonomous_allowed:
+  - recall
+  - inspect_state
+  - run_tests
+  - create_evals
+  - create_branch
+  - edit_branch
+  - update_repo_registry
+  - generate_skill_patch
+requires_human_gate:
+  - merge_or_deploy_production
+  - destructive_migration
+  - permission_or_secret_change
+  - weaken_auth_or_rls
+  - sensitive_data_external
+  - privileged_external_skill
+  - modify_safety_policy
