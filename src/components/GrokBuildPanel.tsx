@@ -13,7 +13,7 @@ import { orchestrateBuild, type BuildPhase } from '@/lib/build-orchestrator';
 import { buildPreview } from '@/lib/preview';
 import { buildRunnableProject } from '@/lib/project-packager';
 import { promptPresets, enhanceBuildPrompt, type PromptPreset } from '@/lib/prompt-enhancer';
-import { answerLocally } from '@/lib/browser-brain';
+import { answerLocally, generateNeuralBuildPatch, neuralStatus } from '@/lib/browser-brain';
 
 export function GrokBuildPanel(){
   const s=useStudio();
@@ -38,10 +38,33 @@ export function GrokBuildPanel(){
         return;
       }
       const result=orchestrateBuild(turn.effectivePrompt,files,s.deepThinkLevel);
-      if(result.files?.length)s.mergeFiles(result.files);
-      setPhases(result.phases);
-      s.addMessage({role:'assistant',content:result.explanation+'\n\n'+result.plan.join('\n')});
-      s.addRun({title:task,status:'done',steps:result.plan});
+      let finalFiles=result.files;
+      const finalPhases=[...result.phases];
+      const finalPlan=[...result.plan];
+      let refinement='';
+
+      const local=neuralStatus();
+      if(local.loaded&&s.deepThinkLevel!=='fast'){
+        finalPhases.push({id:'neural-refine',label:'Local intelligence refinement',status:'warn',detail:'Reviewing the generated architecture against the current project.'});
+        const patch=await generateNeuralBuildPatch(turn.effectivePrompt,finalFiles);
+        if(patch?.files?.length){
+          const map=new Map(finalFiles.map(file=>[file.path,file]));
+          for(const file of patch.files)map.set(file.path,file);
+          finalFiles=Array.from(map.values());
+          const phase=finalPhases.find(x=>x.id==='neural-refine');
+          if(phase){phase.status='done';phase.detail=patch.files.length+' focused file patch(es) applied without resetting the project.'}
+          finalPlan.push('DONE · Local refinement — '+patch.files.map(x=>x.path).join(', '));
+          refinement=' '+patch.explanation;
+        }else{
+          const phase=finalPhases.find(x=>x.id==='neural-refine');
+          if(phase){phase.status='skip';phase.detail='No valid structured patch was produced; deterministic production scaffold was preserved.'}
+        }
+      }
+
+      if(finalFiles?.length)s.mergeFiles(finalFiles);
+      setPhases(finalPhases);
+      s.addMessage({role:'assistant',content:result.explanation+refinement+'\n\n'+finalPlan.join('\n')});
+      s.addRun({title:task,status:'done',steps:finalPlan});
     }catch(e:any){
       const message='Erro no Build: '+(e?.message||'falha desconhecida');
       s.addMessage({role:'assistant',content:message});
@@ -53,7 +76,7 @@ export function GrokBuildPanel(){
     const pkg=buildRunnableProject(Object.values(s.files));
     const zip=new JSZip();
     pkg.forEach(f=>zip.file(f.path,f.content));
-    zip.file('predictlm.json',JSON.stringify({project:s.projectName,engine:'LEXIS TwinCore X10 v3.0',exportedAt:new Date().toISOString()},null,2));
+    zip.file('predictlm.json',JSON.stringify({project:s.projectName,engine:'PredictLM Unified + TwinCore X10',exportedAt:new Date().toISOString()},null,2));
     const blob=await zip.generateAsync({type:'blob'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
