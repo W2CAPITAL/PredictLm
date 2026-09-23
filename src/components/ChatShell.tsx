@@ -10,7 +10,7 @@ import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { trainingRuntimeStats } from '@/lib/training/context';
-import { findCnjNumber } from '@/lib/legal/cnj';
+import { resolveCnjFromContext } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
@@ -107,7 +107,7 @@ export function ChatShell({onOpenLegal}:Props){
     const prompt=input.trim();
     if(!prompt||busy)return;
     const history=active?.messages||[];
-    const processNumber=findCnjNumber(prompt);
+    const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();

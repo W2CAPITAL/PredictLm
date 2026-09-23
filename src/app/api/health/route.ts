@@ -4,7 +4,7 @@ import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
 import { classifyConversation, directConversationReply, filterRelevantResearchItems } from '@/lib/chat-intelligence';
-import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj } from '@/lib/legal/cnj';
+import { datajudTribunal, findCnjNumber, isValidCnj, maskCnj, resolveCnjFromContext } from '@/lib/legal/cnj';
 import { hasLegacyEscapedNewlines, repairLegacyEscapedNewlines } from '@/lib/workspace-repair';
 
 export const runtime = 'nodejs';
@@ -65,6 +65,8 @@ export async function GET(){
     affectionIsCasual:classifyConversation('você me ama?',[])==='casual'&&!!directConversationReply('você me ama?',[],{loaded:false,tier:null}),
     activeIsContext:classifyConversation('já está ativo',chatHistory)==='context'&&!!directConversationReply('já está ativo',chatHistory,{loaded:true,tier:'lite'}),
     whoIsIsFactual:classifyConversation('quem é Elon Musk',[])==='factual',
+    dossierIsContext:classifyConversation('gere um dossiê sobre isso',[{id:'p',role:'assistant',content:'Processo 4000338-89.2026.8.26.0002',createdAt:Date.now()}] as any)==='context',
+    dossierContextResolvesCnj:resolveCnjFromContext('gere um dossiê sobre isso',['Processo 4000338-89.2026.8.26.0002'])==='4000338-89.2026.8.26.0002',
     companyHowToIsSpecific:companyReply.includes('CNPJ')&&companyReply.includes('clientes'),
     companyResearchRejectsNoise:relevantCompany.length===1&&relevantCompany[0]?.title==='Como abrir uma empresa no Brasil'
   };

@@ -1,4 +1,5 @@
 import type { AssistantMessage } from './assistant-store';
+import { isCnjContextReference } from './legal/cnj';
 
 export type ConversationKind='casual'|'context'|'factual'|'current'|'technical'|'howto'|'general';
 
@@ -6,6 +7,7 @@ const clean=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f
 
 export function classifyConversation(prompt:string,history:AssistantMessage[]=[]):ConversationKind{
   const p=clean(prompt);
+  if(history.length&&isCnjContextReference(prompt))return 'context';
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p))return 'casual';
   if(/(voce me ama|gosta de mim|sente algo por mim|obrigad|valeu|kkk|haha|rsrs|boa|legal|bacana)/.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';

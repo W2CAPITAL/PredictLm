@@ -72,3 +72,31 @@ export function datajudTribunal(value:string){
   }
   return null;
 }
+
+
+function normalizeReference(text:string){
+  return String(text||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
+}
+
+export function isCnjContextReference(prompt:string){
+  const p=normalizeReference(prompt);
+  return /\b(dossie|processo|autos?|caso|acao)\b.*\b(isso|esse|essa|este|esta)\b/.test(p)||
+    /^(sobre )?(isso|esse|essa|este|esta)(\b|[?.!])/.test(p)||
+    /^(gere|gerar|faca|faça|crie|criar)\b.*\b(dossie)\b/.test(p);
+}
+
+export function recentCnjNumber(texts:string[],limit=14){
+  const start=Math.max(0,texts.length-limit);
+  for(let i=texts.length-1;i>=start;i--){
+    const found=findCnjNumber(String(texts[i]||''));
+    if(found)return found;
+  }
+  return null;
+}
+
+export function resolveCnjFromContext(prompt:string,historyTexts:string[]=[]){
+  const explicit=findCnjNumber(prompt);
+  if(explicit)return explicit;
+  if(!historyTexts.length||!isCnjContextReference(prompt))return null;
+  return recentCnjNumber(historyTexts);
+}

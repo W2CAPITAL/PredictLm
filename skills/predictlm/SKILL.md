@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -161,3 +161,12 @@ Ele mede 10 casos cegos em conversa geral, raciocínio, empresa, matemática, c�
 
 Gerar o pacote cego com `npm run eval:general`.
 Não alterar a rubrica depois de ver respostas de um modelo; mudanças de benchmark exigem nova versão.
+
+## Regressões críticas de contexto e preview
+Dois erros têm gate permanente:
+1. **Dossiê contextual:** “gere um dossiê sobre isso” após uma conversa processual deve recuperar o último CNJ do histórico e permanecer no fluxo Processos, sem disparar pesquisa genérica.
+2. **CRM serializado:** templates de App devem usar quebras de linha reais. O padrão legado `function App(){\\n...` é inválido para o Babel do preview.
+
+A camada `workspace-repair.ts` recupera projetos antigos preservando escapes deliberados dentro de strings, como o `'\\n'` usado na exportação CSV. A normalização é aplicada no preview, exportação e migração da store.
+
+O smoke test e o `/api/health` devem falhar se qualquer uma dessas regressões reaparecer.
