@@ -8,6 +8,7 @@ import { classifyConversation, directConversationReply, shouldSearchConversation
 import { findCnjNumber } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import type { LegalProcessBundle } from '@/lib/legal/types';
+import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
 import { GrokResearchPanel } from '@/components/GrokResearchPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
@@ -21,6 +22,7 @@ type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'plugins';
 
 export function ChatShell({onOpenLegal}:Props){
   const s=useAssistantStore();
+  const studio=useStudio();
   const active=s.sessions.find(x=>x.id===s.activeId)||s.sessions[0];
   const [input,setInput]=useState('');
   const [busy,setBusy]=useState(false);
@@ -67,11 +69,23 @@ export function ChatShell({onOpenLegal}:Props){
 
     try{
       if(processNumber){
+        const recalls=studio.notes.filter(n=>(n.title+' '+n.body).includes(processNumber)).slice(-5);
         const r=await fetch('/api/legal/process?number='+encodeURIComponent(processNumber),{cache:'no-store'});
         const data=await r.json();
-        if(!r.ok)throw new Error(data?.error||'Falha na consulta DataJud/DJEN');
+        if(!r.ok)throw new Error(data?.error||'Falha na consulta processual');
         const legal=data as LegalProcessBundle;
-        s.addMessage({role:'assistant',content:legalChatAnswer(legal),engine:'Lexis · DataJud + DJEN',sources:legalSources(legal)});
+        studio.addNote({
+          title:'Processo '+legal.processNumber,
+          body:legal.summary.sourceSummary+'\n'+legal.summary.status+'\nConsultado em '+legal.fetchedAt,
+          tags:['processo','datajud','djen',legal.tribunalLabel.toLowerCase()],
+          kind:'note'
+        });
+        s.addMessage({
+          role:'assistant',
+          content:legalChatAnswer(legal,prompt,{count:recalls.length,titles:recalls.map(x=>x.title)}),
+          engine:'LEXIS TwinCore X10 · Processos',
+          sources:legalSources(legal)
+        });
         return;
       }
 
