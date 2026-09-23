@@ -30,8 +30,11 @@ function currentIntent(files:WorkspaceFile[]){
 
 function isNewProject(prompt:string,files:WorkspaceFile[]){
   if(!files.some(f=>/App\.(tsx|jsx|ts|js)$/.test(f.path)))return true;
-  if(/^(crie|criar|faça|faca|gere|gerar|construa|novo projeto|new project|build)\b/i.test(prompt.trim()))return true;
-  if(/do zero|from scratch/i.test(prompt))return true;
+  const p=prompt.trim();
+  if(/do zero|from scratch|novo projeto|new project/i.test(p))return true;
+  if(/^(crie|criar|gere|gerar|construa)\s+(ela|ele|isso|isto|este|esta|esse|essa)\b/i.test(p))return false;
+  if(/^(crie|criar|gere|gerar|construa)\b/i.test(p))return true;
+  if(/^(faça|faca)\s+(um|uma|novo|nova)\s+(app|aplicativo|site|calculadora|crm|dashboard|loja|store|timer|conversor|portfolio|portfólio|sistema)\b/i.test(p))return true;
   return false;
 }
 
@@ -93,7 +96,20 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   phases.push({id:'intent',label:'Intent & context',status:'done',detail:fresh?'New-project request detected.':'Incremental edit detected; preserve the current project.'});
   phases.push({id:'spec',label:'Product spec',status:'done',detail:'Intent: '+effectiveIntent+'. Requirements extracted before file changes.'});
 
-  const core=runPredictCore(prompt,currentFiles,depth);
+  let core=runPredictCore(prompt,currentFiles,depth);
+  const ambiguousExisting=!fresh&&analyzed.intent==='generic'&&!!beforeIntent&&core.spec?.intent==='generic';
+  if(ambiguousExisting){
+    core={
+      explanation:'O pedido foi interpretado como contextual/ambíguo dentro do projeto atual. Para evitar apagar trabalho existente, nenhum template genérico foi aplicado.',
+      plan:[
+        'Preservar integralmente o projeto atual',
+        'Manter o intent existente: '+beforeIntent,
+        'Tratar a próxima instrução como patch incremental ou pedir mais especificidade'
+      ],
+      files:[]
+    };
+    phases.push({id:'context-guard',label:'Context preservation',status:'warn',detail:'Generic regeneration blocked because an existing '+beforeIntent+' project is active.'});
+  }
   const mergedMap=new Map(currentFiles.map(f=>[f.path,f]));
   for(const file of core.files)mergedMap.set(file.path,file);
   let merged=Array.from(mergedMap.values());

@@ -69,7 +69,7 @@ export function ChatShell({onOpenBuild}:{onOpenBuild:()=>void}){
   }
 
   const hasMessages=!!active?.messages.length;
-  return <div className="chat-surface">
+  return <div className={'chat-surface '+(sidebar?'sidebar-open':'sidebar-closed')}>
     <aside className={'chat-sidebar '+(sidebar?'open':'closed')}>
       <div className="chat-side-head"><div className="chat-brand"><span className="brand-orb"><Sparkles size={15}/></span><b>PredictLM</b></div><button onClick={()=>setSidebar(false)} className="mobile-close"><X size={16}/></button></div>
       <button className="new-chat" onClick={s.createChat}><Plus size={15}/> Nova conversa</button>

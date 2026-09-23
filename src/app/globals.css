@@ -112,3 +112,8 @@ button,input,textarea{font:inherit}
 @media(max-width:620px){
   .chat-header-actions>button,.model-picker>button{padding:0 7px}.chat-header-actions>button{font-size:0}.chat-starters{grid-template-columns:1fr;width:100%;max-width:420px}.chat-welcome{padding:28px 15px 140px}.conversation{padding:24px 14px 150px}.chat-composer-wrap{padding:20px 10px 10px}.composer-meta{display:none}.build-surface-switch button{padding:5px 8px}
 }
+
+.chat-surface.sidebar-closed{grid-template-columns:0 1fr}
+.chat-surface.sidebar-closed .chat-sidebar{transform:translateX(-105%);opacity:0;pointer-events:none}
+.chat-surface.sidebar-closed .chat-composer-wrap{left:0}
+@media(max-width:900px){.chat-surface.sidebar-closed{grid-template-columns:1fr}}
