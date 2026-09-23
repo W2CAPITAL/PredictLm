@@ -3,8 +3,11 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, type NeuralTier } from '@/lib/browser-brain';
-import { classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerQuality, classifyConversation, directConversationReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { animateStoryboardToWebm } from '@/lib/media/local-motion';
+import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
+import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { findCnjNumber } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import type { LegalProcessBundle } from '@/lib/legal/types';
@@ -19,6 +22,24 @@ interface Props{
 }
 
 type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'plugins';
+
+type ChatMediaKind='image'|'video';
+
+function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
+  const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
+  const explicit=/(gere|gerar|crie|criar|faca|faça|desenhe|renderize|produza|quero)/.test(p);
+  if(!explicit)return null;
+  if(/\b(video|clipe|animacao|animação|motion|filme|reel|short)\b/.test(p))return 'video';
+  if(/\b(imagem|foto|ilustracao|ilustração|poster|logo|capa|render|arte)\b/.test(p))return 'image';
+  return null;
+}
+
+function mediaSubject(prompt:string){
+  return prompt
+    .replace(/^(gere|gerar|crie|criar|faça|faca|desenhe|renderize|produza|quero)\s+/i,'')
+    .replace(/^(uma?|um)\s+(imagem|foto|ilustração|ilustracao|vídeo|video|clipe|animação|animacao)\s+(de|com)?\s*/i,'')
+    .trim()||prompt.trim();
+}
 
 export function ChatShell({onOpenLegal}:Props){
   const s=useAssistantStore();
@@ -57,6 +78,7 @@ export function ChatShell({onOpenLegal}:Props){
     if(!prompt||busy)return;
     const history=active?.messages||[];
     const processNumber=findCnjNumber(prompt);
+    const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded,tier:currentNeural.tier});
@@ -66,10 +88,121 @@ export function ChatShell({onOpenLegal}:Props){
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
     setBusy(true);
-    setActivity(processNumber?['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']:['Analisando contexto']);
+    setActivity(
+      processNumber
+        ? ['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']
+        : mediaKind==='video'
+          ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
+          : mediaKind==='image'
+            ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
+            : ['Analisando contexto']
+    );
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(mediaKind){
+        const subject=mediaSubject(prompt);
+        const seed=autoVariationSeed();
+        if(mediaKind==='image'){
+          setActivity(['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição']);
+          const enhanced=buildQualityImagePrompt(subject,{style:'Cinematic',attempt:0});
+          const r=await fetch('/api/media/generate',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({prompt:enhanced,width:1024,height:1024,seed,model:'flux'})
+          });
+          const data=await r.json();
+          if(!r.ok||!data?.url)throw new Error(data?.error||'A geração de imagem não retornou um arquivo.');
+          const imageUrl=String(data.url);
+          fetch('/api/media/library',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              kind:'image',
+              status:'ready',
+              provider:data.provider||'chat-media',
+              model:data.model||'flux',
+              prompt:subject,
+              enhancedPrompt:enhanced,
+              style:'Cinematic',
+              aspectRatio:'1:1',
+              width:1024,
+              height:1024,
+              seed,
+              url:imageUrl,
+              meta:{surface:'chat',storageMode:'metadata-only'}
+            })
+          }).catch(()=>{});
+          s.addMessage({
+            role:'assistant',
+            content:'Imagem gerada a partir do seu pedido. Use **Imagine** quando quiser controlar estilo, proporção, vídeo e regeneração avançada.',
+            engine:'PredictLM · Media',
+            media:[{kind:'image',url:imageUrl,label:subject}],
+            actions:['Prompt interpretado','Qualidade/anti-artefatos aplicada','Imagem gerada','Metadados enviados para a Media Library'],
+            status:'done'
+          });
+          return;
+        }
+
+        const frames=buildStoryboardFrames(subject,'Cinematic','16:9');
+        const urls:string[]=[];
+        for(let i=0;i<frames.length;i++){
+          setActivity(['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando cena '+(i+1)+'/'+frames.length]);
+          const enhanced=buildQualityImagePrompt(frames[i].prompt,{
+            style:'Cinematic',
+            attempt:i,
+            purpose:'keyframe',
+            previousPrompt:i?frames[i-1].prompt:undefined
+          });
+          const r=await fetch('/api/media/generate',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({prompt:enhanced,width:1344,height:768,seed:seed+frames[i].seedOffset,model:'flux'})
+          });
+          const data=await r.json();
+          if(!r.ok||!data?.url)throw new Error(data?.error||('Falha ao gerar a cena '+(i+1)+'.'));
+          urls.push(String(data.url));
+        }
+        setActivity(['3 cenas criadas','Carregando keyframes','Renderizando vídeo no navegador']);
+        const blob=await animateStoryboardToWebm({
+          imageUrls:urls,
+          width:1344,
+          height:768,
+          durationMs:9000,
+          onFrameLoaded:(loaded,total)=>setActivity(['3 cenas criadas','Keyframes '+loaded+'/'+total+' carregados','Renderizando vídeo no navegador']),
+          onProgress:value=>setActivity(['3 cenas criadas','Keyframes carregados','Renderizando vídeo · '+Math.round(value*100)+'%'])
+        });
+        const videoUrl=URL.createObjectURL(blob);
+        fetch('/api/media/library',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            kind:'video',
+            status:'ready',
+            provider:'predict-chat-storyboard',
+            model:'predict-storyboard-v1',
+            prompt:subject,
+            enhancedPrompt:subject,
+            style:'Cinematic',
+            aspectRatio:'16:9',
+            width:1344,
+            height:768,
+            seed,
+            url:null,
+            meta:{surface:'chat',storageMode:'metadata-only',bytes:blob.size,mime:blob.type,frames:urls}
+          })
+        }).catch(()=>{});
+        s.addMessage({
+          role:'assistant',
+          content:'Vídeo criado em **3 cenas** e renderizado localmente no navegador. O binário não foi enviado ao Supabase.',
+          engine:'PredictLM · Media',
+          media:[{kind:'video',url:videoUrl,label:subject,temporary:true}],
+          actions:['Prompt de vídeo interpretado','Storyboard de 3 cenas planejado','3 keyframes gerados','Vídeo WebM renderizado no navegador','Metadados enviados para a Media Library'],
+          status:'done'
+        });
+        return;
+      }
+
       if(processNumber){
         const recalls=studio.notes.filter(n=>(n.title+' '+n.body).includes(processNumber)).slice(-5);
         const r=await fetch('/api/legal/process?number='+encodeURIComponent(processNumber),{cache:'no-store'});
@@ -86,7 +219,15 @@ export function ChatShell({onOpenLegal}:Props){
           role:'assistant',
           content:legalChatAnswer(legal,prompt,{count:recalls.length,titles:recalls.map(x=>x.title)}),
           engine:'PredictLM · Processos',
-          sources:legalSources(legal)
+          sources:legalSources(legal),
+          actions:[
+            'Contexto local recuperado',
+            'DataJud consultado',
+            'DJEN consultado',
+            'Portal oficial considerado quando disponível',
+            'Eventos normalizados e interpretados'
+          ],
+          status:'done'
         });
         return;
       }
@@ -100,19 +241,36 @@ export function ChatShell({onOpenLegal}:Props){
       const fallbackText=direct||research?.content||undefined;
       let reply=await answerLocally(augmented,messages,{preferNative:true,knowledge:s.deepThink,fallbackText});
 
-      if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
+      const directScore=direct?answerQuality(prompt,direct):-99;
+      const replyScore=answerQuality(prompt,reply.content);
+      const researchScore=research?answerQuality(prompt,research.content):-99;
+
+      if(direct&&directScore>=replyScore){
+        reply={...reply,content:direct,sources:web.sources.slice(0,4)};
+      }else if(research&&researchScore>replyScore){
         reply={...reply,content:research.content,sources:research.sources};
-      }else if(direct&&(reply.engine==='knowledge'||reply.engine==='knowledge-fallback')){
-        reply={...reply,content:direct,sources:[]};
+      }else if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
+        reply={...reply,content:research.content,sources:research.sources};
       }else if(web.sources.length){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,4);
       }
 
       const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine;
-      s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources});
+      const actions=[
+        'Intenção identificada: '+kind,
+        ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
+        ...(currentNeural.loaded?['Modelo local considerado: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
+        'Resposta passou pelo gate de qualidade'
+      ];
+      s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
     }catch(err:any){
-      const message='Não consegui concluir esta resposta: '+(err?.message||'erro desconhecido')+'.';
-      s.addMessage({role:'assistant',content:message});
+      const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
+      s.addMessage({
+        role:'assistant',
+        content:message,
+        actions:activity.length?activity:['A tarefa foi iniciada, mas falhou antes de concluir.'],
+        status:'error'
+      });
       fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
     }finally{
       setBusy(false);
@@ -122,7 +280,7 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   async function enableNeural(tier:NeuralTier){
-    setModelMenu(false);setModelError('');setLoadState({tier,progress:null,status:'iniciando'});
+    setModelMenu(false);setModelError('');setLoadState({tier,progress:null,status:tier==='lite'?'iniciando modo econômico CPU/WASM':'testando WebGPU e fallback'});
     try{
       await loadNeuralModel(tier,p=>setLoadState({tier,progress:p.progress,status:p.status}));
       setLoadState(null);
@@ -132,6 +290,13 @@ export function ChatShell({onOpenLegal}:Props){
   function openChat(id?:string){
     if(id)s.setActive(id);
     setScreen('chat');
+  }
+
+  function unloadNeural(){
+    unloadNeuralModel();
+    setLoadState(null);
+    setModelMenu(false);
+    setModelError('Modelo local descarregado e memória liberada.');
   }
 
   function sendFeedback(kind:'positive'|'negative',message:string){
@@ -191,13 +356,13 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:<video key={i} src={media.url} controls loop playsInline/>)}</div>:null}{m.actions?.length?<details className={'grok-actions '+(m.status||'done')}><summary>{m.status==='error'?'Execução interrompida':m.status==='partial'?'Execução parcial':'O que foi feito'}</summary>{m.actions.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</details>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
       {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
@@ -207,7 +372,7 @@ export function ChatShell({onOpenLegal}:Props){
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,caps,neural,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,unloadNeural,caps,neural,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — ou use Build Mode para criar apps"/>
     <div className="grok-composer-actions">
@@ -215,7 +380,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'WebGPU será testado; se falhar, CPU/WASM entra automaticamente.':'CPU/WASM disponível; não é necessário ativar flag do Chrome.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite · 0.5B</b><span>Recomendado para PC fraco · GPU ou CPU/WASM</span></button><button onClick={()=>enableNeural('smart')}><b>Qwen Smart · 1.5B</b><span>Mais qualidade; usa WebGPU quando existe e CPU/WASM como fallback</span></button>{neural.loaded&&<small>Ativo: {neural.tier==='smart'?'Qwen 1.5B':'Qwen 0.5B'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'}.</small>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart pode usar WebGPU. Lite usa CPU/WASM econômico para não travar o PC.':'CPU/WASM disponível; nenhuma flag do Chrome é necessária.'}</span></div><button onClick={()=>enableNeural('lite')}><b>Qwen Lite · 0.5B</b><span>1 thread · menor impacto no PC · respostas passam por gate de qualidade</span></button><button onClick={()=>enableNeural('smart')}><b>Qwen Smart · 1.5B</b><span>Mais qualidade; WebGPU quando disponível, CPU/WASM como fallback</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Qwen 1.5B':'Qwen 0.5B'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o modelo do navegador</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
