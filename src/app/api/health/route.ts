@@ -3,6 +3,7 @@ import { runLocalSmokeTest } from '@/lib/local-tools';
 import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { resolveBuildTurn } from '@/lib/build-turn';
+import { classifyConversation, directConversationReply } from '@/lib/chat-intelligence';
 
 export const runtime = 'nodejs';
 
@@ -37,7 +38,16 @@ export async function GET(){
     pinkIsPatch:pinkStyle.includes('#ec4899')&&!pink.files.some(f=>f.path==='App.tsx')&&originalCalcApp.length>0
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean);
+  const chatHistory:any[]=[
+    {id:'1',role:'assistant',content:'Ative o Neural Local para respostas generativas.',createdAt:Date.now(),engine:'Predict Core'}
+  ];
+  const chatIntelligence={
+    affectionIsCasual:classifyConversation('você me ama?',[])==='casual'&&!!directConversationReply('você me ama?',[],{loaded:false,tier:null}),
+    activeIsContext:classifyConversation('já está ativo',chatHistory)==='context'&&!!directConversationReply('já está ativo',chatHistory,{loaded:true,tier:'lite'}),
+    whoIsIsFactual:classifyConversation('quem é Elon Musk',[])==='factual'
+  };
+
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean);
 
   return Response.json({
     ok,
@@ -63,6 +73,7 @@ export async function GET(){
       runnablePackage:packageChecks,
       crmBackend,
       continuity,
+      chatIntelligence,
       packagedFiles:packaged.length
     },
     optional:{
