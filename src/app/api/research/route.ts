@@ -1,3 +1,5 @@
+import { isSensitiveResearchQuery, sourceQuality } from '@/lib/security/source-quality';
+
 export const runtime='nodejs';
 
 function safeHost(url:string){try{return new URL(url).hostname}catch{return ''}}
@@ -35,13 +37,68 @@ async function firecrawlSearch(query:string,limit:number,key:string){
   };
 }
 
+function decodeDuckUrl(raw:string){
+  try{
+    const url=raw.startsWith('//')?'https:'+raw:raw;
+    const parsed=new URL(url,'https://duckduckgo.com');
+    const target=parsed.searchParams.get('uddg');
+    return target?decodeURIComponent(target):parsed.toString();
+  }catch{return raw}
+}
+
+async function duckHtmlSearch(query:string,limit:number){
+  const r=await fetch('https://html.duckduckgo.com/html/?q='+encodeURIComponent(query),{
+    headers:{'User-Agent':'Mozilla/5.0 PredictLM-Studio/5.4','Accept-Language':'pt-BR,pt;q=0.9,en;q=0.7'}
+  });
+  if(!r.ok)throw new Error('DuckDuckGo HTML '+r.status);
+  const html=await r.text();
+  const out:any[]=[];
+  const re=/<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m:RegExpExecArray|null;
+  while((m=re.exec(html))&&out.length<limit){
+    const url=decodeDuckUrl(m[1]);
+    const title=stripHtml(m[2]);
+    if(!/^https?:\/\//i.test(url)||!title)continue;
+    const tail=html.slice(re.lastIndex,re.lastIndex+1800);
+    const sm=tail.match(/class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/(?:a|div)>/i);
+    out.push({type:'web',url,title,description:sm?stripHtml(sm[1]):'',site:safeHost(url),source:'DuckDuckGo Web'});
+  }
+  return out;
+}
+
+function enrichAndRank(items:any[],limit:number){
+  const enriched=items.filter(x=>x?.url).map(x=>{
+    const q=sourceQuality(x.url,x.source);
+    return {...x,qualityScore:q.score,qualityTier:q.tier,qualityReasons:q.reasons};
+  });
+  const deduped=Array.from(new Map(enriched.map(x=>[x.url,x])).values());
+  return deduped.sort((a:any,b:any)=>Number(b.qualityScore||0)-Number(a.qualityScore||0)).slice(0,Math.max(limit,12));
+}
+
+function coverage(items:any[]){
+  const hosts=new Set(items.map(x=>safeHost(x.url)).filter(Boolean));
+  return {
+    total:items.length,
+    distinctHosts:hosts.size,
+    strong:items.filter(x=>Number(x.qualityScore)>=70).length,
+    official:items.filter(x=>x.qualityTier==='official').length,
+    academic:items.filter(x=>x.qualityTier==='academic').length
+  };
+}
+
 async function freeSearch(query:string,limit:number){
   const web:any[]=[];
   const warnings:string[]=[];
-  const [wiki,duck,github]=await Promise.allSettled([
+  const sensitive=isSensitiveResearchQuery(query);
+  const authorityQuery=sensitive
+    ? query+' (site:gov.br OR site:bcb.gov.br OR site:cert.br OR site:cnj.jus.br OR site:cvm.gov.br)'
+    : query+' official documentation';
+  const [wiki,duck,github,duckWeb,duckAuthority]=await Promise.allSettled([
     fetch('https://pt.wikipedia.org/w/api.php?action=query&list=search&format=json&utf8=1&srlimit='+limit+'&srsearch='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
     fetch('https://api.duckduckgo.com/?format=json&no_html=1&skip_disambig=1&q='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
-    fetch('https://api.github.com/search/repositories?per_page='+Math.min(5,limit)+'&q='+encodeURIComponent(query),{headers:{'Accept':'application/vnd.github+json','User-Agent':'PredictLM-Studio'}}).then(async r=>{if(!r.ok)throw new Error('GitHub '+r.status);return r.json()})
+    fetch('https://api.github.com/search/repositories?per_page='+Math.min(5,limit)+'&q='+encodeURIComponent(query),{headers:{'Accept':'application/vnd.github+json','User-Agent':'PredictLM-Studio'}}).then(async r=>{if(!r.ok)throw new Error('GitHub '+r.status);return r.json()}),
+    duckHtmlSearch(query,Math.min(8,limit)),
+    duckHtmlSearch(authorityQuery,Math.min(6,limit))
   ]);
 
   if(wiki.status==='fulfilled'){
@@ -67,22 +124,29 @@ async function freeSearch(query:string,limit:number){
     }
   }else warnings.push('GitHub Search indisponível ou limitado');
 
-  const deduped=Array.from(new Map(web.filter(x=>x.url).map(x=>[x.url,x])).values()).slice(0,Math.max(limit,8));
-  return {provider:'free-fallback',web:deduped,news:[],images:[],warnings};
+  if(duckWeb.status==='fulfilled')web.push(...duckWeb.value);
+  else warnings.push('DuckDuckGo Web indisponível');
+  if(duckAuthority.status==='fulfilled')web.push(...duckAuthority.value);
+  else warnings.push('Busca de fontes fortes indisponível');
+
+  const ranked=enrichAndRank(web,limit);
+  return {provider:'free-fallback',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
 }
 
 export async function POST(req:Request){
   try{
     const body=await req.json();
     const query=body?.query;
-    const limit=Math.max(1,Math.min(8,Number(body?.limit)||6));
+    const limit=Math.max(3,Math.min(16,Number(body?.limit)||12));
     if(!query||typeof query!=='string') return Response.json({error:'query is required'},{status:400});
 
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
       try{
         const result=await firecrawlSearch(query,limit,key);
-        return Response.json({query,...result});
+        const web=enrichAndRank(result.web||[],limit);
+        const news=enrichAndRank(result.news||[],limit);
+        return Response.json({query,...result,web,news,coverage:coverage([...web,...news])});
       }catch(error:any){
         const fallback=await freeSearch(query,limit);
         return Response.json({query,...fallback,warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])]});
