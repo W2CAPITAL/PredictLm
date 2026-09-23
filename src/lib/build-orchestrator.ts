@@ -16,6 +16,8 @@ export interface OrchestratedBuild {
   explanation:string;
   plan:string[];
   files:WorkspaceFile[];
+  changedFiles:string[];
+  appChanged:boolean;
   phases:BuildPhase[];
   packageFiles:WorkspaceFile[];
   packageSummary:ReturnType<typeof packagingSummary>;
@@ -29,13 +31,9 @@ function currentIntent(files:WorkspaceFile[]){
 }
 
 function isNewProject(prompt:string,files:WorkspaceFile[]){
-  if(!files.some(f=>/App\.(tsx|jsx|ts|js)$/.test(f.path)))return true;
-  const p=prompt.trim();
-  if(/do zero|from scratch|novo projeto|new project/i.test(p))return true;
-  if(/^(crie|criar|gere|gerar|construa)\s+(ela|ele|isso|isto|este|esta|esse|essa)\b/i.test(p))return false;
-  if(/^(crie|criar|gere|gerar|construa)\b/i.test(p))return true;
-  if(/^(faça|faca)\s+(um|uma|novo|nova)\s+(app|aplicativo|site|calculadora|crm|dashboard|loja|store|timer|conversor|portfolio|portfólio|sistema)\b/i.test(p))return true;
-  return false;
+  const active=currentIntent(files);
+  if(!active)return true;
+  return /\b(novo projeto|nova aplicação|nova aplicacao|do zero|from scratch|recrie do zero|recomece do zero|reset project)\b/i.test(prompt);
 }
 
 function architectureDoc(prompt:string,intent:string,backend:boolean){
@@ -90,7 +88,7 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   const beforeIntent=currentIntent(currentFiles);
   const fresh=isNewProject(prompt,currentFiles);
   const analyzed=explainDeepThink(prompt);
-  const effectiveIntent=!fresh&&analyzed.intent==='generic'&&beforeIntent?String(beforeIntent):analyzed.intent;
+  const effectiveIntent=!fresh&&beforeIntent?String(beforeIntent):analyzed.intent;
 
   const phases:BuildPhase[]=[];
   phases.push({id:'intent',label:'Intent & context',status:'done',detail:fresh?'New-project request detected.':'Incremental edit detected; preserve the current project.'});
@@ -153,13 +151,24 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   const packageFiles=buildRunnableProject(merged);
   phases.push({id:'package',label:'Runnable packaging',status:'done',detail:packageFiles.length+' export file(s) · '+packageSummary.frontend+(packageSummary.backend?' + backend':'')});
 
+  const beforeMap=new Map(currentFiles.map(f=>[f.path,f.content]));
+  const changedFiles=merged.filter(f=>beforeMap.get(f.path)!==f.content).map(f=>f.path);
+  const appChanged=changedFiles.some(path=>/(^|\/)App\.(tsx|jsx|js|ts)$/.test(path)||/styles?\.css$/.test(path));
+  phases.push({
+    id:'changes',
+    label:'Applied changes',
+    status:changedFiles.length?'done':'skip',
+    detail:changedFiles.length?changedFiles.length+' file(s): '+changedFiles.slice(0,6).join(', ')+(changedFiles.length>6?'…':''):'No file content changed; current project was preserved.'
+  });
+
   const plan=phases.map(p=>(p.status==='skip'?'SKIP':p.status==='warn'?'CHECK':'DONE')+' · '+p.label+' — '+p.detail);
   const explanation=[
-    fresh?'Projeto analisado como nova construção.':'Pedido tratado como edição incremental do projeto atual.',
-    'Não apliquei uma resposta de uma passada: o fluxo avaliou produto, arquitetura, frontend, backend/dados, testes, review e empacotamento.',
-    packageSummary.backend?'Backend incluído porque o domínio pede registros persistentes/compartilhados.':'Backend foi conscientemente omitido porque não agrega valor a este app.',
-    'Exportação preparada como projeto Vite/React executável.'
+    fresh?'Projeto analisado como nova construção.':'Pedido tratado como continuação do projeto atual.',
+    appChanged?'A interface/comportamento do app foi alterado.':'O app principal foi preservado; não houve regeneração destrutiva.',
+    changedFiles.length?'Arquivos realmente alterados: '+changedFiles.join(', ')+'.':'Nenhum arquivo precisou ser alterado nesta execução.',
+    packageSummary.backend?'Backend mantido/incluído porque o domínio pede registros persistentes/compartilhados.':'Backend foi conscientemente omitido porque não agrega valor a este app.',
+    'Exportação continua preparada como projeto Vite/React executável.'
   ].join(' ');
 
-  return {explanation,plan,files:merged,phases,packageFiles,packageSummary,smoke,council};
+  return {explanation,plan,files:merged,changedFiles,appChanged,phases,packageFiles,packageSummary,smoke,council};
 }
