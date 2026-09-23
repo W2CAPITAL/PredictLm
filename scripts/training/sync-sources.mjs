@@ -38,7 +38,11 @@ const SOURCES=[
   ['MAHMOUDELSAYED7/Dr.Ai','main','unverified','reference',['assistant','mobile','firebase','privacy']],
   ['srtab/daiv','main','Apache-2.0','train',['coding-agent','git','mcp','sandbox','ci']],
   ['ekramasif/GeminiCoder','main','unverified','reference',['app-builder','gemini','preview']],
-  ['assistants-hub/assistantshub.ai','main','MIT','train',['assistants','multi-provider','analytics','documents','functions']]
+  ['assistants-hub/assistantshub.ai','main','MIT','train',['assistants','multi-provider','analytics','documents','functions']],
+  ['junhongmit/FraudGT','main','unverified','reference',['fraud','aml','graph','transactions']],
+  ['hunters-sec/opencode','main','MIT','reference',['threat-model','agents','tools','sandbox']],
+  ['gaur-avvv/wormxgpt','main','license-conflict','reference',['threat-model','mcp','agents','providers']],
+  ['tagore1344/CrimeGPT-AI','main','MIT','distill',['fraud','phishing','url-risk','legal']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
