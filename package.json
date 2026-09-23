@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prompts:sync": "node scripts/prompts/sync-corpus.mjs"
+    "prompts:sync": "node scripts/prompts/sync-corpus.mjs",
+    "selfimprove:collect": "node scripts/selfimprove/collect.mjs"
   },
   "dependencies": {
     "next": "15.3.8",
