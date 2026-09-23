@@ -1,3 +1,5 @@
+import { TRAINING_KNOWLEDGE } from './training/learned-lessons';
+
 export interface KnowledgeEntry {
   id:string;
   title:string;
@@ -7,6 +9,7 @@ export interface KnowledgeEntry {
 }
 
 export const assistantKnowledge:KnowledgeEntry[]=[
+  ...TRAINING_KNOWLEDGE,
   {id:'suitecrm',title:'Mature CRM domain model',tags:['crm','suitecrm','sales','contacts','accounts','enterprise'],source:'SuiteCRM/SuiteCRM',body:'SuiteCRM demonstrates the breadth of a mature CRM: accounts, contacts, opportunities, activities, extensibility, permissions, self-hosting and long-lived business data. PredictLM should avoid reducing a CRM to three pipeline cards when the user asks for a serious financial or operational CRM.'},
   {id:'trycompai-crm',title:'Agent-first CRM architecture',tags:['crm','agents','queue','tools','skills','evidence','postgres'],source:'trycompai/crm',body:'Comp AI CRM treats the agent as an autonomous worker with its own deployment, task queue, tools, skills, evidence rules and optional integrations. The product should plan around capabilities that actually exist and list missing keys up front instead of failing tool-by-tool.'},
   {id:'relaticle-crm',title:'CRM API, schema and MCP depth',tags:['crm','relaticle','mcp','crud','schema','workspace','tests'],source:'relaticle/relaticle',body:'Relaticle shows production CRM depth: full CRUD, customizable schema, MCP tools, workspace isolation, REST APIs and extensive automated tests. For full CRM requests, PredictLM should consider data model, API boundaries, workspace isolation and testing in addition to UI.'},
