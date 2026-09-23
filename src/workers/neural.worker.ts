@@ -27,11 +27,20 @@ let modelId='';
 function post(data:any){(self as DedicatedWorkerGlobalScope).postMessage(data)}
 
 async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:boolean){
-  const attempts:{tier:Tier;device:'webgpu'|'wasm'|'default';dtype:'q4';label:string}[]=[];
-  if(requested==='smart'&&preferWebgpu)attempts.push({tier:'smart',device:'webgpu',dtype:'q4',label:'Smart · WebGPU'});
-  if(requested==='smart'&&allowSmartWasm)attempts.push({tier:'smart',device:'default',dtype:'q4',label:'Smart · CPU/WASM'});
-  attempts.push({tier:'lite',device:'default',dtype:'q4',label:requested==='smart'?'Compatibilidade Lite · CPU/WASM':'Lite · CPU/WASM'});
-  attempts.push({tier:'lite',device:'wasm',dtype:'q4',label:'Lite · CPU/WASM explícito'});
+  const attempts:{tier:Tier;device:'webgpu'|'wasm'|'default';dtype:'q4'|'q8';label:string}[]=[];
+
+  // Prefer explicit backends. On Windows, a navigator.gpu object can exist even
+  // when no adapter is actually available, so Lite never depends on WebGPU.
+  if(requested==='smart'&&preferWebgpu){
+    attempts.push({tier:'smart',device:'webgpu',dtype:'q4',label:'Smart · WebGPU q4'});
+  }
+  if(requested==='smart'&&allowSmartWasm){
+    attempts.push({tier:'smart',device:'wasm',dtype:'q8',label:'Smart · CPU/WASM q8'});
+    attempts.push({tier:'smart',device:'wasm',dtype:'q4',label:'Smart · CPU/WASM q4'});
+  }
+  attempts.push({tier:'lite',device:'wasm',dtype:'q8',label:requested==='smart'?'Compatibilidade Lite · CPU/WASM q8':'Lite · CPU/WASM q8'});
+  attempts.push({tier:'lite',device:'wasm',dtype:'q4',label:'Lite · CPU/WASM q4'});
+  attempts.push({tier:'lite',device:'default',dtype:'q4',label:'Lite · backend automático'});
 
   let lastError:any=null;
   for(const attempt of attempts){
@@ -47,6 +56,7 @@ async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:
         })
       };
       if(attempt.device!=='default')options.device=attempt.device;
+
       const next=await pipeline('text-generation',MODELS[attempt.tier],options);
       return {
         generator:next,
@@ -57,11 +67,17 @@ async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:
       };
     }catch(error:any){
       lastError=error;
-      post({type:'backend-failed',tier:requested,backend:attempt.device,message:error?.message||String(error),label:attempt.label});
-      await new Promise(r=>setTimeout(r,180));
+      post({
+        type:'backend-failed',
+        tier:requested,
+        backend:attempt.device,
+        message:error?.message||String(error),
+        label:attempt.label
+      });
+      await new Promise(r=>setTimeout(r,240));
     }
   }
-  throw lastError||new Error('Nenhum backend neural local disponível.');
+  throw lastError||new Error('Nenhum backend neural local compatível foi encontrado.');
 }
 
 async function infer(messages:any[],maxNewTokens:number,temperature:number){
@@ -69,9 +85,9 @@ async function infer(messages:any[],maxNewTokens:number,temperature:number){
   const out=await generator(messages,{
     max_new_tokens:maxNewTokens,
     temperature,
-    do_sample:true,
-    top_p:.9,
-    repetition_penalty:1.08
+    do_sample:temperature>0.15,
+    top_p:.88,
+    repetition_penalty:1.12
   });
   const result=out?.[0]?.generated_text;
   if(Array.isArray(result))return String(result[result.length-1]?.content||'');
