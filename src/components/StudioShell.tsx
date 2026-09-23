@@ -261,9 +261,11 @@ function EmptyAgent({setPrompt}:{setPrompt:(v:string)=>void}){const ideas=['Crie
 function PromptBox({value,setValue,run,disabled,files}:{value:string,setValue:(v:string)=>void,run:()=>void,disabled:boolean,files:any[]}){
   const [open,setOpen]=useState(false);
   const apply=(preset:PromptPreset)=>{setValue(enhanceBuildPrompt(value,preset,files));setOpen(false)};
+  const quick=promptPresets.filter(p=>['enhance','fullstack','setup-repo','test-ship','security'].includes(p.id));
   return <div className="prompt-area">
     {open&&<div className="prompt-enhancer"><div className="enhancer-head"><div><Sparkles size={13}/><b>Aprimorar prompt</b></div><span>Transforma uma frase em instrução de agente multi-etapas</span></div><div className="enhancer-grid">{promptPresets.map(p=><button key={p.id} onClick={()=>apply(p.id)}><b>{p.label}</b><span>{p.hint}</span></button>)}</div></div>}
-    <div className="prompt-box"><textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}}} placeholder="Descreva o app, mudança, repositório ou tarefa..."/><div><button className="enhance-trigger" onClick={()=>setOpen(v=>!v)}><Sparkles size={13}/> Aprimorar</button><span>context + spec + quality gates</span><button onClick={run} disabled={disabled||!value.trim()}><Send size={14}/></button></div></div>
+    <div className="prompt-quick">{quick.map(p=><button key={p.id} onClick={()=>apply(p.id)} title={p.hint}>{p.label}</button>)}</div>
+    <div className="prompt-box"><textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}}} placeholder="Descreva o app ou continue de onde parou…"/><div><button className="enhance-trigger" onClick={()=>setOpen(v=>!v)}><Sparkles size={13}/> Mais opções</button><span>preserva contexto + spec + quality gates</span><button onClick={run} disabled={disabled||!value.trim()}><Send size={14}/></button></div></div>
   </div>
 }
 function InfoCard({icon:Icon,title,text}:{icon:any,title:string,text:string}){return <div className="info-card"><Icon size={17}/><div><b>{title}</b><p>{text}</p></div></div>}
