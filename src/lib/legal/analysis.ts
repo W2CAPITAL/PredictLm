@@ -13,7 +13,7 @@ function levelFor(text:string){
 
 export function mergeTimeline(movements:LegalMovement[],publications:LegalPublication[]):LegalTimelineItem[]{
   const rows:LegalTimelineItem[]=[
-    ...movements.map((m,i)=>({id:'m-'+i+'-'+m.date,date:m.date,type:'movement' as const,title:m.name,body:m.details?.join(' · '),source:'DataJud' as const})),
+    ...movements.map((m,i)=>({id:'m-'+i+'-'+m.date,date:m.date,type:'movement' as const,title:m.name,body:m.details?.join(' · '),source:m.source})),
     ...publications.map((p,i)=>({id:'p-'+(p.id||i),date:p.availableAt||p.publishedAt||'',type:'publication' as const,title:p.type||'Publicação DJEN',body:[p.courtUnit,p.recipient,p.text].filter(Boolean).join(' · '),source:'DJEN' as const}))
   ];
   return rows.filter(x=>x.date).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -29,7 +29,7 @@ export function buildLegalLenses(movements:LegalMovement[],publications:LegalPub
       id:'juridico',title:'Jurídico',
       level:/extin|senten|transit|baixa/.test(combined)?'high':'info',
       findings:[
-        meta.className?'Classe pública no DataJud: '+meta.className+'.':'A classe processual não foi retornada pelo DataJud.',
+        meta.className?'Classe pública identificada: '+meta.className+'.':'A classe processual não foi retornada pelas fontes consultadas.',
         meta.subjects?.length?'Assuntos: '+meta.subjects.slice(0,4).join(', ')+'.':'Assuntos não disponíveis na resposta.',
         critical.length?'Há evento(s) recente(s) que merecem leitura integral antes de qualquer conclusão.':'Nenhum marcador crítico foi inferido apenas pelos metadados recentes.'
       ]
@@ -54,7 +54,7 @@ export function buildLegalLenses(movements:LegalMovement[],publications:LegalPub
       id:'operacional',title:'Operacional',
       level:publications.length?'attention':'info',
       findings:[
-        'DataJud: '+movements.length+' movimentação(ões) normalizada(s).',
+        'Fontes processuais: '+movements.length+' movimentação(ões) normalizada(s).',
         'DJEN: '+publications.length+' publicação(ões) encontrada(s).',
         meta.lastUpdate?'Última atualização informada pelo DataJud: '+meta.lastUpdate+'.':'Data de última atualização não retornada.'
       ]
