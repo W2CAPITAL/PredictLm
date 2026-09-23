@@ -2,6 +2,7 @@ import { runPredictCore } from '@/lib/predict-core';
 import { runLocalSmokeTest } from '@/lib/local-tools';
 import { buildRunnableProject, packagingSummary } from '@/lib/project-packager';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
+import { resolveBuildTurn } from '@/lib/build-turn';
 
 export const runtime = 'nodejs';
 
@@ -12,15 +13,36 @@ export async function GET(){
   const packageInfo=packagingSummary(calculator.files);
   const required=['package.json','index.html','src/main.jsx','src/App.jsx','src/styles.css','vite.config.js','RUNME.md'];
   const packageChecks=required.map(path=>({path,ok:packaged.some(f=>f.path===path)}));
-  const crm=runPredictCore('faça um crm financeiro',[],'deep');
+
+  const crm=orchestrateBuild('crie um crm financeiro',[],'deep');
+  const crmApp=crm.files.find(f=>f.path==='App.tsx')?.content||'';
+  const crmRepeat=orchestrateBuild('crie um crm financeiro',crm.files,'deep');
+  const crmRepeatApp=crmRepeat.files.find(f=>f.path==='App.tsx')?.content||'';
+  const vagueTurn=resolveBuildTurn('crie',crm.files,[]);
+  const helloTurn=resolveBuildTurn('oi',crm.files,[]);
+  const vagueContinue=orchestrateBuild(vagueTurn.effectivePrompt,crm.files,'deep');
+
+  const pinkBase=orchestrateBuild('crie uma calculadora premium',[],'deep');
+  const pink=runPredictCore('cor rosa',pinkBase.files,'deep');
+  const pinkStyle=pink.files.find(f=>f.path==='styles.css')?.content||'';
+  const originalCalcApp=pinkBase.files.find(f=>f.path==='App.tsx')?.content||'';
+
   const crmPackage=buildRunnableProject(crm.files);
   const crmBackend=crmPackage.some(f=>f.path==='server/index.mjs')&&crmPackage.some(f=>f.path==='server/data.json');
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend;
+
+  const continuity={
+    repeatPreservesApp:crmApp.length>0&&crmRepeatApp===crmApp&&!crmRepeat.appChanged,
+    vagueCrieBecomesContinuation:vagueTurn.kind==='continue'&&vagueContinue.files.find(f=>f.path==='App.tsx')?.content===crmApp,
+    greetingIsConversation:helloTurn.kind==='conversation',
+    pinkIsPatch:pinkStyle.includes('#ec4899')&&!pink.files.some(f=>f.path==='App.tsx')&&originalCalcApp.length>0
+  };
+
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(continuity).every(Boolean);
 
   return Response.json({
     ok,
     service:'predictlm-studio',
-    version:5,
+    version:'5.1',
     surfaces:{chat:true,build:true},
     zeroApi:{
       deepThink:true,
@@ -31,7 +53,8 @@ export async function GET(){
       freeResearch:true,
       promptEnhancer:true,
       buildOrchestrator:true,
-      browserNeural:true
+      browserNeural:true,
+      projectContinuity:true
     },
     selfTest:{
       calculatorIntent:calculator.packageSummary.intent,
@@ -39,6 +62,7 @@ export async function GET(){
       orchestratorPhases:calculator.phases.map(p=>({id:p.id,status:p.status})),
       runnablePackage:packageChecks,
       crmBackend,
+      continuity,
       packagedFiles:packaged.length
     },
     optional:{
