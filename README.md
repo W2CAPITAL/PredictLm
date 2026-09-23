@@ -1,48 +1,80 @@
 # PredictLM Studio
 
-PredictLM Studio is a hybrid local-first agentic app builder. It combines a lightweight browser IDE with deterministic offline tooling and optional cloud/local AI providers.
+PredictLM Studio is a local-first agentic app builder designed to remain useful **without API keys and without Ollama**.
 
-## Core capabilities
+## Predict DeepThink v4
 
-- **Predict Core** — deterministic starter generation without an API key.
-- **Providers** — Puter/Grok, Ollama/llama.cpp-compatible local models, and a server-side OpenAI-compatible provider.
-- **Multi-file workspace** — CodeMirror editor, sandbox preview, ZIP export and persistent local state.
-- **Visual Inspect** — click rendered DOM elements in the preview and return their tag, classes, text and geometry to the Studio.
-- **Knowledge Graph** — maps workspace files and relative imports so the agent can reason about structure before editing.
-- **Local Council** — Architecture, Security, Taste/UX, QA and Humanizer reviewers produce a deterministic ship score without model calls.
-- **Vibe Security Gate** — scans generated workspace code for hardcoded credentials, client token storage, unsafe HTML/code execution, insecure HTTP, unsafe queries and quality gaps.
-- **Research** — optional Firecrawl v2 web/news/image search with sources, kept server-side behind `FIRECRAWL_API_KEY`.
-- **Second Brain** — persistent local notes, decisions, runs and saved research.
-- **Skill Registry** — research, design, testing, security, Node/full-stack, browser, media, legal, local AI and agent workflows.
+The default engine is deterministic and runs in the browser/app runtime. It does not pretend to be a foundation model: it analyzes the request, scores supported intents, extracts functional requirements, chooses a blueprint, generates editable files, wires state/actions, and prepares the project for review.
+
+Supported functional blueprints currently include:
+
+- premium calculator with history, memory, keyboard controls, percent, sign, backspace and theme
+- CRM/pipeline
+- dashboard
+- todo/task manager
+- notes workspace
+- Pomodoro/timer
+- unit converter
+- store/cart
+- portfolio
+- functional landing/generic starter
+
+DeepThink depth can be set to **Fast / Deep / Max**.
+
+## Zero-API features
+
+- Build with Predict DeepThink
+- Plan mode
+- deterministic Council review
+- Vibe Security static gate
+- Knowledge Graph
+- visual DOM Inspect
+- free Research fallback using public Wikipedia, DuckDuckGo and GitHub endpoints
+- Browser Lab smoke tests
+- Media pre-production: storyboard, launch script and image prompt pack
+- project ZIP import/export
+- local project clone + restorable snapshots
+- searchable skills
+- Second Brain memory
+- capability self-test endpoint
+
+## Optional providers
+
+External providers are upgrades, not requirements:
+
+- Puter / Grok
+- OpenAI-compatible server provider
+- Firecrawl for deeper research
+- local Ollama/llama.cpp bridge (advanced only)
+
+If an optional AI provider fails and **Automatic fallback** is enabled, PredictLM reruns the task through Predict DeepThink instead of ending with a provider error.
 
 ## Optional environment variables
 
-### Server AI provider
-
 ```bash
-AI_BASE_URL=https://your-provider.example/v1
-AI_API_KEY=...
-AI_MODEL=...
+FIRECRAWL_API_KEY=
+
+AI_BASE_URL=
+AI_API_KEY=
+AI_MODEL=
 ```
 
-### Research
+Secrets remain server-side.
 
-```bash
-FIRECRAWL_API_KEY=fc-...
-```
-
-Keys are used only by server routes. PredictLM remains usable without them.
-
-## Local model
-
-Select **Local model** and configure an Ollama-compatible endpoint. Local inference is called from the browser session, so a Vercel deployment cannot magically reach a PC that is offline.
-
-## Review-first workflow
-
-A recommended ship loop is:
+## Recommended flow
 
 ```
-prompt → plan/build → preview → inspect → graph → council/security → tests → export/deploy
+prompt
+  → DeepThink
+  → functional files
+  → live preview
+  → visual inspect
+  → smoke test
+  → knowledge graph
+  → council/security review
+  → snapshot/export
 ```
 
-The goal is not to vendor dozens of external repositories. PredictLM converts useful patterns into small built-in capabilities or explicit bridges, keeping the web IDE deployable and the desktop/native responsibilities separate.
+## Health/self-test
+
+`GET /api/health` generates a premium calculator through DeepThink and runs the local smoke-test suite against the generated workspace. This validates the zero-API generator path itself.
