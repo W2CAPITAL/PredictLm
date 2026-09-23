@@ -94,6 +94,11 @@ function ensureWorker(){
   return worker;
 }
 
+const NEURAL_MODELS:Record<NeuralTier,string>={
+  lite:process.env.NEXT_PUBLIC_PREDICT_NEURAL_LITE_MODEL||'onnx-community/Qwen2.5-0.5B-Instruct',
+  smart:process.env.NEXT_PUBLIC_PREDICT_NEURAL_SMART_MODEL||'onnx-community/Qwen2.5-1.5B-Instruct'
+};
+
 const PREF_KEY='predictlm-neural-preference-v1';
 const PROFILE_KEY='predictlm-neural-profile-v2';
 
@@ -244,7 +249,7 @@ export async function loadNeuralModel(
     // Lite is intentionally CPU/WASM-first to avoid freezing low-end office PCs.
     // Smart may use WebGPU, with WASM fallback if the adapter is unavailable.
     const allowSmartWasm=tier==='smart'&&!realWebgpu&&caps.memory>=8&&caps.cores>=8;
-    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm});
+    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm,models:NEURAL_MODELS});
   });
 }
 
