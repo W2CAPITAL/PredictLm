@@ -5,6 +5,8 @@ import { Download, Film, Image as ImageIcon, Loader2, Play, RefreshCw, Sparkles,
 import { useStudio } from '@/lib/store';
 import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
 import { buildLocalMotionPlan, buildStoryboardFrames } from '@/lib/media/video-pipelines';
+import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
+import { preloadGeneratedImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -40,7 +42,7 @@ export function GrokImaginePanel(){
   const [prompt,setPrompt]=useState('');
   const [style,setStyle]=useState('Cinematic');
   const [ratio,setRatio]=useState(ratios[0]);
-  const [seed,setSeed]=useState(1);
+  const [seed,setSeed]=useState(()=>autoVariationSeed());
   const [mode,setMode]=useState<'image'|'video'>('image');
   const [generated,setGenerated]=useState('');
   const [generatedPrompt,setGeneratedPrompt]=useState('');
@@ -61,11 +63,18 @@ export function GrokImaginePanel(){
   const [videoProviders,setVideoProviders]=useState<Record<string,{enabled:boolean;label:string;requiresExternalCredits?:boolean}>>({});
   const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
   const [videoStage,setVideoStage]=useState('');
+  const [attempt,setAttempt]=useState(0);
+  const [review,setReview]=useState<ImageQualityReview|null>(null);
+  const [imageStage,setImageStage]=useState('');
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
-    ()=>prompt.trim()?prompt.trim()+', '+style.toLowerCase()+', premium composition, coherent lighting, high detail, no watermark':'',
-    [prompt,style]
+    ()=>prompt.trim()?buildQualityImagePrompt(prompt,{
+      style,
+      attempt,
+      previousPrompt:attempt>0?generatedPrompt||undefined:undefined
+    }):'',
+    [prompt,style,attempt,generatedPrompt]
   );
   const motionPlan=useMemo(()=>buildLocalMotionPlan(prompt,ratio.label),[prompt,ratio.label]);
 
@@ -138,12 +147,17 @@ export function GrokImaginePanel(){
     });
     const data=await r.json();
     if(!r.ok||!data?.url)throw new Error(data?.error||'A geração não retornou imagem.');
-    return {url:String(data.url),provider:String(data.provider||''),model:String(data.model||'flux')};
+    const url=String(data.url);
+    setImageStage('Finalizando imagem…');
+    await preloadGeneratedImage(url);
+    return {url,provider:String(data.provider||''),model:String(data.model||'flux')};
   }
 
-  async function requestImage(){
-    if(!enhanced)throw new Error('Descreva a imagem ou vídeo que você quer criar.');
+  async function requestImage(options?:{regenerate?:boolean}){
+    if(!prompt.trim())throw new Error('Descreva a imagem ou vídeo que você quer criar.');
+    const regenerate=!!options?.regenerate&&!!generated;
     setLoading(true);
+    setImageStage(regenerate?'Analisando a imagem anterior…':'Preparando a melhor composição…');
     setError('');
     setRemoteVideoUrl('');
     if(motionUrl){
@@ -151,29 +165,81 @@ export function GrokImaginePanel(){
       setMotionUrl('');
     }
     setMotionSize(0);
+
+    let nextReview:ImageQualityReview|null=null;
+    let nextAttempt=regenerate?attempt+1:0;
+    let nextSeed=regenerate?autoVariationSeed(seed):autoVariationSeed(seed);
+
     try{
-      const data=await createImageUrl(enhanced,seed);
+      if(regenerate){
+        try{
+          nextReview=await reviewImageQuality(generated);
+          setReview(nextReview);
+        }catch{
+          nextReview=null;
+        }
+      }else{
+        setReview(null);
+      }
+
+      setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
+      const basePrompt=buildQualityImagePrompt(prompt,{
+        style,
+        attempt:nextAttempt,
+        previousPrompt:regenerate?generatedPrompt||undefined:undefined
+      });
+      const reviewHints=nextReview?.promptHints?.length
+        ? '. Correções objetivas da geração anterior: '+nextReview.promptHints.join('; ')+'.'
+        : '';
+      const uniqueness=regenerate
+        ? '. Use a substantially different camera position, framing, subject placement and composition. Do not reproduce the previous image.'
+        : '';
+      const renderPrompt=basePrompt+reviewHints+uniqueness;
+
+      setSeed(nextSeed);
+      setAttempt(nextAttempt);
+      const data=await createImageUrl(renderPrompt,nextSeed);
       const url=data.url;
       setGenerated(url);
-      setGeneratedPrompt(enhanced);
+      setGeneratedPrompt(renderPrompt);
       setProvider(data.provider||'');
       await saveLibrary({
         kind:'image',
         provider:data.provider||'pollinations-proxy',
         model:data.model||'flux',
         url,
-        meta:{keyframeForVideo:mode==='video'}
+        meta:{
+          keyframeForVideo:mode==='video',
+          attempt:nextAttempt,
+          previousQuality:nextReview?.score??null,
+          autoVariation:true
+        }
       });
       return url;
     }finally{
+      setImageStage('');
       setLoading(false);
     }
   }
 
   async function generateImage(){
     if(loading||motionBusy)return;
-    try{await requestImage()}
-    catch(e:any){setError(e?.message||'Falha ao gerar imagem.')}
+    try{await requestImage({regenerate:false})}
+    catch(e:any){
+      const message=e?.message||'Falha ao gerar imagem.';
+      setError(message);
+      reportMediaError(message,{stage:'image'});
+    }
+  }
+
+  async function regenerateImage(){
+    if(!generated||loading||motionBusy)return;
+    try{await requestImage({regenerate:true})}
+    catch(e:any){
+      const message=e?.message||'Falha ao regenerar a imagem.';
+      setError(message);
+      reportMediaError(message,{stage:'image-regenerate'});
+    }
   }
 
   function savePrompt(){
@@ -437,6 +503,8 @@ export function GrokImaginePanel(){
     const next=ratios.find(x=>x.label===item.aspect_ratio);
     if(next)setRatio(next);
     if(item.seed)setSeed(Number(item.seed));
+    setAttempt(Number(item.meta?.attempt||0));
+    setReview(null);
     setProvider(item.provider||'');
     if(item.kind==='video'){
       setMode('video');
@@ -475,8 +543,8 @@ export function GrokImaginePanel(){
           <button className={mode==='video'?'active':''} onClick={()=>setMode('video')}><Film size={13}/>Vídeo</button>
         </div>
 
-        <label><span>Prompt</span><textarea value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
-        <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>setStyle(x)}>{x}</button>)}</div>
+        <label><span>Prompt</span><textarea value={prompt} onChange={e=>{setPrompt(e.target.value);setAttempt(0);setReview(null)}} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
+        <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
 
         {mode==='video'?<div className="gmedia-video-options">
@@ -515,13 +583,16 @@ export function GrokImaginePanel(){
           </>}
         </div>:null}
 
-        <label className="seed-row"><span>Seed</span><input type="number" value={seed} onChange={e=>setSeed(Number(e.target.value)||1)}/><button onClick={()=>setSeed(Math.floor(Math.random()*999999)+1)}><RefreshCw size={13}/></button></label>
+        <div className="gmedia-auto-variation"><RefreshCw size={12}/><span>Variação automática</span><small>Cada geração usa uma composição nova; não precisa configurar seed.</small></div>
 
         {mode==='image'
-          ?<button className="gimagine-generate" onClick={generateImage} disabled={!prompt.trim()||mainBusy}>
-            {loading?<Loader2 size={16} className="spin"/>:<WandSparkles size={16}/>}
-            {loading?'Gerando imagem…':'Gerar imagem'}
-          </button>
+          ?<div className="gmedia-image-actions">
+            <button className="gimagine-generate" onClick={generateImage} disabled={!prompt.trim()||mainBusy}>
+              {loading?<Loader2 size={16} className="spin"/>:<WandSparkles size={16}/>}
+              {loading?(imageStage||'Gerando imagem…'):'Gerar imagem'}
+            </button>
+            {generated?<button className="gimagine-regenerate" onClick={regenerateImage} disabled={mainBusy}><RefreshCw size={14}/>Regenerar melhor</button>:null}
+          </div>
           :<button className="gimagine-generate gmedia-video-generate" onClick={generateVideo} disabled={!prompt.trim()||mainBusy}>
             {mainBusy?<Loader2 size={16} className="spin"/>:<Play size={16}/>}
             {motionBusy?(videoStage||'Gerando vídeo')+' '+mainProgress+'%':loading?(videoStage||'Criando cenas…'):'Gerar vídeo'}
@@ -536,11 +607,13 @@ export function GrokImaginePanel(){
           {motionSize&&!remoteVideoUrl?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
         </div>:null}
 
+        {review&&mode==='image'?<div className="gmedia-review"><b>Revisão automática da anterior: {review.score}/100</b><span>{review.observations.join(' · ')}</span></div>:null}
         {error?<div className="gmedia-error">{error}</div>:null}
       </div>
 
       <div className="gimagine-canvas">
-        {generated?<div className="gimagine-result">
+        {loading?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>A imagem aparece assim que o arquivo estiver realmente carregado.</span></div>:null}
+        {generated&&!loading?<div className="gimagine-result">
           <img src={generated} alt={prompt} onError={imageFailed}/>
           <div className="gmedia-result-actions">
             <a href={generated} target="_blank" rel="noreferrer"><Download size={14}/>Abrir imagem</a>
