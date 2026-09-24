@@ -87,7 +87,9 @@ function buildReasoningSummary(input:{
   if(input.kind==='howto')parts.push('Tratei a pergunta como uma tarefa prática e priorizei passos que você consegue executar.');
   else if(input.kind==='current')parts.push('Separei o que precisava de informação atual do que já podia ser respondido pelo contexto.');
   else if(input.kind==='factual')parts.push('Chequei se a resposta permanecia no assunto e distinguia fato de inferência.');
-  else parts.push('Usei o contexto recente para responder ao que você quis dizer, sem recomeçar a conversa do zero.');
+  else if(input.kind==='hypothetical')parts.push('Tratei a premissa como hipótese e mantive a resposta dentro dela, sem puxar assuntos externos.');
+  else if(input.kind==='context')parts.push('Continuei a partir do contexto recente relevante.');
+  else parts.push('Respondi diretamente ao pedido atual e descartei contexto não solicitado.');
   if(input.webCount)parts.push('Cruzei '+input.webCount+' fonte(s) relevante(s) e descartei resultados que desviavam do tema.');
   if(input.anchor)parts.push('Mantive um piso prático para não trocar uma resposta útil por uma síntese mais vaga.');
   if(input.localBrain)parts.push('Uma segunda leitura independente apontou possíveis lacunas antes da resposta final.');
@@ -471,12 +473,32 @@ export function ChatShell({onOpenLegal}:Props){
       }
 
       const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
+      const factualAnchor=kind==='factual'?stableFactualReply(prompt):null;
+      const practicalAnchor=kind==='howto'?practicalHowToReply(prompt):null;
+
+      // Known, stable, low-risk answers should not enter retrieval/provider roulette.
+      if(!needsWeb&&(factualAnchor||practicalAnchor)){
+        const anchored=factualAnchor||practicalAnchor||'';
+        const gate=publicAnswerGate(anchored,language,prompt);
+        if(gate.ok&&responseTopicAlignment(prompt,gate.content).relevant){
+          s.addMessage({
+            role:'assistant',
+            content:gate.content,
+            engine:'Predict Auto',
+            sources:[],
+            reasoningSummary:buildReasoningSummary({kind,anchor:true,deep:false}),
+            actions:['Resposta direta sem pesquisa ou contexto lateral','Resposta final validada antes de exibir'],
+            status:'done'
+          });
+          return;
+        }
+      }
+
       const web=needsWeb?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const researchContext=web.text;
-      const factualAnchor=kind==='factual'?stableFactualReply(prompt):null;
-      const fallbackText=direct||factualAnchor||(kind==='howto'?practicalHowToReply(prompt):undefined)||((kind==='factual'||kind==='current')?research?.content:undefined);
-      const answerAnchor=kind==='howto'?(direct||practicalHowToReply(prompt)||''):'';
+      const fallbackText=direct||factualAnchor||practicalAnchor||((kind==='factual'||kind==='current')?research?.content:undefined);
+      const answerAnchor=kind==='howto'?(direct||practicalAnchor||''):'';
       const directScore=direct?answerQuality(prompt,direct):-99;
       const anchorScore=answerAnchor?answerQuality(prompt,answerAnchor):-99;
 
@@ -521,6 +543,48 @@ export function ChatShell({onOpenLegal}:Props){
           }
         }catch{}
         setActivity(['LOCAL FIRST não atingiu o piso de qualidade','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
+      }
+
+      const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
+      const cleanEligible=!needsWeb&&prompt.length<=700&&(
+        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
+      );
+      if(cleanEligible){
+        setActivity(['CLEAN CHAT · isolando o pedido atual','CASCADE · escolhendo provider','VERIFY · bloqueando resposta fora do assunto']);
+        try{
+          const cleanResponse=await fetchWithTimeout('/api/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              mode:'clean-chat',
+              prompt,
+              language,
+              messages:[],
+              useHistory:false
+            })
+          },26000,turnController.signal);
+          const cleanData=await cleanResponse.json();
+          if(cleanResponse.ok&&cleanData?.content){
+            const gate=publicAnswerGate(String(cleanData.content),language,prompt);
+            const cleanText=gate.ok?gate.content:'';
+            const relevant=!!cleanText&&responseTopicAlignment(prompt,cleanText).relevant;
+            const quality=cleanText?answerQuality(prompt,cleanText):-99;
+            const minQuality=kind==='howto'?2:0;
+            if(relevant&&quality>=minQuality){
+              s.addMessage({
+                role:'assistant',
+                content:cleanText,
+                engine:'Predict Auto',
+                sources:[],
+                reasoningSummary:buildReasoningSummary({kind,provider:true,deep:false}),
+                actions:['Contexto lateral e RAG desativados para este turno','Resposta final validada antes de exibir'],
+                status:'done'
+              });
+              return;
+            }
+          }
+        }catch{}
+        setActivity(['CLEAN CHAT não passou no gate','Tentando outra rota','Validando a resposta final']);
       }
 
       const advisory=(currentNeural.loaded||currentWebLLM.loaded)
