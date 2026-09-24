@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.11.0"
+  version: "3.12.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.11
+# PredictLM Master v3.12
 
 ## Regra soberana
 
@@ -823,3 +823,16 @@ New approved sources strengthen reliability without replacing the API-first cont
 - Grok-Api remains quarantined: no verified license, discontinued, and designed around unauthenticated/proxy-bypass access. PredictLM must use official xAI endpoints or authorized aggregators only.
 
 Self-improvement rule: OBSERVE → VERIFY → PROMOTE. A model answer, failed run, secret, volatile quota claim or unverified external integration never becomes durable skill/memory automatically.
+
+## Simple Chat API fast path
+
+Conversas autocontidas e perguntas imaginativas não devem atravessar o pipeline de Build/Research.
+
+- `como seria se...`, `e se...`, `imagine se...` são **hypothetical**, nunca procedural how-to;
+- Clean Chat envia um prompt curto diretamente às APIs remotas configuradas;
+- Agent Fabric, RAG, skills amplas e advisory local ficam fora desse fast path;
+- até quatro APIs remotas podem ser consultadas em paralelo dentro de uma janela curta; a resposta válida de maior prioridade vence;
+- em Vercel, AI Gateway pode usar `AI_GATEWAY_API_KEY` ou `VERCEL_OIDC_TOKEN` e encaminhar para Claude por `anthropic/claude-sonnet-4.6`;
+- OpenAI (`OPENAI_API_KEY`) e xAI (`XAI_API_KEY`) também são providers nativos;
+- uma API lenta ou quebrada não pode consumir sozinha o timeout inteiro da conversa;
+- o gate de qualidade valida aderência depois da geração, mas não deve impor regras de how-to em hipóteses criativas.

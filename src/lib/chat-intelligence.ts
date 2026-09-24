@@ -12,6 +12,11 @@ export function isHypotheticalPrompt(prompt:string){
 }
 
 export function isGenericHowTo(prompt:string){
+  // "Como seria se..." is an imaginative hypothetical, not a procedural
+  // how-to. Classifying it as how-to made the public answer gate demand
+  // imperative steps and reject perfectly valid API answers as
+  // "missing-procedure".
+  if(isHypotheticalPrompt(prompt))return false;
   const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
   return /^(?:como\s+\S+|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p)
     && !/^como (?:funciona|voce|se chama|e ser)\b/.test(p);

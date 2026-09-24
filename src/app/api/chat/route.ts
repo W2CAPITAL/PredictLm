@@ -52,6 +52,31 @@ function providers():Provider[]{
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
+  const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
+  if(gatewayKey){
+    push({
+      name:'vercel-gateway',
+      base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
+      key:gatewayKey,
+      model:process.env.AI_GATEWAY_MODEL||'anthropic/claude-sonnet-4.6'
+    });
+  }
+  if(process.env.OPENAI_API_KEY){
+    push({
+      name:'openai',
+      base:process.env.OPENAI_BASE_URL||'https://api.openai.com/v1',
+      key:process.env.OPENAI_API_KEY,
+      model:process.env.OPENAI_MODEL||'gpt-5.6-luna'
+    });
+  }
+  if(process.env.XAI_API_KEY){
+    push({
+      name:'xai',
+      base:process.env.XAI_BASE_URL||'https://api.x.ai/v1',
+      key:process.env.XAI_API_KEY,
+      model:process.env.XAI_MODEL||'grok-4.7'
+    });
+  }
   if(process.env.FREELLMAPI_BASE_URL&&process.env.FREELLMAPI_API_KEY){
     const freeBase=process.env.FREELLMAPI_BASE_URL.replace(/\/$/,'');
     const base=freeBase.endsWith('/v1')?freeBase:freeBase+'/v1';
@@ -111,7 +136,7 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'server,freellmapi,opencode,nvidia,deepseek,kimi,zai,minimax,gemini,groq,openrouter,anthropic,ark,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -139,13 +164,13 @@ function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
 }
 
 const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
-  code:{opencode:55,deepseek:44,anthropic:40,gemini:34,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
-  legal:{anthropic:52,gemini:42,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
-  research:{gemini:48,anthropic:46,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
-  creative:{anthropic:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  reasoning:{anthropic:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  quick:{groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
-  general:{anthropic:46,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
+  code:{'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
+  legal:{'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
+  research:{'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
+  creative:{'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  reasoning:{'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  quick:{'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
+  general:{'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
 };
 
 function modelBonus(model:string,task:ProviderTask){
@@ -157,7 +182,8 @@ function modelBonus(model:string,task:ProviderTask){
   if(/nemotron/.test(m))score+=task==='reasoning'||task==='code'?9:5;
   if(/kimi/.test(m))score+=task==='research'||task==='general'?8:5;
   if(/glm/.test(m))score+=6;
-  if(/grok/.test(m))score+=task==='general'||task==='research'?11:7;
+  if(/grok/.test(m))score+=task==='general'||task==='research'||task==='creative'?13:8;
+  if(/gpt-5\.6|gpt-5/.test(m))score+=task==='code'||task==='reasoning'||task==='general'?14:10;
   if(/free|lite|mini/.test(m))score-=4;
   return score;
 }
@@ -397,9 +423,9 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   const guard=mode==='hypothetical'
     ? [
         'Responda diretamente à hipótese imaginária do usuário.',
-        'Trate a premissa como ficção/experimento mental; não troque de assunto.',
-        'Se envolver pessoa real, não invente fatos reais sobre ela: descreva somente consequências da hipótese de forma neutra e, se couber, leve.',
-        'Não introduza direito, perícia, finanças, programação, livros, pesquisas ou contexto externo que o usuário não pediu.'
+        'Entre na premissa e desenvolva uma resposta natural, coerente e interessante.',
+        'Se envolver pessoa real, não invente fatos reais: trate somente a hipótese.',
+        'Não pesquise, não peça contexto e não introduza assuntos externos quando a pergunta for autocontida.'
       ].join(' ')
     : mode==='howto'
       ? [
@@ -409,23 +435,20 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
           'Não diga que falta contexto se a pergunta puder ser respondida de forma geral.'
         ].join(' ')
       : [
-          'Responda somente ao pedido atual, de forma natural e direta.',
+          'Responda somente ao pedido atual, de forma natural, útil e direta.',
           'Não use tópicos, bases, skills ou contexto não solicitado.',
           'Não acrescente assuntos correlatos só porque compartilham uma palavra com o prompt.'
         ].join(' ');
 
-  const skillEnvelope=apiAgentSkillEnvelope(prompt,false,false);
-  const localAdvisory=compactText(String(body?.localAdvisory||''),1200);
-  const answerAnchor=compactText(String(body?.answerAnchor||''),1800);
+  // Clean Chat deliberately avoids Agent Fabric, RAG, local advisory and
+  // skill dumps. Claude-Code-style orchestration is useful for work; ordinary
+  // conversation should be a direct provider turn.
   const system=[
-    'Você é o PredictLM em modo conversa limpa.',
+    'Você é o PredictLM. Converse como uma IA geral competente.',
     languageSystemInstruction(language),
     guard,
-    skillEnvelope,
-    localAdvisory?'LOCAL ADVISORY (opcional; critique, não copie automaticamente): '+localAdvisory:'',
-    answerAnchor?'ANSWER FLOOR (use apenas como piso de utilidade; a API continua responsável pela resposta): '+answerAnchor:'',
-    'Entregue somente a resposta final ao usuário. Nunca exponha cadeia de raciocínio, roteamento, provider, skill, memória interna ou relatório operacional.'
-  ].filter(Boolean).join('\n\n');
+    'Responda com conteúdo substantivo. Não exponha chain-of-thought, roteamento, provider, skill ou runtime.'
+  ].join('\n\n');
 
   const messages:Msg[]=[
     {role:'system',content:system},
@@ -433,37 +456,53 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
-  const errors:string[]=[];
-  for(const provider of candidates){
-    try{
-      const raw=await callProvider(provider,messages,false,PROVIDER_TIMEOUT_MS);
-      const gate=publicAnswerGate(raw,language,prompt);
-      if(!gate.ok){errors.push(provider.name+': '+gate.reason);continue}
-      const issue=conversationAnswerIssue(prompt,gate.content);
-      const alignment=responseTopicAlignment(prompt,gate.content);
-      if(issue||!alignment.relevant){
-        errors.push(provider.name+': '+(issue||'off-topic'));
-        continue;
-      }
-      return Response.json({
-        content:gate.content,
-        provider:provider.name,
-        model:provider.model,
-        mode:'clean-chat',
-        sources:[]
-      },{headers:{'Cache-Control':'no-store'}});
-    }catch(error:any){
-      errors.push(provider.name+': '+String(error?.message||error).slice(0,160));
-    }
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
+  if(!candidates.length){
+    return Response.json({
+      available:false,
+      content:null,
+      code:'NO_REMOTE_PROVIDER',
+      mode:'clean-chat',
+      errors:['Nenhuma API remota configurada ou disponível.']
+    },{status:503,headers:{'Cache-Control':'no-store'}});
   }
+
+  // Race several configured APIs inside one bounded window. We still select
+  // the highest-priority valid response, but a slow/dead first provider can no
+  // longer consume the entire browser timeout before another API is attempted.
+  const attempts=await Promise.allSettled(candidates.map(async provider=>{
+    const raw=await callProvider(provider,messages,false,8500);
+    const gate=publicAnswerGate(raw,language,prompt);
+    if(!gate.ok)throw new Error(gate.reason);
+    const issue=conversationAnswerIssue(prompt,gate.content);
+    const alignment=responseTopicAlignment(prompt,gate.content);
+    if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
+    return {provider,content:gate.content};
+  }));
+
+  const errors:string[]=[];
+  for(let i=0;i<attempts.length;i++){
+    const result=attempts[i];
+    if(result.status==='fulfilled'){
+      return Response.json({
+        content:result.value.content,
+        provider:result.value.provider.name,
+        model:result.value.provider.model,
+        mode:'clean-chat',
+        sources:[],
+        apiRace:{attempted:candidates.map(x=>x.name),winner:result.value.provider.name}
+      },{headers:{'Cache-Control':'no-store'}});
+    }
+    errors.push(candidates[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
+  }
+
   return Response.json({
     available:false,
     content:null,
     code:'NO_CLEAN_ANSWER',
     mode:'clean-chat',
-    errors:errors.slice(0,3)
-  },{headers:{'Cache-Control':'no-store'}});
+    errors:errors.slice(0,4)
+  },{status:502,headers:{'Cache-Control':'no-store'}});
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){

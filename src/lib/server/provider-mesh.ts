@@ -36,6 +36,31 @@ export function configuredProviders(){
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
+  const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
+  if(gatewayKey){
+    push({
+      name:'vercel-gateway',
+      base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
+      key:gatewayKey,
+      model:process.env.AI_GATEWAY_MODEL||'anthropic/claude-sonnet-4.6'
+    });
+  }
+  if(process.env.OPENAI_API_KEY){
+    push({
+      name:'openai',
+      base:process.env.OPENAI_BASE_URL||'https://api.openai.com/v1',
+      key:process.env.OPENAI_API_KEY,
+      model:process.env.OPENAI_MODEL||'gpt-5.6-luna'
+    });
+  }
+  if(process.env.XAI_API_KEY){
+    push({
+      name:'xai',
+      base:process.env.XAI_BASE_URL||'https://api.x.ai/v1',
+      key:process.env.XAI_API_KEY,
+      model:process.env.XAI_MODEL||'grok-4.7'
+    });
+  }
   if(process.env.OPENCODE_API_KEY){
     push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL||'nemotron-3.5-lightning-free'});
   }
@@ -80,7 +105,7 @@ export function configuredProviders(){
     if(serverCanReach(base))push({name:'ollama',base,key:process.env.OLLAMA_API_KEY||'ollama',model:process.env.OLLAMA_MODEL});
   }
 
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'server,anthropic,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,opencode,minimax,ark,freellmapi,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const idx=preferred.indexOf(name);return idx<0?999:idx};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -103,6 +128,7 @@ function modelBonus(model:string,task:TaskClass){
   if(/gemini/.test(m))score+=task==='research'||task==='creative'||task==='general'?14:9;
   if(/deepseek/.test(m))score+=task==='code'||task==='reasoning'?14:8;
   if(/grok/.test(m))score+=task==='general'||task==='research'||task==='creative'?12:8;
+  if(/gpt-5\.6|gpt-5/.test(m))score+=task==='code'||task==='reasoning'||task==='general'?14:10;
   if(/nemotron/.test(m))score+=task==='code'||task==='reasoning'?10:6;
   if(/kimi/.test(m))score+=task==='research'||task==='general'?9:6;
   if(/glm/.test(m))score+=7;
