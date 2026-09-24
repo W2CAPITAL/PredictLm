@@ -377,3 +377,23 @@ button,input,textarea{font:inherit}
 .gmedia-reasoning>button.active b{color:#ece8ff}
 .gmedia-reasoning>button:hover{border-color:#414149;background:#19191c}
 @media(max-width:620px){.gmedia-reasoning{grid-template-columns:1fr}}
+
+
+/* Imagine — prompt calibration / Grok parity */
+.gmedia-prompt-mode{display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid #2b2b30;border-radius:12px;background:#111114}
+.gmedia-prompt-mode>span,.gmedia-prompt-mode label>span{font-size:8px;color:#777780;text-transform:uppercase;letter-spacing:.08em}
+.gmedia-prompt-mode>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.gmedia-prompt-mode>div>button{min-width:0;text-align:left;border:1px solid #2f2f35;background:#151518;color:#8c8c95;border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:3px}
+.gmedia-prompt-mode>div>button b{font-size:8px;color:#b9b9c0}
+.gmedia-prompt-mode>div>button small{font-size:7px;line-height:1.35;color:#696971}
+.gmedia-prompt-mode>div>button.active{border-color:#62578d;background:linear-gradient(145deg,#211b2d,#151519)}
+.gmedia-prompt-mode>div>button.active b{color:#f1edff}
+.gmedia-prompt-mode label{display:flex;flex-direction:column;gap:4px}
+.gmedia-prompt-mode input{width:100%;border:1px solid #2d2d33;background:#0d0d10;color:#d2d2d8;border-radius:8px;padding:8px;font-size:8px;outline:none}
+.gmedia-prompt-mode input:focus{border-color:#5b5180}
+.gmedia-literal-note{font-size:7px;line-height:1.4;color:#a89cdf;background:#181520;border:1px solid #39304c;border-radius:8px;padding:6px 7px}
+.gmedia-reasoning>button:disabled{opacity:.48;cursor:not-allowed}
+.gmedia-result-caption{border-top:1px solid #27272c;padding:10px 12px;background:#111114;display:flex;flex-direction:column;gap:4px}
+.gmedia-result-caption b{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8f86b6}
+.gmedia-result-caption p{margin:0;font-size:9px;line-height:1.5;color:#b8b8c0}
+@media(max-width:620px){.gmedia-prompt-mode>div{grid-template-columns:1fr}}
