@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.14.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.15.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.14.0"
+  version: "5.15.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.14.0
+# LEXIS TwinCore X10 v5.15.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -507,3 +507,22 @@ Web Reach:
 - bridges sociais requerem opt-in explícito e provenance gate.
 
 Carregar `../predictlm/PROVIDER-MESH.md` e `../predictlm/WEB-REACH.md`.
+
+
+## Predict Auto + SaaS Artifact Fabric v5.15
+
+Public model identity is **Predict Auto**. Runtime/provider selection remains internal.
+
+Weak-device gates:
+- no first-visit local weight download;
+- no automatic localhost port sweep;
+- Lite CPU/WASM uses one bounded generation;
+- WebGPU requires a real adapter;
+- experimental browser-native model stays disabled unless explicitly enabled.
+
+Federated skills:
+- `../lexispredict-saas/SKILL.md` for SaaS/CRM/OCR/KPI/report/document patterns;
+- `../office-artifacts/SKILL.md` for DOCX/PPTX/PDF/XLSX artifact workflows;
+- `../predictlm/AUTO-AI.md` for unified routing.
+
+Dossier Second Brain aggregates facts, timeline, evidence gaps and files, then returns normalized context to Predict Auto. It does not replace the final Chat answer.
