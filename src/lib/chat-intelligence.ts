@@ -144,10 +144,12 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   return null;
 }
 
-export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean){
+export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean,prompt=''){
   if(kind==='casual'||kind==='context')return false;
-  if(kind==='current'||kind==='factual')return true;
-  if(kind==='howto')return true;
+  const p=clean(prompt);
+  if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
+  if(kind==='current'||kind==='factual'||kind==='howto')return true;
+  if(/\b(pesquis|fonte|compare|verifique|atual|hoje|noticia|preco|cotacao|documentacao|manual|norma|lei|jurisprud|seguranca|homologacao)\b/.test(p))return true;
   return webEnabled;
 }
 
@@ -178,6 +180,12 @@ function expandResearchTokens(tokens:string[]){
   if(tokens.includes('programacao')||tokens.includes('codigo'))['software','developer','javascript','typescript','python'].forEach(x=>out.add(x));
   if(tokens.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x))){
     ['engenharia','automotiva','automotive','vehicle','design','chassi','estrutura','suspensao','freios','powertrain','seguranca','homologacao','prototipo'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['dragao','dragon'].includes(x))){
+    ['dragao','dragon','escultura','sculpture','estrutura','armacao','metal','metalica','soldagem','welding','acabamento'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['metal','metalica','metalico','aco','ferro'].includes(x))){
+    ['metal','metalica','metalico','aco','ferro','solda','soldagem','welding','fabricacao','fabrication','estrutura'].forEach(x=>out.add(x));
   }
   if(tokens.some(x=>['starlink','spacex','satelite','satellite','nasa','orbital'].includes(x))){
     ['space','mission','telemetry','launch','earth','imagery','gibs','dish','ground','orbit'].forEach(x=>out.add(x));
@@ -269,13 +277,13 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
     };
   }
   if(kind==='howto'){
-    const evidence=useful.slice(0,8).map((x,i)=>(i+1)+'. **'+x.title+'** — '+trimSentence(x.summary||x.description||'',520)).join('\n');
+    const points=useful.slice(0,6)
+      .map(x=>trimSentence(x.summary||x.description||'',420))
+      .filter(Boolean);
     return {
       content:[
-        '**Síntese baseada nas fontes recuperadas**',
-        evidence,
-        '',
-        'Use estes pontos como evidência de apoio. A resposta final deve integrar requisitos, arquitetura, riscos, validação e próximos passos do domínio em vez de repetir um roteiro genérico.'
+        '**Pontos úteis encontrados nas fontes**',
+        ...points.map(x=>'- '+x)
       ].join('\n'),
       sources
     };
@@ -299,7 +307,11 @@ const TOPIC_SYNONYMS:Record<string,string[]>={
   automovel:['automovel','carro','veiculo','chassi','motor'],
   empresa:['empresa','negocio','cnpj','sociedade','mei','empresarial'],
   aplicativo:['aplicativo','app','software','sistema'],
-  app:['app','aplicativo','software','sistema']
+  app:['app','aplicativo','software','sistema'],
+  dragao:['dragao','dragon','escultura'],
+  metal:['metal','metalico','metalica','aco','ferro','solda','soldagem'],
+  escultura:['escultura','sculpture','modelagem','estrutura'],
+  soldagem:['soldagem','solda','welding']
 };
 
 export function responseTopicAlignment(prompt:string,content:string){
