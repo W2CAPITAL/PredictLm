@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.25.0"
+  version: "1.26.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -730,3 +730,13 @@ Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
 6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
 
 Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity Self Model exatamente como fornecida pelo usuário; não reimaginar nem variar.
+
+## Deep media / vídeo temporal real
+
+- Imagine pode ativar **Deep Think** e **Deep Research** antes de imagem ou vídeo.
+- Deep Research busca contexto visual de forma abrangente, limitada e relevante; Deep Think converte isso em brief operacional sem expor chain-of-thought.
+- Vídeo real usa provider temporal configurado e retorna arquivo reproduzível por submit/poll. Gemini Veo 3.1, ComfyUI LTX/SANA e adapters Veo/Seedance/Sora são rotas possíveis conforme configuração.
+- Storyboard, crossfade, pan/zoom e Motion WebM local continuam fallback explícito e não são chamados de vídeo neural.
+- Referências/first frame devem ser passadas como mídia real quando o provider suporta, para reduzir drift de identidade.
+- Erros estruturados de mídia são convertidos em texto; a UI não deve exibir `[object Object]`.
+- ComfyUI local não é acessível pelo Vercel via localhost; só habilitar quando o endpoint for realmente alcançável pelo servidor/desktop.
