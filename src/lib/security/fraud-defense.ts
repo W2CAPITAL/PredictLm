@@ -6,6 +6,7 @@ export type FraudSignalCategory=
   |'identity-abuse'
   |'phishing-link'
   |'malicious-agent'
+  |'supply-chain'
   |'transaction-graph';
 
 export interface FraudSignal{
@@ -72,6 +73,12 @@ function textSignals(text:string):FraudSignal[]{
   }
   if(/\b(sem restricoes|no restrictions|uncensored|zero-auth|arm all|full shell|acesso total|bypass)\b/.test(t)&&/\b(agent|agente|tool|ferramenta|mcp|shell|modelo)\b/.test(t)){
     add('malicious-agent',20,'Agente/ferramenta sem controles','Conteúdo descreve execução irrestrita, zero-auth ou bypass; tratar apenas como threat model.');
+  }
+  if(/\birm\s+\S+\s*\|\s*iex\b|\bcurl\s+\S+\s*\|\s*(?:sh|bash)\b|powershell\s+(?:-enc|-encodedcommand)\b/.test(t)){
+    add('supply-chain',36,'Remote execution installer','Comando baixa conteúdo remoto e executa imediatamente; inspecione e verifique a origem antes de qualquer execução.');
+  }
+  if(/\b(free|gratis|premium|plus)\b/.test(t)&&/\b(chatgpt|claude|grok|kimi)\b/.test(t)&&/\b(exe|apk|installer|download|baixar)\b/.test(t)){
+    add('supply-chain',16,'Wrapper não oficial de serviço de IA','Download/installer usa marca de serviço de IA; verificar publisher, código-fonte, hashes e assinatura antes de instalar.');
   }
 
   const urls=String(text||'').match(/https?:\/\/[^\s<>"')]+/g)||[];
