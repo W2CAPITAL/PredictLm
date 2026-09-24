@@ -411,14 +411,20 @@ export function ChatShell({onOpenLegal}:Props){
           });
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
+            const cloudText=String(cloudData.content).trim();
+            const relevant=responseTopicAlignment(prompt,cloudText).relevant;
+            const quality=answerQuality(prompt,cloudText);
+            if(!relevant||(kind==='howto'&&quality<3)){
+              setActivity(['Provider respondeu com baixa aderência','Continuando no Predict Auto','VERIFY · procurando resposta melhor']);
+            }else{
             const cloudSources=[
               ...web.sources,
               ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
             ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
             s.addMessage({
               role:'assistant',
-              content:String(cloudData.content),
-              engine:'Cloud Cascade · '+String(cloudData.provider||'server'),
+              content:cloudText,
+              engine:'Predict Auto',
               sources:cloudSources,
               actions:[
                 cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
@@ -430,6 +436,7 @@ export function ChatShell({onOpenLegal}:Props){
               status:'done'
             });
             return;
+            }
           }
         }catch{}
         setActivity(['Cloud Cascade indisponível','Retornando ao Neural/Knowledge local','VERIFY · preparando resposta']);
