@@ -1,6 +1,20 @@
 import { predictLMMasterContext } from '@/lib/predictlm-master';
+import { skills } from '@/lib/skills';
 
 export const runtime = 'nodejs';
+
+function buildSkillContext(task:string){
+  const wanted=new Set(['predictlm-master','agent-fabric','saas-builder-fabric','build-review','testing','vibe-security','design-system','impeccable','token-budget']);
+  const q=task.toLowerCase();
+  if(/\b(mobile|android|ios|responsiv|celular)\b/.test(q))wanted.add('react-native');
+  if(/\b(documento|docx|pdf|ppt|xlsx|planilha)\b/.test(q))wanted.add('office-artifacts');
+  if(/\b(api|integracao|integração|backend|banco|database|auth)\b/.test(q))wanted.add('node-stack');
+  return skills
+    .filter(s=>wanted.has(s.id))
+    .slice(0,10)
+    .map(s=>'SKILL '+s.id+': '+s.description)
+    .join('\n');
+}
 
 const BUILD_SYSTEM = [
   'You are the Build execution surface of PredictLM.',
@@ -24,6 +38,7 @@ export async function POST(req:Request){
     if(!base||!key||!model)return Response.json({error:'Server provider não configurado. Defina AI_BASE_URL, AI_API_KEY e AI_MODEL no Vercel.'},{status:503});
     const url=`${String(base).replace(/\/$/,'')}/chat/completions`;
     const master=predictLMMasterContext(task,true);
+    const skillContext=buildSkillContext(task);
     const upstream=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
@@ -31,7 +46,7 @@ export async function POST(req:Request){
         model,
         temperature:0.25,
         messages:[
-          {role:'system',content:BUILD_SYSTEM+'\n\n'+master},
+          {role:'system',content:BUILD_SYSTEM+'\n\nAPI-SIDE AGENT/SKILL CONTRACTS:\n'+skillContext+'\n\n'+master},
           {role:'user',content:`Mode: ${mode}\nTask: ${task}\nFiles: ${JSON.stringify((files||[]).slice(0,15).map((f:any)=>({path:f.path,content:String(f.content||'').slice(0,9000)})))}`}
         ]
       })
