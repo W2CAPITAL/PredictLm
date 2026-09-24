@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralAutoWarmPolicy, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
-import { adaptiveMemoryStats, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
+import { adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
@@ -134,6 +134,28 @@ export function ChatShell({onOpenLegal}:Props){
     };
   },[]);
 
+  useEffect(()=>{
+    const onWarm=(event:Event)=>{
+      const detail=(event as CustomEvent<any>).detail||{};
+      if(detail.phase==='loading'){
+        setLoadState({
+          tier:detail.tier==='smart'?'smart':'lite',
+          progress:typeof detail.progress==='number'?detail.progress:null,
+          status:'Neural em segundo plano · '+String(detail.status||'carregando')
+        });
+      }else if(detail.phase==='ready'){
+        setLoadState(null);
+        setModelError('');
+        setModelTick(x=>x+1);
+      }else if(detail.phase==='error'){
+        setLoadState(null);
+        setModelTick(x=>x+1);
+      }
+    };
+    window.addEventListener('predictlm:neural-warmup',onWarm as EventListener);
+    return()=>window.removeEventListener('predictlm:neural-warmup',onWarm as EventListener);
+  },[]);
+
   async function webContext(query:string){
     try{
       const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:12})});
@@ -162,6 +184,8 @@ export function ChatShell({onOpenLegal}:Props){
     setInput('');
     setScreen('chat');
     s.addMessage({role:'user',content:prompt});
+    const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
+    if(instructionLearned)setModelTick(x=>x+1);
     setBusy(true);
     setActivity(
       processNumber
@@ -211,11 +235,25 @@ export function ChatShell({onOpenLegal}:Props){
           const r=await fetch('/api/media/generate',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:enhanced,width:1024,height:1024,seed,model:'flux'})
+            body:JSON.stringify({prompt:enhanced,width:1536,height:1536,seed,model:'flux'})
           });
           const data=await r.json();
           if(!r.ok||!data?.url)throw new Error(data?.error||'A geração de imagem não retornou um arquivo.');
-          const imageUrl=String(data.url);
+          let imageUrl=String(data.url);
+          let upscale:any={upscaled:false,provider:'none'};
+          setActivity(['Imagem base criada em alta resolução','Super Resolution · tentando upscale 2×','Validando o resultado']);
+          try{
+            const up=await fetch('/api/media/upscale',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({sourceUrl:imageUrl,scale:2,model:'realesrgan-x4plus',faceEnhance:true})
+            });
+            const upData=await up.json().catch(()=>({}));
+            if(up.ok&&upData?.upscaled&&upData?.url){
+              imageUrl=String(upData.url);
+              upscale=upData;
+            }
+          }catch{}
           fetch('/api/media/library',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
@@ -228,11 +266,11 @@ export function ChatShell({onOpenLegal}:Props){
               enhancedPrompt:enhanced,
               style:'Cinematic',
               aspectRatio:'1:1',
-              width:1024,
-              height:1024,
+              width:1536,
+              height:1536,
               seed,
               url:imageUrl,
-              meta:{surface:'chat',storageMode:'metadata-only'}
+              meta:{surface:'chat',storageMode:'metadata-only',upscale:{upscaled:!!upscale?.upscaled,provider:upscale?.provider||'none',model:upscale?.model||null,scale:upscale?.scale||1}}
             })
           }).catch(()=>{});
           s.addMessage({
@@ -240,7 +278,14 @@ export function ChatShell({onOpenLegal}:Props){
             content:'Imagem gerada a partir do seu pedido. Use **Imagine** quando quiser controlar estilo, proporção, vídeo e regeneração avançada.',
             engine:'PredictLM · Media',
             media:[{kind:'image',url:imageUrl,label:subject}],
-            actions:['Prompt interpretado','Qualidade/anti-artefatos aplicada','Imagem gerada','Metadados enviados para a Media Library'],
+            actions:[
+              'Prompt interpretado',
+              'Base gerada em 1536×1536',
+              'Qualidade/anti-artefatos aplicada',
+              upscale?.upscaled?'Super Resolution '+String(upscale.scale||2)+'× · '+String(upscale.model||'upscaler'):'Upscaler externo indisponível · imagem base preservada',
+              ...(instructionLearned?['Instrução persistente aprendida localmente']:[]),
+              'Metadados enviados para a Media Library'
+            ],
             status:'done'
           });
           return;
