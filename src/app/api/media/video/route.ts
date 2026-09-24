@@ -176,12 +176,12 @@ export async function POST(req:Request){
     let payload:any={};
 
     if(resolvedProvider==='gemini'){
-      endpoint=entry.base+'/models/'+encodeURIComponent(entry.model)+':predictLongRunning';
+      endpoint=cfg.gemini.base+'/models/'+encodeURIComponent(cfg.gemini.model)+':predictLongRunning';
       payload={
         instances:[{prompt}],
         parameters:{
           numberOfVideos:1,
-          durationSeconds:duration,
+          durationSeconds:String(duration),
           resolution:String(body?.resolution||'720p'),
           aspectRatio:geminiAspect(body?.aspectRatio)
         }
