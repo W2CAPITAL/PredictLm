@@ -28,6 +28,7 @@ interface AssistantState {
   webEnabled:boolean;
   deepThink:boolean;
   cloudEnabled:boolean;
+  localRuntimeEnabled:boolean;
   createChat():void;
   setActive(id:string):void;
   addMessage(message:Omit<AssistantMessage,'id'|'createdAt'>):void;
@@ -36,6 +37,7 @@ interface AssistantState {
   setWebEnabled(v:boolean):void;
   setDeepThink(v:boolean):void;
   setCloudEnabled(v:boolean):void;
+  setLocalRuntimeEnabled(v:boolean):void;
 }
 
 const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -48,6 +50,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   webEnabled:false,
   deepThink:true,
   cloudEnabled:false,
+  localRuntimeEnabled:false,
   createChat:()=>set(s=>{const chat=empty();return {sessions:[chat,...s.sessions],activeId:chat.id}}),
   setActive:(activeId)=>set({activeId}),
   addMessage:(message)=>set(s=>{
@@ -67,5 +70,6 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   }),
   setWebEnabled:(webEnabled)=>set({webEnabled}),
   setDeepThink:(deepThink)=>set({deepThink}),
-  setCloudEnabled:(cloudEnabled)=>set({cloudEnabled})
+  setCloudEnabled:(cloudEnabled)=>set({cloudEnabled}),
+  setLocalRuntimeEnabled:(localRuntimeEnabled)=>set({localRuntimeEnabled})
 }),{name:'predictlm-assistant-v1'}));
