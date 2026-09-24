@@ -42,6 +42,13 @@ function allowedReferenceHost(host:string){
 
 async function fetchReferenceInline(value:string){
   try{
+    if(/^data:image\/(?:png|jpe?g|webp);base64,/i.test(value)){
+      const match=value.match(/^data:(image\/(?:png|jpe?g|webp));base64,(.+)$/i);
+      if(!match)return null;
+      const bytes=Buffer.from(match[2],'base64');
+      if(!bytes.length||bytes.length>2_000_000)return null;
+      return {inlineData:{mimeType:match[1].toLowerCase(),data:match[2]}};
+    }
     const url=new URL(value);
     if(url.protocol!=='https:'||!allowedReferenceHost(url.hostname))return null;
     const response=await fetch(url,{signal:AbortSignal.timeout(6500),cache:'no-store'});
