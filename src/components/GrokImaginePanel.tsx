@@ -759,7 +759,7 @@ export function GrokImaginePanel(){
             {([
               ['auto','Auto · IA generativa'],
               ['gemini','Gemini Veo 3.1'],
-              ['comfyui','ComfyUI · LTX/SANA'],
+              ['comfyui','ComfyUI · LTX/Custom'],
               ['veo','Veo 3'],
               ['seedance','Seedance 2'],
               ['sora','Sora 2'],
@@ -770,7 +770,13 @@ export function GrokImaginePanel(){
                 key={id}
                 className={videoProvider===id?'active':''}
                 disabled={!enabled}
-                title={!enabled?'Configure uma API de vídeo no servidor para habilitar este provider.':id==='local'?'Fallback local: movimento/transição de imagens, não é vídeo generativo.':'Vídeo generativo real; provider externo pode consumir créditos.'}
+                title={!enabled
+                  ?'Configure o motor no servidor para habilitar este provider.'
+                  :id==='local'
+                    ?'Fallback local: movimento/transição de imagens, não é vídeo generativo.'
+                    :videoProviders[id]?.requiresExternalCredits
+                      ?'Vídeo generativo real; o provider externo pode consumir créditos.'
+                      :'Vídeo neural real via motor local/self-hosted configurado.'}
                 onClick={()=>setVideoProvider(id)}
               >{label}{!enabled?' · off':''}</button>
             })}
@@ -830,7 +836,7 @@ export function GrokImaginePanel(){
       </div>
 
       <div className="gimagine-canvas">
-        {loading?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>A imagem aparece assim que o arquivo estiver realmente carregado.</span></div>:null}
+        {mainBusy?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>{mode==='video'?'O vídeo aparece quando o provider concluir o arquivo real.':'A imagem aparece assim que o arquivo estiver realmente carregado.'}</span></div>:null}
         {generated&&!loading?<div className="gimagine-result">
           <img src={generated} alt={prompt} onError={imageFailed}/>
           <div className="gmedia-result-actions">
