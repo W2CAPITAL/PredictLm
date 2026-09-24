@@ -494,7 +494,7 @@ Vídeo:
 pedido → Deep Research opcional → Deep Think/Media Director → referências/first frame → **provider temporal neural real** → polling → arquivo de vídeo → preview/export.
 
 Regras:
-- Auto prioriza um provider temporal real configurado: Gemini Veo, ComfyUI LTX/SANA ou adapters Veo/Seedance/Sora.
+- Auto prioriza um provider temporal real configurado: Gemini Veo, ComfyUI LTX/custom ou adapters Veo/Seedance/Sora.
 - storyboard, crossfade, pan/zoom e motion local são fallback explícito e nunca são chamados de vídeo neural;
 - provider assíncrono deve retornar task/status/arquivo real;
 - erros estruturados são convertidos em texto; nunca mostrar `[object Object]`;
