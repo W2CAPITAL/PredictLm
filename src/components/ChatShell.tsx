@@ -331,6 +331,38 @@ export function ChatShell({onOpenLegal}:Props){
         : prompt;
       const fallbackText=direct||research?.content||undefined;
 
+      if(s.localRuntimeEnabled){
+        setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
+        try{
+          const localReply=await answerViaLocalRuntime(augmented,messages,{deep:s.deepThink,preferred:'auto'});
+          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
+          if(relevant){
+            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
+            const localSources=[
+              ...web.sources,
+              ...localReply.sources
+            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,8);
+            s.addMessage({
+              role:'assistant',
+              content:localReply.content,
+              engine:'Local API · '+localReply.label,
+              sources:localSources,
+              actions:[
+                'Runtime: '+localReply.label+' · '+localReply.model,
+                ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
+                'GitHub top-k + memória compactada',
+                'Resposta passou pelo gate de assunto'
+              ],
+              status:'done'
+            });
+            return;
+          }
+          setActivity(['Local API respondeu fora do assunto','Retornando ao próximo motor']);
+        }catch(err:any){
+          setActivity(['Local API indisponível: '+String(err?.message||'falha').slice(0,120),'Retornando ao próximo motor']);
+        }
+      }
+
       if(s.cloudEnabled){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
         try{
@@ -535,7 +567,7 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
