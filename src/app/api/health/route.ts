@@ -15,6 +15,7 @@ import { githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-know
 import { estimateTokens, optimizePromptPackage } from '@/lib/token-budget';
 import { LOCAL_RUNTIME_CANDIDATES } from '@/lib/local-runtime-router';
 import { buildQualityImagePrompt } from '@/lib/media/prompt-quality';
+import { computeTutorMastery, gradeTutorAnswer, isTutorRequest, tutorNextAction, tutorSystemContext } from '@/lib/tutor-mode';
 
 export const runtime = 'nodejs';
 
@@ -155,6 +156,19 @@ export async function GET(){
     loopbackOnly:LOCAL_RUNTIME_CANDIDATES.every(x=>/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])/.test(x.baseUrl))
   };
 
+  const tutorMode={
+    detectsStudy:isTutorRequest('me ensine álgebra e depois faça um quiz'),
+    ignoresNormalChat:!isTutorRequest('qual é a capital do Japão?'),
+    oneLuckyAnswerCapped:computeTutorMastery([true])<=0.5,
+    twoAnswersCapped:computeTutorMastery([true,true])<=0.8,
+    repeatedEvidenceCanMaster:computeTutorMastery([true,true,true])>=0.9,
+    pendingHasPriority:tutorNextAction({type:'memory',attempts:[{correct:true},{correct:true},{correct:true}],hasPending:true})==='answer_pending',
+    dueReviewHasPriority:tutorNextAction({type:'memory',attempts:[{correct:true},{correct:true},{correct:true}],dueReview:true})==='review',
+    newConceptProbes:tutorNextAction({type:'concept',attempts:[]})==='probe',
+    shortGradeWorks:gradeTutorAnswer('mitocondria','mitocôndria','short').correct,
+    quizHidesAnswer:tutorSystemContext('me faça um quiz de biologia').includes('não revele a resposta')
+  };
+
   const fraudFixture=assessFraudRisk({
     texts:['URGENTE: sua conta foi suspensa. Envie o OTP e faça o PIX para a nova chave agora.'],
     urls:['https://xn--banc-seguro-9za.example/login/verify'],
@@ -205,7 +219,7 @@ export async function GET(){
     dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean)&&Object.values(tutorMode).every(Boolean);
 
   return Response.json({
     ok,
@@ -234,6 +248,8 @@ export async function GET(){
       tokenBudgetEngine:true,
       localRuntimeRouter:true,
       mediaPromptBudget:true,
+      tutorMode:true,
+      masteryLearning:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -254,6 +270,7 @@ export async function GET(){
       tokenBudget,
       tokenBudgetStats:tokenFixture.stats,
       localRuntimeCatalog,
+      tutorMode,
       packagedFiles:packaged.length
     },
     optional:{
