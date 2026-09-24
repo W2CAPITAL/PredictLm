@@ -16,6 +16,8 @@ import { estimateTokens, optimizePromptPackage } from '@/lib/token-budget';
 import { LOCAL_RUNTIME_CANDIDATES } from '@/lib/local-runtime-router';
 import { buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { computeTutorMastery, gradeTutorAnswer, isTutorRequest, tutorNextAction, tutorSystemContext } from '@/lib/tutor-mode';
+import { runBuildDiffReview } from '@/lib/build-diff-review';
+import { enhanceBuildPrompt } from '@/lib/prompt-enhancer';
 
 export const runtime = 'nodejs';
 
@@ -207,6 +209,29 @@ export async function GET(){
     topKSourceDiversity:workspaceKnowledge.length<2||new Set(workspaceKnowledge.map(x=>x.source)).size===workspaceKnowledge.length
   };
 
+  const unsafeReview=runBuildDiffReview(
+    [{path:'src/App.tsx',language:'typescript',content:'export default function App(){return <main/>}'}],
+    [
+      {path:'src/App.tsx',language:'typescript',content:"const key=import.meta.env.VITE_GEMINI_API_KEY; export default function App(){return <button onClick={()=>fetch('/api',{headers:{Authorization:'Bearer '+key}})}>Run</button>}"},
+      {path:'src/App.test.tsx',language:'typescript',content:"describe('app',()=>{it('loads',()=>{})})"}
+    ]
+  );
+  const cleanReview=runBuildDiffReview(
+    [],
+    [
+      {path:'src/App.tsx',language:'typescript',content:"export default function App(){return <button onClick={()=>console.log('ok')}>Run</button>}"},
+      {path:'src/App.test.tsx',language:'typescript',content:"describe('app',()=>{it('loads',()=>{})})"}
+    ]
+  );
+  const enhancedPrompt=enhanceBuildPrompt('crie um CRM funcional','enhance',[]);
+  const buildReviewGate={
+    catchesBrowserProviderSecret:unsafeReview.findings.some(x=>x.title==='Provider secret exposed to browser'),
+    marksUnsafeAsBlocking:unsafeReview.blocking&&!unsafeReview.ok,
+    cleanDiffCanPass:cleanReview.ok&&!cleanReview.blocking,
+    structuredPrompt:['[GOAL]','[CURRENT CONTEXT]','[REQUIREMENTS]','[ACCEPTANCE CHECKS]'].every(x=>enhancedPrompt.includes(x)),
+    acceptanceKeepsSecretsServerSide:enhancedPrompt.includes('Secrets stay server-side')
+  };
+
   const legalArtifactBehavior={
     dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
     normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
@@ -221,7 +246,7 @@ export async function GET(){
     dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean)&&Object.values(tutorMode).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean)&&Object.values(tutorMode).every(Boolean)&&Object.values(buildReviewGate).every(Boolean);
 
   return Response.json({
     ok,
@@ -252,6 +277,8 @@ export async function GET(){
       mediaPromptBudget:true,
       tutorMode:true,
       masteryLearning:true,
+      buildDiffReview:true,
+      structuredBuildPrompt:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -273,6 +300,7 @@ export async function GET(){
       tokenBudgetStats:tokenFixture.stats,
       localRuntimeCatalog,
       tutorMode,
+      buildReviewGate,
       packagedFiles:packaged.length
     },
     optional:{
