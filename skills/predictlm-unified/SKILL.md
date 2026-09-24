@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -29,6 +29,7 @@ Rotas primárias:
 - general-chat
 - build
 - research
+- github-knowledge
 - process-scan
 - legal-analysis
 - legal-revisional
@@ -262,3 +263,17 @@ Antes de responder/construir, o runtime pode recuperar padrões do corpus aprova
 As fontes novas de Chat/UI, browser models, agents, transformers, design, extração estruturada, provider adapters e mídia foram incorporadas ao source registry. Fontes com licença desconhecida permanecem referência-only; MIT/Apache e material do usuário podem alimentar corpus/SFT.
 
 Memória adaptativa aceita por feedback/repetição deve continuar útil mesmo quando o runtime neural precisar ser restaurado após refresh.
+
+## GitHub Knowledge Engine
+
+Antes de usar corpus amplo, recuperar apenas o top-k necessário do índice versionado.
+
+Ordem:
+1. classificar assunto;
+2. consultar índice GitHub local;
+3. escolher até 3 chunks relevantes;
+4. combinar com memória/knowledge do produto;
+5. gerar;
+6. citar/provenance internamente e não despejar metadados ao usuário sem necessidade.
+
+Skill Forge não importa automaticamente todo SKILL.md encontrado. Somente allowlist permissiva entra no índice; reference-only vira lição manual de alto nível; quarantine é bloqueada.
