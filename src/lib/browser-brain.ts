@@ -605,7 +605,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   if(webllm.loaded){
     try{
       options?.onStage?.('forge');
-      const webMessages:[{role:'system';content:string},...{role:'user'|'assistant';content:string}[],{role:'user';content:string}]=[
+      const webMessages:{role:'system'|'user'|'assistant';content:string}[]=[
         {role:'system',content:system},
         ...neuralMessages.map(m=>({role:m.role==='assistant'?'assistant' as const:'user' as const,content:m.content})),
         {role:'user',content:options?.deep
@@ -640,8 +640,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const content=options?.fallbackText||knowledgeReply(prompt);
   return {
     content,
-    engine:loadedTier?'knowledge-fallback':'knowledge',
+    engine:(loadedTier||webllm.loaded)?'knowledge-fallback':'knowledge',
     sources,
-    fallbackReason:loadedTier?(fallbackReason||lastNeuralError||'Neural Local did not answer this turn'):undefined
+    fallbackReason:(loadedTier||webllm.loaded)?(fallbackReason||lastNeuralError||'Local neural runtime did not answer this turn'):undefined
   };
 }
