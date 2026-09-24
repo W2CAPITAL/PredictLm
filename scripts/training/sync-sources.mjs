@@ -73,7 +73,11 @@ const SOURCES=[
   ['techjarves/Uncensored-Local-AI-Multiplatform','main','unverified','reference',['local-api','gguf','mobile','threat-model']],
   ['DeVenLucaz/llamdrop','main','GPL-3.0','reference',['hardware-detection','ollama','gguf','context-trimming','low-ram']],
   ['Quincunx33/LowRAM-AI-Compiler','main','unverified','reference',['memory-budget','gguf','mmap','streaming','low-ram']],
-  ['HKUDS/DeepTutor','main','Apache-2.0','reference',['tutoring','mastery-learning','quiz','reading','citations','rag','practice','memory','context-budget']]
+  ['HKUDS/DeepTutor','main','Apache-2.0','reference',['tutoring','mastery-learning','quiz','reading','citations','rag','practice','memory','context-budget']],
+  ['cortextorlab/airLLM','main','Apache-2.0','reference',['local-inference','layerwise-offload','low-vram','prefetch','quantization']],
+  ['nguefackuriel/Run-Llama3-70B-with-just-4GB-memory-GPU','main','unverified','reference',['airllm','llama3','low-vram']],
+  ['xinntao/Real-ESRGAN','master','BSD-3-Clause','reference',['image-upscaling','super-resolution','restoration','media']],
+  ['JingyunLiang/SwinIR','main','Apache-2.0','reference',['image-restoration','super-resolution','denoise','media']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
