@@ -5,13 +5,15 @@ export const dynamic='force-dynamic';
 export const preferredRegion='gru1';
 export const maxDuration=60;
 
-type RemoteProvider='veo'|'sora'|'seedance';
+type RemoteProvider='gemini'|'veo'|'sora'|'seedance';
 type Provider='auto'|RemoteProvider;
 
 function config(){
   const mountseaKey=String(process.env.MOUNTSEA_API_KEY||process.env.MEDIA_VIDEO_API_KEY||'').trim();
   const seedanceKey=String(process.env.SEEDANCE_API_KEY||process.env.MEDIA_VIDEO_API_KEY||'').trim();
+  const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
   return {
+    gemini:{enabled:!!geminiKey,key:geminiKey,base:String(process.env.GEMINI_VIDEO_BASE_URL||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,''),model:String(process.env.GEMINI_VIDEO_MODEL||'veo-3.1-generate-preview').trim()},
     veo:{enabled:!!mountseaKey,key:mountseaKey,base:String(process.env.MOUNTSEA_BASE_URL||'https://api.mountsea.ai').replace(/\/$/,'')},
     sora:{enabled:!!mountseaKey,key:mountseaKey,base:String(process.env.MOUNTSEA_BASE_URL||'https://api.mountsea.ai').replace(/\/$/,'')},
     seedance:{enabled:!!seedanceKey,key:seedanceKey,base:String(process.env.SEEDANCE_BASE_URL||'https://seegen.ai/api/v1').replace(/\/$/,'')}
@@ -32,16 +34,16 @@ function clampDuration(value:any,min=3,max=15){
 
 function safeProvider(value:any):Provider|null{
   const p=String(value||'').toLowerCase();
-  return p==='auto'||p==='veo'||p==='sora'||p==='seedance'?p:null;
+  return p==='auto'||p==='gemini'||p==='veo'||p==='sora'||p==='seedance'?p:null;
 }
 
 function remoteOrder(cfg:ReturnType<typeof config>):RemoteProvider[]{
-  const requested=String(process.env.PREDICTLM_VIDEO_PROVIDER_ORDER||'veo,seedance,sora')
+  const requested=String(process.env.PREDICTLM_VIDEO_PROVIDER_ORDER||'gemini,veo,seedance,sora')
     .split(',').map(x=>x.trim().toLowerCase())
-    .filter((x):x is RemoteProvider=>x==='veo'||x==='sora'||x==='seedance');
+    .filter((x):x is RemoteProvider=>x==='gemini'||x==='veo'||x==='sora'||x==='seedance');
   const unique:Array<RemoteProvider>=[];
   for(const id of requested)if(!unique.includes(id))unique.push(id);
-  for(const id of ['veo','seedance','sora'] as RemoteProvider[])if(!unique.includes(id))unique.push(id);
+  for(const id of ['gemini','veo','seedance','sora'] as RemoteProvider[])if(!unique.includes(id))unique.push(id);
   return unique.filter(id=>cfg[id].enabled);
 }
 
@@ -58,6 +60,7 @@ export async function GET(req:Request){
       recommended,
       providers:{
         auto:{enabled:!!recommended,label:recommended?'Auto · IA generativa':'Auto · configure uma API de vídeo',requiresExternalCredits:true},
+        gemini:{enabled:cfg.gemini.enabled,label:'Gemini Veo 3.1',requiresExternalCredits:true},
         local:{enabled:true,label:'Motion local · fallback'},
         veo:{enabled:cfg.veo.enabled,label:'Veo 3',requiresExternalCredits:true},
         sora:{enabled:cfg.sora.enabled,label:'Sora 2',requiresExternalCredits:true},
@@ -66,11 +69,41 @@ export async function GET(req:Request){
     });
   }
 
-  const resolvedProvider:RemoteProvider=provider==='auto'?(recommended||'veo'):provider;
+  const resolvedProvider:RemoteProvider=provider==='auto'?(recommended||'gemini'):provider;
   const entry=cfg[resolvedProvider];
   if(!entry.enabled)return NextResponse.json({error:'Provider não configurado no servidor.'},{status:503});
 
   try{
+    if(resolvedProvider==='gemini'){
+      const opUrl=taskId.startsWith('http')?taskId:entry.base+'/'+taskId.replace(/^\/+/, '');
+      const statusRes=await fetch(opUrl,{cache:'no-store',headers:{'x-goog-api-key':entry.key,Accept:'application/json'}});
+      const data=await statusRes.json().catch(()=>({}));
+      if(!statusRes.ok)return NextResponse.json({error:data?.error?.message||data?.error||('Gemini HTTP '+statusRes.status)},{status:502});
+      const failed=!!data?.error;
+      const done=!!data?.done;
+      const videoUri=
+        data?.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri ||
+        data?.response?.generatedVideos?.[0]?.video?.uri ||
+        null;
+      if(url.searchParams.get('download')==='1'){
+        if(!done||failed||!videoUri)return NextResponse.json({error:failed?(data?.error?.message||'Gemini video failed'):'Vídeo ainda não está pronto.'},{status:failed?502:409});
+        const media=await fetch(String(videoUri),{headers:{'x-goog-api-key':entry.key},redirect:'follow'});
+        if(!media.ok)return NextResponse.json({error:'Gemini download HTTP '+media.status},{status:502});
+        return new NextResponse(media.body,{status:200,headers:{
+          'Content-Type':media.headers.get('content-type')||'video/mp4',
+          'Cache-Control':'private, max-age=300',
+          'Content-Disposition':'inline; filename="predict-veo.mp4"'
+        }});
+      }
+      return NextResponse.json({
+        provider:'gemini',requestedProvider:provider,taskId,
+        status:failed?'failed':done&&videoUri?'completed':'processing',
+        videoUrl:done&&videoUri?('/api/media/video?provider=gemini&taskId='+encodeURIComponent(taskId)+'&download=1'):null,
+        error:failed?(data?.error?.message||'Gemini video failed'):null,
+        rawStatus:done?'done':'running'
+      });
+    }
+
     let endpoint='';
     if(resolvedProvider==='veo')endpoint=entry.base+'/veo/task?'+new URLSearchParams({taskId});
     if(resolvedProvider==='sora')endpoint=entry.base+'/sora/task?'+new URLSearchParams({taskId});
@@ -115,24 +148,34 @@ export async function POST(req:Request){
   if(!prompt)return NextResponse.json({error:'Descreva o vídeo.'},{status:400});
 
   const available=remoteOrder(cfg);
-  const resolvedProvider:RemoteProvider=provider==='auto'?(available[0]||'veo'):provider;
+  const resolvedProvider:RemoteProvider=provider==='auto'?(available[0]||'gemini'):provider;
   const entry=cfg[resolvedProvider];
   if(!entry.enabled){
     return NextResponse.json({
       error:provider==='auto'
-        ? 'Nenhum provider generativo de vídeo está configurado. Adicione MOUNTSEA_API_KEY ou SEEDANCE_API_KEY no Vercel.'
+        ? 'Nenhum provider generativo de vídeo está configurado. GEMINI_API_KEY, MOUNTSEA_API_KEY ou SEEDANCE_API_KEY pode habilitar vídeo real.'
         : 'Provider '+resolvedProvider+' não está configurado no servidor.'
     },{status:503});
   }
 
-  const duration=clampDuration(body?.duration,resolvedProvider==='veo'||resolvedProvider==='sora'?3:4,resolvedProvider==='veo'?8:15);
+  const duration=clampDuration(body?.duration,resolvedProvider==='gemini'||resolvedProvider==='veo'||resolvedProvider==='sora'?3:4,(resolvedProvider==='gemini'||resolvedProvider==='veo')?8:15);
   const imageUrl=body?.imageUrl?new URL(String(body.imageUrl),req.url).toString():undefined;
 
   try{
     let endpoint='';
     let payload:any={};
 
-    if(resolvedProvider==='veo'){
+    if(resolvedProvider==='gemini'){
+      endpoint=entry.base+'/models/'+encodeURIComponent(entry.model)+':predictLongRunning';
+      payload={
+        instances:[{prompt}],
+        parameters:{
+          numberOfVideos:1,
+          durationSeconds:duration,
+          resolution:String(body?.resolution||'720p')
+        }
+      };
+    }else if(resolvedProvider==='veo'){
       endpoint=entry.base+'/veo/generate';
       payload={
         prompt,
@@ -164,17 +207,15 @@ export async function POST(req:Request){
 
     const r=await fetch(endpoint,{
       method:'POST',
-      headers:{
-        Authorization:'Bearer '+entry.key,
-        'Content-Type':'application/json',
-        Accept:'application/json'
-      },
+      headers:resolvedProvider==='gemini'
+        ? {'x-goog-api-key':entry.key,'Content-Type':'application/json',Accept:'application/json'}
+        : {Authorization:'Bearer '+entry.key,'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify(payload)
     });
     const data=await r.json().catch(()=>({}));
     if(!r.ok)return NextResponse.json({error:data?.error||data?.message||('Provider HTTP '+r.status)},{status:502});
 
-    const taskId=String(data?.taskId||data?.id||data?.data?.taskId||'');
+    const taskId=String(resolvedProvider==='gemini'?(data?.name||''):(data?.taskId||data?.id||data?.data?.taskId||''));
     const direct=data?.videoUrl||data?.url||data?.output?.[0]?.url||null;
     if(!taskId&&!direct)return NextResponse.json({error:'Provider não retornou taskId nem vídeo.'},{status:502});
 
