@@ -420,7 +420,7 @@ Não herdar API keys client-side do projeto de referência Vibe-Prompting.
 ## Runtime invariants v5.11
 
 TwinCore deve preservar:
-- Neural auto-warm Lite em idle + single-load guard;
+- Neural local somente sob demanda/restauração explícita + single-load guard;
 - Local Router e AirLLM apenas opcionais;
 - Token Budget e retrieval diversity-first;
 - Deep Loop bounded/rollback;
