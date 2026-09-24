@@ -11,6 +11,7 @@ import { compactText, optimizePromptPackage, packContext, type TokenBudgetStats 
 import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
+import { centumDecisionContext, parallaxContext } from './decision-centum';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -476,6 +477,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const globalLessons=globalLearningContext(prompt,3);
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
+  const centum=centumDecisionContext(prompt);
+  const parallax=parallaxContext(prompt);
   const packed=optimizePromptPackage({
     messages,
     mode:options?.deep?'lite':'full',
@@ -485,6 +488,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Centum Decision Gate',text:centum,priority:10},
+      {label:'Third Brain PARALLAX',text:parallax,priority:10},
       {label:'Deep Loop',text:deepLoop,priority:9},
       {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
