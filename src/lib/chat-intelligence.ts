@@ -62,6 +62,28 @@ function carHowTo(){
   ].join('\n');
 }
 
+function metalDragonHowTo(){
+  return [
+    '**Se a ideia é criar um dragão físico de metal, trate como uma escultura estrutural: primeiro a armação, depois o volume, detalhes e acabamento.**',
+    '',
+    '1. **Defina escala e pose.** Para começar, 30–60 cm é muito mais controlável que uma peça de vários metros. Faça frente/lateral com medidas básicas.',
+    '2. **Escolha o esqueleto.** Use arame grosso, vergalhão fino ou tubo metálico para coluna, pernas, pescoço, cauda e asas. A base precisa impedir tombamento.',
+    '3. **Monte a armação antes dos detalhes.** Solde ou fixe o esqueleto e confira proporção, equilíbrio e pontos de esforço; asas e cauda criam bastante alavanca.',
+    '4. **Crie o volume.** Tela metálica expandida, arame, pequenas chapas e peças recicladas funcionam bem para costelas, músculos e superfícies.',
+    '5. **Faça cabeça, garras e placas separadamente.** É mais fácil ajustar mandíbula, chifres, dentes, dedos e escamas em módulos antes de unir tudo.',
+    '6. **Una as peças por etapas.** Em aço carbono, MIG/MAG costuma ser prático para estrutura; TIG ajuda em detalhes finos. Se você não domina solda, faça a armação com alguém experiente.',
+    '7. **Desbaste e acabamento.** Remova rebarbas, alinhe emendas, faça textura com esmerilhadeira/escova e teste se não há pontas cortantes soltas.',
+    '8. **Proteja o metal.** Desengraxe, aplique fundo anticorrosivo e depois tinta/esmalte apropriado; para visual cru, use selante compatível.',
+    '9. **Teste estabilidade.** Balance a peça, force levemente asas/cauda, confira soldas e fixe em base pesada. Peças grandes exigem cálculo de peso, ancoragem e transporte.',
+    '',
+    '**Materiais típicos:** vergalhão ou tubo fino · arame · tela expandida · chapa fina · sucata decorativa · solda · discos de corte/desbaste · fundo anticorrosivo · tinta.',
+    '',
+    '**Segurança:** corte e solda envolvem faísca, calor, fumos e metal projetado. Use máscara adequada à solda, óculos, luvas, roupa de algodão, ventilação e área sem materiais inflamáveis. Não trabalhe em recipiente fechado, galvanizado ou pintado sem conhecer o revestimento.',
+    '',
+    'Para uma primeira versão, eu faria um dragão de **40 cm**, com esqueleto em arame/vergalhão, corpo em tela e detalhes em chapinha. Depois de acertar proporção e equilíbrio, dá para escalar o mesmo projeto.'
+  ].join('\n');
+}
+
 function startupHowTo(){
   return [
     '**Comece pelo problema, não pela empresa.** Uma startup nasce quando você tenta resolver um problema real de forma repetível e escalável.',
@@ -80,10 +102,11 @@ function startupHowTo(){
   ].join('\n');
 }
 
-function practicalHowTo(prompt:string){
+export function practicalHowToReply(prompt:string){
   const p=clean(prompt);
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
   if(/\b(carro|automovel|automóvel|veiculo|veículo)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
+  if(/\b(dragao|dragon)\b/.test(p)&&/\b(metal|aco|ferro|solda|soldagem|escultura)\b/.test(p))return metalDragonHowTo();
   if(/startup|start-up/.test(p))return startupHowTo();
   if(/criar.*(app|aplicativo|sistema|site)|fazer.*(app|aplicativo|sistema|site)/.test(p)){
     return [
