@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { planAgenticRun, projectInstructionContext, selectSkillContracts } from '../src/lib/agent-runtime/agentic-fabric';
+import { isAuxiliaryLocalProvider } from '../src/lib/server/provider-mesh';
 
 test('build tasks use staged expert roles',()=>{
   const plan=planAgenticRun('Implemente autenticação, banco, testes E2E e responsividade mobile em um SaaS existente.','build',false);
@@ -29,4 +30,10 @@ test('project instructions are scoped and compacted',()=>{
   assert.match(context,/Preserve existing behavior/);
   assert.match(context,/Use strict TypeScript/);
   assert.doesNotMatch(context,/Docs only/);
+});
+
+test('local runtimes are auxiliary and excluded from primary provider selection',()=>{
+  assert.equal(isAuxiliaryLocalProvider({name:'ollama',base:'http://localhost:11434/v1',key:'x',model:'qwen'}),true);
+  assert.equal(isAuxiliaryLocalProvider({name:'server',base:'http://127.0.0.1:1234/v1',key:'x',model:'local'}),true);
+  assert.equal(isAuxiliaryLocalProvider({name:'anthropic',base:'https://api.anthropic.com/v1',key:'x',model:'claude'}),false);
 });

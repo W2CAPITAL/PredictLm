@@ -116,6 +116,14 @@ function providers():Provider[]{
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
 }
 
+function primaryProviders(configured:Provider[]){
+  return configured.filter(provider=>
+    provider.name!=='ollama'
+    && provider.name!=='freellmapi'
+    && !loopbackBase(provider.base)
+  );
+}
+
 type ProviderTask='code'|'legal'|'research'|'creative'|'reasoning'|'quick'|'general';
 
 function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
@@ -154,9 +162,10 @@ function modelBonus(model:string,task:ProviderTask){
 }
 
 function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
+  const primary=primaryProviders(configured);
   const task=providerTaskClass(prompt,deep);
-  const manual=new Map(configured.map((p,i)=>[p.name,i]));
-  return [...configured].sort((a,b)=>{
+  const manual=new Map(primary.map((p,i)=>[p.name,i]));
+  return [...primary].sort((a,b)=>{
     const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
     const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
     return sb-sa;
@@ -576,11 +585,14 @@ function draftNeedsRepair(review:ChatDraftReview|null){
 
 
 export async function GET(){
-  const configured=providers();
+  const all=providers();
+  const configured=primaryProviders(all);
+  const auxiliary=all.filter(x=>!configured.includes(x));
   return Response.json({
     available:configured.length>0,
     providers:configured.map(x=>({name:x.name,model:x.model})),
-    count:configured.length
+    count:configured.length,
+    auxiliaryLocal:auxiliary.map(x=>({name:x.name,model:x.model}))
   },{headers:{'Cache-Control':'no-store'}});
 }
 
@@ -594,14 +606,14 @@ export async function POST(req:Request){
     const brainContext=String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt);
     if(!prompt)return Response.json({error:'prompt is required'},{status:400});
 
-    const configured=providers();
+    const configured=primaryProviders(providers());
     if(!configured.length){
       return Response.json({
         available:false,
         content:null,
-        code:'NO_PROVIDER',
-        message:'Nenhum provider server-side configurado; o cliente deve continuar para o próximo runtime local/core.'
-      },{headers:{'Cache-Control':'no-store'}});
+        code:'NO_REMOTE_PROVIDER',
+        message:'Nenhuma API remota server-side está configurada. Runtimes locais permanecem apenas auxiliares e não podem produzir a resposta final do Predict Auto.'
+      },{status:503,headers:{'Cache-Control':'no-store'}});
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
