@@ -484,3 +484,16 @@ Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapt
 
 ### Gemini Nano Banana 2
 Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.
+
+
+## Agentic Simulation Runtime
+
+Life Simulation não é texto decorativo. Ordens são convertidas em JSON de ações válidas e executadas contra estado real do mundo.
+
+- planner IA dedicado separado do Chat geral;
+- validação de tipos/destinos;
+- repair de pré-condições;
+- execução com before/after auditável;
+- fallback determinístico local do mesmo pedido;
+- autonomia opt-in com replanejamento por necessidades/objetivo;
+- nenhuma ação externa fora da simulação.
