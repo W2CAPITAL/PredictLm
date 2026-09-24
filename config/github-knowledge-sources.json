@@ -487,6 +487,29 @@
         "low-ram"
       ],
       "reason": "README states Apache-2.0 but no repository LICENSE file was verified; high-level reference only."
+    },
+    {
+      "repo": "HKUDS/DeepTutor",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/",
+        "assets/README/README_PT.md"
+      ],
+      "domains": [
+        "tutoring",
+        "mastery-learning",
+        "quiz",
+        "reading",
+        "citations",
+        "rag",
+        "practice",
+        "memory",
+        "context-budget"
+      ],
+      "weight": 1.28
     }
   ]
 }
