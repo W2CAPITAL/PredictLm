@@ -200,7 +200,7 @@ export async function GET(req:Request){
       recommended,
       providers:{
         auto:{enabled:!!recommended,label:recommended?'Auto · IA generativa':'Auto · configure um motor de vídeo real',requiresExternalCredits:recommended!=='comfyui'},
-        gemini:{enabled:cfg.gemini.enabled,label:'Gemini Veo 3.1',requiresExternalCredits:true,supportsImageToVideo:true,supportsReferenceImages:true,durations:[4,6,8]},
+        gemini:{enabled:cfg.gemini.enabled,label:'Gemini Veo 3.1',model:cfg.gemini.model,requiresExternalCredits:true,supportsImageToVideo:true,supportsReferenceImages:/veo-3\.1/i.test(cfg.gemini.model),durations:[4,6,8]},
         comfyui:{enabled:cfg.comfyui.enabled,label:'ComfyUI · LTX/Custom',requiresExternalCredits:false,supportsImageToVideo:true,supportsReferenceImages:true,durations:[4,5,6,8]},
         local:{enabled:true,label:'Motion local · fallback',generative:false},
         veo:{enabled:cfg.veo.enabled,label:'Veo 3',requiresExternalCredits:true,generative:true},
@@ -363,18 +363,23 @@ export async function POST(req:Request){
 
     let endpoint='';
     let payload:any={};
+    let compatibilityWarning='';
+    let visualInputDowngraded=false;
 
     if(resolvedProvider==='gemini'){
       endpoint=cfg.gemini.base+'/models/'+encodeURIComponent(cfg.gemini.model)+':predictLongRunning';
       const startImage=imageUrl?await imageToInline(imageUrl,req.url):null;
       const referenceImages=(await Promise.all(referenceUrls.map((url:string)=>imageToInline(url,req.url)))).filter(Boolean) as InlineImage[];
+      const supportsReferenceImages=/veo-3\.1/i.test(cfg.gemini.model);
       const instance:any={prompt};
       if(startImage)instance.image={inlineData:{mimeType:startImage.mimeType,data:startImage.data}};
-      if(referenceImages.length){
+      if(referenceImages.length&&supportsReferenceImages){
         instance.referenceImages=referenceImages.map(ref=>({
           image:{inlineData:{mimeType:ref.mimeType,data:ref.data}},
           referenceType:'asset'
         }));
+      }else if(referenceImages.length&&!supportsReferenceImages){
+        compatibilityWarning='O modelo Gemini/Veo configurado não aceita referenceImages; as referências extras foram omitidas.';
       }
       payload={
         instances:[instance],
@@ -417,16 +422,52 @@ export async function POST(req:Request){
       };
     }
 
-    const r=await fetch(endpoint,{
+    const requestHeaders:Record<string,string>=resolvedProvider==='gemini'
+      ? {'x-goog-api-key':entry.key,'Content-Type':'application/json',Accept:'application/json'}
+      : {Authorization:'Bearer '+entry.key,'Content-Type':'application/json',Accept:'application/json'};
+
+    let r=await fetch(endpoint,{
       method:'POST',
-      headers:resolvedProvider==='gemini'
-        ? {'x-goog-api-key':entry.key,'Content-Type':'application/json',Accept:'application/json'}
-        : {Authorization:'Bearer '+entry.key,'Content-Type':'application/json',Accept:'application/json'},
+      headers:requestHeaders,
       body:JSON.stringify(payload),
       signal:AbortSignal.timeout(30000)
     });
-    const data=await r.json().catch(()=>({}));
-    if(!r.ok)return NextResponse.json({error:mediaErrorText(data?.error||data?.message||data,'Provider HTTP '+r.status)},{status:502});
+    let data=await r.json().catch(()=>({}));
+
+    // Some Gemini/Veo deployments or model aliases reject visual inlineData even
+    // though Veo 3.1 supports it. Do not turn that compatibility mismatch into a
+    // hard 502: retry once as text-to-video and surface the downgrade to the UI.
+    if(!r.ok&&resolvedProvider==='gemini'){
+      const firstError=mediaErrorText(data?.error||data?.message||data,'Gemini HTTP '+r.status);
+      if(/inlineData|inline data|referenceImages|reference images/i.test(firstError)){
+        visualInputDowngraded=true;
+        compatibilityWarning='O modelo Gemini configurado rejeitou a imagem/referências inline; o PredictLM repetiu a geração como texto→vídeo em vez de falhar.';
+        const textOnlyPayload={
+          instances:[{prompt}],
+          parameters:{
+            numberOfVideos:1,
+            durationSeconds:String(duration),
+            resolution:requestedResolution,
+            aspectRatio:geminiAspect(body?.aspectRatio),
+            personGeneration:'allow_all',
+            seed
+          }
+        };
+        r=await fetch(endpoint,{
+          method:'POST',
+          headers:requestHeaders,
+          body:JSON.stringify(textOnlyPayload),
+          signal:AbortSignal.timeout(30000)
+        });
+        data=await r.json().catch(()=>({}));
+      }
+    }
+
+    if(!r.ok)return NextResponse.json({
+      error:mediaErrorText(data?.error||data?.message||data,'Provider HTTP '+r.status),
+      provider:resolvedProvider,
+      compatibilityWarning:compatibilityWarning||null
+    },{status:502});
 
     const taskId=String(resolvedProvider==='gemini'?(data?.name||''):(data?.taskId||data?.id||data?.data?.taskId||''));
     const direct=data?.videoUrl||data?.url||data?.output?.[0]?.url||null;
@@ -439,7 +480,9 @@ export async function POST(req:Request){
       status:direct?'completed':'queued',
       videoUrl:direct,
       effectiveDuration:duration,
-      resolution:requestedResolution
+      resolution:requestedResolution,
+      visualInputDowngraded,
+      compatibilityWarning:compatibilityWarning||null
     });
   }catch(error:any){
     return NextResponse.json({error:mediaErrorText(error,'Falha ao iniciar geração de vídeo.')},{status:502});

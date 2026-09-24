@@ -36,13 +36,14 @@ function providerImageSize(width:number,height:number,nano:boolean){
   return '1024x1024';
 }
 
-function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string){
+function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean){
   const q=new URLSearchParams({
     prompt,
     width:String(width),
     height:String(height),
     seed:String(seed),
-    model:model||'flux'
+    model:model||'flux',
+    enhance:enhance?'true':'false'
   });
   return '/api/media/render?'+q.toString();
 }
@@ -95,6 +96,7 @@ export async function POST(req:Request){
       : await resolveVisualReferences(sourcePrompt);
     const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
+    const needsStrongIdentity=shouldForceLiteralMode(sourcePrompt);
     const groundedPrompt=effectivePromptMode==='literal'
       ? buildLiteralImagePrompt({
           originalPrompt:sourcePrompt,
@@ -195,6 +197,14 @@ export async function POST(req:Request){
         const mime=inline?.inlineData?.mimeType||inline?.inline_data?.mime_type||'image/png';
         const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
+          const referenceImagesPassed=provider.gemini?inlineReferences.length:(mediaReferenceField?configuredReferenceValues.length:0);
+          const fidelityWarning=needsStrongIdentity
+            ? referencePlan.references.length===0
+              ? 'Pedido de alta fidelidade sem referência visual recuperada; a identidade depende do conhecimento do modelo.'
+              : referenceImagesPassed===0
+                ? 'Referências visuais foram encontradas, mas este provider não recebeu as imagens; o grounding ficou textual.'
+                : ''
+            : '';
           return Response.json({
             url:remoteUrl||dataUrl,
             provider:provider.id,
@@ -203,7 +213,7 @@ export async function POST(req:Request){
             identityLocked:true,
             referenceQuery:referencePlan.query||null,
             referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
-            referenceImagesPassed:provider.gemini?inlineReferences.length:(mediaReferenceField?configuredReferenceValues.length:0),
+            referenceImagesPassed,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
             expandedPrompt:groundedPrompt,
@@ -214,7 +224,8 @@ export async function POST(req:Request){
             negativePrompt,
             style,
             styleLocked,
-            fidelityLimited:false
+            fidelityLimited:!!fidelityWarning,
+            providerWarning:fidelityWarning||null
           });
         }
       }catch{
@@ -225,7 +236,7 @@ export async function POST(req:Request){
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
     return Response.json({
-      url:localRenderUrl(groundedPrompt,width,height,seed,requestedModel),
+      url:localRenderUrl(groundedPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal'),
       provider:'pollinations-proxy',
       model:requestedModel,
       width,

@@ -296,6 +296,42 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   }finally{clearTimeout(timer)}
 }
 
+async function mediaDirectorResponse(configured:Provider[],prompt:string){
+  const messages:Msg[]=[
+    {
+      role:'system',
+      content:[
+        'Você é o Media Director interno do PredictLM.',
+        'Retorne somente um brief operacional compacto, sem chain-of-thought.',
+        'Preserve literalmente sujeito, identidade, criatura, roupa, cor, poder, ação e relações pedidos pelo usuário.',
+        'Não invente binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs, armaduras ou fendas dimensionais sem pedido explícito.',
+        'Se o pedido já for específico, refine câmera/continuidade sem trocar o conteúdo.'
+      ].join('\n')
+    },
+    {role:'user',content:compactText(prompt,2600)}
+  ];
+  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,false).slice(0,Math.min(2,PROVIDER_ATTEMPT_LIMIT));
+  for(const provider of candidates){
+    try{
+      const content=String(await callProvider(provider,messages,false,Math.min(8000,PROVIDER_TIMEOUT_MS))||'').trim();
+      if(content)return Response.json({
+        content:compactText(content,2600),
+        provider:provider.name,
+        model:provider.model,
+        mode:'media-director'
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch{}
+  }
+  // Media planning is optional enhancement. A provider outage must not create
+  // a noisy 502 loop or block image/video generation.
+  return Response.json({
+    content:null,
+    available:false,
+    code:'MEDIA_DIRECTOR_UNAVAILABLE',
+    mode:'media-director'
+  },{headers:{'Cache-Control':'no-store'}});
+}
+
 export async function GET(){
   const configured=providers();
   return Response.json({
@@ -326,6 +362,7 @@ export async function POST(req:Request){
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
+    if(body?.mode==='media-director')return mediaDirectorResponse(configured,prompt);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')

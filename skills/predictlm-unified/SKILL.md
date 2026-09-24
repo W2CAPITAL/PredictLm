@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.22.0"
+  version: "1.23.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -556,3 +556,25 @@ A Media Library do Imagine é **browser-local**:
 - nenhum `PREDICT_SUPABASE_*` é necessário para mídia;
 - URLs `data:`/blob não são persistidas para evitar encher o navegador;
 - o endpoint server-side antigo de library fica apenas como compatibilidade e não lê/escreve Supabase.
+
+## Grounding de pessoa real e anatomia de criatura
+
+Auto/Literal também protege pedidos fora de franquias:
+
+- pedidos curtos de uma **pessoa nomeada** são tratados como identidade específica, usam Firecrawl para referência visual quando disponível e recebem negative constraints contra robô, cyborg, alien, máscara/armadura e troca de rosto;
+- se o estilo ainda estiver no default Cinematic, pessoa nomeada usa **Photoreal** automaticamente; escolha manual do usuário continua soberana;
+- criaturas concretas como **dragão** também entram em Literal para impedir que o provider transforme a categoria pedida em outro animal;
+- `dragão branco de olhos azuis` exige anatomia inequivocamente dracônica, escala fantástica, corpo/cabeça de dragão, branco predominante e olhos azuis; lagarto, gecko, iguana, cobra, dinossauro ou réptil comum entram no negative;
+- no fallback Pollinations, Literal envia `enhance=false` para impedir uma segunda reescrita invisível do prompt pelo provider.
+
+## Vídeo Gemini/Veo robusto
+
+Veo usa geração assíncrona real. Quando imagens inline/reference são rejeitadas pelo modelo/configuração efetivamente ativa:
+
+1. registrar o downgrade;
+2. repetir **uma única vez** como texto→vídeo;
+3. continuar sem 502 se o retry for aceito;
+4. mostrar aviso de compatibilidade na UI;
+5. nunca entrar em loop de retry.
+
+Deep Think de mídia usa o modo interno `media-director`; falha dos providers de chat é uma melhoria opcional indisponível e retorna resposta vazia/200, não uma cascata de 502 que bloqueia vídeo.

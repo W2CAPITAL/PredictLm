@@ -1,5 +1,5 @@
 import { compactText } from '@/lib/token-budget';
-import { isSpecificFranchisePrompt } from '@/lib/media/media-fidelity';
+import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
 export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google';
 
@@ -44,7 +44,7 @@ export function isPersistentSelfPortraitRequest(input:string){
 export function isSpecificVisualPrompt(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
-  if(isSpecificFranchisePrompt(raw))return true;
+  if(shouldForceLiteralMode(raw))return true;
   if(/\b(personagem|character|anime|manga|franquia|franchise|jogo|game|filme|movie|serie|series|marca|brand)\b/.test(p)&&/[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\d_-]{2,}/u.test(raw))return true;
   if(/[“"'‘’][^”"'‘’]{3,}[”"'‘’]/.test(raw))return true;
   return /\b(?:personagem|character)\s+[\p{L}\d_-]{3,}/iu.test(raw);
@@ -77,6 +77,17 @@ export function buildVisualIdentityLock(input:string){
   if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\b(naruto|anime naruto)\b/.test(p)){
     rules.push('Naruto Four-Tails Bijuu lock: depict Son Goku, the canonical Four-Tails tailed beast from Naruto — huge red/orange ape-like bijuu with exactly four tails and recognizable Naruto franchise design. Do not depict human Goku from Dragon Ball or another tailed beast.');
   }
+  if(isLikelyNamedPersonPrompt(input)){
+    const subject=extractRequestedNamedSubject(coreVisualIntent(input))||'the named person';
+    rules.push('Named-person lock: the requested subject is '+subject+'. Preserve a normal human face, recognizable facial identity, natural human anatomy, hair/skin/age cues and requested clothing. Do not turn the person into a robot, cyborg, alien, armored humanoid, masked character or fantasy creature unless the user explicitly asks for that transformation.');
+  }
+  if(isConcreteCreaturePrompt(input)&&/\b(dragao|dragon)\b/.test(p)){
+    const white=/\b(branco|white)\b/.test(p);
+    const blueEyes=/\b(olhos azuis|blue eyes)\b/.test(p);
+    rules.push('Dragon anatomy lock: depict an unmistakably mythological full-sized dragon, not a real-world lizard or gecko. It must have a clearly draconic head, powerful neck and torso, large fantasy-dragon proportions and visible dragon anatomy; wings should be large and functional-looking when shown. Never substitute an ordinary reptile, iguana, gecko, snake, dinosaur or bat.');
+    if(white)rules.push('Color lock: the dragon scales/body must read clearly as white, ivory or pearlescent white across most of the creature.');
+    if(blueEyes)rules.push('Eye lock: both visible eyes must be distinctly blue; do not change them to green, yellow, red or black.');
+  }
   return rules.join(' ');
 }
 
@@ -91,6 +102,17 @@ export function buildVisualReferenceQuery(input:string){
   if(/\b(freeza|frieza)\b/.test(p))return 'Frieza Dragon Ball canonical anime character design reference white purple final form';
   if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p))return 'Dragon Ball Oozaru Great Ape Saiyan canonical anime reference';
   if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\b(naruto|anime naruto)\b/.test(p))return 'Naruto Four Tails Son Goku Bijuu canonical tailed beast anime reference';
+  if(isLikelyNamedPersonPrompt(raw)){
+    const subject=extractRequestedNamedSubject(raw)||raw;
+    return compactText(subject+' recent portrait face appearance photographic reference',320);
+  }
+  if(isConcreteCreaturePrompt(raw)&&/\b(dragao|dragon)\b/.test(p)){
+    const parts=['large mythological fantasy dragon anatomy reference'];
+    if(/\b(branco|white)\b/.test(p))parts.unshift('white dragon');
+    if(/\b(olhos azuis|blue eyes)\b/.test(p))parts.push('blue eyes');
+    parts.push('full dragon body wings scales draconic head not lizard');
+    return compactText(parts.join(' '),320);
+  }
   return compactText(raw+' official character design visual reference',320);
 }
 

@@ -6,7 +6,7 @@ function clamp(value:number,min:number,max:number){
   return Math.max(min,Math.min(max,Math.round(value||0)));
 }
 
-function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:string){
+function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean){
   const base=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'https://image.pollinations.ai/prompt/').trim();
   const root=base.endsWith('/')?base:base+'/';
   const q=new URLSearchParams({
@@ -16,7 +16,7 @@ function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:
     nologo:'true',
     private:'true',
     safe:'true',
-    enhance:'true',
+    enhance:enhance?'true':'false',
     model:model||'flux'
   });
   return root+encodeURIComponent(prompt)+'?'+q.toString();
@@ -46,16 +46,17 @@ export async function GET(req:Request){
   const height=clamp(Number(url.searchParams.get('height'))||1024,256,2048);
   const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(url.searchParams.get('seed'))||1)));
   const model=String(url.searchParams.get('model')||'flux').slice(0,40);
+  const enhance=String(url.searchParams.get('enhance')||'false').toLowerCase()==='true';
 
   try{
-    const target=upstreamUrl(prompt,width,height,seed,model);
+    const target=upstreamUrl(prompt,width,height,seed,model,enhance);
     let upstream=await fetchImage(target);
 
     // Uma segunda tentativa curta com turbo cobre indisponibilidade específica
     // do modelo sem devolver HTML quebrado como se fosse uma imagem.
     if(!upstream.ok&&model!=='turbo'){
       await new Promise(r=>setTimeout(r,900));
-      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,'turbo'));
+      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,'turbo',enhance));
     }
 
     if(!upstream.ok){

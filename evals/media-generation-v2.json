@@ -347,6 +347,99 @@
         "newSeed": true,
         "creativeReviewHints": false
       }
+    },
+    {
+      "id": "named-person-auto-literal-photoreal",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "styleLocked": false,
+        "prompt": "faça o Elon Musk",
+        "firecrawlConfigured": true
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Photoreal",
+        "referenceQueryIncludes": [
+          "Elon Musk",
+          "portrait",
+          "face"
+        ],
+        "negativeIncludes": [
+          "cyborg",
+          "robot face",
+          "different person"
+        ],
+        "humanIdentityLock": true
+      }
+    },
+    {
+      "id": "white-blue-eye-dragon-not-lizard",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "faça um dragão branco de olhos azuis"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "identityLockIncludes": [
+          "mythological",
+          "dragon",
+          "white",
+          "blue"
+        ],
+        "negativeIncludes": [
+          "lizard",
+          "gecko",
+          "iguana",
+          "small reptile"
+        ],
+        "publicProviderEnhance": false
+      }
+    },
+    {
+      "id": "manual-style-wins-for-named-person",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Editorial",
+        "styleLocked": true,
+        "prompt": "faça o Elon Musk"
+      },
+      "expect": {
+        "effectiveStyle": "Editorial",
+        "automaticPhotorealOverride": false
+      }
+    },
+    {
+      "id": "veo-inline-data-rejected-retries-text-only",
+      "input": {
+        "provider": "gemini",
+        "firstResponse": {
+          "status": 400,
+          "error": "inlineData isn't supported by this model"
+        }
+      },
+      "expect": {
+        "retryCount": 1,
+        "retryVisualInputs": false,
+        "hard502AfterFirstFailure": false,
+        "compatibilityWarning": true
+      }
+    },
+    {
+      "id": "media-director-provider-failure-is-nonblocking",
+      "input": {
+        "mode": "media-director",
+        "allChatProvidersFail": true
+      },
+      "expect": {
+        "httpStatus": 200,
+        "content": null,
+        "code": "MEDIA_DIRECTOR_UNAVAILABLE",
+        "videoGenerationMayContinue": true
+      }
     }
   ]
 }
