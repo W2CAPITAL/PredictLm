@@ -137,7 +137,7 @@ export async function loadWebLLMModel(
     lastError=String(error?.message||error);
     throw error;
   }finally{
-    loadingTier=null;
+    if(epoch===loadEpoch)loadingTier=null;
   }
 }
 
