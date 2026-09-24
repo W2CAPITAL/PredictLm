@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.14.0"
+  version: "1.15.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -507,3 +507,26 @@ Perguntas simples/casuais não carregam Centum.
 Council executável força Centum uma única vez e não repete 100 perguntas dentro de cada lente.
 
 Contrato detalhado: `skills/predictlm/CENTUM-PARALLAX.md`.
+
+
+## Runtime Federation v1.15
+Carregar `RUNTIME-FEDERATION.md` quando a tarefa envolve modelo/runtime local.
+
+Preservar:
+- ONNX CPU/WASM como caminho compatível;
+- WebLLM como aceleração WebGPU opt-in;
+- FreeLLMAPI como router local OpenAI-compatible em localhost:3001;
+- AirLLM como referência desktop/low-VRAM, não runtime web;
+- self-test real antes de declarar qualquer modelo ativo;
+- credenciais locais fora de GitHub, Supabase e Vercel.
+
+## Agent Fabric v1.15
+Carregar `AGENT-FABRIC.md` em tarefas multiagente/tool-heavy.
+
+Novos gates:
+- Planner → Builder → Reviewer/Bug Hunter → Verify;
+- Writing Quality para texto final reutilizável;
+- SEO audit para builds web quando aplicável;
+- Tool Orchestrator com permissões explícitas;
+- Media Director para adapters Higgsfield/geração configurada;
+- fontes red-team permanecem quarantine/reference-only.
