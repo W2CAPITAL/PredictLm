@@ -536,6 +536,7 @@ export function ChatShell({onOpenLegal}:Props){
       ];
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
     }catch(err:any){
+      if(turnController.signal.aborted)return;
       const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
       s.addMessage({
         role:'assistant',
