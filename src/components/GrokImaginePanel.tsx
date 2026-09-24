@@ -8,7 +8,7 @@ import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@/lib/media/canonical-matchup';
-import { preloadGeneratedImage, reviewCanonicalImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
+import { preloadGeneratedImage, reviewSemanticImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
 
@@ -308,7 +308,7 @@ export function GrokImaginePanel(){
     return saved as MediaItem|null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false){
+  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false,semanticRepairHints='',apiDirectorBrief=''){
     setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
@@ -322,6 +322,8 @@ export function GrokImaginePanel(){
         styleLocked:styleManuallyChosen,
         attempt:renderAttempt,
         semanticRepair,
+        semanticRepairHints,
+        directorBrief:apiDirectorBrief,
         width:ratio.w,
         height:ratio.h,
         seed:renderSeed,
@@ -424,7 +426,7 @@ export function GrokImaginePanel(){
 
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt);
+      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt,false,'',prepared.brief||'');
       let url=data.url;
       let expandedPrompt=data.expandedPrompt||renderPrompt;
 
@@ -453,20 +455,30 @@ export function GrokImaginePanel(){
       setImageStage('Revisando nitidez e exposição…');
       let finalReview=await reviewImageQuality(url).catch(()=>null);
 
-      let semanticReview=isNarutoKuramaVsSasukeSusanooPrompt(prompt)?await reviewCanonicalImage(url,prompt):null;
+      const shouldSemanticReview=deepThink||looksSpecificVisualPrompt(prompt)||prompt.length>80;
+      let semanticReview=shouldSemanticReview?await reviewSemanticImage(url,prompt):null;
       const semanticRepair=semanticReview?.status==='failed';
+      const semanticRepairHints=semanticRepair
+        ? (semanticReview?.retryPrompt||semanticReview?.issues?.join('; ')||'').trim()
+        : '';
 
-      // One automatic repair attempt prevents a visibly weak first render
-      // from becoming the final asset. It never loops indefinitely.
+      // One automatic repair pass combines semantic fidelity and technical
+      // image-quality feedback. It never loops indefinitely.
       if(!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
         const repairSeed=autoVariationSeed(nextSeed);
-        const repairPrompt=semanticRepair?prompt:buildQualityImagePrompt(prompt,{
-          style,
-          attempt:nextAttempt+1,
-          previousPrompt:renderPrompt
-        })+'. Correções obrigatórias: '+(finalReview?.promptHints||[]).join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
-        setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair);
+        const repairPrompt=semanticRepair
+          ? [
+              prompt,
+              semanticRepairHints?('Correções visuais obrigatórias: '+semanticRepairHints):'',
+              'Preserve o pedido original e corrija somente divergências realmente visíveis.'
+            ].filter(Boolean).join('\n\n')
+          : buildQualityImagePrompt(prompt,{
+              style,
+              attempt:nextAttempt+1,
+              previousPrompt:renderPrompt
+            })+'. Correções obrigatórias: '+(finalReview?.promptHints||[]).join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
+        setImageStage(semanticRepair?'Fidelidade abaixo do gate · corrigindo uma vez…':'Qualidade abaixo do gate · regenerando uma vez…');
+        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair,semanticRepairHints,prepared.brief||'');
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
@@ -474,10 +486,14 @@ export function GrokImaginePanel(){
         setSeed(nextSeed);
         setAttempt(nextAttempt);
         finalReview=await reviewImageQuality(url).catch(()=>finalReview);
-        if(semanticRepair)semanticReview=await reviewCanonicalImage(url,prompt);
+        if(semanticRepair)semanticReview=await reviewSemanticImage(url,prompt);
       }
 
-      const semanticWarning=semanticReview?.status==='failed'?'A revisão visual ainda encontrou elementos pouco legíveis ou ausentes.':semanticReview?.status==='unavailable'?'A identidade da cena não pôde ser verificada automaticamente.':'';
+      const semanticWarning=semanticReview?.status==='failed'
+        ? 'A revisão semântica ainda encontrou divergências visíveis: '+semanticReview.issues.slice(0,3).join('; ')+'.'
+        : semanticReview?.status==='unavailable'
+          ? 'A fidelidade semântica da cena não pôde ser verificada automaticamente.'
+          : '';
       data.providerWarning=[data.providerWarning,semanticWarning].filter(Boolean).join(' ');
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
