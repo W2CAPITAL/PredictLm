@@ -238,6 +238,190 @@
         "code-ui"
       ],
       "reason": "Typography asset source; never ingest font binaries into RAG."
+    },
+    {
+      "repo": "WestFox-AwA/dsh-prompt-optimizer",
+      "branch": "main",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README.en.md",
+        "po06/README.md"
+      ],
+      "domains": [
+        "prompt-optimization",
+        "context",
+        "evidence",
+        "token-efficiency"
+      ],
+      "weight": 1.18
+    },
+    {
+      "repo": "drona23/claude-token-efficient",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "profiles/"
+      ],
+      "domains": [
+        "token-efficiency",
+        "output",
+        "coding",
+        "prompt"
+      ],
+      "weight": 1.18
+    },
+    {
+      "repo": "jnbno1163/LG-token-saver",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README_CN.md",
+        "SKILL.md"
+      ],
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "weight": 1.22
+    },
+    {
+      "repo": "atjsh/llmlingua-2-js",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "prompt-compression",
+        "browser",
+        "transformers",
+        "token-efficiency"
+      ],
+      "weight": 1.2
+    },
+    {
+      "repo": "nadimtuhin/claude-token-optimizer",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "context-budget",
+        "docs",
+        "token-efficiency",
+        "coding"
+      ],
+      "weight": 1.2
+    },
+    {
+      "repo": "Mintplex-Labs/anything-llm",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "rag",
+        "skill-selection",
+        "model-router",
+        "memory",
+        "token-efficiency"
+      ],
+      "weight": 1.18
+    },
+    {
+      "repo": "Zackriya-Solutions/meetily",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "transcription",
+        "summarization",
+        "local-first",
+        "meetings"
+      ],
+      "weight": 0.95
+    },
+    {
+      "repo": "kwistzzqq-byte/image2-ads-studio",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "media",
+        "prompt-compiler",
+        "retrieval",
+        "deterministic-checks"
+      ],
+      "weight": 0.82
+    },
+    {
+      "repo": "bentoml/llm-optimizer",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "inference",
+        "latency",
+        "throughput",
+        "slo"
+      ],
+      "reason": "Useful for server/GPU inference tuning, but not the browser token-saving runtime."
+    },
+    {
+      "repo": "mozilla-ai/llamafile",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "desktop-runtime",
+        "gguf",
+        "local-inference"
+      ],
+      "reason": "Portable local inference can reduce cloud usage, but is a desktop/runtime option rather than prompt compression."
+    },
+    {
+      "repo": "qualcomm/GenieX",
+      "branch": "main",
+      "license": "BSD-3-Clause",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "snapdragon",
+        "on-device",
+        "gguf",
+        "npu"
+      ],
+      "reason": "Only relevant on supported Qualcomm Snapdragon hardware; runtime reference, not universal web path."
     }
   ]
 }
