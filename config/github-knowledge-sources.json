@@ -869,6 +869,42 @@
         "agents"
       ],
       "reason": "Curated discovery list; downstream tools require their own license/security review."
+    },
+    {
+      "repo": "truongnh1992/gemini-ai-code-reviewer",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "weight": 1.1
+    },
+    {
+      "repo": "Addy-shetty/Vibe-Prompting",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/SECURITY_IMPLEMENTATION_FULL.md"
+      ],
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "weight": 1.03
     }
   ]
 }
