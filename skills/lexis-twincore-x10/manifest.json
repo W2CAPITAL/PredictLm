@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.12.0",
+  "version": "5.14.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -33,7 +33,11 @@
     "deep-research",
     "books-courses",
     "build-review",
-    "centum-parallax"
+    "centum-parallax",
+    "runtime-federation",
+    "agent-fabric",
+    "provider-mesh",
+    "web-reach"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -129,7 +133,20 @@
     "forge-aegis-parallax",
     "council-x10-after-centum",
     "strict-intent-no-generic-fallback",
-    "decision-uncertainty-preservation"
+    "decision-uncertainty-preservation",
+    "runtime-federation",
+    "webllm-webgpu",
+    "freellmapi-local-router",
+    "agent-fabric",
+    "writing-quality-gate",
+    "seo-audit-gate",
+    "defensive-bug-hunter",
+    "multi-provider-cascade",
+    "server-secret-boundary",
+    "apify-research-bridge",
+    "web-reach",
+    "open-lovable-build-patterns",
+    "fastchat-serving-patterns"
   ],
   "hosts": [
     "PredictLM",

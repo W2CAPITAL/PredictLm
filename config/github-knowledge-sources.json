@@ -905,6 +905,264 @@
         "ux"
       ],
       "weight": 1.03
+    },
+    {
+      "repo": "petergyang/no-ai-slop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "writing-quality",
+        "editing",
+        "ai-slop"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "conorbronsdon/avoid-ai-writing",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "writing-quality",
+        "editing",
+        "style"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "every-app/open-seo",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "seo",
+        "web",
+        "metadata",
+        "audit"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "ComposioHQ/composio",
+      "branch": "next",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "tools",
+        "integrations",
+        "agents"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "higgsfield-ai/cli",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "media",
+        "cli",
+        "image",
+        "video"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "tashfeenahmed/freellmapi",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "model-router",
+        "openai-compatible",
+        "local-api"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "msitarzewski/agency-agents",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "agents",
+        "roles",
+        "handoff"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "OpenHands/OpenHands",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "coding-agent",
+        "planning",
+        "tools",
+        "review"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "awarexone/Agentic-Bug-Hunter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "defensive-security",
+        "qa",
+        "bug-review"
+      ],
+      "reason": "Defensive QA/threat-model only; do not ingest offensive automation."
+    },
+    {
+      "repo": "lm-sys/FastChat",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "model-serving",
+        "openai-compatible",
+        "evaluation"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "Panniantong/Agent-Reach",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/README_en.md"
+      ],
+      "domains": [
+        "agents",
+        "web-reach",
+        "tools"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "CodebuffAI/freebuff",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "coding-agent",
+        "build",
+        "parallel-agents"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "mendableai/open-lovable",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "app-builder",
+        "website-cloning",
+        "firecrawl",
+        "sandbox"
+      ],
+      "reason": "Website states MIT, but root GitHub license was not verified through the connector; architecture reference only until provenance is confirmed."
+    },
+    {
+      "repo": "d60/twikit",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "twitter",
+        "scraping",
+        "social"
+      ],
+      "reason": "External social scraping bridge; use only with explicit opt-in and platform/legal review."
+    },
+    {
+      "repo": "Xquik-dev/x-twitter-scraper",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "twitter",
+        "api",
+        "mcp"
+      ],
+      "reason": "Third-party X/Twitter bridge; never request/store passwords, cookies, session exports or 2FA codes."
+    },
+    {
+      "repo": "composio-temp/grok-with-twitter",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "twitter",
+        "composio",
+        "tools"
+      ],
+      "reason": "No repository license verified; integration pattern only."
+    },
+    {
+      "repo": "andregod/APIFirebase",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "firebase",
+        "api"
+      ],
+      "reason": "No usable README/license verified."
     }
   ]
 }

@@ -112,7 +112,7 @@ export function browserModelFor(tier:NeuralTier){
 export interface LocalNeuralRuntime{
   id:string;
   label:string;
-  transport:'browser-worker'|'ollama'|'openai-compatible'|'custom-http';
+  transport:'browser-worker'|'webllm'|'ollama'|'openai-compatible'|'custom-http';
   endpoint?:string;
   optional:boolean;
   hardware:string;
@@ -127,6 +127,23 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     optional:false,
     hardware:'generic browser · CPU/WASM or WebGPU',
     note:'Zero-server default. Lite 0.5B and Smart 1.5B remain the guaranteed local-first path.'
+  },
+  {
+    id:'browser-webllm',
+    label:'Browser WebLLM · WebGPU',
+    transport:'webllm',
+    optional:true,
+    hardware:'WebGPU browser · GPU accelerated',
+    note:'Optional accelerator using MLC WebLLM. Loaded only on explicit opt-in and kept separate from the CPU/WASM-safe ONNX path.'
+  },
+  {
+    id:'freellmapi',
+    label:'FreeLLMAPI · 3001',
+    transport:'openai-compatible',
+    endpoint:'http://127.0.0.1:3001/v1',
+    optional:true,
+    hardware:'desktop/WSL self-hosted router',
+    note:'OpenAI-compatible local router. Unified key is stored only in browser localStorage and is never sent to Vercel.'
   },
   {
     id:'ollama',

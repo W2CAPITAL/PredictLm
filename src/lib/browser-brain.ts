@@ -12,9 +12,10 @@ import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
 import { isDecisionRequest } from './decision-centum';
+import { webLLMGenerate, webLLMStatus } from './webllm-runtime';
 
 export type NeuralTier='lite'|'smart';
-export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
+export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
 
 export interface BrainReply {
   content:string;
@@ -598,6 +599,36 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     }
   }
 
+  // WebLLM GPU path is intentionally separate from the ONNX worker. It is opt-in,
+  // WebGPU-only and reuses the same Prompt OS / memory / retrieval package.
+  const webllm=webLLMStatus();
+  if(webllm.loaded){
+    try{
+      options?.onStage?.('forge');
+      const webMessages:{role:'system'|'user'|'assistant';content:string}[]=[
+        {role:'system',content:system},
+        ...neuralMessages.map(m=>({role:m.role==='assistant'?'assistant' as const:'user' as const,content:m.content})),
+        {role:'user',content:options?.deep
+          ? prompt+'\\n\\nFaça internamente FORGE → AEGIS → PARALLAX/Centum quando aplicável e entregue somente a resposta final aderente ao pedido.'
+          : prompt}
+      ];
+      const content=await webLLMGenerate(webMessages,{
+        maxTokens:options?.deep?(webllm.tier==='smart'?1000:700):(webllm.tier==='smart'?760:520),
+        temperature:options?.deep?0.28:0.38
+      });
+      const cleaned=cleanUserFacingAnswer(content);
+      const topical=responseTopicAlignment(prompt,cleaned);
+      if(topical.relevant){
+        options?.onStage?.('verify');
+        captureAdaptiveExperience(prompt,cleaned,'webllm');
+        return {content:cleaned,engine:'webllm',sources,tokenStats:packed.stats};
+      }
+      fallbackReason='WebLLM respondeu fora do assunto principal e foi rejeitado pelo gate de relevância.';
+    }catch(error:any){
+      fallbackReason=String(error?.message||'WebLLM local generation failed');
+    }
+  }
+
   if(decisionAudit&&isDecisionRequest(prompt)&&!options?.fallbackText){
     return {
       content:'Não há base suficiente neste turno para concluir exatamente o que foi pedido com segurança. Falta uma resposta de modelo/evidência relevante; não vou substituir por um texto genérico fora do assunto.',
@@ -609,8 +640,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const content=options?.fallbackText||knowledgeReply(prompt);
   return {
     content,
-    engine:loadedTier?'knowledge-fallback':'knowledge',
+    engine:(loadedTier||webllm.loaded)?'knowledge-fallback':'knowledge',
     sources,
-    fallbackReason:loadedTier?(fallbackReason||lastNeuralError||'Neural Local did not answer this turn'):undefined
+    fallbackReason:(loadedTier||webllm.loaded)?(fallbackReason||lastNeuralError||'Local neural runtime did not answer this turn'):undefined
   };
 }

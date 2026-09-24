@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.7.0"
+  version: "1.9.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -344,7 +344,7 @@ Diff review prioriza arquivos alterados e findings acionáveis.
 Provider secret em VITE_ ou credencial hard-coded é blocking.
 Neural review nunca substitui smoke/build/test/typecheck.
 
-## Runtime invariants v1.6
+## Runtime invariants v1.8
 
 Preservar em qualquer evolução:
 - Neural Lite auto-warm somente em idle/worker, sem cargas concorrentes;
@@ -358,6 +358,9 @@ Preservar em qualquer evolução:
 - image generate→review→repair→optional super-resolution;
 - Build changed-file review + smoke/Council + focused repair;
 - skill files atualizados sempre que runtime, arquitetura ou fontes mudarem.
+- Runtime federation adds ONNX CPU/WASM + opt-in WebLLM/WebGPU + loopback FreeLLMAPI/OpenAI-compatible adapters without making cloud mandatory.
+- Agent Fabric keeps planner/builder/reviewer/bug-hunter/tool/media roles bounded by acceptance criteria and permissions.
+- Writing/SEO quality gates run only when relevant; red-team/bypass sources remain defensive reference-only.
 
 
 ## Centum decision gate
@@ -373,3 +376,24 @@ Em decisão/certeza/comparação/risco/aprovação/prontidão:
 As 100 perguntas são internas por padrão.
 Sem fallback de conteúdo: falha/retrieval irrelevante nunca autoriza responder outra coisa.
 Fallback técnico entre runtimes continua permitido apenas para entregar o mesmo pedido.
+
+
+## Provider Mesh / Web Reach v1.9
+
+Cloud/provider routing:
+- generic AI, FreeLLMAPI, OpenCode, NVIDIA, DeepSeek, Kimi, Z.AI, MiniMax, Gemini, Groq, OpenRouter, Anthropic, Ark e self-hosted Ollama podem compor o cascade;
+- apenas providers configurados entram na ordem;
+- segredos permanecem server-side;
+- Anthropic usa Messages nativo; os demais usam adapter compatível quando suportado.
+
+Research:
+- Firecrawl primário quando configurado;
+- Apify dataset/run pode complementar;
+- fallback web gratuito continua independente;
+- conteúdo recuperado passa por provenance/relevance gate antes de influenciar resposta.
+
+Build/reference:
+- Open Lovable e Freebuff reforçam análise → implementação → sandbox/review → package;
+- FastChat reforça serving/eval multi-model;
+- Agent-Reach reforça tool reach/discovery;
+- adapters sociais ficam externos/opt-in e não viram dependência silenciosa.
