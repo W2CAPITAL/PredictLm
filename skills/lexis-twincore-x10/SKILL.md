@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.18.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.19.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.18.0"
+  version: "5.19.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.18.0
+# LEXIS TwinCore X10 v5.19.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -92,6 +92,33 @@ Regras obrigatórias:
 8. mídia gráfica extrema não entra em RAG/treino/persona.
 
 A matriz de pesquisa por domínio está em `skills/predictlm/RESEARCH-SOURCE-MATRIX.md`.
+
+## NeuroCore / Connectome-inspired Control
+
+A TwinCore pode receber um estado NeuroCore antes da síntese:
+- sensory → entrada/novidade;
+- salience → prioridade;
+- attention → foco;
+- workingMemory → restrições ativas;
+- episodicMemory → contexto relevante;
+- planning → sequência executável;
+- inhibition → supressão de ruído/impulso;
+- social/threat/curiosity/action → contexto humano, defesa, exploração e execução.
+
+O desenho é inspirado por conectomas, neural-mass modeling e loops sensório-motores. É uma abstração computacional controlada, **não uma declaração de consciência ou vida biológica**.
+
+## Life Simulation Studio
+
+A TwinCore oferece uma simulação 2D local-first como superfície própria e como tipo de app gerável pelo Build.
+
+Regras:
+1. simulação não vira jogo sem pedido explícito;
+2. personagem mantém necessidades, memória, relações, dinheiro/ocupação, meta e eventos;
+3. ciclo: observar → priorizar → decidir → agir → atualizar → memorizar;
+4. estado é pausável, acelerável, persistente e resetável;
+5. instrução externa pode alterar meta/nome/destino sem apagar história;
+6. nenhuma credencial entra no estado;
+7. o sistema nunca apresenta a personagem como pessoa real ou consciente.
 
 ## Modos
 
