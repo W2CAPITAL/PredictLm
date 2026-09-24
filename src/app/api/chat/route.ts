@@ -13,6 +13,8 @@ import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
+import { skills } from '@/lib/skills';
+import { planTask } from '@/lib/agent-runtime/routing';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -231,6 +233,32 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
   return Response.json({error:'Nenhum provider produziu um plano executável.',code:'NO_SIMULATION_PLAN',errors:errors.slice(0,3)},{status:502,headers:{'Cache-Control':'no-store'}});
 }
 
+function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
+  const plan=planTask(prompt);
+  const q=normalize(prompt);
+  const ids=new Set<string>(['human-presence','prompt-os','provider-mesh']);
+  if(plan.route==='research'||hasResearch){ids.add('research-source-matrix');ids.add('deep-research');ids.add('web-reach')}
+  if(plan.route==='codebase-investigator'||/\b(codigo|code|app|site|sistema|bug|github|vercel|react|next|typescript|python)\b/.test(q)){
+    ids.add('agent-fabric');ids.add('build-review');ids.add('testing');
+  }
+  if(plan.route==='media'||/\b(imagem|image|video|vídeo|anime|render|foto)\b/.test(q)){
+    ids.add('grok-imagine-parity');ids.add('visual-reference-grounding');ids.add('media-director-deep');
+  }
+  if(plan.route==='legal-review'||plan.route==='scanner-processual'){
+    ids.add('lexis-twincore-x10');ids.add('datajud');
+  }
+  if(/\b(aprend|estud|ensine|quiz|curso|explica)\b/.test(q))ids.add('tutor-mode');
+  if(deep){ids.add('centum-parallax');ids.add('agent-fabric')}
+
+  const selected=skills.filter(s=>ids.has(s.id)).slice(0,7);
+  return [
+    'API AGENT ROUTE: '+plan.route+' — '+plan.reason+'.',
+    'The remote provider is the primary answering engine. Execute only the relevant agent/skill contracts below; do not recite their names to the user.',
+    'Local runtimes, when present, are advisory evidence only and never outrank the remote provider.',
+    ...selected.map(s=>'SKILL '+s.id+': '+compactText(s.description,340))
+  ].join('\n');
+}
+
 function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather|fortuna hoje|patrimonio hoje|patrimônio hoje)\b/i.test(prompt);
 }
@@ -380,12 +408,18 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
           'Não acrescente assuntos correlatos só porque compartilham uma palavra com o prompt.'
         ].join(' ');
 
+  const skillEnvelope=apiAgentSkillEnvelope(prompt,false,false);
+  const localAdvisory=compactText(String(body?.localAdvisory||''),1200);
+  const answerAnchor=compactText(String(body?.answerAnchor||''),1800);
   const system=[
     'Você é o PredictLM em modo conversa limpa.',
     languageSystemInstruction(language),
     guard,
+    skillEnvelope,
+    localAdvisory?'LOCAL ADVISORY (opcional; critique, não copie automaticamente): '+localAdvisory:'',
+    answerAnchor?'ANSWER FLOOR (use apenas como piso de utilidade; a API continua responsável pela resposta): '+answerAnchor:'',
     'Entregue somente a resposta final ao usuário. Nunca exponha cadeia de raciocínio, roteamento, provider, skill, memória interna ou relatório operacional.'
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 
   const messages:Msg[]=[
     {role:'system',content:system},
@@ -533,6 +567,7 @@ export async function POST(req:Request){
         {label:'Deep Loop',text:simpleTurn?'':deepLoop,priority:9},
         {label:'Tutor Mode',text:simpleTurn?'':tutor,priority:6},
         {label:'Modo de resposta',text:responseGuard,priority:10},
+        {label:'API Agent + Skills',text:apiAgentSkillEnvelope(prompt,deep,!!researchContext),priority:10},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
         {label:'Parecer do cérebro local',text:simpleTurn?'':localAdvisory,priority:8},
         {label:'Piso prático de resposta',text:answerAnchor,priority:9},
