@@ -1,3 +1,4 @@
+import { canonicalMatchupLock, matchupReferenceQueries } from './canonical-matchup';
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
@@ -53,6 +54,7 @@ export function isSpecificVisualPrompt(input:string){
 export function buildVisualIdentityLock(input:string){
   const p=normalize(coreVisualIntent(input));
   const rules=[
+    canonicalMatchupLock(input),
     'VISUAL IDENTITY LOCK: preserve the exact identity of every explicitly named character, product, brand, landmark or known subject.',
     'Do not replace a named subject with a generic lookalike, approximate archetype, unrelated creature, mecha, costume or hybrid.',
     'Preserve canonical silhouette, facial traits, costume, colors, symbols, scale and requested transformation/power form when those details are known.',
@@ -88,7 +90,7 @@ export function buildVisualIdentityLock(input:string){
     if(white)rules.push('Color lock: the dragon scales/body must read clearly as white, ivory or pearlescent white across most of the creature.');
     if(blueEyes)rules.push('Eye lock: both visible eyes must be distinctly blue; do not change them to green, yellow, red or black.');
   }
-  return rules.join(' ');
+  return rules.filter(Boolean).join(' ');
 }
 
 export function buildVisualReferenceQuery(input:string){
@@ -189,7 +191,9 @@ async function firecrawlImageSearch(query:string,limit:number,pinterest=false):P
 export async function resolveVisualReferences(input:string,limit?:number):Promise<VisualReferencePlan>{
   const maxEnv=Number(process.env.PREDICTLM_VISUAL_REFERENCE_MAX||4);
   const max=Math.max(1,Math.min(8,Number(limit)||maxEnv||4));
-  const query=buildVisualReferenceQuery(input);
+  const queries=matchupReferenceQueries(input);
+  if(!queries.length)queries.push(buildVisualReferenceQuery(input));
+  const query=queries.join(' | ');
   if(!isSpecificVisualPrompt(input))return {query,references:[],warnings:[]};
 
   const warnings:string[]=[];
@@ -199,24 +203,30 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 
   const tasks:{label:string;run:Promise<VisualReference[]>}[]=[];
+  for(const searchQuery of queries){
   for(const id of order){
-    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',run:firecrawlImageSearch(query,max,false)});
-    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',run:firecrawlImageSearch(query,Math.min(3,max),true)});
-    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',run:googleImageSearch(query,max,false)});
-    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',run:googleImageSearch(query,Math.min(3,max),true)});
+    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',run:firecrawlImageSearch(searchQuery,max,false)});
+    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
+    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',run:googleImageSearch(searchQuery,max,false)});
+    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',run:googleImageSearch(searchQuery,Math.min(3,max),true)});
   }
 
+  }
   const settled=await Promise.allSettled(tasks.map(x=>x.run));
   const merged:VisualReference[]=[];
   settled.forEach((task,index)=>{
-    if(task.status==='fulfilled')merged.push(...task.value);
-    else warnings.push(tasks[index].label+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
+    if(task.status==='fulfilled'&&task.value[0]){
+      const group=Math.floor(index/Math.max(1,tasks.length/queries.length));
+      if(!merged.some(x=>(x as VisualReference & {queryGroup?:number}).queryGroup===group))merged.push({...task.value[0],queryGroup:group} as VisualReference);
+    }
+    else if(task.status==='rejected')warnings.push(tasks[index].label+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
   });
 
   if(!hasFirecrawl&&!hasGoogle){
     warnings.push('Nenhuma fonte externa de referência visual está configurada; usando identity lock textual.');
   }
 
+  settled.forEach(task=>{if(task.status==='fulfilled')merged.push(...task.value.slice(1));});
   const seen=new Set<string>();
   const references=merged.filter(ref=>{
     const key=ref.imageUrl;

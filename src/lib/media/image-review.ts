@@ -111,3 +111,24 @@ export async function preloadGeneratedImage(url:string,timeoutMs=55000){
     img.src=url;
   });
 }
+
+// Semantic review is separate from the pixel metrics above: no model means unverified.
+export async function reviewCanonicalImage(url:string,prompt:string):Promise<import('./canonical-matchup').SemanticImageReview>{
+  const unavailable={status:'unavailable' as const,issues:[],retryPrompt:''};
+  try{
+    const img=await loadImage(url);
+    const scale=Math.min(1,768/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    const ctx=canvas.getContext('2d');if(!ctx)return unavailable;
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const response=await fetch('/api/media/review',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,image:canvas.toDataURL('image/jpeg',.85)}),signal:AbortSignal.timeout(25000)});
+    if(!response.ok)return unavailable;
+    const data=await response.json();
+    if(data.status==='unavailable')return unavailable;
+    const {parseSemanticImageReview}=await import('./canonical-matchup');
+    return parseSemanticImageReview(data,prompt);
+  }catch{return unavailable;}
+}

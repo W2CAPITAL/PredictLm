@@ -7,7 +7,8 @@ import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMo
 import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames, formatMediaResearchContext, mediaResearchQuery } from '@/lib/media/video-pipelines';
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
-import { preloadGeneratedImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
+import { isNarutoKuramaVsSasukeSusanooPrompt } from '@/lib/media/canonical-matchup';
+import { preloadGeneratedImage, reviewCanonicalImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
 
@@ -155,7 +156,7 @@ export function GrokImaginePanel(){
     let research='';
     let brief='';
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
-    const literalImage=kind==='image'&&(promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
+    const literalImage=kind==='image'&&(isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
     if(literalImage){
       setDirectorBrief('');
       setResearchContext('');
@@ -300,7 +301,7 @@ export function GrokImaginePanel(){
     return saved as MediaItem|null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt){
+  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false){
     setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
@@ -313,6 +314,7 @@ export function GrokImaginePanel(){
         style,
         styleLocked:styleManuallyChosen,
         attempt:renderAttempt,
+        semanticRepair,
         width:ratio.w,
         height:ratio.h,
         seed:renderSeed,
@@ -391,7 +393,7 @@ export function GrokImaginePanel(){
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
       const prepared=await prepareMediaPrompt('image');
-      const literalRequest=promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
+      const literalRequest=isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
       const basePrompt=literalRequest
         ? prepared.prompt
         : regenerate
@@ -444,17 +446,20 @@ export function GrokImaginePanel(){
       setImageStage('Revisando nitidez e exposição…');
       let finalReview=await reviewImageQuality(url).catch(()=>null);
 
+      let semanticReview=isNarutoKuramaVsSasukeSusanooPrompt(prompt)?await reviewCanonicalImage(url,prompt):null;
+      const semanticRepair=semanticReview?.status==='failed';
+
       // One automatic repair attempt prevents a visibly weak first render
       // from becoming the final asset. It never loops indefinitely.
-      if(!regenerate&&finalReview&&finalReview.score<72&&data.promptMode!=='literal'){
+      if(!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
         const repairSeed=autoVariationSeed(nextSeed);
-        const repairPrompt=buildQualityImagePrompt(prompt,{
+        const repairPrompt=semanticRepair?prompt:buildQualityImagePrompt(prompt,{
           style,
           attempt:nextAttempt+1,
           previousPrompt:renderPrompt
-        })+'. Correções obrigatórias: '+finalReview.promptHints.join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
+        })+'. Correções obrigatórias: '+(finalReview?.promptHints||[]).join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
         setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1);
+        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair);
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
@@ -462,8 +467,11 @@ export function GrokImaginePanel(){
         setSeed(nextSeed);
         setAttempt(nextAttempt);
         finalReview=await reviewImageQuality(url).catch(()=>finalReview);
+        if(semanticRepair)semanticReview=await reviewCanonicalImage(url,prompt);
       }
 
+      const semanticWarning=semanticReview?.status==='failed'?'A revisão visual ainda encontrou elementos pouco legíveis ou ausentes.':semanticReview?.status==='unavailable'?'A identidade da cena não pôde ser verificada automaticamente.':'';
+      data.providerWarning=[data.providerWarning,semanticWarning].filter(Boolean).join(' ');
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
       const upscaled=await upscaleImageUrl(url);
@@ -489,6 +497,8 @@ export function GrokImaginePanel(){
           attempt:nextAttempt,
           previousQuality:nextReview?.score??null,
           finalQuality:finalReview?.score??null,
+          semanticReview,
+          semanticRepair:!regenerate&&semanticRepair,
           autoQualityRepair:!regenerate&&nextAttempt>0,
           superResolution:upscaled.upscaled,
           superResolutionProvider:upscaled.upscaled?upscaled.provider:null,

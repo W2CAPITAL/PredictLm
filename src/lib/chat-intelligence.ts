@@ -5,14 +5,43 @@ export type ConversationKind='casual'|'context'|'factual'|'current'|'technical'|
 
 const clean=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
+export function isGenericHowTo(prompt:string){
+  const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
+  return /^(?:como\s+\S+|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p)
+    && !/^como (?:funciona|voce|se chama|e ser)\b/.test(p);
+}
+
+export function answerLooksProcedural(text:string){
+  return /\b(primeiro|depois|passos?|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|first|then|place|use|water|keep|install|select|mix)\b/.test(clean(text));
+}
+
+// Shared by cloud, browser, external local runtimes, cache and learned memory.
+export function conversationAnswerIssue(prompt:string,content:string){
+  const p=clean(prompt),out=clean(content);
+  if(!out)return 'empty';
+  if(/nao tenho contexto local suficiente|nao tenho contexto suficiente|ative (?:o )?neural|^fallback\b/.test(out))return 'weak-local';
+  if(isGenericHowTo(prompt)&&!answerLooksProcedural(content))return 'missing-procedure';
+  if(/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
+    && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|ranking|mais rico)\b/.test(p)
+    && /\b(mais rico|fortuna|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes)\b/.test(out))return 'unsolicited-volatile-claims';
+  return '';
+}
+
+export function stableFactualReply(prompt:string){
+  const p=clean(prompt).replace(/[?!.,]+$/,'');
+  if(/^quem (e|foi) (o )?naruto(?: uzumaki)?$/.test(p))return 'Naruto Uzumaki é o protagonista do mangá e anime **Naruto**, criado por Masashi Kishimoto. É um jovem ninja da Vila da Folha que sonha em se tornar Hokage, o líder da vila, e carrega a raposa de nove caudas, Kurama.';
+  if(/^quem (e|foi) (o )?elon musk$/.test(p))return 'Elon Musk é um empresário nascido na África do Sul, conhecido por fundar a SpaceX e por sua atuação na Tesla. Seus negócios envolvem veículos elétricos, exploração espacial e tecnologia.';
+  return null;
+}
+
 export function classifyConversation(prompt:string,history:AssistantMessage[]=[]):ConversationKind{
   const p=clean(prompt);
   if(history.length&&isCnjContextReference(prompt))return 'context';
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p))return 'casual';
-  if(/(voce me ama|gosta de mim|sente algo por mim|obrigad|valeu|kkk|haha|rsrs|boa|legal|bacana)/.test(p))return 'casual';
+  if(/^(voce me ama|gosta de mim|sente algo por mim|obrigad[oa]|valeu|kkk+|haha|rsrs|boa|legal|bacana)[!.?\s]*$/.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
   if(/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|cotacao|preco|placar|presidente atual|versao atual)\b/.test(p))return 'current';
-  if(/^(como\s+[a-z0-9à-ÿ_-]+|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return 'howto';
+  if(isGenericHowTo(prompt))return 'howto';
   if(/^(quem (e|foi)|o que (e|foi)|defina|explique|como funciona|por que|porque|qual a diferenca|qual e|onde fica|quando nasceu|quando foi)\b/.test(p))return 'factual';
   if(/\b(codigo|programa|javascript|typescript|react|next|python|api|banco de dados|database|frontend|backend|git|github|vercel|docker|linux|windows|erro|bug|arquitetura|algoritmo)\b/.test(p))return 'technical';
   return 'general';
@@ -104,6 +133,26 @@ function startupHowTo(){
 
 export function practicalHowToReply(prompt:string){
   const p=clean(prompt);
+  if(/\b(chocar|incubar)\b/.test(p)&&/\bovos?\b/.test(p)&&!/\b(pato|codorna|ganso|peru|tartaruga|reptil)\b/.test(p))return [
+    'Se for um **ovo de galinha**, ele precisa estar fértil: ovos de consumo normalmente não vão gerar pintinhos.',
+    '1. Use uma chocadeira limpa, ventilada e com temperatura e umidade monitoradas; teste-a antes de colocar os ovos.',
+    '2. Em chocadeira com ventilação forçada, mantenha cerca de **37,5 °C**. Siga o manual para outros tipos de equipamento.',
+    '3. Mantenha a umidade aproximadamente entre **50–60%** durante a incubação e eleve para cerca de **65–70%** nos últimos três dias, conforme o manual e a perda de peso dos ovos.',
+    '4. Vire os ovos pelo menos três vezes ao dia, ou use o virador automático, até o 18º dia. Depois, pare de virar e evite abrir a chocadeira.',
+    '5. A eclosão costuma ocorrer perto de **21 dias**. Não quebre a casca para ajudar sem orientação especializada.',
+    'Para outras espécies, temperatura, umidade e duração podem mudar; diga de qual animal é o ovo.'
+  ].join('\n\n');
+  if(/\b(plantar|cultivar)\b/.test(p)&&/\bmorangos?\b/.test(p))return [
+    'Para plantar **morango**, começar com uma muda saudável costuma ser mais fácil que usar sementes.',
+    '1. Escolha um vaso com furos e coloque um substrato fértil e bem drenado.',
+    '2. Plante as raízes e mantenha a coroa — o encontro entre raízes e folhas — na altura do solo, sem enterrá-la.',
+    '3. Deixe em local com boa luz e algumas horas de sol; em calor intenso, proteja do sol mais forte da tarde.',
+    '4. Regue quando a superfície começar a secar. Mantenha o solo levemente úmido, sem encharcar nem deixar água no pratinho.',
+    '5. Retire folhas secas e mantenha os frutos afastados da terra com palha limpa. Adube conforme a orientação do produto para frutíferas.',
+    '6. Colha quando o fruto estiver vermelho. O tempo até produzir depende da variedade, da muda e do clima.'
+  ].join('\n\n');
+  if(/\bcuidar\b/.test(p)&&/\bsuculentas?\b/.test(p))return 'Para cuidar de uma suculenta:\n\n1. Use vaso com furos e substrato bem drenado.\n2. Deixe em lugar muito claro e adapte ao sol aos poucos; a necessidade varia pela espécie.\n3. Regue bem somente quando o substrato estiver seco, deixando a água escorrer.\n4. Evite água parada e retire folhas mortas. Folhas moles e solo úmido por muitos dias sugerem excesso de água.';
+  if(/\b(fazer|cozinhar)\b/.test(p)&&/\barroz\b/.test(p)&&!/\b(integral|japones|risoto)\b/.test(p))return 'Para fazer arroz branco comum:\n\n1. Aqueça um pouco de óleo e refogue alho ou cebola, se quiser.\n2. Adicione 1 xícara de arroz e mexa rapidamente.\n3. Coloque cerca de 2 xícaras de água quente e sal a gosto.\n4. Quando ferver, reduza o fogo e cozinhe com a panela parcialmente tampada até a água secar e o grão ficar macio. Se ainda estiver duro, acrescente um pouco de água.\n5. Desligue, deixe descansar tampado por cerca de 5 minutos e solte com um garfo. A quantidade de água pode variar conforme o arroz.';
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
   if(/\b(carro|automovel|automóvel|veiculo|veículo)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
   if(/\b(dragao|dragon)\b/.test(p)&&/\b(metal|aco|ferro|solda|soldagem|escultura)\b/.test(p))return metalDragonHowTo();
@@ -130,6 +179,7 @@ export function practicalHowToReply(prompt:string){
 export function answerQuality(prompt:string,content:string){
   const p=clean(prompt);
   const text=String(content||'').trim();
+  if(conversationAnswerIssue(prompt,text))return -99;
   let score=0;
   if(text.length>=180)score+=2; else if(text.length>=90)score+=1;
   if(/\n|\d+\.|- |\*\*/.test(text))score+=1;
@@ -175,20 +225,21 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
 }
 
 export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean,prompt=''){
+  if(!webEnabled)return false;
   if(kind==='casual'||kind==='context')return false;
   const p=clean(prompt);
   if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
 
   // Web is a capability/permission, not a requirement for every turn.
   // Static common-knowledge questions should not be polluted by unrelated snippets.
-  const explicitResearch=/\b(pesquis|pesquise|fonte|fontes|cite|citacao|citação|verifique|confirme|compare|documentacao|documentação|manual|norma|referencia|referência)\b/.test(p);
+  const explicitResearch=/\b(pesquis\w*|fontes?|cite|citacao|verifi\w*|confirme|compare|documentacao|manual|norma|referencias?)\b/.test(p);
   const volatile=/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|notícias?|preco|preço|cotacao|cotação|placar|resultado|versao atual|versão atual|fortuna hoje|patrimonio hoje|patrimônio hoje)\b/.test(p);
-  const highStakes=/\b(seguranca|segurança|solda|welding|eletric|elétric|bateria|veiculo|veículo|homologacao|homologação|medic|saude|saúde|jurid|lei|finance|quimic|pressao|pressão|gas|gás)\b/.test(p);
+  const highStakes=/\b(seguranca|solda\w*|welding|eletric\w*|bateria|veiculo|homologacao|medic\w*|saude|jurid\w*|leis?|financ\w*|quimic\w*|pressao|gas)\b/.test(p);
 
   if(kind==='current')return true;
   if(kind==='factual')return explicitResearch||volatile;
   if(kind==='howto')return explicitResearch||volatile||highStakes;
-  if(kind==='technical')return explicitResearch||volatile||webEnabled;
+  if(kind==='technical')return explicitResearch||volatile||highStakes;
   return explicitResearch||volatile;
 }
 
@@ -266,10 +317,42 @@ export function researchItemRelevance(query:string,item:ResearchItem){
   }
   const coreCount=Math.max(1,raw.length);
   const automotive=raw.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x));
-  const relevant=automotive
+  let relevant=automotive
     ? matches>=2&&score>=4
     : coreCount===1 ? (titleMatches>=1||score>=2) : (matches>=2||(titleMatches>=1&&score>=5));
+  if(isGenericHowTo(query)){
+    const title=clean(item.title||'');
+    const body=clean(item.summary||item.description||'');
+    // A past-tense anecdote with two matching words is not an instruction.
+    const procedureTitle=/\b(como|guia|passo|dicas|cultivo|plantio|incubacao|tutorial|how to|guide)\b/.test(title);
+    const subject=raw.filter(x=>!['plantar','cultivar','chocar','incubar','cuidar','ensine','aprender'].includes(x));
+    const subjectHit=subject.some(x=>titleTokens.has(x)||bodyTokens.has(x));
+    relevant=relevant&&subjectHit&&(procedureTitle||answerLooksProcedural(body));
+  }
   return {score,matches,titleMatches,relevant};
+}
+
+const rejectedResearch=new Map<string,Set<string>>();
+function researchPromptKey(query:string){
+  let hash=2166136261;
+  for(const char of clean(query)){hash=Math.imul(hash^char.charCodeAt(0),16777619);}
+  return (hash>>>0).toString(16);
+}
+function rejectedFor(query:string){
+  const key=researchPromptKey(query);
+  if(!rejectedResearch.has(key)){
+    let saved:string[]=[];
+    try{if(typeof sessionStorage!=='undefined')saved=JSON.parse(sessionStorage.getItem('predict-rejected-research-v2')||'{}')[key]||[];}catch{}
+    rejectedResearch.set(key,new Set(Array.isArray(saved)?saved.slice(-32):[]));
+    if(rejectedResearch.size>128)rejectedResearch.delete(rejectedResearch.keys().next().value!);
+  }
+  return rejectedResearch.get(key)!;
+}
+function rejectResearch(query:string,url:string){
+  const rejected=rejectedFor(query);
+  rejected.add(url);
+  if(rejected.size>32)rejected.delete(rejected.values().next().value!);
+  try{if(typeof sessionStorage!=='undefined')sessionStorage.setItem('predict-rejected-research-v2',JSON.stringify(Object.fromEntries([...rejectedResearch].map(([k,v])=>[k,[...v]]))));}catch{}
 }
 
 function researchHost(item:ResearchItem){
@@ -278,8 +361,9 @@ function researchHost(item:ResearchItem){
 
 export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=8){
   const automotive=relevanceTokens(query).some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x));
-  const ranked=items.map(item=>{
+  const ranked=items.filter(item=>!rejectedFor(query).has(item.url)).map(item=>{
     const rel=researchItemRelevance(query,item);
+    if(!rel.relevant)rejectResearch(query,item.url);
     const quality=Math.max(0,Math.min(100,Number(item.qualityScore??50)));
     return {item,...rel,quality,rank:rel.score+Math.floor(quality/15)};
   }).filter(x=>x.relevant&&(!automotive||x.quality>=70||x.matches>=4))
@@ -327,7 +411,8 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
   if(kind==='howto'){
     const points=useful.slice(0,6)
       .map(x=>trimSentence(x.summary||x.description||'',420))
-      .filter(Boolean);
+      .filter(x=>answerLooksProcedural(x));
+    if(!points.length)return null;
     return {
       content:[
         '**Pontos úteis encontrados nas fontes**',

@@ -817,3 +817,14 @@ Busca automática é reservada a:
 Perguntas factuais estáticas não devem receber riqueza atual, ranking, cargo atual, números de mercado ou datas voláteis não pedidos. Perguntas `como ...` devem responder com procedimento, não com definição enciclopédica nem snippets homônimos.
 
 Para turnos simples, o pacote de prompt cloud deve ser compacto: remover Centum/PARALLAX/Human Adversarial/Digital Brain/Deep Loop quando não agregam valor. Uma IA forte com prompt excessivamente carregado pode responder pior do que um modelo pequeno com instrução limpa.
+
+
+## Chat, canonical media and animal vision (2026-09-24)
+
+- Apply the shared public-answer gate to every runtime, recalled memory and cached answer. Reject weak local messages and non-procedural how-to responses. Never memorize rejected answers.
+- Treat Web as permission. Search for explicit research, volatile facts and sensitive procedures; ordinary planting/cooking questions do not require retrieval. Reject anecdotes sharing a keyword with a procedure; maintain bounded per-prompt rejected-source memory.
+- Naruto/Kurama vs Sasuke/Perfect Susanoo: preserve full avatars, distinct sides, nine tails, purple armor and wings. Include Valley of the End statues only when requested. Keep mandatory identity instructions through prompt compilation. Use separate subject/setting reference queries.
+- Distinguish technical pixel review from semantic model review. Semantic review may fail or be unavailable; neither implies verified identity. Permit one automatic repair, preserve literal subject and record the outcome.
+- Visão analyzes uploaded animal photos using a pinned quantized MobileNet in a dedicated one-thread CPU worker. Download only on request; support cancellation and model cache. Preserve top-five scores, non-animal classes and inconclusive results. This is whole-image classification, not detection, diagnosis, proof of safety or franchise identity recognition.
+- Three optional inference adapters are in `services/animal-vision/`: HOG/SVM, PyTorch ResNet, Keras ResNet. Show unavailable until real trusted weights load. Do not claim the source README accuracy as app accuracy. Never deserialize HTTP model uploads or infer 150 supported classes from the rt75272 README (its checked-in current mapping has 15).
+- Browser analysis keeps the photo on the device. Server analysis is an explicit user choice. No automatic photo persistence or Supabase upload. See `services/animal-vision/README.md` for model provenance, compatibility and deployment setup.

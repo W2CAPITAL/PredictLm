@@ -1,5 +1,7 @@
 'use client';
 
+import { conversationAnswerIssue } from './chat-intelligence';
+
 export type ExperienceSource='local-model'|'webllm'|'native-model'|'build'|'feedback'|'instruction';
 
 export interface AdaptiveExperience{
@@ -109,6 +111,7 @@ export function adaptiveInstructionContext(limit=8){
 
 export function captureAdaptiveExperience(prompt:string,answer:string,source:ExperienceSource='local-model'){
   if(typeof window==='undefined'||!safeToStore(prompt)||!safeToStore(answer))return;
+  if(source!=='instruction'&&conversationAnswerIssue(prompt,answer))return;
   const p=String(prompt).trim().slice(0,1200);
   const a=String(answer).trim().slice(0,2200);
   if(a.length<40)return;
@@ -139,6 +142,7 @@ export function adaptiveRecall(query:string,limit=4){
   const q=terms(query);
   const now=Date.now();
   return load()
+    .filter(row=>row.source==='instruction'||(!conversationAnswerIssue(row.prompt,row.answer)&&!conversationAnswerIssue(query,row.answer)))
     .map(row=>{
       const ageDays=Math.max(0,(now-row.updatedAt)/86400000);
       const trusted=row.source==='feedback'||row.confidence>=.68||row.uses>=3;

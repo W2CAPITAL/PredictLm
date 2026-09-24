@@ -330,3 +330,10 @@ The Dossier Second Brain does not replace the normal Chat answer. It assembles e
 ## Office Artifacts skill
 
 `skills/office-artifacts` adds format-specific gates for real DOCX/PPTX/PDF/XLSX generation and validation, with source/license boundaries for the requested document, presentation, PDF, spreadsheet and UI repositories.
+
+
+### Animal vision and response quality
+
+Open **Visão** in the sidebar (or **+ → Identificar animal** in Chat). The browser runs a small quantized image classifier on demand without a paid API. Five model scores, uncertain/non-animal outcomes, upload validation and cancellation are supported. The three optional upstream-compatible adapters and their real weight requirements are documented in `services/animal-vision/README.md`. Image classification does not increase the text model’s weights or validate fictional characters.
+
+`npm test` exercises the uploaded Chat/Imagine acceptance cases and vision contracts. `npm run build` validates production compilation.

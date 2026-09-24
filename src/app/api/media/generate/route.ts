@@ -1,3 +1,4 @@
+import { isNarutoKuramaVsSasukeSusanooPrompt } from '@/lib/media/canonical-matchup';
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
@@ -87,7 +88,7 @@ export async function POST(req:Request){
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
       : 'auto') as ImagePromptMode;
-    const effectivePromptMode=chooseImagePromptMode(requestedPromptMode,shouldForceLiteralMode(sourcePrompt));
+    const effectivePromptMode=isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'literal':chooseImagePromptMode(requestedPromptMode,shouldForceLiteralMode(sourcePrompt));
     const userNegative=compactText(String(body?.negativePrompt||'').trim(),500);
     const negativePrompt=buildDefaultNegativePrompt(sourcePrompt,userNegative);
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
@@ -97,7 +98,7 @@ export async function POST(req:Request){
     const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
     const needsStrongIdentity=shouldForceLiteralMode(sourcePrompt);
-    const groundedPrompt=effectivePromptMode==='literal'
+    const compiledPrompt=effectivePromptMode==='literal'
       ? buildLiteralImagePrompt({
           originalPrompt:sourcePrompt,
           style,
@@ -116,6 +117,9 @@ export async function POST(req:Request){
           referenceEvidence:evidencePrompt
         })+'\n\nNEGATIVE CONSTRAINTS: '+negativePrompt+'.';
 
+    const correction=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.':'';
+    const groundedPrompt=compiledPrompt+(correction?'\n\nREPAIR: '+correction:'');
+
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)
       .map((x:any)=>inlineImageFromDataUrl(String(x||'')))
@@ -131,7 +135,7 @@ export async function POST(req:Request){
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
     const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
     const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
-    const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1').trim().replace(/\/$/,'');
+    const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1beta').trim().replace(/\/$/,'');
     const geminiModel=String(process.env.GEMINI_IMAGE_MODEL||'gemini-3.1-flash-image').trim();
     const nanoKey=String(process.env.NANO_BANANA_API_KEY||'').trim();
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
@@ -164,7 +168,7 @@ export async function POST(req:Request){
               {text:groundedPrompt}
             ]
           }],
-          generationConfig:{responseFormat:{image:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}}
+          generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}
         }:{
           model:provider.model,
           prompt:groundedPrompt,
@@ -197,7 +201,7 @@ export async function POST(req:Request){
         const mime=inline?.inlineData?.mimeType||inline?.inline_data?.mime_type||'image/png';
         const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
-          const referenceImagesPassed=provider.gemini?inlineReferences.length:(mediaReferenceField?configuredReferenceValues.length:0);
+          const referenceImagesPassed=provider.gemini?inlineReferences.length:(provider.id==='configured-image'&&mediaReferenceField?configuredReferenceValues.length:0);
           const fidelityWarning=needsStrongIdentity
             ? referencePlan.references.length===0
               ? 'Pedido de alta fidelidade sem referência visual recuperada; a identidade depende do conhecimento do modelo.'

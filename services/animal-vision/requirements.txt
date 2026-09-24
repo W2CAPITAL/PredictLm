@@ -1,0 +1,4 @@
+Flask>=3.1,<4
+Pillow>=11.3,<13
+numpy>=1.26,<3
+waitress>=3.0,<4

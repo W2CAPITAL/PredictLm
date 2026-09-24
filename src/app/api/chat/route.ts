@@ -1,3 +1,4 @@
+import { conversationAnswerIssue } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -443,8 +444,8 @@ export async function POST(req:Request){
         {label:'Lições globais aprovadas',text:simpleTurn?'':globalLessons,priority:7},
         {label:'Centum Decision Gate',text:simpleTurn?'':centum,priority:10},
         {label:'Third Brain PARALLAX',text:simpleTurn?'':parallax,priority:10},
-        {label:'PredictLM Master',text:masterContext,priority:10},
-        {label:'Human Presence',text:humanPresence,priority:10},
+        {label:'PredictLM Master',text:simpleTurn?'':masterContext,priority:10},
+        {label:'Human Presence',text:simpleTurn?'':humanPresence,priority:10},
         {label:'Human Adversarial Lens',text:simpleTurn?'':humanLens,priority:9},
         {label:'Digital Brain control layer',text:simpleTurn?'':brainContext,priority:10},
         {label:'Deep Loop',text:simpleTurn?'':deepLoop,priority:9},
@@ -458,14 +459,21 @@ export async function POST(req:Request){
     });
     const history=packed.messages as Msg[];
     const cacheKey=crypto.createHash('sha256').update(JSON.stringify({
+      version:'conversation-gate-v2',
       prompt:normalize(prompt),
+      language,
+      context:packed.context,
       history:history.slice(-4).map(x=>[x.role,normalize(x.content).slice(0,1200)]),
       deep,
       knowledgeVersion:stats.version,
       providers:configured.map(x=>x.name+':'+x.model)
     })).digest('hex');
     const hit=cache.get(cacheKey);
-    if(hit&&hit.expires>Date.now())return Response.json({...hit.value,cache:'hit'});
+    if(hit&&hit.expires>Date.now()){
+      const cachedGate=publicAnswerGate(String(hit.value.content||''),language,prompt);
+      if(cachedGate.ok&&!simpleAnswerIssue(prompt,cachedGate.content))return Response.json({...hit.value,content:cachedGate.content,cache:'hit'},{headers:{'Cache-Control':'no-store'}});
+      cache.delete(cacheKey);
+    }
 
     const system=[
       'Você é o PredictLM. Em público, converse como uma inteligência geral atenta, natural e específica ao contexto; não como um painel operacional.',
@@ -497,7 +505,7 @@ export async function POST(req:Request){
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         const content=gate.content;
-        const simpleIssue=simpleTurn?simpleAnswerIssue(prompt,content):'';
+        const simpleIssue=conversationAnswerIssue(prompt,content)||(simpleTurn?simpleAnswerIssue(prompt,content):'');
         if(simpleIssue){errors.push(provider.name+' rejected: '+simpleIssue);continue;}
         const value={
           content,

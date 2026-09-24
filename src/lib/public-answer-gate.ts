@@ -1,6 +1,7 @@
 import type { ConversationLanguage } from './language-policy';
 import { answerMatchesConversationLanguage } from './language-policy';
 import { looksLikeOperationalMonologue, operationalDisclosureRequested } from './human-presence';
+import { conversationAnswerIssue } from './chat-intelligence';
 
 const REASONING_PATTERNS=[
   /<think[\s>]/i,
@@ -79,5 +80,7 @@ export function publicAnswerGate(text:string,language:ConversationLanguage,promp
   if(!operationalDisclosureRequested(prompt)&&looksLikeOperationalMonologue(sanitized))return {ok:false,content:'',reason:'operational-monologue'};
   if(!answerMatchesConversationLanguage(sanitized,language))return {ok:false,content:'',reason:'wrong-language'};
   if(sanitized.length<2)return {ok:false,content:'',reason:'empty'};
+  const issue=conversationAnswerIssue(prompt,sanitized);
+  if(issue)return {ok:false,content:'',reason:issue};
   return {ok:true,content:sanitized,reason:'ok'};
 }

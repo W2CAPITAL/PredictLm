@@ -6,3 +6,7 @@ dist/
 training/corpus.jsonl
 reports/training/
 training/out/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+services/animal-vision/models/

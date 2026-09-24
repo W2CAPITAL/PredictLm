@@ -1,3 +1,4 @@
+import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
 import { compactText } from '@/lib/token-budget';
 import { buildSpecificNegativePrompt } from '@/lib/media/media-fidelity';
 
@@ -81,7 +82,9 @@ export function buildLiteralImagePrompt(input:{
 }){
   const original=compactText(String(input.originalPrompt||'').trim(),700);
   const style=String(input.style||'').trim();
-  const negative=compactText(String(input.negativePrompt||'').trim(),520);
+  const negative=compactText(String(input.negativePrompt||'').trim(),1500);
+  const matchup=canonicalMatchupLock(input.originalPrompt);
+  if(matchup)return [original,matchup,'STYLE: '+(style||'Anime')+'.',input.referenceEvidence||'',negative?'NEGATIVE CONSTRAINTS: '+negative:'','Preserve any explicit user layout/style instruction. Do not introduce unrequested binary, drones, circuits, data motifs or new powers.'].filter(Boolean).join('\n\n');
   return compactText([
     original,
     style?('STYLE: '+style+'. Keep the user request literal; style may change rendering only, never subject identity or requested action.'):'',
@@ -89,7 +92,7 @@ export function buildLiteralImagePrompt(input:{
     input.referenceEvidence||'',
     negative?('NEGATIVE CONSTRAINTS: '+negative+'.'):'',
     'STRICT LITERAL MODE: do not invent AI/binary/circuit/data motifs, extra props, new costumes, new powers, new characters or a different setting unless the user explicitly requested them. Do not reinterpret named subjects into generic archetypes.'
-  ].filter(Boolean).join('\n\n'),1500);
+  ].filter(Boolean).join('\n\n'),4500);
 }
 
 export function chooseImagePromptMode(requested:ImagePromptMode,specificVisualPrompt:boolean):Exclude<ImagePromptMode,'auto'>{
