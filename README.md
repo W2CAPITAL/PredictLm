@@ -230,3 +230,37 @@ OPENROUTER_MODEL=
 ```
 
 The generic `AI_BASE_URL / AI_API_KEY / AI_MODEL` adapter remains supported.
+
+
+## Token Budget Engine
+
+PredictLM now budgets context before every local/cloud inference path.
+
+- recent history is selected by token budget rather than a fixed message count;
+- repeated blocks are deduplicated;
+- GitHub Knowledge/skills use top-k retrieval;
+- Build snapshots are compacted before neural review;
+- image/video prompts are compiled into a bounded visual brief;
+- responses can show the estimated percentage of redundant context removed.
+
+The default path is deterministic and has no extra model/download. LLMLingua-2-style semantic compression remains an optional future acceleration because an extra TinyBERT/MobileBERT pass can be counterproductive on weak machines.
+
+## Local Runtime Router
+
+The model menu can opt into local runtimes already running on the user's device:
+
+```
+Token Saver
+  → Ollama / local OpenAI API / llamafile-NanoMind / GenieX / LowRAM
+  → Cloud Cascade (optional)
+  → Browser Qwen
+  → Knowledge fallback
+```
+
+Auto-probing is limited to loopback endpoints and starts only after opt-in. Hosted Vercel cannot reach a user's localhost, so the client performs the local probe.
+
+Ollama can also be configured server-side for a local/self-hosted PredictLM instance with `OLLAMA_BASE_URL` and `OLLAMA_MODEL`.
+
+## Media prompt budgeting
+
+Imagine/Video does not forward the full conversation to image/video providers. The visual request is compiled into subject, intent, style, composition, constraints and continuity/review hints, then capped before provider submission.
