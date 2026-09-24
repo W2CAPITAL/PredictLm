@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.17.0"
+  version: "1.18.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -568,3 +568,18 @@ Skills vinculadas:
 - `../office-artifacts/SKILL.md` — DOCX/PPTX/PDF/XLSX e padrões visuais.
 
 Regra de dossiê: Dossier Brain é segundo cérebro de fatos/evidências/artefatos. A resposta final continua pertencendo ao Predict Auto.
+
+
+## SaaS Builder + Media Routing v1.18
+
+Build:
+- carregar `../saas-builder-fabric/SKILL.md` para SaaS/CRM/ERP/helpdesk/workspaces;
+- exigir actors/tenant/RBAC/domain/persistence antes de chamar um app complexo de pronto;
+- fontes permissivas de SaaS entram no knowledge registry; fontes copyleft/mistas ficam reference-only.
+
+Media:
+- Nano Banana é prioridade de imagem quando configurado;
+- imagem cai para provider configurado e depois fallback público;
+- vídeo usa Auto generativo (Veo/Seedance/Sora) quando qualquer API estiver configurada;
+- motion por keyframes/imagens é fallback explícito e nunca é apresentado como vídeo generativo neural;
+- o repo `higgsfield-ai/higgsfield` é referência de GPU/training orchestration, não API de vídeo.
