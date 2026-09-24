@@ -176,7 +176,7 @@ async function generateOpenAI(
   messages:{role:string;content:string}[],
   deep:boolean
 ){
-  const model=runtime.id==='freellmapi'?(deep?'auto:smart':'auto:fast'):(runtime.model||'local');
+  const model=runtime.id==='freellmapi'?'auto':(runtime.model||'local');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+runtimeAuth(runtime)},
