@@ -32,7 +32,8 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
       'Design the server/API boundary, persistence model and validation when justified.',
       'If this is SaaS/multi-user, make tenant isolation, invitations, RBAC, audit trail and ownership explicit.',
       'Create a database/schema plan and seed data when persistence is required.',
-      'Provide .env.example, setup commands and a production-ready packaging path.'
+      'Provide .env.example, setup commands and a production-ready packaging path.',
+      'For SaaS/CRM/ERP/helpdesk, model tenant/workspace boundaries, roles/permissions, audit trail, record search/filter/sort/pagination and background work instead of stopping at decorative dashboard cards.'
     ],
     'setup-repo':[
       'Set up '+repo+' as a real development project.',
@@ -71,6 +72,7 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
   const requirements=[...common,...extra[preset]];
   const acceptance=[
     'The requested primary workflow works end-to-end.',
+    'For multi-user SaaS, tenant isolation and RBAC are explicit and testable.',
     'For multi-user SaaS, cross-tenant access is prevented and role boundaries are represented in the architecture/code.',
     'Visible controls are functional; no fake integrations or placeholder success states.',
     'Invalid/loading/empty/error states are handled where relevant.',
