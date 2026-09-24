@@ -35,6 +35,7 @@ let worker:Worker|null=null;
 let loadedTier:NeuralTier|null=null;
 let loadedBackend:'webgpu'|'wasm'|null=null;
 let loadedModelId:string|null=null;
+let loadingTier:NeuralTier|null=null;
 let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
@@ -170,6 +171,9 @@ export async function loadNeuralModel(
   onProgress?:(p:{progress:number|null;status:string})=>void,
   options?:{persistPreference?:boolean}
 ){
+  if(loadedTier===tier)return;
+  if(loadingTier)throw new Error('Já existe um carregamento neural em andamento ('+loadingTier+').');
+  loadingTier=tier;
   const w=ensureWorker();
   const caps=browserCapabilities();
 
@@ -201,6 +205,7 @@ export async function loadNeuralModel(
       settled=true;
       w.removeEventListener('message',onMessage);
       lastNeuralError='O carregamento local excedeu 8 minutos.';
+      loadingTier=null;
       reject(new Error(lastNeuralError));
     },8*60*1000);
 
@@ -209,6 +214,7 @@ export async function loadNeuralModel(
       settled=true;
       window.clearTimeout(timeout);
       w.removeEventListener('message',onMessage);
+      loadingTier=null;
       fn();
     };
 
@@ -264,9 +270,19 @@ export async function loadNeuralModel(
   });
 }
 
+export function neuralAutoWarmPolicy(){
+  if(typeof navigator==='undefined')return {allowed:false,reason:'server'};
+  const caps=browserCapabilities();
+  const connection=(navigator as any).connection;
+  if(connection?.saveData)return {allowed:false,reason:'save-data',tier:'lite' as NeuralTier};
+  if(caps.memory>0&&caps.memory<2)return {allowed:false,reason:'very-low-memory',tier:'lite' as NeuralTier};
+  if(caps.cores>0&&caps.cores<2)return {allowed:false,reason:'single-core',tier:'lite' as NeuralTier};
+  return {allowed:true,reason:'idle-worker',tier:'lite' as NeuralTier};
+}
+
 export function neuralStatus(){
   const profile=typeof window!=='undefined'?readNeuralProfile():null;
-  return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,modelId:loadedModelId||profile?.modelId||null,lastError:lastNeuralError||null,profile};
+  return {loaded:!!loadedTier,tier:loadedTier,backend:loadedBackend,modelId:loadedModelId||profile?.modelId||null,loadingTier,lastError:lastNeuralError||null,profile};
 }
 
 export function unloadNeuralModel(options?:{keepPreference?:boolean}){
@@ -277,6 +293,7 @@ export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   loadedTier=null;
   loadedBackend=null;
   loadedModelId=null;
+  loadingTier=null;
   lastNeuralError='';
   if(!options?.keepPreference)saveNeuralPreference(null);
   for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
