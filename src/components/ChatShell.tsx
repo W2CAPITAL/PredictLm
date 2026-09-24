@@ -457,7 +457,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(s.localRuntimeEnabled){
         setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
         try{
-          const localReply=await answerViaLocalRuntime(prompt,messages,{deep:s.deepThink,preferred:'auto',language,researchContext});
+          const localReply=await answerViaLocalRuntime(prompt,messages,{deep:s.deepThink,preferred:'auto',language,researchContext,signal:turnController.signal});
           const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
           if(relevant){
             setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
