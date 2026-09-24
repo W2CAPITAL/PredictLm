@@ -352,6 +352,7 @@ export function ChatShell({onOpenLegal}:Props){
                 cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
                 'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
                 'Provider: '+String(cloudData.provider||'server'),
+                ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
                 'Gate final preserva fallback local se o cascade falhar'
               ],
               status:'done'
@@ -401,6 +402,7 @@ export function ChatShell({onOpenLegal}:Props){
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
         ...(currentNeural.loaded?['Modelo local: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
         ...(s.deepThink&&currentNeural.loaded&&neuralRelevant?['Deep executou duas passagens: FORGE → AEGIS']:[]),
+        ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
         'Gate final verificou relevância ao assunto principal'
       ];
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
