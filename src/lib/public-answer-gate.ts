@@ -2,13 +2,13 @@ import type { ConversationLanguage } from './language-policy';
 import { answerMatchesConversationLanguage } from './language-policy';
 
 const REASONING_PATTERNS=[
-  /<think[\\s>]/i,
-  /<\\/think>/i,
+  /<think[\s>]/i,
+  /<\/think>/i,
   /here'?s (?:a|the) thinking process/i,
   /(?:my|the) reasoning process/i,
   /chain of thought/i,
   /step[- ]by[- ]step reasoning/i,
-  /pass\\s*\\d+\\s*:/i,
+  /pass\s*\d+\s*:/i,
   /actually,? let me re[- ]?examine/i,
   /i need to (?:be careful|check|analy[sz]e|answer|consider)/i,
   /the policy says/i,
@@ -17,11 +17,11 @@ const REASONING_PATTERNS=[
   /let me formulate the answer/i,
   /i should answer/i,
   /i'll answer/i,
-  /analysis\\s*:/i
+  /analysis\s*:/i
 ];
 
 const INTERNAL_RUNTIME_PATTERNS=[
-  /^\\s*(?:fallback|engine|provider|route|router|skill|council|forge|aegis|parallax|prompt os|token saver|knowledge fallback)\\s*[:·-]/im,
+  /^\s*(?:fallback|engine|provider|route|router|skill|council|forge|aegis|parallax|prompt os|token saver|knowledge fallback)\s*[:·-]/im,
   /(?:provider mesh|fallback local|knowledge fallback|runtime local).*?(?:respondeu|falhou|indispon[ií]vel)/i
 ];
 
@@ -37,18 +37,18 @@ export function hasInternalRuntimeLeak(text:string){
 
 export function sanitizePublicAnswer(raw:string){
   let value=String(raw||'')
-    .replace(/<thinking>[\\s\\S]*?<\\/thinking>/gi,'')
-    .replace(/<think>[\\s\\S]*?<\\/think>/gi,'')
-    .replace(/```(?:thinking|analysis)[\\s\\S]*?```/gi,'')
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi,'')
+    .replace(/<think>[\s\S]*?<\/think>/gi,'')
+    .replace(/```(?:thinking|analysis)[\s\S]*?```/gi,'')
     .trim();
 
   if(hasInternalReasoningLeak(value))return '';
 
   value=value
-    .split(/\\r?\\n/)
-    .filter(line=>!/^\\s*(?:engine|provider|fallback|skill|route|router|trace|council|forge|aegis|parallax)\\s*[:·-]/i.test(line))
-    .join('\\n')
-    .replace(/\\n{3,}/g,'\\n\\n')
+    .split(/\r?\n/)
+    .filter(line=>!/^\s*(?:engine|provider|fallback|skill|route|router|trace|council|forge|aegis|parallax)\s*[:·-]/i.test(line))
+    .join('\n')
+    .replace(/\n{3,}/g,'\n\n')
     .trim();
 
   return value;
