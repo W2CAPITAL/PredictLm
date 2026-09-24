@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T08:48:01.735Z",
-  "knowledgeVersion": "bc4f2bad808b4e1a",
-  "chunkCount": 1188,
+  "generatedAt": "2026-09-24T09:29:42.854Z",
+  "knowledgeVersion": "81c033b88b21c299",
+  "chunkCount": 1662,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -316,6 +316,177 @@
       "commit": "6545850fbf8df298df73d81f3e8cba638787c8bd",
       "files": 1,
       "chunks": 37,
+      "error": null
+    },
+    {
+      "repo": "AIGeniusInstitute/deepthink",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "b606829f3ee73b262f80deace1e326099fd029b2",
+      "files": 1,
+      "chunks": 117,
+      "error": null
+    },
+    {
+      "repo": "qxresearch/qxresearch-event-1",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "5132ade5efc61557fb6a4c9beedc8a13cbb5612d",
+      "files": 1,
+      "chunks": 10,
+      "error": null
+    },
+    {
+      "repo": "microsoft/ML-For-Beginners",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "de2d4e12236445198213a0711855e348e7253cd4",
+      "files": 1,
+      "chunks": 38,
+      "error": null
+    },
+    {
+      "repo": "lutzroeder/netron",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "fd2ab844ae559f09ce9b4b9f6d6cf438b853d5f7",
+      "files": 1,
+      "chunks": 5,
+      "error": null
+    },
+    {
+      "repo": "ludwig-ai/ludwig",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "8afd6b64c018377052c5671af61fecf99c57feec",
+      "files": 1,
+      "chunks": 23,
+      "error": null
+    },
+    {
+      "repo": "clearml/clearml",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "6201e091cfd607ebf4d0f34604425e6e70c8a69d",
+      "files": 1,
+      "chunks": 19,
+      "error": null
+    },
+    {
+      "repo": "ddd-by-examples/library-php",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "805e09c2147f154dead252e9d6a4cf202602a768",
+      "files": 1,
+      "chunks": 7,
+      "error": null
+    },
+    {
+      "repo": "MaxiDonkey/DelphiGemini",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "2f3c311fa82bdeafa240f393d8b151cdaa274eab",
+      "files": 32,
+      "chunks": 260,
+      "error": null
+    },
+    {
+      "repo": "preangelleo/gemini_deep_research",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "eRuaro/open-gemini-deep-research",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "MaxiDonkey/file2knowledge",
+      "mode": "reference-only",
+      "license": "readme-MIT-unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "daryllxd/lifelong-learning",
+      "mode": "reference-only",
+      "license": "Unlicense",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "GITenberg/The-Prince_1232",
+      "mode": "reference-only",
+      "license": "Project-Gutenberg",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "w4rlock999/ThePrinceGPT",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "devxhub/awesome-book-collection",
+      "mode": "quarantine",
+      "license": "container-MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "eyeke04/Books",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Dioque/Livros",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "WatVis/DeepThInk",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "felladrin/awesome-ai-web-search",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
       "error": null
     }
   ]
