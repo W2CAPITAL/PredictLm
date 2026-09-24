@@ -37,3 +37,7 @@
 
 ## Principle
 Use science to inform structure and simulation. Use repositories to learn software patterns. Neither category is evidence that the resulting system is conscious.
+
+
+## Connectome memory boundary
+O mapa conectômico da Drosophila é usado como referência estrutural. Ele não fornece um dataset recuperável das memórias individuais do animal. O PredictLM não deve alegar que importou lembranças da mosca.
