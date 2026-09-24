@@ -117,8 +117,12 @@ export async function POST(req:Request){
           referenceEvidence:evidencePrompt
         })+'\n\nNEGATIVE CONSTRAINTS: '+negativePrompt+'.';
 
-    const correction=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.':'';
-    const groundedPrompt=compiledPrompt+(correction?'\n\nREPAIR: '+correction:'');
+    const genericRepair=compactText(String(body?.semanticRepairHints||'').trim(),520);
+    const canonicalRepair=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)
+      ? 'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.'
+      : '';
+    const correction=genericRepair||canonicalRepair;
+    const groundedPrompt=compiledPrompt+(correction?'\n\nSEMANTIC REPAIR — correct the visible mismatch without changing the requested subject: '+correction:'');
 
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)
