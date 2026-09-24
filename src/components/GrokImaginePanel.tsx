@@ -168,21 +168,29 @@ export function GrokImaginePanel(){
     setDirectorBrief(brief);
 
     if(kind==='video'){
-      return buildGenerativeVideoPrompt({
-        prompt,
-        style,
-        aspect:ratio.label,
-        durationMs:duration,
-        directorBrief:brief,
-        researchContext:research
-      });
+      return {
+        prompt:buildGenerativeVideoPrompt({
+          prompt,
+          style,
+          aspect:ratio.label,
+          durationMs:duration,
+          directorBrief:brief,
+          researchContext:research
+        }),
+        brief,
+        research
+      };
     }
 
-    return [
-      buildQualityImagePrompt(prompt,{style,attempt}),
-      brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
-      research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
-    ].filter(Boolean).join('\n\n');
+    return {
+      prompt:[
+        buildQualityImagePrompt(prompt,{style,attempt}),
+        brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
+        research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
+      ].filter(Boolean).join('\n\n'),
+      brief,
+      research
+    };
   }
 
   async function saveLibrary(input:{
@@ -283,7 +291,7 @@ export function GrokImaginePanel(){
       }
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
-      const preparedPrompt=await prepareMediaPrompt('image');
+      const prepared=await prepareMediaPrompt('image');
       const basePrompt=regenerate
         ? [
             buildQualityImagePrompt(prompt,{
@@ -291,10 +299,10 @@ export function GrokImaginePanel(){
               attempt:nextAttempt,
               previousPrompt:generatedPrompt||undefined
             }),
-            directorBrief?('MEDIA DIRECTOR BRIEF: '+directorBrief):'',
-            researchContext?('RESEARCH-GROUNDED VISUAL NOTES: '+researchContext):''
+            prepared.brief?('MEDIA DIRECTOR BRIEF: '+prepared.brief):'',
+            prepared.research?('RESEARCH-GROUNDED VISUAL NOTES: '+prepared.research):''
           ].filter(Boolean).join('\n\n')
-        : preparedPrompt;
+        : prepared.prompt;
       const reviewHints=nextReview?.promptHints?.length
         ? '. Correções objetivas da geração anterior: '+nextReview.promptHints.join('; ')+'.'
         : '';
@@ -369,8 +377,8 @@ export function GrokImaginePanel(){
           autoVariation:true,
           deepThink,
           deepResearch,
-          researchGrounded:!!researchContext,
-          directorBrief:directorBrief||null
+          researchGrounded:!!prepared.research,
+          directorBrief:prepared.brief||null
         }
       });
       return url;
@@ -523,7 +531,8 @@ export function GrokImaginePanel(){
     setError('');
     setRemoteVideoUrl('');
     try{
-      const videoPrompt=await prepareMediaPrompt('video');
+      const prepared=await prepareMediaPrompt('video');
+      const videoPrompt=prepared.prompt;
       const currentImage=generated&&generatedRequest===prompt?generated:undefined;
 
       let referenceImages:string[]=[];
@@ -601,8 +610,8 @@ export function GrokImaginePanel(){
           referenceCount:referenceImages.length,
           deepThink,
           deepResearch,
-          researchGrounded:!!researchContext,
-          directorBrief:directorBrief||null
+          researchGrounded:!!prepared.research,
+          directorBrief:prepared.brief||null
         }
       });
       return videoUrl;
@@ -638,8 +647,8 @@ export function GrokImaginePanel(){
     setLoading(true);
     setVideoStage('Planejando 3 cenas');
     try{
-      const localVideoPrompt=await prepareMediaPrompt('video');
-      const frames=buildStoryboardFrames(localVideoPrompt,style,ratio.label);
+      const prepared=await prepareMediaPrompt('video');
+      const frames=buildStoryboardFrames(prepared.prompt,style,ratio.label);
       const urls:string[]=[];
       let firstProvider='';
       for(let i=0;i<frames.length;i++){
