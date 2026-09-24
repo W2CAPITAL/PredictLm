@@ -9,6 +9,7 @@ import { resolveConversationLanguage, languageSystemInstruction, type Conversati
 import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
 import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
+import { neuroCognitiveContext } from '@/lib/neurocore';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -186,6 +187,7 @@ export async function POST(req:Request){
     const body=await req.json();
     const prompt=String(body?.prompt||'').trim();
     const researchContext=String(body?.researchContext||'').trim().slice(0,16000);
+    const neuroContext=String(body?.neuroContext||'').trim().slice(0,3600)||neuroCognitiveContext(prompt);
     if(!prompt)return Response.json({error:'prompt is required'},{status:400});
 
     const configured=providers();
@@ -226,6 +228,7 @@ export async function POST(req:Request){
         {label:'Centum Decision Gate',text:centum,priority:10},
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
         {label:'Human Adversarial Lens',text:humanLens,priority:9},
+        {label:'NeuroCore control layer',text:neuroContext,priority:9},
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
