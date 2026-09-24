@@ -422,6 +422,70 @@
         "npu"
       ],
       "reason": "Only relevant on supported Qualcomm Snapdragon hardware; runtime reference, not universal web path."
+    },
+    {
+      "repo": "Minhajul-Mahib/nanomind",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "low-ram",
+        "openai-api",
+        "gguf",
+        "local-inference"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "techjarves/Uncensored-Local-AI-Multiplatform",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "local-api",
+        "gguf",
+        "mobile"
+      ],
+      "reason": "README claims MIT but no LICENSE file was verified; unrestricted-model positioning is reference-only."
+    },
+    {
+      "repo": "DeVenLucaz/llamdrop",
+      "branch": "main",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "hardware-detection",
+        "ollama",
+        "gguf",
+        "context-trimming",
+        "low-ram"
+      ],
+      "reason": "Useful architecture patterns, but GPL code is not copied into the product index."
+    },
+    {
+      "repo": "Quincunx33/LowRAM-AI-Compiler",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "memory-budget",
+        "gguf",
+        "mmap",
+        "streaming",
+        "low-ram"
+      ],
+      "reason": "README states Apache-2.0 but no repository LICENSE file was verified; high-level reference only."
     }
   ]
 }
