@@ -18,6 +18,8 @@ import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '
 import { isTutorRequest } from '@/lib/tutor-mode';
 import { isGlobalLearningInstruction } from '@/lib/global-learning';
 import { answerViaLocalRuntime, probeLocalRuntimes, setLocalRuntimeCredential } from '@/lib/local-runtime-router';
+import { resolveConversationLanguage } from '@/lib/language-policy';
+import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
@@ -120,10 +122,11 @@ export function ChatShell({onOpenLegal}:Props){
     const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
+    const language=resolveConversationLanguage(prompt,history);
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
-    const needsWeb=shouldSearchConversation(kind,s.webEnabled);
+    const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
 
     setInput('');
     setScreen('chat');
@@ -364,9 +367,7 @@ export function ChatShell({onOpenLegal}:Props){
       const web=needsWeb?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
-      const augmented=web.text
-        ? prompt+'\n\nFontes recuperadas. Responda à pergunta diretamente e use apenas o que for relevante; não liste links sem necessidade:\n'+web.text
-        : prompt;
+      const researchContext=web.text;
       const fallbackText=direct||research?.content||undefined;
 
       if(kind!=='casual'&&kind!=='context'){
@@ -375,13 +376,14 @@ export function ChatShell({onOpenLegal}:Props){
           const cloudResponse=await fetch('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
+            body:JSON.stringify({prompt,researchContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
           });
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
-            const cloudText=String(cloudData.content).trim();
-            const relevant=responseTopicAlignment(prompt,cloudText).relevant;
-            const quality=answerQuality(prompt,cloudText);
+            const gatedCloud=publicAnswerGate(String(cloudData.content||''),language);
+            const cloudText=gatedCloud.ok?gatedCloud.content:'';
+            const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
+            const quality=cloudText?answerQuality(prompt,cloudText):-99;
             if(!relevant||(kind==='howto'&&quality<3)){
               setActivity(['Provider respondeu com baixa aderência','Continuando no Predict Auto','VERIFY · procurando resposta melhor']);
             }else{
@@ -395,11 +397,8 @@ export function ChatShell({onOpenLegal}:Props){
               engine:'Predict Auto',
               sources:cloudSources,
               actions:[
-                cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
-                'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
-                'Provider Mesh automático respondeu',
-                ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
-                'Gate final preserva fallback local se o cascade falhar'
+                ...(needsWeb&&cloudSources.length?['Pesquisa integrada · '+cloudSources.length+' fonte(s) relevante(s)']:[]),
+                'Resposta final validada antes de exibir'
               ],
               status:'done'
             });
@@ -414,7 +413,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(s.localRuntimeEnabled){
         setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
         try{
-          const localReply=await answerViaLocalRuntime(augmented,messages,{deep:s.deepThink,preferred:'auto'});
+          const localReply=await answerViaLocalRuntime(prompt,messages,{deep:s.deepThink,preferred:'auto',language,researchContext});
           const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
           if(relevant){
             setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
@@ -428,10 +427,8 @@ export function ChatShell({onOpenLegal}:Props){
               engine:'Predict Auto',
               sources:localSources,
               actions:[
-                'Runtime local automático respondeu',
-                ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
-                'GitHub top-k + memória compactada',
-                'Resposta passou pelo gate de assunto'
+                ...(needsWeb&&localSources.length?['Pesquisa integrada · '+localSources.length+' fonte(s) relevante(s)']:[]),
+                'Resposta final validada antes de exibir'
               ],
               status:'done'
             });
@@ -443,10 +440,12 @@ export function ChatShell({onOpenLegal}:Props){
         }
       }
 
-      let reply=await answerLocally(augmented,messages,{
+      let reply=await answerLocally(prompt,messages,{
         preferNative:false,
         knowledge:s.deepThink,
         fallbackText,
+        language,
+        researchContext,
         deep:s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded),
         onStage:stage=>{
           if(!s.deepThink||!(currentNeural.loaded||currentWebLLM.loaded))return;
@@ -476,17 +475,20 @@ export function ChatShell({onOpenLegal}:Props){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,10);
       }
 
+      const gate=publicAnswerGate(reply.content,language);
+      if(!gate.ok){
+        const candidates=[direct,research?.content].filter(Boolean) as string[];
+        const valid=candidates.map(x=>publicAnswerGate(x,language)).find(x=>x.ok);
+        if(valid)reply={...reply,content:valid.content,sources:web.sources.slice(0,6)};
+        else throw new Error('Não foi possível produzir uma resposta final válida para exibição.');
+      }else{
+        reply={...reply,content:gate.content};
+      }
       const engineLabel='Predict Auto';
       const actions=[
-        'Intenção identificada: '+kind,
-        ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
-        ...(learningInstruction?['Instrução persistente capturada localmente · proposta global enviada quando GitHub Learning estiver configurado']:[]),
-        ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
-        ...(currentNeural.loaded?['Runtime local econômico ativo']:[]),
-        ...(currentWebLLM.loaded?['Runtime local acelerado ativo']:[]),
-        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?['Deep: revisão interna limitada ao orçamento do dispositivo']:[]),
-        ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
-        'Gate final verificou relevância ao assunto principal'
+        ...(needsWeb?['Pesquisa integrada ao Chat'+(web.sources.length?' · '+web.sources.length+' fonte(s) relevante(s)':' · nenhuma fonte útil encontrada')]:[]),
+        ...(tutorIntent?['Modo de aprendizagem aplicado']:[]),
+        'Resposta final validada antes de exibir'
       ];
       s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
     }catch(err:any){
