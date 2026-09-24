@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.11.0"
+  version: "1.12.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -420,3 +420,13 @@ Dossier is a second-brain evidence/artifact route and must return its normalized
 Federar `saas-builder-fabric` para Build de negócio: tenant/workspace, RBAC, data model, auth, persistence, billing quando aplicável, audit trail, jobs e integrações reais.
 
 Media: imagem prioriza Nano Banana quando configurado; vídeo Auto roteia somente para provider temporal real configurado. Storyboard/motion local permanece fallback e deve ser rotulado como tal.
+
+
+## SaaS Runtime Wiring v1.12
+
+Build de SaaS agora executa blueprint real no runtime: módulos, entidades, tenant/RBAC, audit, validação e export são materializados como arquivos do projeto, não apenas recomendações textuais.
+
+Media routing:
+- imagem: Nano Banana → provider configurado → fallback público;
+- vídeo: Auto → provider temporal configurado → motion fallback local;
+- motion local é composição de keyframes e deve ser rotulado como fallback, nunca como modelo temporal neural.
