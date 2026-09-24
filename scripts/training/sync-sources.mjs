@@ -134,6 +134,21 @@ const SOURCES=[
   ['Xquik-dev/x-twitter-scraper','master','MIT','reference',['twitter','api','mcp','external-bridge']],
   ['composio-temp/grok-with-twitter','main','unverified','reference',['twitter','composio','tools','external-bridge']],
   ['CodebuffAI/freebuff','main','Apache-2.0','reference',['coding-agent','build','research','parallel-agents']],
+  ['W1CAPITAL/LexisPredict','main','proprietary-owned-reference','reference',['saas','legal','crm','ocr','reports','kpi','offline']],
+  ['nolly-studio/cult-ui','main','MIT','reference',['ui','agents','accessibility','saas']],
+  ['nolly-studio/cult-directory-template','main','EULA','reference',['saas','directory','ui']],
+  ['eigenpal/docx-editor','main','Apache-2.0+Pro','reference',['docx','ooxml','editor']],
+  ['felipemvrin/foliospark','main','unverified','reference',['portfolio','ui','saas']],
+  ['siddhesh-desai/SlideAI','main','unverified','reference',['pptx','presentation','ai']],
+  ['atharva9167j/dom-to-pptx','master','MIT','reference',['pptx','dom','presentation']],
+  ['hugohe3/ppt-master','main','MIT','reference',['pptx','presentation','agents']],
+  ['pdfforge/PDFCreator','master','external','reference',['pdf','conversion']],
+  ['Stirling-Tools/Stirling-PDF','main','mixed-MIT-proprietary','reference',['pdf','ocr','conversion','automation']],
+  ['jezlan/xcelform','main','unverified','reference',['xlsx','templates','preview']],
+  ['presenton/presenton','main','Apache-2.0','reference',['pptx','presentation','api']],
+  ['iron-software/IronXL-Examples','main','commercial-dependency','reference',['xlsx','dotnet']],
+  ['ghiscoding/excel-builder-vanilla','main','MIT','reference',['xlsx','typescript','export']],
+  ['Kowts/excel-creator','main','MIT','reference',['xlsx','openpyxl','charts','validation']],
   ['Dioque/Livros','main','unverified','reference',['quarantine','books']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
