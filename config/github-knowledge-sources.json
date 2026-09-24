@@ -575,6 +575,300 @@
         "media"
       ],
       "weight": 1.08
+    },
+    {
+      "repo": "AIGeniusInstitute/deepthink",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "deep-reasoning",
+        "loop-engineering",
+        "agents",
+        "observability",
+        "self-improve"
+      ],
+      "weight": 1.18
+    },
+    {
+      "repo": "qxresearch/qxresearch-event-1",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "python",
+        "ml-projects",
+        "apps",
+        "learning"
+      ],
+      "weight": 0.82
+    },
+    {
+      "repo": "microsoft/ML-For-Beginners",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "machine-learning",
+        "curriculum",
+        "projects",
+        "quiz"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "lutzroeder/netron",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "model-inspection",
+        "onnx",
+        "gguf",
+        "tflite",
+        "safetensors"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "ludwig-ai/ludwig",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "training",
+        "finetuning",
+        "lora",
+        "quantization",
+        "ml"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "clearml/clearml",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "mlops",
+        "experiments",
+        "observability",
+        "artifacts"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "ddd-by-examples/library-php",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ddd",
+        "domain-modeling",
+        "event-storming",
+        "testing",
+        "library"
+      ],
+      "weight": 0.94
+    },
+    {
+      "repo": "MaxiDonkey/DelphiGemini",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "guides/"
+      ],
+      "domains": [
+        "gemini",
+        "streaming",
+        "agents",
+        "deep-research",
+        "files",
+        "grounding"
+      ],
+      "weight": 0.9
+    },
+    {
+      "repo": "preangelleo/gemini_deep_research",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "deep-research",
+        "search",
+        "crawl",
+        "citations",
+        "token-budget"
+      ],
+      "reason": "No root LICENSE file verified; architecture ideas only."
+    },
+    {
+      "repo": "eRuaro/open-gemini-deep-research",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "deep-research",
+        "research-tree",
+        "citations",
+        "concurrency",
+        "query-dedup"
+      ],
+      "reason": "No root LICENSE file verified; architecture ideas only."
+    },
+    {
+      "repo": "MaxiDonkey/file2knowledge",
+      "branch": "main",
+      "license": "readme-MIT-unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "file-search",
+        "vector-search",
+        "deep-research",
+        "documents"
+      ],
+      "reason": "README states MIT but no root LICENSE file was verified."
+    },
+    {
+      "repo": "daryllxd/lifelong-learning",
+      "branch": "master",
+      "license": "Unlicense",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "learning-notes",
+        "books",
+        "courses",
+        "lifelong-learning"
+      ],
+      "reason": "Repository license is permissive, but notes may summarize third-party copyrighted sources; do not bulk-ingest derived notes."
+    },
+    {
+      "repo": "GITenberg/The-Prince_1232",
+      "branch": "master",
+      "license": "Project-Gutenberg",
+      "mode": "reference-only",
+      "include": [],
+      "domains": [
+        "public-domain-books",
+        "political-philosophy",
+        "history"
+      ],
+      "reason": "Use only under Project Gutenberg terms and source-specific public-domain checks; not copied by generic GitHub ingest."
+    },
+    {
+      "repo": "w4rlock999/ThePrinceGPT",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "book-rag",
+        "interactive-reading"
+      ],
+      "reason": "No repository license verified; architecture only."
+    },
+    {
+      "repo": "devxhub/awesome-book-collection",
+      "branch": "main",
+      "license": "container-MIT",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "books",
+        "software-engineering"
+      ],
+      "reason": "Repository contains many commercial PDFs and LibGen references; repository license does not relicense embedded books."
+    },
+    {
+      "repo": "eyeke04/Books",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "books"
+      ],
+      "reason": "No README/license verified; book rights unknown."
+    },
+    {
+      "repo": "Dioque/Livros",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "books"
+      ],
+      "reason": "No license verified; book rights unknown."
+    },
+    {
+      "repo": "WatVis/DeepThInk",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "human-ai",
+        "creative-ai",
+        "computer-vision",
+        "collaboration"
+      ],
+      "reason": "No root license verified."
+    },
+    {
+      "repo": "felladrin/awesome-ai-web-search",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "web-search",
+        "research",
+        "rag",
+        "agents"
+      ],
+      "reason": "Curated discovery list; downstream tools require their own license/security review."
     }
   ]
 }
