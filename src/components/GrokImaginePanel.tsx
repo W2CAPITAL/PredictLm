@@ -581,7 +581,7 @@ export function GrokImaginePanel(){
       <div>
         <span>Imagine</span>
         <h1>Imagem e vídeo</h1>
-        <p>Gere uma imagem ou transforme o prompt em um clipe real no navegador. O Supabase mantém metadados leves; o vídeo fica local até você baixar.</p>
+        <p>Imagem em alta qualidade e vídeo generativo quando um provider está configurado. Motion local existe apenas como fallback explícito; o Supabase mantém metadados leves.</p>
       </div>
       <div className="gmedia-repo-status"><i className={persisted?'online':''}/><span>{persisted?'Media repository conectado':'Media repository iniciando'}</span></div>
     </header>
@@ -605,8 +605,9 @@ export function GrokImaginePanel(){
             {([
               ['auto','Auto · IA generativa'],
               ['veo','Veo 3'],
+              ['seedance','Seedance 2'],
               ['sora','Sora 2'],
-              ['seedance','Seedance 2']
+              ['local','Motion fallback']
             ] as const).map(([id,label])=>{
               const enabled=id==='local'||!!videoProviders[id]?.enabled;
               return <button
@@ -671,7 +672,7 @@ export function GrokImaginePanel(){
             <a href={generated} target="_blank" rel="noreferrer"><Download size={14}/>Abrir imagem</a>
             {provider?<span>{provider}</span>:null}
           </div>
-        </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'O app cria o keyframe e renderiza um clipe local reproduzível.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
+        </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Auto usa vídeo generativo real quando uma API está configurada; motion local é somente fallback.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
         {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
       </div>
