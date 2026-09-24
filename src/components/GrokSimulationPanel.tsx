@@ -22,6 +22,7 @@ import {
   executeNextLifeAgentAction,
   normalizeLifeAgentState,
   parseProviderLifePlan,
+  repairLifeAgentPlan,
   simulationPlannerPrompt,
   startLifeAgentPlan,
   type LifeAgentState
@@ -172,32 +173,41 @@ export function GrokSimulationPanel(){
     if(!value||agentBusy)return;
     setAgentBusy(true);
     setAgentError('');
-    setScenarios(simulateLifeScenarios(state,value,{deep:true}));
+    if(/\b(e se|cenario|cenário|compare|possibilidades|simule alternativas)\b/i.test(value))setScenarios(simulateLifeScenarios(state,value,{deep:true}));
+    else setScenarios([]);
 
     const deterministic=deterministicLifePlan(value,state);
     let selected=deterministic;
     try{
       const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent)});
       const plannerPrompt=simulationPlannerPrompt(value,state,agent);
-      const response=await fetch('/api/chat',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          prompt:plannerPrompt,
-          language:'pt-BR',
-          deep:false,
-          messages:[],
-          localAdvisory:advisory?.content||'',
-          answerAnchor:JSON.stringify({objective:deterministic.objective,summary:deterministic.summary,actions:deterministic.actions})
-        })
-      });
-      if(response.ok){
-        const data=await response.json();
-        const providerPlan=parseProviderLifePlan(String(data?.content||''),value,state);
-        if(providerPlan)selected=providerPlan;
+      const controller=new AbortController();
+      const timeout=window.setTimeout(()=>controller.abort(),18000);
+      try{
+        const response=await fetch('/api/chat',{
+          method:'POST',
+          signal:controller.signal,
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            prompt:plannerPrompt,
+            language:'pt-BR',
+            deep:false,
+            messages:[],
+            localAdvisory:advisory?.content||'',
+            answerAnchor:JSON.stringify({objective:deterministic.objective,summary:deterministic.summary,actions:deterministic.actions})
+          })
+        });
+        if(response.ok){
+          const data=await response.json();
+          const providerPlan=parseProviderLifePlan(String(data?.content||''),value,state);
+          if(providerPlan)selected=providerPlan;
+        }
+      }finally{
+        window.clearTimeout(timeout);
       }
     }catch{}
 
+    selected=repairLifeAgentPlan(selected,state,agent);
     setAgent(prev=>startLifeAgentPlan(prev,selected));
     setCommand('');
     setAgentBusy(false);
@@ -258,7 +268,7 @@ export function GrokSimulationPanel(){
         </div>
         <div className="sim-world-foot">
           <span><MapPin size={12}/>{state.person.location}</span>
-          <span>{manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
+          <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
           <b>{state.person.currentAction}</b>
         </div>
 
