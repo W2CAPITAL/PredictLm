@@ -65,7 +65,9 @@ export async function reviewImageQuality(url:string):Promise<ImageQualityReview>
 
   const observations:string[]=[];
   const promptHints:string[]=[];
-  let score=100;
+  // This is a technical pixel-level heuristic, not semantic/identity validation.
+  // Keep headroom so the UI never presents a theatrical 100/100 from luminance/edges alone.
+  let score=94;
 
   if(brightness<42){score-=18;observations.push('imagem muito escura');promptHints.push('lift exposure while preserving black detail and natural highlights')}
   if(brightness>218){score-=18;observations.push('imagem clara demais');promptHints.push('recover highlight detail and use balanced exposure')}
@@ -76,12 +78,12 @@ export async function reviewImageQuality(url:string):Promise<ImageQualityReview>
   if(saturation>.72){score-=10;observations.push('saturação excessiva');promptHints.push('restrained natural color grading and realistic materials')}
 
   if(!observations.length){
-    observations.push('exposição, contraste e definição globais estão equilibrados');
-    promptHints.push('preserve technical clarity but change composition, camera position and visual hierarchy');
+    observations.push('métricas técnicas equilibradas; fidelidade de identidade/composição ainda depende de revisão semântica');
+    promptHints.push('preserve technical clarity, exact subject identity and requested action while improving composition, camera position and visual hierarchy');
   }
 
   return {
-    score:Math.max(0,Math.min(100,Math.round(score))),
+    score:Math.max(0,Math.min(94,Math.round(score))),
     observations,
     promptHints,
     metrics:{
