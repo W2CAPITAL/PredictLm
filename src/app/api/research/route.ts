@@ -237,7 +237,7 @@ async function freeSearch(query:string,limit:number){
   else warnings.push('Busca de fontes fortes indisponível');
 
   const ranked=enrichAndRank(query,web,limit);
-  return {provider:'free-fallback',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
+  return {provider:'free-search',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
 }
 
 export async function POST(req:Request){
