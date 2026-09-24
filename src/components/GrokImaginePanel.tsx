@@ -164,11 +164,7 @@ export function GrokImaginePanel(){
     let brief='';
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
     const literalImage=kind==='image'&&(isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
-    if(literalImage){
-      setDirectorBrief('');
-      setResearchContext('');
-      return {prompt:prompt.trim(),brief:'',research:''};
-    }
+    const useDirector=deepThink||literalImage;
 
     if(deepResearch){
       setStage('Deep Research · buscando referências úteis…');
@@ -188,14 +184,16 @@ export function GrokImaginePanel(){
     }
     setResearchContext(research);
 
-    if(deepThink){
-      setStage('Deep Think · refinando direção visual…');
+    if(useDirector){
+      setStage(literalImage?'API Director · travando identidade e composição…':'Deep Think · refinando direção visual…');
       try{
         const directorPrompt=[
           'Atue como Media Director do PredictLM.',
           kind==='video'
             ? 'Transforme o pedido em um production brief para UM clipe temporal realmente generativo, com ação ao longo do tempo, câmera, continuidade, física visual e áudio/ambiente quando fizer sentido. Não proponha slideshow, pan/zoom de imagem estática nem cenas desconectadas.'
-            : 'Transforme o pedido em um production brief de imagem: sujeito exato, composição, câmera/lente, iluminação, materiais, identidade, detalhes obrigatórios e artefatos a evitar.',
+            : literalImage
+              ? 'Produza um identity/composition lock LITERAL para a imagem. Não reescreva criativamente o pedido: detalhe somente características visuais obrigatórias, contagem, relações, composição, câmera e negativas que impeçam drift.'
+              : 'Transforme o pedido em um production brief de imagem: sujeito exato, composição, câmera/lente, iluminação, materiais, identidade, detalhes obrigatórios e artefatos a evitar.',
           'Preserve integralmente personagens, marcas, roupas, formas, poderes e relações explicitamente pedidos; não troque por arquétipos genéricos.',
           'PROIBIDO inventar estética de tecnologia/IA sem pedido explícito: não introduza binário, redes neurais, circuitos, drones, hologramas, data streams, cyberpunk, robôs ou fendas dimensionais só porque o produto se chama PredictLM.',
           'Pedido: '+prompt,
@@ -236,11 +234,13 @@ export function GrokImaginePanel(){
     }
 
     return {
-      prompt:[
-        buildQualityImagePrompt(prompt,{style,attempt}),
-        brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
-        research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
-      ].filter(Boolean).join('\n\n'),
+      prompt:literalImage
+        ? prompt.trim()
+        : [
+            buildQualityImagePrompt(prompt,{style,attempt}),
+            brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
+            research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
+          ].filter(Boolean).join('\n\n'),
       brief,
       research
     };
