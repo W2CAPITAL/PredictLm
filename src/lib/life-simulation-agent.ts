@@ -380,7 +380,7 @@ export function executeLifeAgentAction(
 
   state.person.mood=state.needs.stress>72?'sobrecarregada':state.needs.energy<35?'cansada':'estável';
   state.neuro=stepLifeSimulation(state,0,state.person.location).neuro;
-  if(ok)remember(state,message,action.type==='set_goal'?'goal':'routine',action.type==='set_goal'?.86:.58);
+  if(ok)remember(state,message,action.type==='set_goal'?'goal':'routine',action.type==='set_goal' ? .86 : .58);
   else state=beforeState;
 
   const after=observation(state,agent);
@@ -390,6 +390,74 @@ export function executeLifeAgentAction(
   };
   agent.history=[...agent.history,record].slice(-60);
   return {state,agent,record};
+}
+
+function requiredLocation(type:LifeAgentActionType):LifeLocation|undefined{
+  if(type==='buy_food')return 'Mercado';
+  if(type==='rest')return 'Casa';
+  if(type==='work')return 'Trabalho';
+  if(type==='study')return 'Biblioteca';
+  if(type==='exercise')return 'Parque';
+  if(type==='healthcare')return 'Clínica';
+  if(type==='socialize')return 'Café';
+  return undefined;
+}
+
+export function repairLifeAgentPlan(
+  plan:LifeAgentPlan,
+  state:LifeSimulationState,
+  agentInput:LifeAgentState
+):LifeAgentPlan{
+  const agent=normalizeLifeAgentState(agentInput);
+  const repaired:LifeAgentAction[]=[];
+  let simulatedLocation=state.person.location;
+  let simulatedFood=agent.inventory.food;
+
+  const appendMove=(target:LifeLocation,reason:string)=>{
+    const last=repaired[repaired.length-1];
+    if(last?.type==='move'&&last.target===target)return;
+    repaired.push({id:actionId(repaired.length),type:'move',target,reason});
+    simulatedLocation=target;
+  };
+
+  for(const original of plan.actions){
+    const action={...original,id:actionId(repaired.length)};
+    if(action.type==='move'&&action.target){
+      appendMove(action.target,action.reason||'pré-condição de localização');
+      continue;
+    }
+
+    if(action.type==='eat'){
+      if(simulatedLocation==='Casa'&&simulatedFood<=0){
+        appendMove('Mercado','é preciso obter comida antes da refeição em casa');
+        repaired.push({id:actionId(repaired.length),type:'buy_food',reason:'abastecer o inventário'});
+        simulatedFood+=3;
+        appendMove('Casa','voltar para preparar a refeição');
+      }else if(simulatedLocation!=='Casa'&&simulatedLocation!=='Café'){
+        if(simulatedFood>0)appendMove('Casa','usar comida disponível em casa');
+        else{
+          appendMove('Mercado','comprar comida');
+          repaired.push({id:actionId(repaired.length),type:'buy_food',reason:'abastecer o inventário'});
+          simulatedFood+=3;
+          appendMove('Casa','voltar para comer');
+        }
+      }
+      repaired.push({...action,id:actionId(repaired.length)});
+      if(simulatedLocation==='Casa'&&simulatedFood>0)simulatedFood--;
+      continue;
+    }
+
+    const required=requiredLocation(action.type);
+    if(required&&simulatedLocation!==required)appendMove(required,'pré-condição para '+action.type);
+    repaired.push({...action,id:actionId(repaired.length)});
+    if(action.type==='buy_food')simulatedFood+=3;
+  }
+
+  return {
+    ...plan,
+    actions:repaired.slice(0,16),
+    summary:plan.summary+(repaired.length!==plan.actions.length?' · pré-condições reparadas automaticamente':'')
+  };
 }
 
 export function startLifeAgentPlan(agentInput:LifeAgentState,plan:LifeAgentPlan){
