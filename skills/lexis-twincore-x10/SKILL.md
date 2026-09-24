@@ -556,3 +556,7 @@ Media:
 - Auto video seleciona provider temporal real configurado;
 - local WebM/storyboard é fallback de motion, não vídeo neural;
 - Higgsfield CLI só entra como bridge externa autenticada.
+
+
+### Gemini Veo 3.1
+Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapter usa operação assíncrona, polling e proxy de download para não expor a chave no navegador. Duração é normalizada para 4/6/8s e o provider fica antes do motion fallback local.
