@@ -65,7 +65,7 @@ export function browserCapabilities(){
   const webgpu=typeof navigator!=='undefined'&&!!(navigator as any).gpu;
   const memory=typeof navigator!=='undefined'?navigator.deviceMemory||0:0;
   const cores=typeof navigator!=='undefined'?navigator.hardwareConcurrency||0:0;
-  const recommended:NeuralTier=(webgpu&&(memory>=8||cores>=8))?'smart':'lite';
+  const recommended:NeuralTier=(webgpu&&memory>=8&&cores>=8)?'smart':'lite';
   return {native,webgpu,memory,cores,recommended};
 }
 
@@ -103,6 +103,27 @@ function ensureWorker(){
     pending.clear();
   };
   return worker;
+}
+
+function resetNeuralWorker(reason:string,keepPreference=true){
+  const current=worker;
+  worker=null;
+  try{current?.terminate()}catch{}
+  loadedTier=null;
+  loadedBackend=null;
+  loadedModelId=null;
+  loadingTier=null;
+  loadingPromise=null;
+  lastNeuralError=reason;
+  for(const [,job] of pending)job.reject(new Error(reason));
+  pending.clear();
+  if(!keepPreference)saveNeuralPreference(null);
+}
+
+export function cancelNeuralLoad(){
+  if(!loadingTier)return false;
+  resetNeuralWorker('Carregamento local cancelado para preservar a responsividade.',true);
+  return true;
 }
 
 const NEURAL_MODELS:Record<NeuralTier,string>={
@@ -186,12 +207,15 @@ function saveNeuralPreference(tier:NeuralTier|null,profile?:NeuralProfile){
 export async function restorePreferredNeuralModel(onProgress?:(p:{progress:number|null;status:string})=>void){
   const tier=preferredNeuralTier();
   if(!tier||loadedTier)return false;
+  const caps=browserCapabilities();
+  const safeTier:NeuralTier=tier==='smart'&&!(caps.webgpu&&caps.memory>=8&&caps.cores>=8)?'lite':tier;
+  if(safeTier!==tier)onProgress?.({progress:null,status:'Smart não é seguro neste dispositivo; restaurando Lite/CPU q4'});
   try{
-    await loadNeuralModel(tier,onProgress,{persistPreference:false});
+    await loadNeuralModel(safeTier,onProgress,{persistPreference:false});
     return true;
   }catch(firstError){
-    if(tier==='smart'){
-      onProgress?.({progress:null,status:'Restauração Smart falhou; tentando Lite/CPU a partir do cache'});
+    if(safeTier==='smart'){
+      onProgress?.({progress:null,status:'Restauração Smart falhou; tentando Lite/CPU q4'});
       await loadNeuralModel('lite',onProgress,{persistPreference:true});
       return true;
     }
@@ -225,12 +249,16 @@ export async function loadNeuralModel(
     }
   }
 
-  onProgress?.({
-    progress:null,
-    status:realWebgpu
-      ? 'WebGPU confirmado; preparando modelo'
-      : 'WebGPU indisponível; usando CPU/WASM automaticamente'
-  });
+  const requestedTier=tier;
+  if(tier==='smart'&&!realWebgpu){
+    tier='lite';
+    onProgress?.({progress:null,status:'Smart exige WebGPU real; usando Lite q4 para evitar travamento'});
+  }else{
+    onProgress?.({
+      progress:null,
+      status:realWebgpu?'WebGPU confirmado; preparando modelo':'Modo econômico Lite · CPU/WASM q4'
+    });
+  }
 
   const task=new Promise<void>((resolve,reject)=>{
     let settled=false;
@@ -246,7 +274,7 @@ export async function loadNeuralModel(
       loadedModelId=null;
       loadingTier=null;
       reject(new Error(lastNeuralError));
-    },Math.max(30000,options?.timeoutMs||8*60*1000));
+    },Math.max(30000,Math.min(180000,options?.timeoutMs||180000)));
 
     const finish=(fn:()=>void)=>{
       if(settled)return;
@@ -281,7 +309,7 @@ export async function loadNeuralModel(
         lastNeuralError='';
         if(options?.persistPreference!==false){
           saveNeuralPreference(loadedTier,{
-            requested:tier,
+            requested:requestedTier,
             actual:loadedTier,
             backend:loadedBackend,
             modelId:loadedModelId,
@@ -291,7 +319,7 @@ export async function loadNeuralModel(
         try{
           void (navigator as any).storage?.persist?.();
         }catch{}
-        const compatibility=tier==='smart'&&loadedTier==='lite'?' · compatibilidade Lite':'';
+        const compatibility=requestedTier==='smart'&&loadedTier==='lite'?' · compatibilidade Lite':'';
         onProgress?.({progress:100,status:'pronto · '+String(msg.label||msg.backend||'local')+compatibility});
         finish(resolve);
       }
@@ -302,10 +330,8 @@ export async function loadNeuralModel(
     };
 
     w.addEventListener('message',onMessage);
-    // Lite is intentionally CPU/WASM-first to avoid freezing low-end office PCs.
-    // Smart may use WebGPU, with WASM fallback if the adapter is unavailable.
-    const allowSmartWasm=tier==='smart'&&!realWebgpu&&caps.memory>=8&&caps.cores>=8;
-    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm,models:NEURAL_MODELS});
+    // Browser Smart is WebGPU-only. CPU/WASM always uses Lite q4.
+    w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm:false,models:NEURAL_MODELS});
   });
   loadingPromise=task;
   try{
@@ -339,19 +365,8 @@ export function neuralStatus(){
 }
 
 export function unloadNeuralModel(options?:{keepPreference?:boolean}){
-  if(worker){
-    worker.terminate();
-    worker=null;
-  }
-  loadedTier=null;
-  loadedBackend=null;
-  loadedModelId=null;
-  loadingTier=null;
-  loadingPromise=null;
+  resetNeuralWorker('Modelo local descarregado.',options?.keepPreference!==false);
   lastNeuralError='';
-  if(!options?.keepPreference)saveNeuralPreference(null);
-  for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
-  pending.clear();
 }
 
 async function neuralGenerate(
@@ -363,6 +378,9 @@ async function neuralGenerate(
   if(!worker||!loadedTier)throw new Error('Neural model not loaded');
   const id=++seq;
   return new Promise<string>((resolve,reject)=>{
+    const requested=generation?.maxNewTokens||(loadedTier==='smart'?620:420);
+    const maxNewTokens=loadedBackend==='wasm'?Math.min(requested,220):Math.min(requested,760);
+    const timeoutMs=loadedBackend==='wasm'?45000:90000;
     pending.set(id,{resolve,reject});
     worker!.postMessage({
       type:'generate',
@@ -370,10 +388,16 @@ async function neuralGenerate(
       system,
       prompt,
       messages,
-      maxNewTokens:generation?.maxNewTokens||(loadedTier==='smart'?620:420),
+      maxNewTokens,
       temperature:generation?.temperature??0.42
     });
-    setTimeout(()=>{if(pending.has(id)){pending.delete(id);reject(new Error('Local neural generation timed out'));}},180000);
+    window.setTimeout(()=>{
+      if(!pending.has(id))return;
+      pending.delete(id);
+      const message='Inferência local excedeu o limite de segurança e foi interrompida.';
+      resetNeuralWorker(message,true);
+      reject(new Error(message));
+    },timeoutMs);
   });
 }
 
