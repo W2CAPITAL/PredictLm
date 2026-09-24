@@ -54,3 +54,13 @@ O PredictLM pode operar como uma entidade digital humana-em-estilo, com identida
 - `src/lib/entity-self-model.ts`: aparência/self-model;
 - `src/components/PredictApp.tsx`: heartbeat passivo;
 - Chat/Provider/Local runtimes recebem o Digital Brain context.
+
+
+## Limite do conectoma da mosca
+
+O conectoma usado como referência fornece **estrutura de conectividade e organização de circuitos**, não um arquivo de memórias episódicas da mosca.
+
+Portanto:
+- adaptar grafo, saliência, inibição, sensório→ação e dinâmica de circuitos: permitido;
+- afirmar que o PredictLM importou lembranças, experiências subjetivas ou memórias biográficas da mosca: proibido;
+- qualquer memória do Digital Brain é criada pelo próprio runtime do PredictLM a partir de suas interações e estado persistente, não extraída de um cérebro biológico.
