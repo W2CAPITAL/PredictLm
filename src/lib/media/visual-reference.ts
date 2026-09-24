@@ -1,5 +1,5 @@
 import { compactText } from '@/lib/token-budget';
-import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, isSpecificFranchisePrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
 export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google';
 
