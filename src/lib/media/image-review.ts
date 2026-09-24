@@ -112,8 +112,8 @@ export async function preloadGeneratedImage(url:string,timeoutMs=55000){
   });
 }
 
-// Semantic review is separate from the pixel metrics above: no model means unverified.
-export async function reviewCanonicalImage(url:string,prompt:string):Promise<import('./canonical-matchup').SemanticImageReview>{
+// Semantic review is separate from pixel metrics: no model means unverified.
+export async function reviewSemanticImage(url:string,prompt:string):Promise<import('./canonical-matchup').SemanticImageReview>{
   const unavailable={status:'unavailable' as const,issues:[],retryPrompt:''};
   try{
     const img=await loadImage(url);
@@ -123,12 +123,26 @@ export async function reviewCanonicalImage(url:string,prompt:string):Promise<imp
     canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
     const ctx=canvas.getContext('2d');if(!ctx)return unavailable;
     ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    const response=await fetch('/api/media/review',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt,image:canvas.toDataURL('image/jpeg',.85)}),signal:AbortSignal.timeout(25000)});
+    const response=await fetch('/api/media/review',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,image:canvas.toDataURL('image/jpeg',.85)}),
+      signal:AbortSignal.timeout(28000)
+    });
     if(!response.ok)return unavailable;
     const data=await response.json();
-    if(data.status==='unavailable')return unavailable;
-    const {parseSemanticImageReview}=await import('./canonical-matchup');
-    return parseSemanticImageReview(data,prompt);
+    if(data?.status==='passed')return {status:'passed',issues:[],retryPrompt:''};
+    if(data?.status==='failed'&&Array.isArray(data?.issues)){
+      return {
+        status:'failed',
+        issues:data.issues.map((x:any)=>String(x||'').trim()).filter(Boolean).slice(0,6),
+        retryPrompt:String(data?.retryPrompt||'').trim().slice(0,1400)
+      };
+    }
+    return unavailable;
   }catch{return unavailable;}
+}
+
+export async function reviewCanonicalImage(url:string,prompt:string){
+  return reviewSemanticImage(url,prompt);
 }
