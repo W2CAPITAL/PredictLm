@@ -84,3 +84,26 @@ test('simple imaginative chat remains a direct hypothetical turn',()=>{
   assert.equal(responseTopicAlignment(prompt,answer).relevant,true);
   assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
 });
+
+test('complex practical how-to is accepted as a real procedural answer',()=>{
+  const prompt='Como criar um trator do zero passo a passo';
+  const answer=[
+    'Construir um trator do zero é um projeto de engenharia mecânica e deve ser feito com componentes dimensionados e proteção adequada.',
+    '1. Defina carga, potência, velocidade e implementos que o trator precisará suportar.',
+    '2. Projete chassi, distância entre eixos, direção, freios e pontos de engate.',
+    '3. Escolha e dimensione motor, transmissão, diferencial, eixos, rodas e sistema hidráulico.',
+    '4. Monte um protótipo estático, verifique alinhamento, soldas, proteções e folgas.',
+    '5. Teste primeiro em área controlada e em baixa velocidade antes de qualquer uso real.'
+  ].join('\n');
+  assert.equal(classifyConversation(prompt),'howto');
+  assert.equal(conversationAnswerIssue(prompt,answer),'');
+  assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
+});
+
+test('como seria se stays hypothetical instead of being rejected as missing-procedure',()=>{
+  const prompt='Como seria se uma mosca falasse';
+  const answer='Se uma mosca falasse, provavelmente teria uma voz rápida e curiosa, comentando cheiros, comida e cada tentativa frustrada de atravessar uma janela.';
+  assert.equal(classifyConversation(prompt),'hypothetical');
+  assert.equal(conversationAnswerIssue(prompt,answer),'');
+  assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
+});
