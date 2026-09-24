@@ -16,6 +16,7 @@ import { createLegalDossier } from '@/lib/legal/dossier';
 import { isLegalDossierRequest, legalDossierMode } from '@/lib/legal/mode';
 import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '@/lib/security/fraud-defense';
 import { isTutorRequest } from '@/lib/tutor-mode';
+import { isGlobalLearningInstruction } from '@/lib/global-learning';
 import { answerViaLocalRuntime, probeLocalRuntimes } from '@/lib/local-runtime-router';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
@@ -175,6 +176,7 @@ export function ChatShell({onOpenLegal}:Props){
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const fraudIntent=isFraudAnalysisRequest(prompt);
     const tutorIntent=isTutorRequest(prompt);
+    const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();
@@ -183,6 +185,14 @@ export function ChatShell({onOpenLegal}:Props){
 
     setInput('');
     setScreen('chat');
+    if(learningInstruction){
+      captureAdaptiveInstruction(prompt);
+      fetch('/api/learning/propose',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({instruction:prompt,surface:'chat'})
+      }).catch(()=>{});
+    }
     s.addMessage({role:'user',content:prompt});
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
@@ -455,7 +465,7 @@ export function ChatShell({onOpenLegal}:Props){
           const cloudResponse=await fetch('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink})
+            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
           });
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
@@ -520,6 +530,7 @@ export function ChatShell({onOpenLegal}:Props){
       const actions=[
         'Intenção identificada: '+kind,
         ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
+        ...(learningInstruction?['Instrução persistente capturada localmente · proposta global enviada quando GitHub Learning estiver configurado']:[]),
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
         ...(currentNeural.loaded?['Modelo local: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
         ...(s.deepThink&&currentNeural.loaded&&neuralRelevant?['Deep executou duas passagens: FORGE → AEGIS']:[]),
