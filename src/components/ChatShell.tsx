@@ -397,7 +397,7 @@ export function ChatShell({onOpenLegal}:Props){
               actions:[
                 cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
                 'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
-                'Provider: '+String(cloudData.provider||'server'),
+                'Provider Mesh automático respondeu',
                 ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
                 'Gate final preserva fallback local se o cascade falhar'
               ],
@@ -428,7 +428,7 @@ export function ChatShell({onOpenLegal}:Props){
               engine:'Predict Auto',
               sources:localSources,
               actions:[
-                'Runtime: '+localReply.label+' · '+localReply.model,
+                'Runtime local automático respondeu',
                 ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
                 'GitHub top-k + memória compactada',
                 'Resposta passou pelo gate de assunto'
@@ -484,7 +484,7 @@ export function ChatShell({onOpenLegal}:Props){
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
         ...(currentNeural.loaded?['Runtime local econômico ativo']:[]),
         ...(currentWebLLM.loaded?['Runtime local acelerado ativo']:[]),
-        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?[reply.engine==='webllm'?'Deep WebLLM: revisão FORGE/AEGIS/PARALLAX aplicada internamente':'Deep executou duas passagens: FORGE → AEGIS']:[]),
+        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?['Deep: revisão interna limitada ao orçamento do dispositivo']:[]),
         ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
         'Gate final verificou relevância ao assunto principal'
       ];
