@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.18.0",
+  "version": "5.19.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -44,7 +44,9 @@
     "saas-builder-fabric",
     "generative-media-auto-router",
     "human-adversarial-lens",
-    "research-source-matrix"
+    "research-source-matrix",
+    "neurocore",
+    "life-simulation"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -182,7 +184,16 @@
     "semantic-scholar-academic-search",
     "investigative-source-tier",
     "darkforum-metadata-only",
-    "extreme-content-no-raw-ingest"
+    "extreme-content-no-raw-ingest",
+    "connectome-inspired-control",
+    "sensory-salience-attention-inhibition",
+    "persistent-neuro-state",
+    "uncertainty-calibration",
+    "life-simulation-studio",
+    "active-2d-simulation",
+    "simulation-needs-memory-relations",
+    "simulation-build-intent",
+    "simulation-not-consciousness-gate"
   ],
   "hosts": [
     "PredictLM",
