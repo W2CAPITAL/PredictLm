@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, Eye, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldPreferLocalRuntimeFirst, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -193,6 +193,53 @@ export function ChatShell({onOpenLegal}:Props){
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
   }
 
+  async function requestApiAnswer(input:{
+    prompt:string;
+    language:string;
+    kind:string;
+    messages:{role:string;content:string}[];
+    researchContext:string;
+    localAdvisory:string;
+    answerAnchor:string;
+    brainContext:string;
+    deep:boolean;
+    clean?:boolean;
+    signal:AbortSignal;
+  }){
+    try{
+      const response=await fetchWithTimeout('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          ...(input.clean?{mode:'clean-chat',useHistory:false}:{}),
+          prompt:input.prompt,
+          language:input.language,
+          messages:input.clean?[]:input.messages,
+          researchContext:input.researchContext,
+          localAdvisory:input.localAdvisory,
+          answerAnchor:input.answerAnchor,
+          brainContext:input.brainContext,
+          deep:input.clean?false:input.deep,
+          instructions:input.clean?'':adaptiveInstructionContext(4)
+        })
+      },input.clean?28000:36000,input.signal);
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data?.content)return {ok:false,text:'',data,reason:String(data?.code||data?.error||'provider-unavailable')};
+      const gate=publicAnswerGate(String(data.content||''),input.language as any,input.prompt);
+      if(!gate.ok)return {ok:false,text:'',data,reason:gate.reason||'public-gate'};
+      const text=gate.content;
+      const relevant=responseTopicAlignment(input.prompt,text).relevant;
+      const quality=answerQuality(input.prompt,text);
+      const minQuality=input.kind==='howto'?2:input.kind==='factual'?0:-1;
+      if(!relevant)return {ok:false,text,data,reason:'off-topic'};
+      if(quality<minQuality)return {ok:false,text,data,reason:'low-quality'};
+      if(signalsKnowledgeGap(text))return {ok:false,text,data,reason:'knowledge-gap'};
+      return {ok:true,text,data,reason:''};
+    }catch(error:any){
+      return {ok:false,text:'',data:{},reason:String(error?.message||error||'provider-error')};
+    }
+  }
+
   async function send(){
     const prompt=input.trim();
     if(!prompt||busy)return;
@@ -211,7 +258,6 @@ export function ChatShell({onOpenLegal}:Props){
     const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
-    const preferLocalFirst=s.localRuntimeEnabled&&shouldPreferLocalRuntimeFirst(kind,prompt,s.deepThink,needsWeb);
 
     setInput('');
     setScreen('chat');
