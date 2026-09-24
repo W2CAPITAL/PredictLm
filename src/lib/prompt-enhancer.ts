@@ -1,4 +1,5 @@
 import type { WorkspaceFile } from './types';
+import { classifyDomainEngines } from './domain-engine-fabric';
 
 export type PromptPreset='enhance'|'fullstack'|'setup-repo'|'frontend'|'backend'|'database'|'test-ship'|'security';
 
@@ -10,6 +11,10 @@ function detectRepo(text:string){
 export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles:WorkspaceFile[]=[]){
   const raw=input.trim()||'Build the requested application';
   const repo=detectRepo(raw);
+  const domainEngines=classifyDomainEngines(raw);
+  const domainRequirements=domainEngines.flatMap(engine=>[
+    'Domain engine '+engine.label+': '+engine.rules.join(' ')
+  ]);
   const hasProject=currentFiles.some(f=>/App\.(tsx|jsx|ts|js)$/.test(f.path));
   const context=hasProject?'Preserve the current working project and modify it incrementally; do not replace it with a generic starter.':'Create a new project.';
   const common=[
@@ -69,7 +74,7 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
       'Add input validation and safe defaults, then re-run the security gate.'
     ]
   };
-  const requirements=[...common,...extra[preset]];
+  const requirements=[...common,...extra[preset],...domainRequirements];
   const acceptance=[
     'The requested primary workflow works end-to-end.',
     'For multi-user SaaS, tenant isolation and RBAC are explicit and testable.',
@@ -77,7 +82,8 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
     'Visible controls are functional; no fake integrations or placeholder success states.',
     'Invalid/loading/empty/error states are handled where relevant.',
     'Secrets stay server-side and .env.example contains names/placeholders only.',
-    'Build/typecheck/smoke/tests are run when available and blocking findings are repaired before ship.'
+    'Build/typecheck/smoke/tests are run when available and blocking findings are repaired before ship.',
+    ...(domainEngines.length?['Domain-source claims are traceable and integrations are never marked connected without a real successful probe.']:[])
   ];
   return [
     '[GOAL]',
