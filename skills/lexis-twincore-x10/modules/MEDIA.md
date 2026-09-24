@@ -62,13 +62,13 @@ Provider keys stay server-side. The UI disables providers that are not configure
 
 Para personagem, franquia, produto, marca, pessoa/entidade visual ou forma muito específica:
 
-**intent → identity lock → referências → geração multimodal quando suportada → review → variante**
+**intent → Grok Imagine Parity → identity lock → Firecrawl references → geração multimodal quando suportada → review → variante**
 
 Regras:
 - personagem nomeado não pode virar arquétipo genérico ou criatura "parecida";
 - preservar silhueta, rosto, roupa, paleta, símbolos, escala e forma/poder solicitados;
-- quando houver Google Custom Search configurado, buscar referências em Google Images e uma segunda consulta focada em `site:pinterest.com/pin/`;
-- Firecrawl Images funciona como fonte complementar/fallback;
+- Firecrawl Images é a fonte padrão de referência e faz uma segunda busca focada em `site:pinterest.com/pin/`;
+- Google Images/Pinterest via Google permanecem opcionais e nunca são requisito de funcionamento;
 - Gemini Image recebe até 3 referências visuais inline; provider local/OpenAI-compatible pode receber referências quando `MEDIA_IMAGE_REFERENCE_FIELD` for configurado para o contrato daquele endpoint;
 - sem provider multimodal, o fallback ainda recebe um **identity lock** textual e não deve fingir que usou a imagem;
 - referências servem para fidelidade de identidade, não para copiar composição;
