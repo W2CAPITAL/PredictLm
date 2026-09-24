@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import {
-  loadNeuralModel,
   neuralAutoWarmPolicy,
   neuralStatus,
   preferredNeuralTier,
@@ -37,27 +36,18 @@ export function NeuralWarmup(){
 
       try{
         const preferred=preferredNeuralTier();
-        if(preferred){
-          emit({phase:'loading',tier:preferred,status:'restoring'});
-          const restored=await restorePreferredNeuralModel(p=>{
-            if(!cancelled)emit({phase:'loading',tier:preferred,progress:p.progress,status:p.status});
-          });
-          if(restored){
-            recordNeuralAutoWarmResult(true);
-            emit({phase:'ready',tier:neuralStatus().tier||preferred,status:'restored'});
-            return;
-          }
+        if(!preferred){
+          emit({phase:'skipped',tier:'lite',status:'on-demand-only'});
+          return;
         }
-
-        // First-run warmup is intentionally Lite. Smart/large models are never
-        // pulled automatically: the browser remains responsive on weak devices.
-        emit({phase:'loading',tier:'lite',status:'idle-warmup'});
-        await loadNeuralModel('lite',p=>{
-          if(!cancelled)emit({phase:'loading',tier:'lite',progress:p.progress,status:p.status});
-        },{persistPreference:true,timeoutMs:3*60*1000});
-        if(cancelled)return;
-        recordNeuralAutoWarmResult(true);
-        emit({phase:'ready',tier:'lite',status:'background-ready'});
+        emit({phase:'loading',tier:preferred,status:'restoring-explicit-local-engine'});
+        const restored=await restorePreferredNeuralModel(p=>{
+          if(!cancelled)emit({phase:'loading',tier:preferred,progress:p.progress,status:p.status});
+        });
+        if(restored){
+          recordNeuralAutoWarmResult(true);
+          emit({phase:'ready',tier:neuralStatus().tier||preferred,status:'restored'});
+        }
       }catch(error:any){
         if(cancelled)return;
         recordNeuralAutoWarmResult(false);
