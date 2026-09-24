@@ -187,7 +187,8 @@ export async function GET(){
     seededIndex:githubStats.chunks>=5&&githubStats.sources>=4,
     workspaceRetrieval:workspaceKnowledge.some(x=>x.source==='mindsdb/mindshub'||x.source==='rowboatlabs/rowboat'),
     learningResourceRetrieval:programmingKnowledge.some(x=>x.source==='EbookFoundation/free-programming-books'),
-    quarantineAbsent:!bypassKnowledge.some(x=>/bxvdfsur|ChatGPT-5\.6-Free-Desktop|chatgpt-plus-prime/i.test(x.source))
+    quarantineAbsent:!bypassKnowledge.some(x=>/bxvdfsur|ChatGPT-5\.6-Free-Desktop|chatgpt-plus-prime/i.test(x.source)),
+    topKSourceDiversity:workspaceKnowledge.length<2||new Set(workspaceKnowledge.map(x=>x.source)).size===workspaceKnowledge.length
   };
 
   const legalArtifactBehavior={
