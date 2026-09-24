@@ -138,7 +138,7 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     note:'Auto-probed only after user opt-in. Model remains user-selected/installed.'
   },
   {
-    id:'local-openai-4891',
+    id:'local-4891',
     label:'Local OpenAI API · 4891',
     transport:'openai-compatible',
     endpoint:'http://127.0.0.1:4891/v1',
@@ -147,7 +147,7 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     note:'Compatibility slot inspired by local GGUF apps; no unrestricted-model policy is inherited.'
   },
   {
-    id:'local-openai-8080',
+    id:'local-8080',
     label:'llamafile / NanoMind · 8080',
     transport:'openai-compatible',
     endpoint:'http://127.0.0.1:8080/v1',
