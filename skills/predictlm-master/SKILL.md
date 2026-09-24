@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -619,3 +619,16 @@ Uma resposta excelente:
 - deixa um próximo passo concreto quando isso ajuda;
 - não inventa;
 - não deixa o mecanismo interno virar a resposta.
+
+
+## Visual fidelity / referência antes de gerar
+
+Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
+1. extrair a identidade solicitada;
+2. aplicar **identity lock** canônico;
+3. buscar referência visual quando a infraestrutura estiver configurada (Google Images + consulta Pinterest; Firecrawl complementar);
+4. entregar referências visuais ao provider multimodal compatível;
+5. manter o mesmo lock no provider local/textual;
+6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
+
+Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity Self Model exatamente como fornecida pelo usuário; não reimaginar nem variar.
