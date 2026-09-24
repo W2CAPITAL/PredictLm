@@ -1,4 +1,4 @@
-import { isSensitiveResearchQuery, sourceQuality } from '@/lib/security/source-quality';
+import { isSensitiveResearchQuery, sourceQuality, suppressRawResearchContent } from '@/lib/security/source-quality';
 
 export const runtime='nodejs';
 
@@ -7,6 +7,36 @@ function stripHtml(input:string){return String(input||'').replace(/<[^>]+>/g,' '
 
 function normalized(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
+}
+
+type ResearchDomain='health'|'stem'|'software'|'legal'|'finance'|'history'|'factcheck'|'security'|'human'|'general';
+
+function researchDomain(query:string):ResearchDomain{
+  const q=normalized(query);
+  if(/\b(saude|saúde|medic|doenca|doença|sintoma|tratamento|clinico|clínico|farmaco|fármaco|vacina|biomed|epidemi)\b/.test(q))return 'health';
+  if(/\b(codigo|code|software|javascript|typescript|python|react|next\.?js|api|github|framework|backend|frontend|database|devops|vercel)\b/.test(q))return 'software';
+  if(/\b(jurid|processo|tribunal|cnj|datajud|djen|lei|sentenca|sentença|jurisprud|contrato)\b/.test(q))return 'legal';
+  if(/\b(financ|juros|selic|bacen|bcb|sgs|credito|crédito|mercado|econom|inflacao|inflação)\b/.test(q))return 'finance';
+  if(/\b(histori|arquivo|acervo|hemeroteca|documento historico|documento histórico|seculo|século)\b/.test(q))return 'history';
+  if(/\b(fake news|desinform|boato|checagem|fact.?check|viral|alegacao|alegação)\b/.test(q))return 'factcheck';
+  if(/\b(seguranc|security|fraude|fraud|phishing|malware|ransomware|vulnerab|threat|ameaca|ameaça|dark web|leak|breach|vazamento|doxx)\b/.test(q))return 'security';
+  if(/\b(psicolog|comportamento|humano|humanos|emo[cç]ao|sentimento|manipul|persuas|coerc|grupo|sociedade|relacionamento)\b/.test(q))return 'human';
+  if(/\b(matemat|fisic|física|quimic|química|engenharia|estatistic|quant|qubit|cientif|ciência|science)\b/.test(q))return 'stem';
+  return 'general';
+}
+
+function authorityQueryFor(query:string){
+  const domain=researchDomain(query);
+  if(domain==='health')return query+' (site:pubmed.ncbi.nlm.nih.gov OR site:clinicaltrials.gov OR site:cochranelibrary.com OR site:who.int)';
+  if(domain==='stem')return query+' (site:arxiv.org OR site:ieeexplore.ieee.org OR site:dl.acm.org OR site:openalex.org)';
+  if(domain==='software')return query+' (official documentation OR site:github.com)';
+  if(domain==='legal')return query+' (site:cnj.jus.br OR site:stj.jus.br OR site:stf.jus.br OR site:gov.br)';
+  if(domain==='finance')return query+' (site:bcb.gov.br OR site:ibge.gov.br OR site:gov.br)';
+  if(domain==='history')return query+' (site:bndigital.bn.gov.br OR site:scielo.br OR site:jstor.org)';
+  if(domain==='factcheck')return query+' (site:poynter.org OR site:reuters.com OR site:apnews.com OR site:aosfatos.org)';
+  if(domain==='security')return query+' (site:cert.br OR site:cisa.gov OR site:nist.gov OR site:analyzer.vecert.io)';
+  if(domain==='human')return query+' (site:apa.org OR site:pubmed.ncbi.nlm.nih.gov OR site:scielo.br OR site:openalex.org)';
+  return query+' official documentation';
 }
 
 const STOPWORDS=new Set(['como','criar','fazer','uma','um','de','da','do','das','dos','para','com','sem','que','por','em','no','na','e','ou','o','a','os','as','me','eu','quero','preciso']);
@@ -69,6 +99,62 @@ function expandResearchQuery(query:string){
     return query+' escultura metálica estrutura armação soldagem fabricação acabamento segurança metal sculpture fabrication welding';
   }
   return query;
+}
+
+function openAlexAbstract(index:any){
+  if(!index||typeof index!=='object')return '';
+  const words:string[]=[];
+  for(const [word,positions] of Object.entries(index)){
+    for(const pos of Array.isArray(positions)?positions:[])words[Number(pos)]=word;
+  }
+  return words.filter(Boolean).join(' ').slice(0,2200);
+}
+
+async function openAlexSearch(query:string,limit:number){
+  const url='https://api.openalex.org/works?search='+encodeURIComponent(query.slice(0,420))+'&per_page='+Math.max(2,Math.min(6,limit));
+  const r=await fetch(url,{headers:{'User-Agent':'PredictLM-Studio/6.0'},cache:'no-store'});
+  if(!r.ok)throw new Error('OpenAlex '+r.status);
+  const data=await r.json();
+  return (data?.results||[]).map((x:any)=>{
+    const sourceUrl=String(x?.doi||x?.id||'').trim();
+    return sourceUrl?{
+      type:'web',
+      url:sourceUrl,
+      title:String(x?.display_name||x?.title||'OpenAlex work'),
+      description:openAlexAbstract(x?.abstract_inverted_index)||String(x?.primary_location?.source?.display_name||'')+(x?.publication_year?' · '+x.publication_year:''),
+      site:safeHost(sourceUrl)||'openalex.org',
+      source:'OpenAlex',
+      academic:true,
+      citedBy:Number(x?.cited_by_count||0)
+    }:null;
+  }).filter(Boolean);
+}
+
+async function semanticScholarSearch(query:string,limit:number){
+  const url='https://api.semanticscholar.org/graph/v1/paper/search?query='+encodeURIComponent(query.slice(0,420))+'&limit='+Math.max(2,Math.min(6,limit))+'&fields=title,url,abstract,year,citationCount,venue';
+  const r=await fetch(url,{headers:{'User-Agent':'PredictLM-Studio/6.0'},cache:'no-store'});
+  if(!r.ok)throw new Error('Semantic Scholar '+r.status);
+  const data=await r.json();
+  return (data?.data||[]).map((x:any)=>x?.url?{
+    type:'web',
+    url:String(x.url),
+    title:String(x.title||'Semantic Scholar paper'),
+    description:String(x.abstract||x.venue||'').replace(/\s+/g,' ').trim().slice(0,2200)+(x.year?' · '+x.year:''),
+    site:safeHost(x.url)||'semanticscholar.org',
+    source:'Semantic Scholar',
+    academic:true,
+    citedBy:Number(x.citationCount||0)
+  }:null).filter(Boolean);
+}
+
+async function academicSearch(query:string,limit:number){
+  const domain=researchDomain(query);
+  if(!['health','stem','human','finance','legal'].includes(domain))return [] as any[];
+  const tasks=await Promise.allSettled([
+    openAlexSearch(query,limit),
+    semanticScholarSearch(query,limit)
+  ]);
+  return tasks.flatMap(x=>x.status==='fulfilled'?x.value:[]);
 }
 
 async function wikiIntro(title:string){
@@ -159,23 +245,47 @@ async function duckHtmlSearch(query:string,limit:number){
 }
 
 function enrichAndRank(query:string,items:any[],limit:number){
+  const sensitive=isSensitiveResearchQuery(query);
   const enriched=items.filter(x=>x?.url).map(x=>{
     const q=sourceQuality(x.url,x.source);
     const rel=sourceRelevance(query,x);
     const authority=Math.floor(q.score/12);
-    const rank=rel.score*4+authority;
-    return {...x,qualityScore:q.score,qualityTier:q.tier,qualityReasons:q.reasons,relevanceScore:rel.score,relevanceMatches:rel.matches,rankScore:rank};
+    const citationBonus=Math.min(6,Math.floor(Math.log10(Math.max(1,Number(x.citedBy||0)))+1));
+    const rank=rel.score*4+authority+(x.academic?4:0)+citationBonus;
+    const scrub=suppressRawResearchContent(x.url);
+    return {
+      ...x,
+      description:scrub?'Fonte adversarial monitorada apenas para threat-model; conteúdo bruto, PII, credenciais e mídia não são ingeridos.':x.description,
+      markdown:scrub?'':x.markdown,
+      qualityScore:q.score,
+      qualityTier:q.tier,
+      qualityReasons:q.reasons,
+      relevanceScore:rel.score,
+      relevanceMatches:rel.matches,
+      rankScore:rank,
+      researchUse:q.tier==='threat-reference'?'threat-model-only':'evidence'
+    };
   });
   const deduped=Array.from(new Map(enriched.map(x=>[x.url,x])).values()) as any[];
   const coreCount=Math.max(1,queryTokens(query).length);
   const relevant=deduped.filter((x:any)=>{
+    if(x.qualityTier==='threat-reference'&&!sensitive)return false;
     if(x.relevanceMatches>=2)return true;
     if(coreCount===1&&x.relevanceMatches>=1)return true;
     return x.relevanceScore>=7&&x.qualityScore>=65;
-  });
-  return relevant
-    .sort((a:any,b:any)=>Number(b.rankScore||0)-Number(a.rankScore||0))
-    .slice(0,Math.max(limit,12));
+  }).sort((a:any,b:any)=>Number(b.rankScore||0)-Number(a.rankScore||0));
+
+  const selected:any[]=[];
+  let threatRefs=0;
+  for(const row of relevant){
+    if(row.qualityTier==='threat-reference'){
+      if(threatRefs>=2)continue;
+      threatRefs++;
+    }
+    selected.push(row);
+    if(selected.length>=Math.max(limit,12))break;
+  }
+  return selected;
 }
 
 function coverage(items:any[]){
@@ -196,16 +306,17 @@ async function freeSearch(query:string,limit:number){
   const automotive=isAutomotiveResearchQuery(query);
   const expanded=expandResearchQuery(query);
   const authorityQuery=sensitive
-    ? query+' (site:gov.br OR site:bcb.gov.br OR site:cert.br OR site:cnj.jus.br OR site:cvm.gov.br)'
+    ? authorityQueryFor(query)
     : automotive
       ? expanded+' (site:nhtsa.gov OR site:unece.org OR site:sae.org OR site:iso.org)'
-      : query+' official documentation';
-  const [wiki,duck,github,duckWeb,duckAuthority]=await Promise.allSettled([
+      : authorityQueryFor(query);
+  const [wiki,duck,github,duckWeb,duckAuthority,academic]=await Promise.allSettled([
     fetch('https://pt.wikipedia.org/w/api.php?action=query&list=search&format=json&utf8=1&srlimit='+limit+'&srsearch='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
     fetch('https://api.duckduckgo.com/?format=json&no_html=1&skip_disambig=1&q='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
     isSoftwareResearchQuery(query)?fetch('https://api.github.com/search/repositories?per_page='+Math.min(5,limit)+'&q='+encodeURIComponent(query),{headers:{'Accept':'application/vnd.github+json','User-Agent':'PredictLM-Studio'}}).then(async r=>{if(!r.ok)throw new Error('GitHub '+r.status);return r.json()}):Promise.resolve({items:[]}),
     duckHtmlSearch(expanded,Math.min(10,limit)),
-    duckHtmlSearch(authorityQuery,Math.min(6,limit))
+    duckHtmlSearch(authorityQuery,Math.min(6,limit)),
+    academicSearch(query,Math.min(6,limit))
   ]);
 
   if(wiki.status==='fulfilled'){
@@ -235,6 +346,8 @@ async function freeSearch(query:string,limit:number){
   else warnings.push('DuckDuckGo Web indisponível');
   if(duckAuthority.status==='fulfilled')web.push(...duckAuthority.value);
   else warnings.push('Busca de fontes fortes indisponível');
+  if(academic.status==='fulfilled')web.push(...academic.value);
+  else warnings.push('Índice acadêmico indisponível');
 
   const ranked=enrichAndRank(query,web,limit);
   return {provider:'free-search',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
@@ -260,7 +373,9 @@ export async function POST(req:Request){
         };
         let apify:any[]=[];
         try{apify=await apifyItems(limit)}catch{}
-        const web=enrichAndRank(query,[...merged.web,...apify],limit);
+        let academic:any[]=[];
+        try{academic=await academicSearch(query,Math.min(6,limit))}catch{}
+        const web=enrichAndRank(query,[...merged.web,...apify,...academic],limit);
         const news=enrichAndRank(query,merged.news,limit);
         return Response.json({query,provider:'firecrawl',researchPlan:plan,web,news,images:merged.images,coverage:coverage([...web,...news])});
       }catch(error:any){
