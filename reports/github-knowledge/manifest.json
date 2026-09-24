@@ -1,8 +1,17 @@
 {
-  "generatedAt": "2026-09-24T22:30:33.911Z",
-  "knowledgeVersion": "d9fef54188a61dc3",
-  "chunkCount": 4075,
+  "generatedAt": "2026-09-24T23:24:51.257Z",
+  "knowledgeVersion": "3eebf3318df1fca8",
+  "chunkCount": 4297,
   "sources": [
+    {
+      "repo": "krusemediallc/arcads-claude-code",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "126350103e1357ce4a56c298ebf80787e3e23859",
+      "files": 14,
+      "chunks": 223,
+      "error": null
+    },
     {
       "repo": "realasfngl/Grok-Api",
       "mode": "quarantine",
@@ -16,7 +25,7 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "749220ef0007f8d87bd1531f1c24b0fe93816385",
+      "commit": "26b5494667dcbdceb13f6221967e290beaff14d0",
       "files": 2,
       "chunks": 0,
       "error": null
@@ -43,9 +52,9 @@
       "repo": "Alishahryar1/free-claude-code",
       "mode": "allow",
       "license": "MIT",
-      "commit": "82408c5adb1883b89b0e53b5369aee66349b37da",
+      "commit": "8cf820c498c1afc0695617bc4bb90be7b7aa3a74",
       "files": 1,
-      "chunks": 35,
+      "chunks": 36,
       "error": null
     },
     {
@@ -637,7 +646,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "ef0c86d3455fd51436ac30dacc98a86793bdd66e",
+      "commit": "c17fc6538d573d45bbf6675814392b1e3b9bacda",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -673,7 +682,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "cf685fa064d21c74e96d548d59ce7eaa97f623bc",
+      "commit": "67763b1960a160f9ead1ec67a37dc2424a2dca11",
       "files": 1,
       "chunks": 12,
       "error": null
