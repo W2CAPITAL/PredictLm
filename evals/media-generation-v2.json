@@ -440,6 +440,34 @@
         "code": "MEDIA_DIRECTOR_UNAVAILABLE",
         "videoGenerationMayContinue": true
       }
+    },
+    {
+      "id": "naruto-matchup-auto-wide-canonical",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "aspect": "1:1",
+        "aspectLocked": false,
+        "prompt": "Naruto Kurama lutando contra Sasuke Susanoo perfeito"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Anime",
+        "effectiveAspect": "16:9",
+        "canonicalLockIncludes": [
+          "nine distinct tails",
+          "Perfect Susanoo",
+          "full body",
+          "wings",
+          "central clash"
+        ],
+        "negativeIncludes": [
+          "humanoid Kurama",
+          "Susanoo torso only",
+          "central explosion hiding both avatars"
+        ]
+      }
     }
   ]
 }
