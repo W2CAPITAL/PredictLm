@@ -32,6 +32,14 @@ function clampDuration(value:any,min=3,max=15){
   return Math.max(min,Math.min(max,Math.round(Number(value)||5)));
 }
 
+function geminiDuration(value:any){
+  const n=Math.round(Number(value)||6);
+  return [4,6,8].sort((a,b)=>Math.abs(a-n)-Math.abs(b-n))[0];
+}
+function geminiAspect(value:any){
+  return String(value||'16:9')==='9:16'?'9:16':'16:9';
+}
+
 function safeProvider(value:any):Provider|null{
   const p=String(value||'').toLowerCase();
   return p==='auto'||p==='gemini'||p==='veo'||p==='sora'||p==='seedance'?p:null;
@@ -158,7 +166,9 @@ export async function POST(req:Request){
     },{status:503});
   }
 
-  const duration=clampDuration(body?.duration,resolvedProvider==='gemini'||resolvedProvider==='veo'||resolvedProvider==='sora'?3:4,(resolvedProvider==='gemini'||resolvedProvider==='veo')?8:15);
+  const duration=resolvedProvider==='gemini'
+    ? geminiDuration(body?.duration)
+    : clampDuration(body?.duration,resolvedProvider==='veo'||resolvedProvider==='sora'?3:4,resolvedProvider==='veo'?8:15);
   const imageUrl=body?.imageUrl?new URL(String(body.imageUrl),req.url).toString():undefined;
 
   try{
@@ -172,7 +182,8 @@ export async function POST(req:Request){
         parameters:{
           numberOfVideos:1,
           durationSeconds:duration,
-          resolution:String(body?.resolution||'720p')
+          resolution:String(body?.resolution||'720p'),
+          aspectRatio:geminiAspect(body?.aspectRatio)
         }
       };
     }else if(resolvedProvider==='veo'){
