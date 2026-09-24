@@ -12,6 +12,9 @@ import { isAggressiveLegalRequest, isLegalDossierRequest } from '@/lib/legal/mod
 import { assessFraudRisk } from '@/lib/security/fraud-defense';
 import { sourceQuality } from '@/lib/security/source-quality';
 import { githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
+import { estimateTokens, optimizePromptPackage } from '@/lib/token-budget';
+import { LOCAL_RUNTIME_CANDIDATES } from '@/lib/local-runtime-router';
+import { buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 
 export const runtime = 'nodejs';
 
@@ -126,6 +129,32 @@ export async function GET(){
     risks:[{title:'Decisão sem inventário documental',level:'high',detail:'Sem cruzar contrato e comprovantes, atribuição de responsabilidade é prematura.'}],
     recommendations:[{phase:'immediate',title:'Indexar anexos',detail:'Relacionar contrato, comprovantes e comunicações por data e origem.'}]
   }});
+  const tokenFixture=optimizePromptPackage({
+    mode:'full',
+    messages:Array.from({length:12},(_,i)=>({
+      role:i%2?'assistant':'user',
+      content:('contexto repetido importante sobre projeto, decisão e próximos passos. '.repeat(24))+' turno '+i
+    })),
+    sections:[
+      {label:'Knowledge A',text:'mesma evidência relevante '.repeat(180),priority:5},
+      {label:'Knowledge A duplicate',text:'mesma evidência relevante '.repeat(180),priority:3}
+    ]
+  });
+  const imagePromptFixture=buildQualityImagePrompt('um carro esportivo vermelho em rua molhada ao anoitecer '.repeat(120),{style:'Cinematic'});
+  const tokenBudget={
+    reducesContext:tokenFixture.stats.after<tokenFixture.stats.before,
+    meaningfulSavings:tokenFixture.stats.savedPct>=25,
+    boundedHistory:tokenFixture.messages.length<=12,
+    imagePromptBounded:estimateTokens(imagePromptFixture)<=540
+  };
+  const localRuntimeCatalog={
+    hasOllama:LOCAL_RUNTIME_CANDIDATES.some(x=>x.id==='ollama'&&x.baseUrl.includes('11434')),
+    hasOpenAI8080:LOCAL_RUNTIME_CANDIDATES.some(x=>x.id==='local-8080'),
+    hasGenieX:LOCAL_RUNTIME_CANDIDATES.some(x=>x.id==='geniex'&&x.baseUrl.includes('18181')),
+    hasLowRam:LOCAL_RUNTIME_CANDIDATES.some(x=>x.id==='lowram'&&x.baseUrl.includes('8766')),
+    loopbackOnly:LOCAL_RUNTIME_CANDIDATES.every(x=>/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])/.test(x.baseUrl))
+  };
+
   const fraudFixture=assessFraudRisk({
     texts:['URGENTE: sua conta foi suspensa. Envie o OTP e faça o PIX para a nova chave agora.'],
     urls:['https://xn--banc-seguro-9za.example/login/verify'],
@@ -146,7 +175,8 @@ export async function GET(){
     flagsPaymentDiversion:fraudFixture.signals.some(x=>x.category==='payment-diversion'),
     flagsGraphPattern:fraudFixture.signals.some(x=>x.category==='transaction-graph'),
     officialRanksAboveGithub:officialSource.score>githubSource.score,
-    threatRepoIsReference:threatSource.tier==='threat-reference'&&threatSource.score<githubSource.score
+    threatRepoIsReference:threatSource.tier==='threat-reference'&&threatSource.score<githubSource.score,
+    unofficialWrapperDowngraded:sourceQuality('https://github.com/chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop','GitHub').tier==='threat-reference'
   };
 
   const githubStats=githubKnowledgeStats();
@@ -174,7 +204,7 @@ export async function GET(){
     dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean);
 
   return Response.json({
     ok,
@@ -200,6 +230,9 @@ export async function GET(){
       fraudShield:true,
       sourceProvenance:true,
       githubKnowledgeEngine:true,
+      tokenBudgetEngine:true,
+      localRuntimeRouter:true,
+      mediaPromptBudget:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -217,6 +250,9 @@ export async function GET(){
       fraudSecurity,
       githubKnowledge,
       githubKnowledgeStats:githubStats,
+      tokenBudget,
+      tokenBudgetStats:tokenFixture.stats,
+      localRuntimeCatalog,
       packagedFiles:packaged.length
     },
     optional:{
