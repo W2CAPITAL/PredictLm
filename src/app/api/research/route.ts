@@ -37,6 +37,32 @@ async function firecrawlSearch(query:string,limit:number,key:string){
   };
 }
 
+async function apifyItems(limit:number){
+  const token=String(process.env.APIFY_API_TOKEN||'').trim();
+  if(!token)return [] as any[];
+  const datasetId=String(process.env.APIFY_DATASET_ID||'').trim();
+  const runId=String(process.env.APIFY_RUN_ID||'').trim();
+  let dataset=datasetId;
+  if(!dataset&&runId){
+    const meta=await fetch('https://api.apify.com/v2/actor-runs/'+encodeURIComponent(runId)+'?token='+encodeURIComponent(token),{cache:'no-store'});
+    if(!meta.ok)throw new Error('Apify run '+meta.status);
+    const data=await meta.json();
+    dataset=String(data?.data?.defaultDatasetId||'').trim();
+  }
+  if(!dataset)return [] as any[];
+  const res=await fetch('https://api.apify.com/v2/datasets/'+encodeURIComponent(dataset)+'/items?clean=true&format=json&limit='+Math.max(3,Math.min(30,limit))+'&token='+encodeURIComponent(token),{cache:'no-store'});
+  if(!res.ok)throw new Error('Apify dataset '+res.status);
+  const rows=await res.json();
+  if(!Array.isArray(rows))return [];
+  return rows.map((x:any)=>{
+    const url=String(x?.url||x?.link||x?.tweetUrl||x?.postUrl||x?.profileUrl||x?.sourceUrl||'').trim();
+    const text=String(x?.description||x?.text||x?.content||x?.caption||x?.body||'').replace(/\s+/g,' ').trim();
+    const title=String(x?.title||x?.name||x?.authorName||x?.username||text.slice(0,90)||'Apify result').trim();
+    return url?{type:'web',url,title,description:text.slice(0,2200),site:safeHost(url),source:'Apify'}:null;
+  }).filter(Boolean);
+}
+
+
 function decodeDuckUrl(raw:string){
   try{
     const url=raw.startsWith('//')?'https:'+raw:raw;
@@ -144,7 +170,9 @@ export async function POST(req:Request){
     if(key){
       try{
         const result=await firecrawlSearch(query,limit,key);
-        const web=enrichAndRank(result.web||[],limit);
+        let apify:any[]=[];
+        try{apify=await apifyItems(limit)}catch{}
+        const web=enrichAndRank([...(result.web||[]),...apify],limit);
         const news=enrichAndRank(result.news||[],limit);
         return Response.json({query,...result,web,news,coverage:coverage([...web,...news])});
       }catch(error:any){
@@ -154,6 +182,13 @@ export async function POST(req:Request){
     }
 
     const fallback=await freeSearch(query,limit);
+    try{
+      const apify=await apifyItems(limit);
+      if(apify.length){
+        const web=enrichAndRank([...(fallback.web||[]),...apify],limit);
+        return Response.json({query,...fallback,web,coverage:coverage(web)});
+      }
+    }catch{}
     return Response.json({query,...fallback});
   }catch(err:any){
     return Response.json({error:err?.message||'Research failed'},{status:500});
