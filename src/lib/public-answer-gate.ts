@@ -30,6 +30,22 @@ export function hasInternalReasoningLeak(text:string){
   return REASONING_PATTERNS.some(re=>re.test(value));
 }
 
+function extractExplicitFinal(text:string){
+  const value=String(text||'');
+  const patterns=[
+    /(?:^|\n)\s*(?:final answer|final response|resposta final|resposta ao usuário|resposta ao usuario)\s*[:\-]\s*/gi,
+    /(?:^|\n)\s*#{1,4}\s*(?:final answer|resposta final)\s*\n/gi
+  ];
+  let best='';
+  for(const pattern of patterns){
+    for(const match of value.matchAll(pattern)){
+      const tail=value.slice((match.index||0)+match[0].length).trim();
+      if(tail.length>best.length)best=tail;
+    }
+  }
+  return best;
+}
+
 export function hasInternalRuntimeLeak(text:string){
   const value=String(text||'');
   return INTERNAL_RUNTIME_PATTERNS.some(re=>re.test(value));
