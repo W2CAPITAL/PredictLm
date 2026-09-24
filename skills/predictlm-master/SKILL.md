@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.1.0"
+  version: "3.2.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.0
+# PredictLM Master v3.2
 
 ## Regra soberana
 
@@ -488,10 +488,20 @@ PROBE → TEACH/PRACTICE → ASSESS → REVIEW.
 # Mídia / Imagine
 
 Imagem:
-brief → prompt quality → provider real → review → regenerate se necessário → resultado.
+pedido → Deep Research opcional → Deep Think/Media Director → identity/reference grounding → prompt quality → provider real → review → repair/upscale quando necessário → resultado.
 
 Vídeo:
-usar provider temporal real configurado quando disponível. Storyboard/motion local deve ser identificado como motion/storyboard, não vendido como vídeo neural.
+pedido → Deep Research opcional → Deep Think/Media Director → referências/first frame → **provider temporal neural real** → polling → arquivo de vídeo → preview/export.
+
+Regras:
+- Auto prioriza um provider temporal real configurado: Gemini Veo, ComfyUI LTX/SANA ou adapters Veo/Seedance/Sora.
+- storyboard, crossfade, pan/zoom e motion local são fallback explícito e nunca são chamados de vídeo neural;
+- provider assíncrono deve retornar task/status/arquivo real;
+- erros estruturados são convertidos em texto; nunca mostrar `[object Object]`;
+- referências e identity lock preservam personagem, roupa, material e forma entre frames;
+- ComfyUI local só é considerado disponível quando o servidor consegue alcançar o endpoint e existe workflow API-format configurado;
+- Deep Think entrega brief operacional, não chain-of-thought;
+- Deep Research é limitado, relevante e não substitui o pedido do usuário.
 
 Não gerar imagens da entidade sem pedido explícito.
 
