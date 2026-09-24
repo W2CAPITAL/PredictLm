@@ -2,13 +2,13 @@ import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
 import { mediaErrorText } from '@/lib/media/media-errors';
+import { buildDisplayTitle, buildSafeCaptionPtBr, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
   fetchReferenceInlineData,
   inlineImageFromDataUrl,
   isPersistentSelfPortraitRequest,
-  isSpecificVisualPrompt,
   resolveVisualReferences
 } from '@/lib/media/visual-reference';
 
@@ -72,7 +72,8 @@ export async function POST(req:Request){
         referencesUsed:[],
         originalPrompt,
         expandedPrompt:originalPrompt,
-        caption:parityCaptionPtBr(originalPrompt)
+        caption:buildSafeCaptionPtBr(originalPrompt,parityCaptionPtBr(originalPrompt)),
+        displayTitle:buildDisplayTitle(originalPrompt)
       });
     }
 
@@ -83,7 +84,7 @@ export async function POST(req:Request){
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
       : 'auto') as ImagePromptMode;
-    const effectivePromptMode=chooseImagePromptMode(requestedPromptMode,isSpecificVisualPrompt(sourcePrompt));
+    const effectivePromptMode=chooseImagePromptMode(requestedPromptMode,shouldForceLiteralMode(sourcePrompt));
     const userNegative=compactText(String(body?.negativePrompt||'').trim(),500);
     const negativePrompt=buildDefaultNegativePrompt(sourcePrompt,userNegative);
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
@@ -204,7 +205,8 @@ export async function POST(req:Request){
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
             expandedPrompt:groundedPrompt,
-            caption:parityCaptionPtBr(sourcePrompt),
+            caption:buildSafeCaptionPtBr(sourcePrompt),
+            displayTitle:buildDisplayTitle(sourcePrompt),
             parityContract:'grok-imagine-parity',
             promptMode:effectivePromptMode,
             negativePrompt
@@ -231,7 +233,8 @@ export async function POST(req:Request){
       referenceWarnings:referencePlan.warnings,
       originalPrompt:sourcePrompt,
       expandedPrompt:groundedPrompt,
-      caption:parityCaptionPtBr(sourcePrompt),
+      caption:buildSafeCaptionPtBr(sourcePrompt),
+      displayTitle:buildDisplayTitle(sourcePrompt),
       parityContract:'grok-imagine-parity',
       promptMode:effectivePromptMode,
       negativePrompt
