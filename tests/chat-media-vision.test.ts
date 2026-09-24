@@ -74,3 +74,13 @@ test('knowledge gap detector triggers research retry instead of junk fallback',(
   assert.equal(signalsKnowledgeGap('Não sei essa informação.'),true);
   assert.equal(signalsKnowledgeGap('Para plantar morango, use uma muda saudável em solo bem drenado e mantenha a coroa ao nível do solo.'),false);
 });
+
+test('simple imaginative chat remains a direct hypothetical turn',()=>{
+  const prompt='Como seria se uma mosca falasse';
+  const answer='Se uma mosca falasse, provavelmente seria uma criatura acelerada e curiosa: reclamaria do vento, comentaria cada cheiro da cozinha e trataria uma janela fechada como uma enorme crise existencial.';
+  assert.equal(classifyConversation(prompt),'hypothetical');
+  assert.equal(shouldSearchConversation('hypothetical',true,prompt),false);
+  assert.equal(conversationAnswerIssue(prompt,answer),'');
+  assert.equal(responseTopicAlignment(prompt,answer).relevant,true);
+  assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
+});
