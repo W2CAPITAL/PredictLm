@@ -10,7 +10,8 @@ import {
 
 export type LifeAgentActionType=
   |'move'|'buy_food'|'eat'|'rest'|'work'|'study'|'socialize'
-  |'exercise'|'healthcare'|'wait'|'set_goal'|'speak';
+  |'exercise'|'healthcare'|'wait'|'set_goal'|'speak'
+  |'cook'|'clean_home'|'shower'|'create'|'message_friend';
 
 export interface LifeAgentAction{
   id:string;
@@ -47,6 +48,9 @@ export interface LifeAgentState{
   history:LifeActionRecord[];
   inventory:{food:number};
   knowledge:number;
+  skills:{career:number;cooking:number;fitness:number;logic:number;social:number;creativity:number};
+  home:{cleanliness:number;comfort:number};
+  autonomy:{enabled:boolean;decisionCount:number;lastDecision:string};
 }
 
 export interface LifeAgentExecution{
@@ -74,7 +78,15 @@ function cloneState(input:LifeSimulationState):LifeSimulationState{
 }
 
 export function createLifeAgentState():LifeAgentState{
-  return {plan:null,history:[],inventory:{food:2},knowledge:0};
+  return {
+    plan:null,
+    history:[],
+    inventory:{food:2},
+    knowledge:0,
+    skills:{career:18,cooking:12,fitness:16,logic:20,social:18,creativity:14},
+    home:{cleanliness:76,comfort:72},
+    autonomy:{enabled:false,decisionCount:0,lastDecision:'Aguardando instrução.'}
+  };
 }
 
 export function normalizeLifeAgentState(raw:any):LifeAgentState{
@@ -84,7 +96,24 @@ export function normalizeLifeAgentState(raw:any):LifeAgentState{
     plan:raw.plan&&typeof raw.plan==='object'?raw.plan:null,
     history:Array.isArray(raw.history)?raw.history.slice(-60):[],
     inventory:{food:Math.max(0,Number(raw.inventory?.food??base.inventory.food)||0)},
-    knowledge:clamp(Number(raw.knowledge??0)||0)
+    knowledge:clamp(Number(raw.knowledge??0)||0),
+    skills:{
+      career:clamp(Number(raw.skills?.career??base.skills.career)||0),
+      cooking:clamp(Number(raw.skills?.cooking??base.skills.cooking)||0),
+      fitness:clamp(Number(raw.skills?.fitness??base.skills.fitness)||0),
+      logic:clamp(Number(raw.skills?.logic??base.skills.logic)||0),
+      social:clamp(Number(raw.skills?.social??base.skills.social)||0),
+      creativity:clamp(Number(raw.skills?.creativity??base.skills.creativity)||0)
+    },
+    home:{
+      cleanliness:clamp(Number(raw.home?.cleanliness??base.home.cleanliness)||0),
+      comfort:clamp(Number(raw.home?.comfort??base.home.comfort)||0)
+    },
+    autonomy:{
+      enabled:Boolean(raw.autonomy?.enabled??base.autonomy.enabled),
+      decisionCount:Math.max(0,Number(raw.autonomy?.decisionCount??0)||0),
+      lastDecision:String(raw.autonomy?.lastDecision||base.autonomy.lastDecision).slice(0,240)
+    }
   };
 }
 
@@ -98,7 +127,8 @@ function safeLocation(value:any):LifeLocation|undefined{
 export function sanitizeAgentActions(raw:any[]):LifeAgentAction[]{
   const allowed=new Set<LifeAgentActionType>([
     'move','buy_food','eat','rest','work','study','socialize',
-    'exercise','healthcare','wait','set_goal','speak'
+    'exercise','healthcare','wait','set_goal','speak',
+    'cook','clean_home','shower','create','message_friend'
   ]);
   const out:LifeAgentAction[]=[];
   for(const [index,row] of (Array.isArray(raw)?raw:[]).entries()){
@@ -110,7 +140,7 @@ export function sanitizeAgentActions(raw:any[]):LifeAgentAction[]{
       id:String(row?.id||actionId(index)),
       type,
       ...(target?{target}:{}),
-      ...(type==='wait'||type==='rest'||type==='work'||type==='study'||type==='socialize'||type==='exercise'||type==='healthcare'?{minutes}:{}),
+      ...(type==='wait'||type==='rest'||type==='work'||type==='study'||type==='socialize'||type==='exercise'||type==='healthcare'||type==='cook'||type==='clean_home'||type==='shower'||type==='create'?{minutes}:{}),
       ...(row?.text?{text:String(row.text).slice(0,220)}:{}),
       ...(row?.reason?{reason:String(row.reason).slice(0,180)}:{})
     });
@@ -139,6 +169,12 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
   const wantsExercise=/\b(exerc|caminh|correr|trein|parque)\b/.test(q);
   const wantsHealth=/\b(clinic|saude|saúde|medic|consulta)\b/.test(q);
   const wantsEat=/\b(coma|comer|alimente|fome)\b/.test(q);
+  const wantsCook=/\b(cozinhe|cozinhar|prepare (?:uma )?refeicao|prepare (?:uma )?refeição)\b/.test(q);
+  const wantsClean=/\b(limpe|limpar|arrume|arrumar|faxina|casa limpa)\b/.test(q);
+  const wantsShower=/\b(banho|tome banho|ducha|higiene)\b/.test(q);
+  const wantsCreate=/\b(crie algo|desenhe|escreva|pinte|projeto criativo|criatividade)\b/.test(q);
+  const wantsMessage=/\b(mensagem|mande mensagem|fale com mara|fale com nina|telefone|celular)\b/.test(q);
+  const wantsAutonomy=/\b(decida|aja sozinha|aja por conta|autonomia|faca o que achar melhor|faça o que achar melhor|viva sua vida)\b/.test(q);
 
   if(wantsMarket){
     pushMove(actions,'Mercado','compras exigem presença no mercado');
@@ -172,6 +208,27 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
     if(!wantsMarket&&state.person.location!=='Casa'&&state.person.location!=='Café')pushMove(actions,'Casa','comer em local apropriado');
     actions.push({id:actionId(actions.length),type:'eat',reason:'reduzir fome'});
   }
+  if(wantsCook){
+    pushMove(actions,'Casa','cozinhar exige estar em casa');
+    actions.push({id:actionId(actions.length),type:'cook',minutes:35,reason:'preparar uma refeição'});
+  }
+  if(wantsClean){
+    pushMove(actions,'Casa','limpeza ocorre em casa');
+    actions.push({id:actionId(actions.length),type:'clean_home',minutes:35,reason:'melhorar o ambiente doméstico'});
+  }
+  if(wantsShower){
+    pushMove(actions,'Casa','banho ocorre em casa');
+    actions.push({id:actionId(actions.length),type:'shower',minutes:20,reason:'higiene e recuperação'});
+  }
+  if(wantsCreate){
+    const target:LifeLocation=state.person.location==='Casa'?'Casa':'Biblioteca';
+    pushMove(actions,target,'atividade criativa precisa de um local estável');
+    actions.push({id:actionId(actions.length),type:'create',minutes:45,reason:'avançar criatividade e projeto pessoal'});
+  }
+  if(wantsMessage){
+    actions.push({id:actionId(actions.length),type:'message_friend',text:'Enviar uma mensagem breve para uma relação próxima.',reason:'manter vínculo social'});
+  }
+  if(wantsAutonomy&&!actions.length)return autonomousLifePlan(state,createLifeAgentState(),instruction);
 
   if(!actions.length){
     const parsed=applySimulationInstruction(state,instruction);
@@ -187,6 +244,67 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
     cursor:0,
     status:'planned',
     summary:'Plano local criado a partir da instrução.',
+    createdAt:Date.now()
+  };
+}
+
+export function autonomousLifePlan(
+  state:LifeSimulationState,
+  agentInput:LifeAgentState,
+  instruction='Decida o que fazer agora'
+):LifeAgentPlan{
+  const agent=normalizeLifeAgentState(agentInput);
+  const actions:LifeAgentAction[]=[];
+  let summary='Priorização autônoma por necessidades, objetivo, dinheiro e relações.';
+
+  if(state.needs.health<48){
+    pushMove(actions,'Clínica','saúde baixa é prioridade');
+    actions.push({id:actionId(actions.length),type:'healthcare',minutes:40,reason:'recuperar saúde'});
+  }else if(state.needs.energy<38){
+    pushMove(actions,'Casa','energia baixa');
+    actions.push({id:actionId(actions.length),type:'rest',minutes:70,reason:'recuperar energia'});
+  }else if(state.needs.hunger<42){
+    if(agent.inventory.food<=0){
+      pushMove(actions,'Mercado','não há comida no inventário');
+      actions.push({id:actionId(actions.length),type:'buy_food',reason:'abastecer comida'});
+    }
+    pushMove(actions,'Casa','preparar refeição em casa');
+    actions.push({id:actionId(actions.length),type:'cook',minutes:30,reason:'resolver fome com refeição preparada'});
+  }else if(agent.home.cleanliness<45){
+    pushMove(actions,'Casa','ambiente doméstico degradado');
+    actions.push({id:actionId(actions.length),type:'clean_home',minutes:35,reason:'restaurar limpeza'});
+  }else if(state.person.money<260){
+    pushMove(actions,'Trabalho','reserva financeira baixa');
+    actions.push({id:actionId(actions.length),type:'work',minutes:90,reason:'aumentar renda'});
+  }else if(state.needs.social<44){
+    pushMove(actions,'Café','necessidade social baixa');
+    actions.push({id:actionId(actions.length),type:'socialize',minutes:45,reason:'fortalecer relações'});
+  }else if(state.needs.stress>62){
+    pushMove(actions,'Parque','estresse elevado');
+    actions.push({id:actionId(actions.length),type:'exercise',minutes:35,reason:'reduzir estresse e melhorar saúde'});
+  }else if(agent.skills.logic<45||agent.knowledge<40){
+    pushMove(actions,'Biblioteca','desenvolvimento de conhecimento');
+    actions.push({id:actionId(actions.length),type:'study',minutes:60,reason:'progredir conhecimento e lógica'});
+  }else{
+    const creative=/projeto|criar|criativ|escrev|desenh|arte/i.test(state.person.goal);
+    if(creative){
+      pushMove(actions,'Biblioteca','ambiente de foco para projeto pessoal');
+      actions.push({id:actionId(actions.length),type:'create',minutes:55,reason:'avançar objetivo pessoal'});
+    }else{
+      pushMove(actions,'Trabalho','rotina produtiva equilibrada');
+      actions.push({id:actionId(actions.length),type:'work',minutes:60,reason:'manter renda e carreira'});
+      actions.push({id:actionId(actions.length),type:'message_friend',text:'Checar como uma amiga está.',reason:'manter vínculo social'});
+    }
+  }
+
+  return {
+    id:planId(),
+    objective:instruction.slice(0,240),
+    source:'deterministic',
+    actions:sanitizeAgentActions(actions),
+    cursor:0,
+    status:'planned',
+    summary,
     createdAt:Date.now()
   };
 }
@@ -316,6 +434,7 @@ export function executeLifeAgentAction(
       state=runMinutes(state,minutes,'Trabalho');
       const earned=Math.max(14,Math.round(minutes*.55));
       state.person.money+=earned;
+      agent.skills.career=clamp(agent.skills.career+Math.max(1,Math.round(minutes/45)));
       state.needs.stress=clamp(state.needs.stress+7);
       state.person.currentAction='Concluindo um bloco de trabalho';
       message='Trabalhou '+minutes+' min e recebeu R$ '+earned+'.';
@@ -326,6 +445,7 @@ export function executeLifeAgentAction(
       const minutes=action.minutes||45;
       state=runMinutes(state,minutes,'Biblioteca');
       agent.knowledge=clamp(agent.knowledge+Math.max(3,Math.round(minutes/10)));
+      agent.skills.logic=clamp(agent.skills.logic+Math.max(1,Math.round(minutes/20)));
       state.needs.focus=clamp(state.needs.focus+8);
       state.person.currentAction='Estudando com foco';
       message='Estudou '+minutes+' min; conhecimento agora '+agent.knowledge+'.';
@@ -337,6 +457,7 @@ export function executeLifeAgentAction(
       state=runMinutes(state,minutes,state.person.location);
       state.needs.social=clamp(state.needs.social+24);
       state.needs.fun=clamp(state.needs.fun+10);
+      agent.skills.social=clamp(agent.skills.social+2);
       const rel=state.relationships[0];
       if(rel){rel.affinity=clamp(rel.affinity+4);rel.trust=clamp(rel.trust+2);rel.lastContact=state.tick}
       state.person.currentAction='Conversando e fortalecendo relações';
@@ -350,6 +471,7 @@ export function executeLifeAgentAction(
       state.needs.health=clamp(state.needs.health+9);
       state.needs.stress=clamp(state.needs.stress-10);
       state.needs.energy=clamp(state.needs.energy-8);
+      agent.skills.fitness=clamp(agent.skills.fitness+3);
       state.person.currentAction='Fazendo exercício no parque';
       message='Fez exercício por '+minutes+' min.';
     }
@@ -376,6 +498,65 @@ export function executeLifeAgentAction(
     state.person.currentAction=text?'Falando: '+text.slice(0,100):'Conversando';
     state.needs.social=clamp(state.needs.social+3);
     message=text?'Disse: '+text.slice(0,140):'Falou com o ambiente.';
+  }else if(action.type==='cook'){
+    if(state.person.location!=='Casa'){ok=false;message='Precisa estar em Casa para cozinhar.'}
+    else if(agent.inventory.food<=0){ok=false;message='Não há comida no inventário para cozinhar.'}
+    else{
+      const minutes=action.minutes||35;
+      agent.inventory.food-=1;
+      state=runMinutes(state,minutes,'Casa');
+      state.needs.hunger=clamp(state.needs.hunger+38);
+      state.needs.fun=clamp(state.needs.fun+4);
+      agent.skills.cooking=clamp(agent.skills.cooking+3);
+      state.person.currentAction='Cozinhando e fazendo uma refeição';
+      message='Cozinhou por '+minutes+' min; culinária '+agent.skills.cooking+'.';
+    }
+  }else if(action.type==='clean_home'){
+    if(state.person.location!=='Casa'){ok=false;message='Precisa estar em Casa para limpar.'}
+    else{
+      const minutes=action.minutes||35;
+      state=runMinutes(state,minutes,'Casa');
+      agent.home.cleanliness=clamp(agent.home.cleanliness+28);
+      state.needs.energy=clamp(state.needs.energy-6);
+      state.needs.stress=clamp(state.needs.stress-4);
+      state.person.currentAction='Limpando e organizando a casa';
+      message='Casa organizada; limpeza '+agent.home.cleanliness+'.';
+    }
+  }else if(action.type==='shower'){
+    if(state.person.location!=='Casa'){ok=false;message='Precisa estar em Casa para tomar banho.'}
+    else{
+      const minutes=action.minutes||20;
+      state=runMinutes(state,minutes,'Casa');
+      state.needs.health=clamp(state.needs.health+5);
+      state.needs.stress=clamp(state.needs.stress-8);
+      state.needs.energy=clamp(state.needs.energy+2);
+      state.person.currentAction='Tomando banho e se recuperando';
+      message='Tomou banho e reduziu o estresse.';
+    }
+  }else if(action.type==='create'){
+    if(state.person.location!=='Casa'&&state.person.location!=='Biblioteca'){ok=false;message='Precisa estar em Casa ou na Biblioteca para criar com foco.'}
+    else{
+      const minutes=action.minutes||45;
+      state=runMinutes(state,minutes,state.person.location);
+      agent.skills.creativity=clamp(agent.skills.creativity+4);
+      state.needs.focus=clamp(state.needs.focus+4);
+      state.needs.fun=clamp(state.needs.fun+7);
+      state.person.currentAction='Criando algo para o projeto pessoal';
+      message='Criou por '+minutes+' min; criatividade '+agent.skills.creativity+'.';
+    }
+  }else if(action.type==='message_friend'){
+    const rel=state.relationships[0];
+    if(!rel){ok=false;message='Nenhuma relação disponível para contatar.'}
+    else{
+      rel.affinity=clamp(rel.affinity+2);
+      rel.trust=clamp(rel.trust+1);
+      rel.lastContact=state.tick;
+      agent.skills.social=clamp(agent.skills.social+1);
+      state.needs.social=clamp(state.needs.social+8);
+      state.person.currentAction='Trocando mensagens com '+rel.name;
+      state=runMinutes(state,10,state.person.location);
+      message='Conversou por mensagem com '+rel.name+'.';
+    }
   }
 
   state.person.mood=state.needs.stress>72?'sobrecarregada':state.needs.energy<35?'cansada':'estável';
@@ -400,6 +581,7 @@ function requiredLocation(type:LifeAgentActionType):LifeLocation|undefined{
   if(type==='exercise')return 'Parque';
   if(type==='healthcare')return 'Clínica';
   if(type==='socialize')return 'Café';
+  if(type==='cook'||type==='clean_home'||type==='shower')return 'Casa';
   return undefined;
 }
 
@@ -500,6 +682,9 @@ export function agentWorldObservation(state:LifeSimulationState,agentInput:LifeA
     simulationSummary(state),
     'Inventário: comida '+agent.inventory.food,
     'Conhecimento: '+agent.knowledge,
+    'Habilidades: carreira '+agent.skills.career+' · culinária '+agent.skills.cooking+' · fitness '+agent.skills.fitness+' · lógica '+agent.skills.logic+' · social '+agent.skills.social+' · criatividade '+agent.skills.creativity,
+    'Casa: limpeza '+agent.home.cleanliness+' · conforto '+agent.home.comfort,
+    'Autonomia: '+(agent.autonomy.enabled?'ativa':'manual')+' · decisões '+agent.autonomy.decisionCount,
     'Plano atual: '+(agent.plan?agent.plan.objective+' · '+agent.plan.status+' · passo '+agent.plan.cursor+'/'+agent.plan.actions.length:'nenhum'),
     'Últimas ações: '+agent.history.slice(-5).map(x=>(x.ok?'OK ':'ERRO ')+x.action.type+': '+x.message).join(' | ')
   ].join('\n');
@@ -516,9 +701,9 @@ export function simulationPlannerPrompt(
     'Transforme a ordem em ações executáveis no mundo. Não responda em prosa.',
     'Retorne SOMENTE JSON válido no formato:',
     '{"objective":"...","summary":"...","actions":[{"type":"move","target":"Mercado","reason":"..."},{"type":"buy_food","reason":"..."},{"type":"move","target":"Casa"},{"type":"eat"}]}',
-    'Tipos permitidos: move, buy_food, eat, rest, work, study, socialize, exercise, healthcare, wait, set_goal, speak.',
+    'Tipos permitidos: move, buy_food, eat, rest, work, study, socialize, exercise, healthcare, wait, set_goal, speak, cook, clean_home, shower, create, message_friend.',
     'Destinos permitidos: Casa, Trabalho, Café, Parque, Mercado, Clínica, Biblioteca.',
-    'Regras físicas: comprar comida exige Mercado; comer em casa exige comida; estudar exige Biblioteca; trabalhar exige Trabalho; descansar exige Casa; exercício exige Parque; cuidados exigem Clínica.',
+    'Regras físicas: comprar comida exige Mercado; comer/cozinhar em casa exige comida; estudar exige Biblioteca; trabalhar exige Trabalho; descansar/limpar/tomar banho exigem Casa; exercício exige Parque; cuidados exigem Clínica; criar exige Casa ou Biblioteca.',
     'Planeje no máximo 10 ações. Prefira ações que mudem o estado real do mundo.',
     'Não inclua chain-of-thought. reason é apenas justificativa curta da ação.',
     '',
