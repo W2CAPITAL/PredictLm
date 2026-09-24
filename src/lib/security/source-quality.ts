@@ -20,10 +20,12 @@ const THREAT_REPOS=[
 const OFFICIAL_SUFFIXES=['.gov.br','.jus.br'];
 const OFFICIAL_HOSTS=new Set([
   'gov.br','bcb.gov.br','cvm.gov.br','cnj.jus.br','stj.jus.br','stf.jus.br',
-  'cert.br','nic.br','receita.economia.gov.br','planalto.gov.br'
+  'cert.br','nic.br','receita.economia.gov.br','planalto.gov.br',
+  'nhtsa.gov','unece.org','eur-lex.europa.eu'
 ]);
 const ACADEMIC_HOSTS=new Set([
-  'arxiv.org','doi.org','dl.acm.org','ieeexplore.ieee.org','springer.com','nature.com','sciencedirect.com'
+  'arxiv.org','doi.org','dl.acm.org','ieeexplore.ieee.org','springer.com','nature.com','sciencedirect.com',
+  'sae.org','iso.org'
 ]);
 const ESTABLISHED_HOSTS=new Set([
   'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk'
