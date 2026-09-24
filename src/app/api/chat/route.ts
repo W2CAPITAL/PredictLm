@@ -3,6 +3,7 @@ import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge }
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
 import { tutorSystemContext } from '@/lib/tutor-mode';
 import { globalLearningContext } from '@/lib/global-learning';
+import { deepLoopContext } from '@/lib/deep-loop-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -110,6 +111,7 @@ export async function POST(req:Request){
     const ghHits=retrieveGitHubKnowledge(prompt,githubTopK);
     const stats=githubKnowledgeStats();
     const tutor=tutorSystemContext(prompt);
+    const deepLoop=deep?deepLoopContext(prompt):'';
     const globalLessons=globalLearningContext(prompt,deep?5:3);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
@@ -118,6 +120,7 @@ export async function POST(req:Request){
       sections:[
         {label:'Instruções persistentes do usuário',text:localInstructions,priority:8},
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+        {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
