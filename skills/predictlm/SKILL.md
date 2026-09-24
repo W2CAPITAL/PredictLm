@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.12.0"
+  version: "1.13.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -368,3 +368,99 @@ Pergunta sobre livro:
 EDITION → PASSAGE → RETRIEVE → ANSWER → PROVENANCE.
 
 Aprendizado aprovado pode virar lição global; conteúdo bruto protegido nunca é promovido automaticamente.
+
+
+## Build review / prompt contract
+
+Fontes auditadas:
+- `truongnh1992/gemini-ai-code-reviewer` · MIT;
+- `Addy-shetty/Vibe-Prompting` · MIT.
+
+Build usa:
+GOAL → CURRENT CONTEXT → REQUIREMENTS → ACCEPTANCE CHECKS → IMPLEMENT → DIFF REVIEW → SMOKE/COUNCIL → REPAIR → RE-REVIEW.
+
+Diff review é obrigatório para a superfície alterada:
+- blocker/high impede considerar a mudança pronta;
+- hard-coded credentials e provider secrets client-side são bloqueantes;
+- AI review nunca substitui build/typecheck/testes;
+- lock/generated files não devem dominar contexto de review.
+
+`Dioque/Livros` permanece quarantine porque não há licença verificada. Nenhum livro desse repo entra no corpus automaticamente.
+
+## Estado operacional obrigatório — v1.13
+
+As evoluções abaixo fazem parte do contrato atual e não podem desaparecer silenciosamente:
+
+1. **Neural auto-warm seguro**
+   - restaura preferência existente;
+   - caso não exista, aquece Neural Lite somente em idle;
+   - Web Worker mantém inferência fora da UI;
+   - apenas um carregamento neural simultâneo;
+   - Save-Data/memória extremamente baixa podem impedir auto-load;
+   - modelo 70B nunca é auto-carregado no browser.
+
+2. **Runtimes locais opcionais**
+   - Browser Qwen continua baseline;
+   - Local Router pode usar Ollama/OpenAI local/llamafile-NanoMind/GenieX/LowRAM;
+   - AirLLM é referência desktop/offload, não promessa de 70B em 4 GB de RAM total;
+   - ausência de runtime externo não quebra o app.
+
+3. **Token Budget**
+   - Fast top-3 diverso;
+   - Deep até top-5 diverso;
+   - LowRAM top-2;
+   - dedup de histórico/contexto;
+   - budget antes de qualquer motor.
+
+4. **Deep Loop**
+   - iteração limitada por risco;
+   - cada nova passagem precisa achar correção concreta;
+   - stop early sem ganho;
+   - rollback quando revisão piora a resposta;
+   - nunca exibir chain-of-thought privado.
+
+5. **Tutor / Reading**
+   - mastery baseado em evidência;
+   - source-grounded reading;
+   - citações/proveniência preservadas;
+   - pergunta normal não vira quiz automaticamente.
+
+6. **Deep Research**
+   - Rápida/Balanceada/Profunda;
+   - consultas não redundantes e batches limitados;
+   - URL/host dedup;
+   - partial-result fallback;
+   - aprofundar só diante de lacuna/contradição;
+   - Ciência Todo Dia complementar em ciência;
+   - LinkedIn Learning somente discovery + material autorizado.
+
+7. **Books / rights**
+   - obra/edição tem licença própria;
+   - licença do repo não relicencia PDF embutido;
+   - public-domain/open pode ser indexado com provenance;
+   - coleção de direitos incertos fica reference/quarantine.
+
+8. **Global learning sem banco**
+   - instrução explícita pode persistir localmente de imediato;
+   - promoção global vira GitHub Learning Proposal;
+   - somente conteúdo aprovado entra em `global-lessons.json`;
+   - secrets/PII são sanitizados;
+   - nenhuma conversa pública altera o comportamento global automaticamente.
+
+9. **Image Quality Ladder**
+   - prompt visual com gate anti-blur/geometria;
+   - gerar → revisar → uma regeneração automática se score baixo;
+   - super-resolution opcional por adapter Real-ESRGAN/SwinIR;
+   - upscale não é tratado como correção de anatomia/semântica;
+   - DLSS não é anunciado como upscaler de still image.
+
+10. **Build quality**
+    - projeto existente é fonte da verdade;
+    - prompt estruturado;
+    - changed-file review;
+    - smoke + Council;
+    - repair focado;
+    - review novamente;
+    - sem fake buttons/integrations/secrets no frontend.
+
+Toda mudança de runtime/arquitetura/fonte de aprendizado exige atualização correspondente das skills no mesmo ciclo de implementação.
