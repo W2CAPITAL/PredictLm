@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -185,3 +185,24 @@ Casos que forçam Literal + referência Firecrawl:
 - Oozaru/“macaco de Dragon Ball” → Great Ape Saiyajin, não macaco comum ou demônio blindado;
 - “Bijuu de quatro caudas do Naruto” → Son Goku Four-Tails de Naruto, nunca Goku humano de Dragon Ball;
 - Naruto/Kurama vs Sasuke/Perfect Susanoo → dois combatentes distintos, laranja/dourado vs violeta.
+
+
+## Defaults seguros do Imagine
+
+Para imagem:
+- Deep Think e Deep Research ficam **desligados por padrão**; continuam disponíveis como opt-in para pedidos conceituais;
+- Auto força **Literal** para personagem/franquia específica;
+- prompts de anime/shonen detectados com estilo ainda em Cinematic usam **Anime** automaticamente;
+- o Media Director é proibido de inventar binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs ou fendas dimensionais sem pedido explícito;
+- regeneração em Literal preserva o mesmo pedido/identity lock e troca seed, sem review hints criativos;
+- quando o provider final é `pollinations-proxy`, a UI mostra aviso explícito de fidelidade limitada;
+- provider/upscaler são registrados separadamente para não mascarar que a imagem veio do fallback.
+
+## Persistência de mídia sem Supabase
+
+A Media Library do Imagine é **browser-local**:
+- LocalStorage, até 60 itens;
+- retenção leve de metadados/URLs, sem upload de binários;
+- nenhum `PREDICT_SUPABASE_*` é necessário para mídia;
+- URLs `data:`/blob não são persistidas para evitar encher o navegador;
+- o endpoint server-side antigo de library fica apenas como compatibilidade e não lê/escreve Supabase.

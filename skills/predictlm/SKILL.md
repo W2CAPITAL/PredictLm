@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.28.0"
+  version: "1.29.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -754,3 +754,24 @@ Firecrawl já configurado é suficiente para referências visuais. Google Cloud 
 - ambiguidades de franquia são desfeitas no identity lock e na busca Firecrawl;
 - legenda segura nunca começa com “faça/crie/gere” nem vaza `[ESTILO]`, seed, 4k ou instruções internas;
 - prompt original continua sendo a fonte da verdade para reabrir e regenerar um item.
+
+
+## Defaults seguros do Imagine
+
+Para imagem:
+- Deep Think e Deep Research ficam **desligados por padrão**; continuam disponíveis como opt-in para pedidos conceituais;
+- Auto força **Literal** para personagem/franquia específica;
+- prompts de anime/shonen detectados com estilo ainda em Cinematic usam **Anime** automaticamente;
+- o Media Director é proibido de inventar binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs ou fendas dimensionais sem pedido explícito;
+- regeneração em Literal preserva o mesmo pedido/identity lock e troca seed, sem review hints criativos;
+- quando o provider final é `pollinations-proxy`, a UI mostra aviso explícito de fidelidade limitada;
+- provider/upscaler são registrados separadamente para não mascarar que a imagem veio do fallback.
+
+## Persistência de mídia sem Supabase
+
+A Media Library do Imagine é **browser-local**:
+- LocalStorage, até 60 itens;
+- retenção leve de metadados/URLs, sem upload de binários;
+- nenhum `PREDICT_SUPABASE_*` é necessário para mídia;
+- URLs `data:`/blob não são persistidas para evitar encher o navegador;
+- o endpoint server-side antigo de library fica apenas como compatibilidade e não lê/escreve Supabase.

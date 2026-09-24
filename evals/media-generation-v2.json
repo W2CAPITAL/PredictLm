@@ -272,6 +272,81 @@
         "captionPtBr": true,
         "technicalPromptNotUsedAsCardTitle": true
       }
+    },
+    {
+      "id": "anime-franchise-defaults-to-anime",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Anime",
+        "deepThinkDefault": false,
+        "deepResearchDefault": false
+      }
+    },
+    {
+      "id": "media-director-blocks-unrequested-ai-motifs",
+      "input": {
+        "mode": "image",
+        "promptMode": "imagine",
+        "deepThink": true,
+        "prompt": "duas guerreiras em um campo florido"
+      },
+      "expect": {
+        "directorProhibits": [
+          "binary",
+          "neural networks",
+          "circuits",
+          "drones",
+          "holograms",
+          "cyberpunk",
+          "robots",
+          "dimensional rifts"
+        ],
+        "unlessUserRequested": true
+      }
+    },
+    {
+      "id": "pollinations-fallback-shows-fidelity-warning",
+      "input": {
+        "configuredStrongImageProviders": [],
+        "provider": "pollinations-proxy"
+      },
+      "expect": {
+        "fidelityLimited": true,
+        "visibleProviderWarning": true,
+        "providerPreservedAfterUpscale": true
+      }
+    },
+    {
+      "id": "media-library-does-not-require-supabase",
+      "input": {
+        "supabaseConfigured": false,
+        "browserLocalStorage": true
+      },
+      "expect": {
+        "libraryMode": "browser-local",
+        "worksWithoutSupabase": true,
+        "maxItems": 60,
+        "persistsDataUrls": false
+      }
+    },
+    {
+      "id": "literal-regeneration-no-review-rewrite",
+      "input": {
+        "promptMode": "literal",
+        "regenerate": true,
+        "prompt": "faça o Freeza"
+      },
+      "expect": {
+        "sameUserPrompt": true,
+        "newSeed": true,
+        "creativeReviewHints": false
+      }
     }
   ]
 }

@@ -8,7 +8,8 @@ import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { preloadGeneratedImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
-import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -47,6 +48,7 @@ type MediaItem={
 export function GrokImaginePanel(){
   const [prompt,setPrompt]=useState('');
   const [style,setStyle]=useState('Cinematic');
+  const [styleManuallyChosen,setStyleManuallyChosen]=useState(false);
   const [ratio,setRatio]=useState(ratios[0]);
   const [seed,setSeed]=useState(()=>autoVariationSeed());
   const [mode,setMode]=useState<'image'|'video'>('image');
@@ -73,14 +75,15 @@ export function GrokImaginePanel(){
   const [attempt,setAttempt]=useState(0);
   const [review,setReview]=useState<ImageQualityReview|null>(null);
   const [imageStage,setImageStage]=useState('');
-  const [deepThink,setDeepThink]=useState(true);
-  const [deepResearch,setDeepResearch]=useState(true);
+  const [deepThink,setDeepThink]=useState(false);
+  const [deepResearch,setDeepResearch]=useState(false);
   const [directorBrief,setDirectorBrief]=useState('');
   const [researchContext,setResearchContext]=useState('');
   const [generatedRequest,setGeneratedRequest]=useState('');
   const [promptMode,setPromptMode]=useState<'auto'|'literal'|'imagine'>('auto');
   const [negativePrompt,setNegativePrompt]=useState('');
   const [generatedCaption,setGeneratedCaption]=useState('');
+  const [imageProviderWarning,setImageProviderWarning]=useState('');
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -103,24 +106,49 @@ export function GrokImaginePanel(){
 
   useEffect(()=>{
     let live=true;
-    Promise.all([
-      fetch('/api/media/library',{cache:'no-store'}).then(r=>r.json()).catch(()=>({items:[],persisted:false})),
-      fetch('/api/media/video',{cache:'no-store'}).then(r=>r.json()).catch(()=>({providers:{local:{enabled:true,label:'Local storyboard'}}}))
-    ]).then(([media,video])=>{
-      if(!live)return;
-      setGallery(Array.isArray(media?.items)?media.items:[]);
-      setPersisted(!!media?.persisted);
-      setVideoProviders(video?.providers||{local:{enabled:true,label:'Motion local · fallback'}});
-      setRecommendedVideoProvider(String(video?.recommended||''));
-      if(video?.recommended)setVideoProvider('auto');
-      else setVideoProvider('local');
-    });
+    setGallery(loadBrowserMediaLibrary() as MediaItem[]);
+    setPersisted(browserMediaLibraryAvailable());
+    fetch('/api/media/video',{cache:'no-store'})
+      .then(r=>r.json())
+      .catch(()=>({providers:{local:{enabled:true,label:'Local storyboard'}}}))
+      .then(video=>{
+        if(!live)return;
+        setVideoProviders(video?.providers||{local:{enabled:true,label:'Motion local · fallback'}});
+        setRecommendedVideoProvider(String(video?.recommended||''));
+        if(video?.recommended)setVideoProvider('auto');
+        else setVideoProvider('local');
+      });
     return()=>{live=false};
   },[]);
 
   useEffect(()=>()=>{
     if(motionUrl)URL.revokeObjectURL(motionUrl);
   },[motionUrl]);
+
+  function switchMediaMode(next:'image'|'video'){
+    setMode(next);
+    setDirectorBrief('');
+    setResearchContext('');
+    setImageProviderWarning('');
+    if(next==='video'){
+      setDeepThink(true);
+      setDeepResearch(true);
+    }else{
+      setDeepThink(false);
+      setDeepResearch(false);
+    }
+  }
+
+  function updatePrompt(value:string){
+    setPrompt(value);
+    setAttempt(0);
+    setReview(null);
+    setImageProviderWarning('');
+    if(mode==='image'&&!styleManuallyChosen){
+      const nextStyle=recommendedImageStyle(value,'Cinematic');
+      if(nextStyle!==style)setStyle(nextStyle);
+    }
+  }
 
   async function prepareMediaPrompt(kind:'image'|'video'){
     let research='';
@@ -160,6 +188,7 @@ export function GrokImaginePanel(){
             ? 'Transforme o pedido em um production brief para UM clipe temporal realmente generativo, com ação ao longo do tempo, câmera, continuidade, física visual e áudio/ambiente quando fizer sentido. Não proponha slideshow, pan/zoom de imagem estática nem cenas desconectadas.'
             : 'Transforme o pedido em um production brief de imagem: sujeito exato, composição, câmera/lente, iluminação, materiais, identidade, detalhes obrigatórios e artefatos a evitar.',
           'Preserve integralmente personagens, marcas, roupas, formas, poderes e relações explicitamente pedidos; não troque por arquétipos genéricos.',
+          'PROIBIDO inventar estética de tecnologia/IA sem pedido explícito: não introduza binário, redes neurais, circuitos, drones, hologramas, data streams, cyberpunk, robôs ou fendas dimensionais só porque o produto se chama PredictLM.',
           'Pedido: '+prompt,
           'Estilo: '+style+'. Aspecto: '+ratio.label+'.'+(kind==='video'?' Duração alvo: '+Math.round(duration/1000)+'s.':''),
           research?('Contexto pesquisado:\n'+research):'',
@@ -243,33 +272,30 @@ export function GrokImaginePanel(){
     url?:string|null;
     enhancedPrompt?:string;
     seed?:number;
+    style?:string;
     meta?:Record<string,any>;
   }){
-    const saved=await fetch('/api/media/library',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        kind:input.kind,
-        status:input.status||'ready',
-        provider:input.provider||provider||'predict-media',
-        model:input.model||'',
-        prompt,
-        enhancedPrompt:input.enhancedPrompt||enhanced,
-        style,
-        aspectRatio:ratio.label,
-        width:ratio.w,
-        height:ratio.h,
-        seed:Number.isFinite(Number(input.seed))?Number(input.seed):seed,
-        url:input.url&&String(input.url).startsWith('data:')?null:input.url,
-        meta:{surface:'imagine',storageMode:'metadata-only',...(input.meta||{})}
-      })
-    }).then(x=>x.json()).catch(()=>null);
+    const saved=saveBrowserMediaItem({
+      kind:input.kind,
+      status:input.status||'ready',
+      provider:input.provider||provider||'predict-media',
+      model:input.model||'',
+      prompt,
+      enhancedPrompt:input.enhancedPrompt||enhanced,
+      style:input.style||style,
+      aspectRatio:ratio.label,
+      width:ratio.w,
+      height:ratio.h,
+      seed:Number.isFinite(Number(input.seed))?Number(input.seed):seed,
+      url:input.url&&String(input.url).startsWith('data:')?null:input.url,
+      meta:{surface:'imagine',storageMode:'browser-local-metadata',...(input.meta||{})}
+    });
 
-    if(saved?.item){
+    if(saved){
       setPersisted(true);
-      setGallery(prev=>[saved.item,...prev.filter(x=>x.id!==saved.item.id)].slice(0,60));
+      setGallery(prev=>[saved as MediaItem,...prev.filter(x=>x.id!==saved.id)].slice(0,60));
     }
-    return saved?.item||null;
+    return saved as MediaItem|null;
   }
 
   async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt){
@@ -283,6 +309,7 @@ export function GrokImaginePanel(){
         promptMode,
         negativePrompt,
         style,
+        styleLocked:styleManuallyChosen,
         attempt:renderAttempt,
         width:ratio.w,
         height:ratio.h,
@@ -305,7 +332,10 @@ export function GrokImaginePanel(){
       referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[],
       promptMode:String(data.promptMode||promptMode),
       caption:String(data.caption||''),
-      displayTitle:String(data.displayTitle||buildDisplayTitle(prompt))
+      displayTitle:String(data.displayTitle||buildDisplayTitle(prompt)),
+      style:String(data.style||style),
+      fidelityLimited:!!data.fidelityLimited,
+      providerWarning:String(data.providerWarning||'')
     };
   }
 
@@ -333,6 +363,7 @@ export function GrokImaginePanel(){
     setLoading(true);
     setImageStage(regenerate?'Analisando a imagem anterior…':'Preparando a melhor composição…');
     setError('');
+    setImageProviderWarning('');
     setRemoteVideoUrl('');
     if(motionUrl){
       URL.revokeObjectURL(motionUrl);
@@ -394,6 +425,7 @@ export function GrokImaginePanel(){
         setGeneratedRequest(prompt);
         setGeneratedCaption(caption);
         setProvider(data.provider);
+        setImageProviderWarning(data.providerWarning||'');
         await saveLibrary({
           kind:'image',
           provider:data.provider,
@@ -401,6 +433,7 @@ export function GrokImaginePanel(){
           url,
           enhancedPrompt:expandedPrompt,
           seed:nextSeed,
+          style:data.style||style,
           meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption,displayTitle:data.displayTitle||buildDisplayTitle(prompt),promptOriginal:prompt}
         });
         return url;
@@ -438,14 +471,17 @@ export function GrokImaginePanel(){
       setGeneratedPrompt(expandedPrompt);
       setGeneratedRequest(prompt);
       setGeneratedCaption(caption);
+      setImageProviderWarning(data.providerWarning||'');
+      if(data.style&&data.style!==style)setStyle(data.style);
       setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
       await saveLibrary({
         kind:'image',
-        provider:upscaled.upscaled?upscaled.provider:(data.provider||'pollinations-proxy'),
+        provider:data.provider||'pollinations-proxy',
         model:data.model||'flux',
         url,
         enhancedPrompt:expandedPrompt,
         seed:nextSeed,
+        style:data.style||style,
         meta:{
           keyframeForVideo:mode==='video',
           attempt:nextAttempt,
@@ -453,6 +489,7 @@ export function GrokImaginePanel(){
           finalQuality:finalReview?.score??null,
           autoQualityRepair:!regenerate&&nextAttempt>0,
           superResolution:upscaled.upscaled,
+          superResolutionProvider:upscaled.upscaled?upscaled.provider:null,
           autoVariation:true,
           deepThink,
           deepResearch,
@@ -466,7 +503,9 @@ export function GrokImaginePanel(){
           promptMode:data.promptMode||promptMode,
           negativePrompt,
           caption,
-          displayTitle:data.displayTitle||buildDisplayTitle(prompt)
+          displayTitle:data.displayTitle||buildDisplayTitle(prompt),
+          fidelityLimited:!!data.fidelityLimited,
+          providerWarning:data.providerWarning||''
         }
       });
       return url;
@@ -787,7 +826,7 @@ export function GrokImaginePanel(){
   async function removeItem(item:MediaItem){
     if(!window.confirm('Apagar esta geração do histórico?'))return;
     setGallery(prev=>prev.filter(x=>x.id!==item.id));
-    await fetch('/api/media/library?id='+encodeURIComponent(item.id),{method:'DELETE'}).catch(()=>null);
+    deleteBrowserMediaItem(item.id);
   }
 
   function openItem(item:MediaItem){
@@ -806,6 +845,7 @@ export function GrokImaginePanel(){
     setReview(null);
     setProvider(item.provider||'');
     setGeneratedCaption(buildSafeCaptionPtBr(original,String(item.meta?.caption||'')));
+    setImageProviderWarning(String(item.meta?.providerWarning||((item.provider||'').includes('pollinations')?'Fallback público: fidelidade de personagens pode ser limitada.':'')));
     if(item.meta?.promptMode==='literal'||item.meta?.promptMode==='imagine'||item.meta?.promptMode==='auto')setPromptMode(item.meta.promptMode);
     if(typeof item.meta?.negativePrompt==='string')setNegativePrompt(item.meta.negativePrompt);
     if(item.kind==='video'){
@@ -823,6 +863,7 @@ export function GrokImaginePanel(){
     setGenerated('');
     setGeneratedPrompt('');
     setGeneratedCaption('');
+    setImageProviderWarning('');
     setError(message);
     reportMediaError(message,{stage:'image-load'});
   }
@@ -836,9 +877,9 @@ export function GrokImaginePanel(){
       <div>
         <span>Imagine</span>
         <h1>Imagem e vídeo</h1>
-        <p>Imagem em alta qualidade com identidade visual bloqueada para personagens específicos e referências automáticas quando disponíveis. Vídeo generativo usa providers configurados; o Supabase mantém metadados leves.</p>
+        <p>Imagem com Literal automático para personagens específicos, referências Firecrawl quando disponíveis e biblioteca local no navegador. Vídeo generativo usa providers configurados.</p>
       </div>
-      <div className="gmedia-repo-status"><i className={persisted?'online':''}/><span>{persisted?'Media repository conectado':'Media repository iniciando'}</span></div>
+      <div className="gmedia-repo-status"><i className={persisted?'online':''}/><span>{persisted?'Biblioteca local ativa':'Biblioteca local indisponível'}</span></div>
     </header>
 
     <div className="gimagine-grid">
@@ -846,12 +887,12 @@ export function GrokImaginePanel(){
         <div className="twincore-badge"><Sparkles size={13}/><div><b>TwinCore Visual</b><span>intent → research → director → reference → generation → temporal review → export</span></div></div>
 
         <div className="gmedia-mode-switch">
-          <button className={mode==='image'?'active':''} onClick={()=>setMode('image')}><ImageIcon size={13}/>Imagem</button>
-          <button className={mode==='video'?'active':''} onClick={()=>setMode('video')}><Film size={13}/>Vídeo</button>
+          <button className={mode==='image'?'active':''} onClick={()=>switchMediaMode('image')}><ImageIcon size={13}/>Imagem</button>
+          <button className={mode==='video'?'active':''} onClick={()=>switchMediaMode('video')}><Film size={13}/>Vídeo</button>
         </div>
 
-        <label><span>Prompt</span><textarea value={prompt} onChange={e=>{setPrompt(e.target.value);setAttempt(0);setReview(null)}} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
-        <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
+        <label><span>Prompt</span><textarea value={prompt} onChange={e=>updatePrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
+        <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setStyleManuallyChosen(true);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
 
         {mode==='image'?<div className="gmedia-prompt-mode">
@@ -955,6 +996,7 @@ export function GrokImaginePanel(){
             <a href={generated} target="_blank" rel="noreferrer"><Download size={14}/>Abrir imagem</a>
             {provider?<span>{provider}</span>:null}
           </div>
+          {imageProviderWarning?<div className="gmedia-provider-warning"><b>Fidelidade limitada</b><span>{imageProviderWarning}</span></div>:null}
           {generatedCaption?<div className="gmedia-result-caption"><b>Cena gerada</b><p>{generatedCaption}</p></div>:null}
         </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Auto usa um motor temporal real configurado (Veo/ComfyUI/Veo 3/Seedance/Sora); motion local é somente fallback explícito.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
@@ -963,7 +1005,7 @@ export function GrokImaginePanel(){
     </div>
 
     <section className="gmedia-library">
-      <div className="gmedia-library-head"><div><span>Media Library</span><h2>Gerações recentes</h2></div><small>{persisted?'Supabase metadata-only · retenção leve':'Conectando ao repositório leve'}</small></div>
+      <div className="gmedia-library-head"><div><span>Media Library</span><h2>Gerações recentes</h2></div><small>{persisted?'LocalStorage · somente neste navegador':'Armazenamento local indisponível'}</small></div>
       {gallery.length?<div className="gmedia-gallery">{gallery.map(item=>{
         const original=mediaOriginalPrompt(item)||item.prompt||'';
         const title=String(item.meta?.displayTitle||buildDisplayTitle(original));
