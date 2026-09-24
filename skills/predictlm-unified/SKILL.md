@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -29,6 +29,7 @@ Rotas primárias:
 - general-chat
 - build
 - research
+- tutor
 - token-budget
 - local-runtime
 - github-knowledge
@@ -297,3 +298,15 @@ Antes de gerar:
 6. caso contrário/erro, Neural Browser/Knowledge continua disponível.
 
 Nunca carregar todas as skills, todas as ferramentas e todo o histórico no mesmo prompt.
+
+## Tutor routing
+
+Se a intenção for estudo/tutoria explícita:
+1. ativar Tutor Mode;
+2. recuperar top-k relevante;
+3. aplicar Token Budget;
+4. decidir probe/practice/assess/review;
+5. gerar com o motor selecionado;
+6. preservar fontes e registrar progresso local quando houver avaliação.
+
+Pergunta factual normal não deve receber quiz/checagem pedagógica sem pedido do usuário.
