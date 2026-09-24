@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "44ed7e06de20c6fa",
-  "generatedAt": "2026-09-24T17:10:39.082Z",
+  "knowledgeVersion": "115d679d7000004f",
+  "generatedAt": "2026-09-24T18:09:25.160Z",
   "sourceCount": 78,
   "chunkCount": 3854,
   "chunks": [
@@ -38160,9 +38160,9 @@
       "weight": 1.02
     },
     {
-      "id": "5961d196bc958ca83659",
+      "id": "8b7e1fde756ca6c2b9a6",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38175,9 +38175,9 @@
       "weight": 1.03
     },
     {
-      "id": "4c25e263c77c873c488f",
+      "id": "366239a7903fffa1c14a",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38190,9 +38190,9 @@
       "weight": 1.03
     },
     {
-      "id": "9b7371ab351d45d1655a",
+      "id": "36ffadc850cd7accb8c0",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38205,9 +38205,9 @@
       "weight": 1.03
     },
     {
-      "id": "28c88f5e87d2a446289c",
+      "id": "5226c3ca18d1f97aa564",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38220,9 +38220,9 @@
       "weight": 1.03
     },
     {
-      "id": "82865a52f391ec95cddd",
+      "id": "11a4f93e77bd45fa6757",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38235,9 +38235,9 @@
       "weight": 1.03
     },
     {
-      "id": "067220022852dae6af90",
+      "id": "1dd6ecf81526839be7a5",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38250,9 +38250,9 @@
       "weight": 1.03
     },
     {
-      "id": "d267fb55fa636775c01e",
+      "id": "983d34e0d63dab1dfcbc",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38265,9 +38265,9 @@
       "weight": 1.03
     },
     {
-      "id": "4ef342691b9c3ee3776c",
+      "id": "0c504f7a14def68a85d4",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38280,9 +38280,9 @@
       "weight": 1.03
     },
     {
-      "id": "7b52164f650809557341",
+      "id": "cda4405f01f223c10cb9",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38295,9 +38295,9 @@
       "weight": 1.03
     },
     {
-      "id": "20c2cd276a4afa213725",
+      "id": "30a09b39312452e9f5e4",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38310,9 +38310,9 @@
       "weight": 1.03
     },
     {
-      "id": "54fea65ba69ee6a38145",
+      "id": "2593057d636f44e96425",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38325,9 +38325,9 @@
       "weight": 1.03
     },
     {
-      "id": "239100c19c40bf7640d2",
+      "id": "a2109bd50aea19401b18",
       "source": "CodebuffAI/freebuff",
-      "ref": "08b5a38f3123",
+      "ref": "3fa3c652c004",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [

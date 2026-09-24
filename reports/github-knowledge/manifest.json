@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-24T17:10:39.082Z",
-  "knowledgeVersion": "44ed7e06de20c6fa",
+  "generatedAt": "2026-09-24T18:09:25.160Z",
+  "knowledgeVersion": "115d679d7000004f",
   "chunkCount": 3854,
   "sources": [
     {
@@ -610,7 +610,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "08b5a38f3123eaddf6b7d29aba0613e15ba929e5",
+      "commit": "3fa3c652c0044fd09a8fe8200ebcff63da61609b",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -1438,6 +1438,51 @@
       "repo": "YoYoGames/GameMaker-Manual",
       "mode": "reference-only",
       "license": "copyrighted-docs",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Xiphereal/TheSims",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "DewingShen88/sims4-immersive-controls",
+      "mode": "reference-only",
+      "license": "MIT-by-README",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "francot514/FreeSims",
+      "mode": "reference-only",
+      "license": "MPL-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "oraksi/Sims-4-Respocket-DLC-Tool",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "savannah-medina85/sims-4-dlc-unlock",
+      "mode": "quarantine",
+      "license": "unverified",
       "commit": null,
       "files": 0,
       "chunks": 0,
