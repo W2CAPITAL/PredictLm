@@ -47,6 +47,14 @@ function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
   return null;
 }
 
+function detectSimulationLaunchRequest(prompt:string){
+  const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
+  const simulation=/\b(simulacao de vida|simulacao ativa|life simulation|life simulator|mundo vivo|personagem ativa)\b/.test(p);
+  const launch=/\b(abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|quero ver|quero uma)\b/.test(p);
+  const appBuild=/\b(app|aplicativo|site|sistema|codigo|código|export|zip|build)\b/.test(p);
+  return simulation&&launch&&!appBuild;
+}
+
 function mediaSubject(prompt:string){
   return prompt
     .replace(/^(gere|gerar|crie|criar|faça|faca|desenhe|renderize|produza|quero)\s+/i,'')
@@ -123,6 +131,7 @@ export function ChatShell({onOpenLegal}:Props){
     const tutorIntent=isTutorRequest(prompt);
     const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
+    const simulationLaunch=detectSimulationLaunchRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
     const neuroContext=advanceBrowserNeuroContext(prompt).context;
@@ -142,6 +151,18 @@ export function ChatShell({onOpenLegal}:Props){
       }).catch(()=>{});
     }
     s.addMessage({role:'user',content:prompt});
+    if(simulationLaunch){
+      setScreen('simulation');
+      s.addMessage({
+        role:'assistant',
+        content:'Simulação ativa aberta. Você pode deixar a personagem agir sozinha ou definir destino, nome e objetivo no painel.',
+        engine:'Predict Auto',
+        actions:['Life Simulation Studio aberto','Estado local preservado','NeuroCore conectado ao ciclo observar → priorizar → agir → memorizar'],
+        status:'done'
+      });
+      setActivity([]);
+      return;
+    }
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
     setBusy(true);
