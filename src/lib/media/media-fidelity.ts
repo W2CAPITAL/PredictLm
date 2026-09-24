@@ -34,6 +34,35 @@ export function mediaOriginalPrompt(item:MediaLibraryLike){
   ).trim();
 }
 
+export function extractRequestedNamedSubject(input:string){
+  const raw=String(input||'').trim();
+  const cleaned=raw
+    .replace(/^\s*(?:faça|faca|crie|gere|desenhe|mostre|quero|create|make|generate|draw|show)\s+(?:uma?\s+imagem\s+de\s+|um\s+retrato\s+de\s+|retrato\s+de\s+|o\s+|a\s+|do\s+|da\s+)?/i,'')
+    .replace(/\s+(?:em|no|na|com)\s+(?:estilo|style)\b.*$/i,'')
+    .replace(/[.!?]+$/,'')
+    .trim();
+  const words=cleaned.split(/\s+/).filter(Boolean);
+  if(words.length<2||words.length>5)return '';
+  if(/^(?:um|uma|o|a)\s+/i.test(cleaned))return '';
+  const generic=/^(?:drag[aã]o|lobo|raposa|gato|cachorro|macaco|homem|mulher|menino|menina|cidade|paisagem|carro|rob[oô]|monstro|animal|personagem)\b/i;
+  if(generic.test(cleaned))return '';
+  return cleaned;
+}
+
+export function isLikelyNamedPersonPrompt(input:string){
+  const raw=String(input||'').trim();
+  const p=normalize(raw);
+  if(/\b(elon musk|taylor swift|cristiano ronaldo|lionel messi|beyonce|rihanna|lady gaga|brad pitt|tom cruise|zendaya|keanu reeves)\b/.test(p))return true;
+  const subject=extractRequestedNamedSubject(raw);
+  if(!subject)return false;
+  return /^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+$/u.test(subject);
+}
+
+export function isConcreteCreaturePrompt(input:string){
+  const p=normalize(input);
+  return /\b(dragao|dragon|fenix|phoenix|grifo|griffin|unicorno|unicorn)\b/.test(p);
+}
+
 export function isSpecificFranchisePrompt(input:string){
   const p=normalize(input);
   if(/\b(naruto|sasuke|kurama|susanoo|sharingan|rinnegan|uzumaki|uchiha|bijuu|besta de caudas|quatro caudas|four tails|son goku bijuu|dragon ball|goku|vegeta|gohan|freeza|frieza|cell|majin boo|majin buu|broly|oozaru|great ape|pikachu|pokemon|sonic|mario|zelda|batman|superman|spider man|homem aranha|kuromi|hello kitty)\b/.test(p))return true;
@@ -42,7 +71,7 @@ export function isSpecificFranchisePrompt(input:string){
 }
 
 export function shouldForceLiteralMode(input:string){
-  return isSpecificFranchisePrompt(input);
+  return isSpecificFranchisePrompt(input)||isLikelyNamedPersonPrompt(input)||isConcreteCreaturePrompt(input);
 }
 
 export function isAnimeFranchisePrompt(input:string){
@@ -79,6 +108,38 @@ export function buildSpecificNegativePrompt(originalPrompt:string,userNegative='
     'blurry focal subject',
     'muddy textures'
   ];
+
+  if(isLikelyNamedPersonPrompt(originalPrompt)){
+    values.push(
+      'robot face',
+      'cyborg',
+      'android',
+      'alien',
+      'helmet covering the face',
+      'armored mask',
+      'mechanical skin',
+      'fantasy creature',
+      'altered facial identity',
+      'different person'
+    );
+  }
+
+  if(/\b(dragao|dragon)\b/.test(p)){
+    values.push(
+      'lizard',
+      'gecko',
+      'iguana',
+      'small reptile',
+      'ordinary reptile',
+      'snake',
+      'dinosaur',
+      'tiny creature',
+      'bat without dragon anatomy',
+      'missing dragon head',
+      'missing draconic body',
+      'reptile close-up'
+    );
+  }
 
   if(/\b(naruto|kurama|uzumaki)\b/.test(p)){
     values.push(
@@ -165,6 +226,9 @@ export function buildDisplayTitle(input:string){
   if(/\bnaruto\b/.test(p))return 'Naruto';
   if(/\bsasuke\b/.test(p))return 'Sasuke';
   if(/\b(?:macaco|monkey)\b/.test(p))return 'Retrato de macaco';
+  if(/\b(dragao|dragon)\b/.test(p))return /\bbranco|white\b/.test(p)?'Dragão branco':'Dragão';
+  const named=extractRequestedNamedSubject(raw);
+  if(named)return compact(named,60);
 
   if(hadTechnicalPrefix||technicalLeak(raw))return 'Geração visual';
   const cleaned=raw
@@ -217,6 +281,16 @@ export function buildSafeCaptionPtBr(promptOriginal:string,existingCaption=''){
   }
   if(/\b(?:macaco|monkey)\b/.test(p)){
     return 'Retrato de um macaco em destaque, com foco no rosto e na expressão.';
+  }
+  if(/\b(dragao|dragon)\b/.test(p)){
+    if(/\bbranco|white\b/.test(p)&&/\bolhos azuis|blue eyes\b/.test(p)){
+      return 'Um grande dragão branco de olhos azuis aparece como a criatura central da cena.';
+    }
+    return 'Um dragão de anatomia claramente fantástica aparece como a criatura central da cena.';
+  }
+  if(isLikelyNamedPersonPrompt(source)){
+    const named=extractRequestedNamedSubject(source)||buildDisplayTitle(source);
+    return 'Retrato de '+named+', preservando aparência humana e identidade facial.';
   }
 
   const title=buildDisplayTitle(source);
