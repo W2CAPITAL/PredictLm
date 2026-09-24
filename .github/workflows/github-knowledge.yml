@@ -2,6 +2,11 @@ name: GitHub Knowledge Sync
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "config/github-knowledge-sources.json"
+      - "scripts/knowledge/sync-github.mjs"
+      - ".github/workflows/github-knowledge.yml"
   schedule:
     - cron: "17 5 * * 1"
 
