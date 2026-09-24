@@ -452,40 +452,113 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
-  const messages:Msg[]=[
+  const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
+  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
+  if(!candidates.length)return Response.json({
+    content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
+  },{headers:{'Cache-Control':'no-store'}});
+
+  const roles=[
     {
-      role:'system',
-      content:[
-        'Você é o Media Director interno do PredictLM.',
-        apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false),
-        'A API/provider remoto executa esta direção de mídia; runtime local não define o brief final.',
-        'Retorne somente um brief operacional compacto, sem chain-of-thought.',
-        'Preserve literalmente sujeito, identidade, criatura, roupa, cor, poder, ação e relações pedidos pelo usuário.',
-        'Não invente binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs, armaduras ou fendas dimensionais sem pedido explícito.',
-        'Se o pedido já for específico, refine câmera/continuidade sem trocar o conteúdo.'
-      ].join('\n')
+      name:'identity-reference',
+      instruction:[
+        'Act as the identity/reference specialist.',
+        'Lock every named subject, form, count, costume, color, anatomy, franchise-specific visual attribute and explicit exclusion.',
+        'Separate subject identity from setting/style. Produce positive identity anchors and useful negative constraints.',
+        'Do not redesign a known subject into a generic lookalike.'
+      ].join(' ')
     },
-    {role:'user',content:compactText(prompt,2600)}
-  ];
-  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,false).slice(0,Math.min(2,PROVIDER_ATTEMPT_LIMIT));
-  for(const provider of candidates){
-    try{
-      const content=String(await callProvider(provider,messages,false,Math.min(8000,PROVIDER_TIMEOUT_MS))||'').trim();
-      if(content)return Response.json({
-        content:compactText(content,2600),
-        provider:provider.name,
-        model:provider.model,
-        mode:'media-director'
-      },{headers:{'Cache-Control':'no-store'}});
-    }catch{}
+    {
+      name:'composition-action',
+      instruction:[
+        'Act as the composition/action specialist.',
+        'Optimize camera, framing, spatial separation, action readability, scale, lighting, depth and environment without changing the requested subjects.',
+        'For battles or multiple subjects keep each silhouette readable and prevent explosions/effects from hiding key identities.'
+      ].join(' ')
+    }
+  ] as const;
+
+  const runs=await Promise.allSettled(roles.map((role,index)=>{
+    const provider=candidates[index%candidates.length];
+    const messages:Msg[]=[
+      {
+        role:'system',
+        content:[
+          'Você é um especialista visual interno do PredictLM.',
+          skillContext,
+          'A API/provider remoto executa esta tarefa; runtime local não define o brief final.',
+          role.instruction,
+          'Retorne somente um brief operacional compacto. Não exponha chain-of-thought.',
+          'Preserve literalmente o pedido. Não invente cyberpunk, robôs, armaduras, hologramas ou elementos não pedidos.'
+        ].join('\n')
+      },
+      {role:'user',content:compactText(prompt,2600)}
+    ];
+    return callProvider(provider,messages,true,Math.min(9000,PROVIDER_TIMEOUT_MS)).then(text=>({
+      role:role.name,
+      provider,
+      text:compactText(text,2200)
+    }));
+  }));
+
+  const briefs=runs
+    .filter((x):x is PromiseFulfilledResult<{role:string;provider:Provider;text:string}>=>x.status==='fulfilled')
+    .map(x=>x.value)
+    .filter(x=>x.text);
+
+  if(!briefs.length)return Response.json({
+    content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
+  },{headers:{'Cache-Control':'no-store'}});
+
+  if(briefs.length===1){
+    return Response.json({
+      content:briefs[0].text,
+      provider:briefs[0].provider.name,
+      model:briefs[0].provider.model,
+      mode:'media-director',
+      agentic:{roles:[briefs[0].role],reviewed:false}
+    },{headers:{'Cache-Control':'no-store'}});
   }
-  // Media planning is optional enhancement. A provider outage must not create
-  // a noisy 502 loop or block image/video generation.
+
+  const finalizer=candidates[0];
+  try{
+    const final=await callProvider(finalizer,[
+      {
+        role:'system',
+        content:[
+          'Você é o finalizador visual do PredictLM.',
+          skillContext,
+          buildReviewContract('media'),
+          'Combine os briefs especialistas em UMA instrução final de geração.',
+          'Resolva contradições a favor do pedido literal do usuário e da fidelidade de identidade.',
+          'Inclua sujeito, identidade, composição, câmera, ação, luz, ambiente e negativas necessárias.',
+          'Não mencione agents, providers, revisão ou processo. Não exponha chain-of-thought.'
+        ].join('\n')
+      },
+      {
+        role:'user',
+        content:[
+          'PEDIDO ORIGINAL:\n'+compactText(prompt,2200),
+          'BRIEFS ESPECIALISTAS:\n'+briefs.map(x=>'['+x.role+'] '+x.text).join('\n\n')
+        ].join('\n\n')
+      }
+    ],true,Math.min(9000,PROVIDER_TIMEOUT_MS));
+    const content=compactText(final,3000);
+    if(content)return Response.json({
+      content,
+      provider:finalizer.name,
+      model:finalizer.model,
+      mode:'media-director',
+      agentic:{roles:briefs.map(x=>x.role).concat('verifier'),reviewed:true,contributors:briefs.map(x=>x.provider.name)}
+    },{headers:{'Cache-Control':'no-store'}});
+  }catch{}
+
   return Response.json({
-    content:null,
-    available:false,
-    code:'MEDIA_DIRECTOR_UNAVAILABLE',
-    mode:'media-director'
+    content:briefs.map(x=>x.text).join('\n\n'),
+    provider:briefs[0].provider.name,
+    model:briefs[0].provider.model,
+    mode:'media-director',
+    agentic:{roles:briefs.map(x=>x.role),reviewed:false}
   },{headers:{'Cache-Control':'no-store'}});
 }
 
