@@ -19,12 +19,12 @@ Chat is intentionally separate from the IDE. It includes:
 
 ### Neural Local
 
-When available, PredictLM first tries a browser-native language model. Users can also load a quantized local model directly in the browser:
+When available, PredictLM first tries a browser-native language model. Users can also select between two independent browser runtimes:
 
-- **Lite** — Qwen 0.5B-class local inference for weaker machines
-- **Smart** — Qwen 1.5B-class local inference when WebGPU is available
+- **ONNX Lite / Smart** — Qwen 0.5B–1.5B through Transformers.js; Lite remains CPU/WASM-first.
+- **WebLLM Lite / Smart** — optional MLC/WebGPU acceleration with a real GPU-adapter self-test.
 
-Model weights are downloaded on demand and are not bundled into the Vercel deployment. Ollama is not required.
+A third local path can route through **FreeLLMAPI** on `localhost:3001`. Its unified key stays in browser localStorage and is sent only to the loopback router. Model weights are downloaded on demand and are not bundled into the Vercel deployment. Ollama is not required.
 
 ### Model catalog and weight policy
 
@@ -207,29 +207,21 @@ Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork,
 
 Chat remains local-first by default. The model menu can opt into **Cloud Cascade**.
 
-When enabled:
+When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured:
 
 ```
 CACHE
-  → GitHub top-k
-  → AI_* provider if configured
-  → Groq if configured
-  → OpenRouter if configured
+  → GitHub top-k / skills / memory
+  → generic AI_* / FreeLLMAPI
+  → OpenCode / NVIDIA / DeepSeek / Kimi / Z.AI / MiniMax / Gemini
+  → Groq / OpenRouter / Anthropic / Ark
+  → self-hosted Ollama when reachable
   → local Neural/Knowledge fallback
 ```
 
-Provider keys are server-only. No cloud key is required and PredictLM does not claim free providers are unlimited.
+The order is configurable with `PREDICTLM_PROVIDER_ORDER`. OpenAI-compatible providers use the Chat Completions adapter; Anthropic uses the native Messages adapter. Provider failure changes only the runtime path, never the requested deliverable.
 
-Optional variables:
-
-```env
-GROQ_API_KEY=
-GROQ_MODEL=
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=
-```
-
-The generic `AI_BASE_URL / AI_API_KEY / AI_MODEL` adapter remains supported.
+All cloud keys are **server-only**. No secret belongs in `NEXT_PUBLIC_*`, GitHub source, browser bundles or Supabase tables. No cloud key is required for local-first mode. See `.env.example` for the complete provider variable list.
 
 
 ## Token Budget Engine
@@ -251,9 +243,9 @@ The model menu can opt into local runtimes already running on the user's device:
 
 ```
 Token Saver
-  → Ollama / local OpenAI API / llamafile-NanoMind / GenieX / LowRAM
+  → FreeLLMAPI / Ollama / local OpenAI API / llamafile-NanoMind / GenieX / LowRAM
+  → WebLLM/WebGPU or ONNX Browser Qwen
   → Cloud Cascade (optional)
-  → Browser Qwen
   → Knowledge fallback
 ```
 
@@ -283,3 +275,31 @@ Core behavior:
 - Tutor Mode uses the same Token Budget Engine: Fast top-3 diverse sources, Deep up to top-5, LowRAM top-2.
 
 The implementation lives in src/lib/tutor-mode.ts and is injected into Browser Neural, Local Runtime Router and Cloud Cascade. The heavy Python backend from DeepTutor is not required.
+
+
+## Web Reach
+
+Research now has three independent layers:
+
+1. **Firecrawl** structured search when a server key is configured.
+2. **Apify** as an optional dataset/run bridge for supplemental results.
+3. **Free fallback** using public web sources when external research APIs are absent or fail.
+
+Every result still passes source-quality and topic-relevance gates before entering synthesis. Agent-Reach and FastChat provide architecture patterns for tool reach and multi-model serving. Twikit/Xquik-style social bridges remain external opt-in references rather than silent dependencies.
+
+## Build agent references
+
+Build remains project-continuity-first and now also distills patterns from Open Lovable, Freebuff, OpenHands, agency-agents and Composio:
+
+```
+REFERENCE / REQUEST
+  → requirements
+  → architecture
+  → implementation
+  → changed-file review
+  → smoke/build/typecheck
+  → focused repair
+  → runnable package
+```
+
+Open Lovable's public chat page is treated as a product/reference surface, not as an undocumented API endpoint. Firecrawl-backed analysis and PredictLM's own Build runtime provide the reproducible integration path.
