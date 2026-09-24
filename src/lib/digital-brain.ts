@@ -106,7 +106,7 @@ export function advanceDigitalBrain(previous:DigitalBrainState|undefined,prompt:
     },
     metacognition:{
       uncertainty:clamp(prev.metacognition.uncertainty*.52+neuro.uncertainty*.48),
-      contradictionWatch:clamp(prev.metacognition.contradictionWatch*.72+(sig.research||sig.risk?.9:.58)*.28),
+      contradictionWatch:clamp(prev.metacognition.contradictionWatch*.72+((sig.research||sig.risk) ? .9 : .58)*.28),
       sourceDemand:clamp(prev.metacognition.sourceDemand*.6+(sig.research ? .95 : (sig.risk ? .8 : .35))*.4)
     },
     memory:{
