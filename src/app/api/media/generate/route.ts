@@ -1,3 +1,5 @@
+import { compactText } from '@/lib/token-budget';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +21,9 @@ function localRenderUrl(prompt:string,width:number,height:number,seed:number,mod
 export async function POST(req:Request){
   try{
     const body=await req.json().catch(()=>({}));
-    const prompt=String(body?.prompt||'').trim();
-    if(!prompt)return Response.json({error:'Descreva a imagem.'},{status:400});
+    const rawPrompt=String(body?.prompt||'').trim();
+    if(!rawPrompt)return Response.json({error:'Descreva a imagem.'},{status:400});
+    const prompt=compactText(rawPrompt,600);
 
     const width=clamp(Number(body?.width)||1024,256,2048);
     const height=clamp(Number(body?.height)||1024,256,2048);
