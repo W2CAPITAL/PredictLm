@@ -171,6 +171,27 @@ const SOURCES=[
   ['Peppermint-Lab/peppermint','main','unverified','reference',['helpdesk','tickets','sla','notes','customers']],
   ['go2ismail/Free-CRM','master','CC-BY-4.0','reference',['crm','campaigns','leads','budgets','sales']],
   ['Dioque/Livros','main','unverified','reference',['quarantine','books']]
+  ['Starlink/starlink','master','unverified','reference',['space','starlink','scientific-software']],
+  ['nasa-gibs/worldview','main','NASA-1.3','reference',['earth-observation','satellite-imagery','gibs','maps']],
+  ['gibme-npm/starlink','master','MIT','train',['starlink','grpc','telemetry','enterprise-api']],
+  ['r-spacex/SpaceX-API','master','Apache-2.0','train',['space','spacex','rest-api','launch-data']],
+  ['Baptajck/space','master','MIT','train',['space','frontend','spacex-data']],
+  ['Kitsunp/kistmath-ai','main','MIT','train',['math','symbolic-reasoning','curriculum-learning','memory']],
+  ['adjs/am-cq','master','unverified','reference',['machine-learning','quantum-computing','education']],
+  ['quantumgercom/Link-Layer-Schudeling','main','unverified','reference',['quantum','networking','scheduling']],
+  ['krissiazawadzki/informacao_computacao_quantica','main','unverified','reference',['quantum','information','education']],
+  ['smendoncabruna/ComputacaoQuantica','main','unverified','reference',['quantum','education','portuguese']],
+  ['Universidade-Livre/matematica','main','MIT','train',['math','curriculum','education','portuguese']],
+  ['TechTastic/Advanced-Math','main','MIT','train',['math','linear-algebra','statistics','quaternions','pid']],
+  ['oalanicolas/ia','main','unverified','reference',['ai','learning','tools']],
+  ['MoKangMedical/digital-sage','main','MIT','train',['socratic-dialogue','persona','tutoring','memory','saas']],
+  ['vercel/vercel','main','Apache-2.0','train',['vercel','deploy','build','cli','platform']],
+  ['ronilsondesouza045-beep/wotlk-local-server-kit','main','unverified','reference',['local-server','service-orchestration','health-check','portable-kit']],
+  ['netdata/netdata','master','GPL-3.0','reference',['observability','metrics','alerts','anomaly-detection']],
+  ['FTShare-Lab/FTShare-MCP','main','MIT','train',['finance','mcp','structured-data','agents']],
+  ['edilsonaguiais/sgs-peritos','main','MIT','train',['bcb','sgs','forensic-finance','interest-rates','brazil']],
+  ['FTShare-Lab/FTShare-skill','main','MIT','train',['finance','agent-skill','routing','structured-data']],
+  ['protonspy/JusChat','main','CC0-1.0','train',['legal','graphrag','knowledge-graph','documents','rag']],
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
