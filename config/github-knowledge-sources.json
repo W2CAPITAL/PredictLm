@@ -2728,6 +2728,130 @@
         "pagination"
       ],
       "reason": "Repository is MIT but hosted API rights, quotas and platform terms are separate. Use server-side key, retry, pagination and provenance patterns only unless the service is explicitly configured."
+    },
+    {
+      "repo": "HBAI-Ltd/Toonflow-app",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/README.en.md",
+        "apps/server/src/utils/media/generation.ts",
+        "packages/providers/src/media/"
+      ],
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "weight": 1.12,
+      "reason": "MIT. Learn normalized provider capability, reference-input and asynchronous generation architecture; do not copy service credentials or provider-specific commercial terms."
+    },
+    {
+      "repo": "jamez-bondos/awesome-gpt4o-images",
+      "branch": "main",
+      "license": "CC-BY-4.0-with-case-exceptions",
+      "mode": "reference-only",
+      "include": [
+        "README_en.md",
+        "gpt-image-1/gpt-image-1-en.md"
+      ],
+      "domains": [
+        "image",
+        "prompting",
+        "multimodal",
+        "editing"
+      ],
+      "reason": "Repository original content is CC BY 4.0 but has explicit per-case/OpenAI exceptions; keep curated examples reference-only and preserve attribution/provenance."
+    },
+    {
+      "repo": "FoundationVision/Infinity",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "tools/prompt_rewriter.py"
+      ],
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "adobe-research/custom-diffusion",
+      "branch": "main",
+      "license": "Adobe-Research-License",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "image-generation",
+        "identity",
+        "few-shot",
+        "multi-concept"
+      ],
+      "reason": "Custom Adobe Research License. Use high-level identity/few-shot composition concepts only unless downstream commercial/model rights are separately cleared."
+    },
+    {
+      "repo": "Lightricks/ComfyUI-LTXVideo",
+      "branch": "main",
+      "license": "LTX-2-Community-License",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "video",
+        "comfyui",
+        "image-to-video",
+        "audio-video",
+        "upscale"
+      ],
+      "reason": "Custom LTX-2 Community License and separate model-weight obligations. Use workflow architecture/reference only; runtime integration is via user-configured ComfyUI endpoint."
+    },
+    {
+      "repo": "NVlabs/Sana",
+      "branch": "main",
+      "license": "Apache-2.0-code",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "image",
+        "video",
+        "t2v",
+        "i2v",
+        "efficient-inference"
+      ],
+      "weight": 1.06,
+      "reason": "Apache-2.0 repository code/docs only. Model checkpoints and datasets retain their own terms and are not automatically ingested or redistributed."
+    },
+    {
+      "repo": "muzishen/IMAGDressing",
+      "branch": "main",
+      "license": "Apache-2.0-code",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "image",
+        "reference-conditioning",
+        "identity",
+        "control"
+      ],
+      "weight": 0.98,
+      "reason": "Use code/docs architecture only. IGPair dataset is explicitly excluded from PredictLM ingestion because its access/use terms are separate."
     }
   ]
 }
