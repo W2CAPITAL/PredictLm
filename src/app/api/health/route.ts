@@ -18,6 +18,7 @@ import { buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { computeTutorMastery, gradeTutorAnswer, isTutorRequest, tutorNextAction, tutorSystemContext } from '@/lib/tutor-mode';
 import { runBuildDiffReview } from '@/lib/build-diff-review';
 import { enhanceBuildPrompt } from '@/lib/prompt-enhancer';
+import { buildCentumQuestions, centumDecisionContext, centumStats, isDecisionRequest, parallaxContext } from '@/lib/decision-centum';
 
 export const runtime = 'nodejs';
 
@@ -232,6 +233,20 @@ export async function GET(){
     acceptanceKeepsSecretsServerSide:enhancedPrompt.includes('Secrets stay server-side')
   };
 
+  const decisionPrompt='devo aprovar este deploy ou ainda existe risco?';
+  const centumQuestions=buildCentumQuestions(decisionPrompt);
+  const centumGate={
+    exactly100:centumQuestions.length===100&&centumStats(decisionPrompt).questions===100,
+    exactly10Clusters:new Set(centumQuestions.map(x=>x.cluster)).size===10&&centumStats(decisionPrompt).clusters===10,
+    sequentialIds:centumQuestions[0]?.id===1&&centumQuestions[99]?.id===100,
+    decisionTriggers:isDecisionRequest(decisionPrompt),
+    casualDoesNotTrigger:!isDecisionRequest('oi tudo bem?'),
+    factualDoesNotTrigger:!isDecisionRequest('qual é a capital do Japão?'),
+    includesCouncilX10:centumDecisionContext(decisionPrompt).includes('Council X10'),
+    includesStrictIntent:centumDecisionContext(decisionPrompt).includes('FINAL-ANSWER CONTRACT'),
+    parallaxHasThirdFrame:parallaxContext(decisionPrompt).includes('option C')||parallaxContext(decisionPrompt).includes('opção C')
+  };
+
   const legalArtifactBehavior={
     dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
     normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
@@ -246,7 +261,7 @@ export async function GET(){
     dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean)&&Object.values(tutorMode).every(Boolean)&&Object.values(buildReviewGate).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean)&&Object.values(tokenBudget).every(Boolean)&&Object.values(localRuntimeCatalog).every(Boolean)&&Object.values(tutorMode).every(Boolean)&&Object.values(buildReviewGate).every(Boolean)&&Object.values(centumGate).every(Boolean);
 
   return Response.json({
     ok,
@@ -279,6 +294,9 @@ export async function GET(){
       masteryLearning:true,
       buildDiffReview:true,
       structuredBuildPrompt:true,
+      centumDecisionGate:true,
+      parallaxThirdBrain:true,
+      strictIntentNoGenericFallback:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -301,6 +319,7 @@ export async function GET(){
       localRuntimeCatalog,
       tutorMode,
       buildReviewGate,
+      centumGate,
       packagedFiles:packaged.length
     },
     optional:{
