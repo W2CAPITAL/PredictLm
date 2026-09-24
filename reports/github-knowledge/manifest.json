@@ -1,8 +1,53 @@
 {
-  "generatedAt": "2026-09-24T22:10:10.326Z",
-  "knowledgeVersion": "2b58242f248f9454",
-  "chunkCount": 3938,
+  "generatedAt": "2026-09-24T22:30:33.911Z",
+  "knowledgeVersion": "d9fef54188a61dc3",
+  "chunkCount": 4075,
   "sources": [
+    {
+      "repo": "realasfngl/Grok-Api",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "NousResearch/hermes-agent",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "749220ef0007f8d87bd1531f1c24b0fe93816385",
+      "files": 2,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "deepseek-ai/awesome-deepseek-agent",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "deepseek-ai/deepseek-harness",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "477b4f420553e8a52c2fbccc464d7561b239c443",
+      "files": 9,
+      "chunks": 110,
+      "error": null
+    },
+    {
+      "repo": "Alishahryar1/free-claude-code",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "82408c5adb1883b89b0e53b5369aee66349b37da",
+      "files": 1,
+      "chunks": 35,
+      "error": null
+    },
     {
       "repo": "tanbiralam/claude-code",
       "mode": "quarantine",

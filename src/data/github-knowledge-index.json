@@ -1,10 +1,2875 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "2b58242f248f9454",
-  "generatedAt": "2026-09-24T22:10:10.326Z",
-  "sourceCount": 80,
-  "chunkCount": 3938,
+  "knowledgeVersion": "d9fef54188a61dc3",
+  "generatedAt": "2026-09-24T22:30:33.911Z",
+  "sourceCount": 82,
+  "chunkCount": 4075,
   "chunks": [
+    {
+      "id": "e52c26a5124c7b01282f",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Agent Note: Structured error taxonomy",
+      "text": "Status: implemented\nArchived: 2026-09-04\n\nEnglish | [中文](2026-06-11-structured-error-taxonomy.zh.md)",
+      "weight": 1.28
+    },
+    {
+      "id": "359d367c5b2e1844baf5",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Problem",
+      "text": "Failures crossed seams as bare strings. A tool error flattened to a text block — name, code, and stack lost — so a future sandbox/retry plugin couldn't tell ENOENT from EACCES, and the model got less actionable feedback than it could. A non-Error throw degraded further: the loop wrapped it in `new Error(String(x))`, dropping any code. And `LlmError` was the only typed error in the system, with no shared base, so there was nothing for a consumer to `instanceof` against generically.",
+      "weight": 1.28
+    },
+    {
+      "id": "2419ba19616210e344a0",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "A single `HarnessError extends Error` base in `dsh-llm` (the leaf package every other imports — no new dependency edge): a stable `code` distinct from `message`, `cause` chaining via `ErrorOptions`, and `name` defaulting to the subclass. `isHarnessError` narrows at seams.\n\n- `LlmError` and `ToolArgsError` (dsh-tools) extend it, keeping their existing codes.\n- `ToolExecutionResult` gains optional `error: { name, code }`, populated in the registry's catch when the thrown value is a `HarnessError`. The agent loop forwards it onto the `tool/result` session event (which gained the same optional field), so the structured failure survives into the log for retry/sandbox plugins and replay. The model-facing text block is unchanged.\n- The loop's `toError` wraps a non-Error throw in a `HarnessError` (`code: 'UNKNOWN'`, original chained as `cause`) instead of a bare `Error`, so even a bad throw carries a routable code into the session `error` event (which already surfaced `code`).",
+      "weight": 1.28
+    },
+    {
+      "id": "0fa43fa28d4045ddad33",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Consequences",
+      "text": "- Errors are machine-routable end-to-end: a plugin can branch on `error.code` rather than substring-matching a message.\n- One base class is imported widely, but it lives in the package everyone already depends on, so the cost is a single import, not a new edge.\n- `deriveMessages` does not surface `error` into model history — the model still sees the text block; the structured field is for code and replay.\n- Argument validation retains its existing code and behavior; package-owned diagnostic invariants carry their stable code independently so the invariant registry does not import a product package. The shared base adds cross-seam routing metadata without changing model-facing text.\n\n<!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->",
+      "weight": 1.28
+    },
+    {
+      "id": "87245e520d267e29785d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Agent Note: Tool schemas are part of the system-prompt assembly",
+      "text": "Status: implemented\nArchived: 2026-07-27\n\nEnglish | [中文](2026-06-11-tool-schemas-in-prompt-assembly.zh.md)",
+      "weight": 1.28
+    },
+    {
+      "id": "436dd67f0d7b54072fa3",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Problem",
+      "text": "On the wire, tool schemas travel in a dedicated `tools` field of the model request, not in prompt text. Architecturally, though, \"what the model is told it can do\" is one coherent concern: prompt sections and the tool list are assembled from the same plugin contributions and consumed at the same moment.",
+      "weight": 1.28
+    },
+    {
+      "id": "91f9e7f9b7ca01984634",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "`PromptAssembly { sections, tools }`: the system-prompt service collects ordered text sections AND tool schemas (the tool registry auto-contributes a provider). The loop consumes one assembly per step; adapters map `sections` to the provider's system slot and `tools` to the wire `tools` field. The `system-prompt/assemble` waterfall is therefore a single interception point for everything the model is told up front — tool filtering (ToolSearch / progressive disclosure) is an assembly rewrite, same as prompt edits.",
+      "weight": 1.28
+    },
+    {
+      "id": "006b78f333c5c21854e6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Alternatives considered",
+      "text": "**The loop queries the tool registry separately from the prompt service** — splits one coherent concern across two seams, and every interception that wants to shape \"what the model is told\" (tool filtering, plan mode) would need two listeners on two surfaces instead of one assembly rewrite.",
+      "weight": 1.28
+    },
+    {
+      "id": "bbd5ef15074e931d5da6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Consequences",
+      "text": "- One waterfall governs the model's standing context; plugins like plan mode can swap prompt text and visible tools in one listener.\n- The assembly interface is merge-extensible for future slots (no untyped `extras` bag — extension is declaration merging).\n- Slight conceptual surprise (schemas in a \"prompt\" service) is documented here and in the package README.",
+      "weight": 1.28
+    },
+    {
+      "id": "d40bd22230bda330b1d8",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Agent Note: Agent lifecycle and ownership contracts",
+      "text": "Status: implemented\nArchived: 2026-09-04\n\nEnglish | [中文](2026-06-18-agent-lifecycle-and-ownership-contracts.zh.md)",
+      "weight": 1.28
+    },
+    {
+      "id": "92409ee6a083897858df",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Problem",
+      "text": "Several ACP and tool-bash limitations were symptoms of the same missing ownership contract: plugins could create or resume agents through `ctx.agents`, but they could not own and dispose one agent independently, and long-running bash tasks carried no stable owner in the executor itself. ACP aborted and awaited agents on disconnect but could not unregister just that session's agent; `session/cancel` could not cancel queued-but-not-yet-started work; and `tool-bash` kept job ownership in a plugin-local `Map`, so an HMR reload could make an old task look unowned.",
+      "weight": 1.28
+    },
+    {
+      "id": "f93575fbf4c71d133a74",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "Three contract changes: the queue-aware cancel, the `AgentHandle` disposer, and the bash owner token.",
+      "weight": 1.28
+    },
+    {
+      "id": "36893ef6a88ae6381189",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "1. Queue-aware `Agent.cancel(cause?)`",
+      "text": "A new `cancel()` verb on the `Agent` interface — the single public stop primitive. (It originally shipped alongside a narrower step-only `abort()`; that verb was later removed as unused, leaving `cancel()` the only public way to stop work.) It clears the inbox's queued + steering FIFOs, aborts the active turn if any, and keeps a cause-less pre-run marker so a prompt cancelled before claim never runs while a later prompt remains independent. An effective call emits `agent/cancel-requested` with the typed `user | parent` cause before clearing or aborting; idle cancellation emits nothing and cannot strand the next prompt. `whenIdle()` reaches post-cancel quiescence, and ACP `session/cancel` maps to `user`. The [explicit turn-cancellation decision](2026-07-16-explicit-turn-cancellation.md) owns the current cause, signal-lifetime, and cooperative-settlement contract.",
+      "weight": 1.28
+    },
+    {
+      "id": "2738c651064a4159dd8b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "2. `AgentHandle` async disposer",
+      "text": "`ctx.agents.create`/`resume` (and the `AgentFactory` interface) return `AgentHandle = { agent: Agent; dispose(): Promise<void> }`. The disposer is a **consumer capability** — a registry observer holding only the bare `Agent` cannot tear it down. The caller fiber and registered factory provider are structural co-owners: caller unload enforces structured ownership, while provider unload must stop old instances whose scoped dependency surface resolves through that provider. All three paths reach the same memoized teardown: stop the loop, await its exit and idle flushes (true quiescence, not just the `disposed` status flip), detach the agent, detach its session, and unwind its scope. Each public ID becomes reusable when its exact registry entry detaches; there is no separate reservation-release phase. Config-created agents are already owned by the `AgentLoop` fiber (the handle is discarded). ACP holds each fresh session's disposer in its `SessionRecord` and runs it on disconnect or plugin teardown, so a bare client disconnect leaves no registered agent and no session-store entry. A create that loses the close race disposes its unpublished handle.\n\n**Teardown ORDER is load-bearing for d",
+      "weight": 1.28
+    },
+    {
+      "id": "b7cabc4f706cbb1d3e6d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "2. `AgentHandle` async disposer",
+      "text": "urability**, and the implementation folds the session lifecycle into the agent's SINGLE composite cordis effect (`SessionStore.prepare`/`enter`/`announce`, replacing a sibling-effect split). A fiber unload disposes sibling effects concurrently (`Promise.all`), which would race removing the session store's append publication hooks against the loop's closing `session/flush` and drop the closing `turn/end`; inside one effect the disposers run as an ordered LIFO chain (loop stopped + `await agent.done` BEFORE the session detaches), so the loop's final flush is captured on BOTH the handle's `dispose()` and a fiber unload. The contained `agent/disposed` and `session/disposed` notifications cannot reject the chain or skip later teardown.",
+      "weight": 1.28
+    },
+    {
+      "id": "b8640c70beadd813634b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "3. Bash owner token in the Service Definition",
+      "text": "Background-job ownership moved from a `tool-bash` plugin-local `Map<string, Agent>` into the executor. `ShellExecRequest` gains an optional `owner?: string`; the resolved `ShellExecSpec` carries it as required-but-nullable `owner: string | undefined` (a forgotten owner is a visible `undefined`, never a silently-absent property). The executor stores the token on its task and exposes it via a new `ShellExecutor.ownerOf(id): string | undefined` method (NOT on the public `BashTask` — one read path, no redundant API). `tool-bash` deletes its `Map` entirely: it stamps `exec.agent?.id` (the shared registry/session id) as the owner at `start`, and `bash_output`/`bash_kill` compare `ctx.shell.ownerOf(id)` to the caller's token with `!== undefined` semantics (an empty-string token is still a real owner). The completion notice finds the live agent by scanning `ctx.get('agents')?.list()` for `agent.id === ownerToken` (read via `ctx.get` — `onJobDone` runs on the bash fiber, a foreign fiber, where the `ctx.agents` proxy would throw). Because ownership now lives on the task in the executor (disposed with the `dsh-shell` fiber), it SURVIVES a `tool-bash` HMR reload — closing the old `XXX(tool-bas",
+      "weight": 1.28
+    },
+    {
+      "id": "40546d66d97d1a415d5e",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "3. Bash owner token in the Service Definition",
+      "text": "h-owner-hmr)` gap. (The `onJobDone` listener is still effect-scoped to `tool-bash`'s `apply`, so a completion landing during the reload gap still drops its one notice — the pre-existing reload-gap drop — but the ownership fence itself is HMR-proof.)",
+      "weight": 1.28
+    },
+    {
+      "id": "19d7f70f42d9e740e2de",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Verification",
+      "text": "These invariants hold and are pinned by tests:\n\n- ACP disconnect or plugin teardown leaves no registered agent and no session-store entry for any bridge-owned session, including a create racing connection closure.\n- `session/cancel` before a queued prompt starts prevents that prompt from running; a later accepted prompt remains an independent queued turn.\n- A `tool-bash` HMR reload does NOT make an existing background job readable or killable by a different session (ownership survives on the executor).\n- Existing non-ACP demos still work without managing handles explicitly; config-created agents remain owned by the `AgentLoop` plugin fiber.",
+      "weight": 1.28
+    },
+    {
+      "id": "359ed18fca0c172c826d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Session owner tokens are unique among live agents",
+      "text": "The bash owner-token comparison relies on the shared `Agent.id`/`SessionId` being unique among live agents. Concurrent same-ID operations may both prepare privately, but publication enters the session and agent in order; `SessionStore.enter()` rejects a duplicate live session id, and every losing transaction rolls its private state back. A programmatic caller therefore cannot publish two live agents with one session token. The access *policy* (token comparison) stays in `tool-bash` (the Consumer); the bash capability keeps `owner` opaque and never interprets it — the correct Service Definition / Service Provider / Consumer split.",
+      "weight": 1.28
+    },
+    {
+      "id": "ffa2f095921f339d0ec6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Alternatives considered",
+      "text": "- **A public `BashTask.owner` field** instead of the `ShellExecutor.ownerOf(id)` Service Definition method — rejected: one read path, no redundant API.\n- **Sibling cordis effects for the agent's session lifecycle** — rejected: a fiber unload disposes sibling effects concurrently (`Promise.all`), racing removal of the store-owned append publication hooks against the loop's closing `session/flush`; the single composite effect's ordered LIFO chain is what captures the closing `turn/end` on both disposal paths.\n- **A separate step-only `abort()` beside `cancel()`** — shipped originally, then removed as unused; `cancel()` is the single public stop primitive ([the public-stop-API Agent Note](../simplification/2026-06-20-public-agent-stop-api.md)).",
+      "weight": 1.28
+    },
+    {
+      "id": "ba5f8a9085eb2ac21217",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Consequences",
+      "text": "This touched public interfaces (`Agent`, `AgentFactory`, the bash seam) deliberately, not as a local ACP patch. Synchronous agent delivery remains simple; the async lifecycle path is additive for owners that need it.",
+      "weight": 1.28
+    },
+    {
+      "id": "f7b3e7fd457ad85de9c4",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Agent Note: Session content search ships opt-in through openAt never",
+      "text": "Status: implemented\nArchived: 2026-09-04\n\nEnglish | [中文](2026-08-13-session-content-search-opt-in.zh.md)",
+      "weight": 1.28
+    },
+    {
+      "id": "642c1bca3c33cb7567c6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Problem",
+      "text": "The shipped bundles mounted the SQLite session-query provider with the full-text index live (`openAt: first-search`), so every default deployment carried a derived FTS index and the Web sidebar offered content search. Whether a deployment wants that index — its node:sqlite import, per-search source reconciliation, and derived storage — is a deployment choice, and the product default is to ship without it; the model-facing search tools were already opt-in and unmounted (the [not-shipped-default decision](../feature/2026-08-02-session-search-not-shipped-default.md)).\n\nTurning the capability off by unmounting the plugin row is not viable. `ApiProxyService` declares `sessionQuery` as a required injection, so without the provider the whole host API gateway stays unloaded and the Web GUI never boots. Session-log export traces subagent descendants through `ctx.sessionQuery.traceSession`, and a subagent fork resolves its Workspace through the same lineage trace — both would need optional-service guards plus a replacement lineage source, roughly tripling the change surface while losing exact reads everywhere.",
+      "weight": 1.28
+    },
+    {
+      "id": "953c11e0f869acd5ddb5",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "Content search is enforced off at the provider. `openAt: 'never'` is a third opening phase on `@deepseek-ai/dsh-session-query-sqlite`: `searchSessions` and `searchEvents` fail with the typed `SESSION_QUERY_SEARCH_DISABLED` code before any request normalization, node:sqlite is never imported or opened, and no source observation or reconciliation runs. Every inherited `ctx.sessionQuery` exact read, filter, and trace keeps working, so session export, fork Workspace inheritance, and title reads are unaffected.\n\n`SESSION_QUERY_SEARCH_DISABLED` joins the closed `SessionQueryErrorCode` taxonomy, and the `tool-session-query` service boundary maps it to the model-safe message `session search is disabled in this deployment`.\n\nThe base bundle sets `openAt: never` on the `session-query-sqlite` row and the web bundle's restatement keeps it; enabling content search is a one-line `openAt` override (`first-search` or `startup`) in a later patch layer, typically with a durable `path`. The host `session.search` endpoint reports the provider failure through its existing error path, and the Web sidebar keeps its designed degradation: local title/workspace matching plus the content-search-unavailable n",
+      "weight": 1.28
+    },
+    {
+      "id": "aa69512c6165539123fc",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "otice. The CLI compat spec pins the shipped `openAt: never` rows, while the web e2e scaffold keeps content search enabled — its seeded-session scenarios navigate by content search, and those runs are the assembled coverage for the opt-in path.",
+      "weight": 1.28
+    },
+    {
+      "id": "5a5a3cb0843ee3f24aa5",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Alternatives considered",
+      "text": "- **Unmount the plugin row** (`disabled: true` in the base patch): rejected — the api-gateway's required `sessionQuery` injection keeps the whole host API unloaded, and making that injection optional forces guards plus a header-walk lineage fallback in session export and fork resolution.\n- **Disable at the consumers** (the host `session.search` endpoint or the sidebar): rejected — enforcement belongs to the operation that makes the decision; opt-in model tools or any other consumer would still reach the index.\n- **A separate boolean beside `openAt`**: rejected — the opening phase already owns when SQLite starts; `never` extends the same axis instead of adding a second knob that can contradict it.",
+      "weight": 1.28
+    },
+    {
+      "id": "392f17069003378fdfc4",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Consequences",
+      "text": "- Default deployments run no derived index: no node:sqlite import or experimental-SQLite startup warning, no reconciliation work, no derived database on disk. Sidebar search matches session titles and workspace names only.\n- Search failures under the default are typed and stable rather than incidental, so callers distinguish a deployment choice from an index fault (`SESSION_QUERY_INDEX_FAILED`).\n- Re-enabling content search is per-deployment configuration, not a code change, and restores the full FTS behavior unchanged.\n- Compositions that mount the search tools without overriding `openAt` get the model-safe disabled message on every search call; enabling the tools implies enabling the index.",
+      "weight": 1.28
+    },
+    {
+      "id": "0d3c84df9074aec96b65",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Agent Note: Centralize sparse first-party prompt-section orders",
+      "text": "Status: implemented\nArchived: 2026-09-04\n\nEnglish | [中文](2026-08-25-sparse-first-party-prompt-section-orders.zh.md)",
+      "weight": 1.28
+    },
+    {
+      "id": "0625865b58feab431b57",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Problem",
+      "text": "Repository-owned system-prompt sections declared unrelated numeric literals across more than twenty packages. The main tool sequence occupied consecutive values from 100 through 117 and then used half-step values for insertions. A later change could therefore collide with an existing section without seeing the complete allocation.\n\nEqual orders used stable JavaScript sort behavior, which made plugin activation order the effective tie-breaker. The [Cordis/workflow prompt-order fix](../../archived/bug-fix/2026-08-24-system-prompt-section-order-ties.md) showed that clean compositions can activate the same plugins in different orders and produce different request headers and snapshot results. Fixing one collision locally did not prevent another package from reusing that value.\n\nThe shell guidance also followed filesystem guidance even though shell commands have the broadest execution and failure semantics. A model should read the shell result obligation before the narrower instructions that route file work to dedicated tools.",
+      "weight": 1.28
+    },
+    {
+      "id": "d6996159d46105292f84",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "`@deepseek-ai/dsh-system-prompt` owns private named allocations for repository prompt sections and runtime contexts. Every repository contributor asks the live service for its typed placement through `ctx.systemPrompt.getSectionOrder(name)` or `getContextOrder(name)` instead of importing a value or declaring a numeric literal. Section values are unique integers, and adjacent allocated section values differ by at least ten; context values are unique integers in their independent sequence.\n\nThe allocation preserves the established first-party sequence except for two deliberate changes: Bash, or PowerShell in the Windows composition, leads per-tool guidance; and sections that shared an order receive an explicit sequence. The groups are:\n\n| Group | Entries |\n|---|---|\n| Product opening | `harness:identity` −1000, `harness:source` −900, `app:web-surface` −800, `deployment:persona` 0 |\n| Work modes | `plan:policy` 500, `team:policy` 600 |\n| Invocation prelude | `tools:ptc-only` 800, `context:file-reference` 900 |\n| Local tools | `tool:bash` 1000, `tool:pwsh` 1010, `tool:read` 1100, `tool:write` 1200, `tool:edit` 1300, `tool:glob` 1400, `tool:grep` 1500, `tool:jobs` 1600, `tool:pty` 1700",
+      "weight": 1.28
+    },
+    {
+      "id": "4db89717f0634e03efea",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "|\n| Higher-level tools | `tool:web_search` 2000, `tool:web_fetch` 2100, `tool:lsp` 2200, `tool:session-query` 2300, `tool:goal` 2400, `tool:cordis` 2500, `tool:workflow` 2600, `tool:ralph` 2700, continuable-subagent guidance 2800 |\n| Generated protocol | `tools:sdk` 5000 |\n| Final-output obligations | deliverable file references 9000, `tool:structured_output` 9900 |\n\nThe runtime-context allocation is `SANDBOX_POLICY` 110, `APPROVAL_POLICY` 115, and `SUBAGENT_DELEGATION` 120.\n\n`SystemPrompt.assemble()` sorts equal-order sections by code-unit section name after comparing `order`. This makes third-party collisions deterministic without locale-sensitive comparison. First-party contributors still receive distinct ranks so their intended sequence remains explicit rather than depending on the fallback.",
+      "weight": 1.28
+    },
+    {
+      "id": "213e068e1a888ebafa7e",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Decision",
+      "text": "Dynamic `PromptContext` order and tool-schema `toolOrder` are separate sequences. Prompt contexts use the service's independent context allocation, while tool schemas remain under `toolOrder`. A scoped `deployment:persona` continues to shadow the global section by name before section sorting and resolves the same `DEPLOYMENT_PERSONA` placement through the service.",
+      "weight": 1.28
+    },
+    {
+      "id": "6e756a6698e7c4f8ae98",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Verification",
+      "text": "The system-prompt unit suite resolves every configured section and context name through the service. It verifies integer and unique values, at least ten points between adjacent section values, and the same code-unit name order for opposite registration permutations of a tie. Real-composition snapshots pin the model-visible ordering, including Bash before filesystem guidance and the explicit Cordis, workflow, Ralph, subagent, and report sequence.",
+      "weight": 1.28
+    },
+    {
+      "id": "b39d2058b6c8dcf3245d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Alternatives considered",
+      "text": "**Keep package-local numeric literals and review collisions manually.** Rejected because a contributor cannot see the complete allocation locally, and the collision that motivated the earlier fix recurred after that fix merged.\n\n**Continue inserting fractional values.** Rejected because fractions provide no durable spacing rule, obscure the semantic groups, and still permit unrelated packages to choose the same value.\n\n**Normalize only snapshot comparisons.** Rejected because the runtime request header and model prompt would remain activation-order dependent while the test hid the difference.\n\n**Preserve activation order for equal ranks.** Rejected because activation order is not a prompt-order decision and varies across valid compositions. Name order is deterministic for external collisions; explicit named placements carry first-party intent.\n\n**Put dynamic contexts and tool schemas in the section allocation.** Rejected because they are independently assembled sequences. Contexts receive their own named service allocation; combining either sequence with sections would imply cross-sequence ordering that the runtime does not perform.",
+      "weight": 1.28
+    },
+    {
+      "id": "b27e73eae3f27cd51d5e",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Consequences",
+      "text": "Numeric ranks are not rendered, so the renumbering alone does not change model text. Bash or PowerShell moves before other per-tool guidance, and previously tied sections acquire deterministic order; those model-visible changes update request-header snapshots and may invalidate provider prefix reuse from the first moved paragraph.\n\nAn external plugin can choose any finite numeric order for its own section or context. Named order lookups are repository-owned placements rather than an extension API. Equal external section ranks remain supported and deterministic by name.\n\nThe system-prompt package now knows the names and relative placement of repository features. That centralized coupling is deliberate: the registry already owns the ordering semantics, while distributed numeric literals made the same relationship implicit and uncheckable.",
+      "weight": 1.28
+    },
+    {
+      "id": "8e5b13f2048ee9843234",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "AGENTS.md",
+      "text": "DeepSeek Harness is an all-plugin Cordis agent harness. Read [docs/architecture.md](docs/architecture.md) before changing `packages/`; follow [docs/AGENTS.md](docs/AGENTS.md) for documentation.",
+      "weight": 1.28
+    },
+    {
+      "id": "a5404dce240103a17c12",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Pre-stable APIs and released Session data",
+      "text": "Public APIs are pre-stable; update every consumer. Follow [version/status](docs/session-format-status.md) and [type acknowledgements](docs/cookbook/reviewing-persistence-type-changes.md). [Adjacent migration](.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.md) may add a version-named successor but never move, overwrite, or delete committed generations; predecessors imply neither fallback nor downgrade support. SQLite uses monotonic `SCHEMA_VERSION`.\n\nAcknowledge [declared persistence-type changes](docs/cookbook/reviewing-persistence-type-changes.md).\n\n**Application launch.** Only `dsh` profiles launch supported Node apps; package bins, demos, and public SDK argv escapes are forbidden ([rule](docs/architecture.md#application-launch)).",
+      "weight": 1.28
+    },
+    {
+      "id": "001ebe31d9ea8ca69e12",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Repository layout",
+      "text": "```\nvendor/      Vendored Cordis (vendor/README.md)\npackages/    @deepseek-ai/dsh-<pkg> workspaces at packages/<group>/<pkg>/\n  core/                 agent/session API\n  api/                  remote BFF\n  typert/               type graphs\n  llm/                  model providers\n  shell/                command execution\n  subprocess/           child-process management\n  ssh/                  SSH execution providers\n  terminal/             persistent terminals\n  ptc-runtime/          PTC execution\n  sandbox/              process confinement\n  deliverables/         turn deliverables\n  fs/                   filesystem access\n  lsp/                  language servers\n  skill/                skill loading\n  web/                  search/fetch tools\n  computer-use/         computer interaction\n  browser-use/          browser interaction\n  compaction/           context compaction\n  context/              request context\n  subagent/             delegated agents\n  jobs/                 background jobs\n  bundle/               profile bundles\n  workflow/             workflow execution\n  webhook/              webhook ingress\n  todo/                 todo_write tool\n  plan/                 logged pl",
+      "weight": 1.28
+    },
+    {
+      "id": "1e23ddbd0f8046757ea4",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Repository layout",
+      "text": "anning\n  goal/                 session goals\n  schedule/             scheduled follow-ups\n  preset/               agent composition\n  guard/                loop/tool guards\n  extensions/           runtime self-modification\n  hooks/                Claude Code/Codex bridges\n  session/              durable sessions\n  session-query/        browsing/search/export\n  attachment/           binary attachments\n  spill/                output spill\n  storage/              non-session storage\n  workspace/            workspace entities\n  feedback/             human feedback\n  identity/             anonymous identity",
+      "weight": 1.28
+    },
+    {
+      "id": "d4f7f57d15a7dd2eecd6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Repository layout",
+      "text": "settings/             user settings\n  credentials/          credentials/authorization\n  acp/                  automation-only ACP\n  interaction/          human interaction\n  boot/                 application boot\n  sdk/                  JSON-RPC SDK\n  host/                 GUI host\n  client/               GUI client\n  mcp/                  external tools\n  experimental/         pre-stable prototypes; public by default with explicit private exceptions\n  test-support/         test infrastructure\n  runtime-diagnostics/  runtime invariants\n  util/                 zero-dependency utilities\npython/      Python SDK/runtime (python/README.md)\nnative/      @deepseek-ai/node-addon-system source (native/README.md)\nbenchmarks/  performance gates\n.agents/     Agent workflows/notes\ndocs/        Documentation (docs/AGENTS.md)\nscripts/     gates and generators\nwebsite/     VitePress documentation projection\n```\n\nPackage groups: [packages/README.md](packages/README.md).",
+      "weight": 1.28
+    },
+    {
+      "id": "a553632099531a92ad4f",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Commands",
+      "text": "```sh\npnpm install            # pnpm workspaces, node ^22.19 || >=24\npnpm run clean           # remove build outputs and safe residue from deleted packages\npnpm run test           # unit tests\npnpm run test:coverage  # CI coverage gate: per-file 100% on packages/*/*/src\npnpm run test:e2e       # real-API tests; self-skip without DEEPSEEK_API_KEY\npnpm run test:expected  # owner-local process expectations\npnpm run test:snapshot  # keyless recorded-session replay through shipped profiles; filter: -t <name>\npnpm run test:snapshot:record  # re-record expected outputs (needs key)\npnpm run typecheck\npnpm run lint\npnpm run duplication    # cross-file TypeScript clone detection\npnpm run build          # tsc emits lib/types, tsdown bundles runtime\npnpm run hygiene        # publint + workspace/package/dependency checks + NodeNext consumer check\npnpm run check:windows-wine  # ONLY when diagnosing a known Windows failure (needs wine); CI owns this signal\npnpm run doc-sync       # documentation gates (scripts/run-gates.ts)\npnpm run test:docs      # quick documentation checks (no build; doc-quick aggregate)\npnpm run website:build  # VitePress build (doubles as dead-link check)\npnpm dsh --profile",
+      "weight": 1.28
+    },
+    {
+      "id": "5b343765b0d34d27f619",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Commands",
+      "text": "headless \"task\"  # run one task from source (needs DEEPSEEK_API_KEY)\npnpm run demo:ptc -- \"task\"  # headless PTC mode run (needs key)\npnpm run dev:web | dev:desktop  # build, then launch; Web also rebuilds client bundles on edits. start:web | start:desktop skip the build\nmake web|dev-web|desktop|dev-desktop|build  # the same commands; ARGS='--no-open' forwards options\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "285a24e991c17ab33a4b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Host sandbox failures",
+      "text": "If a required `gh`, `pnpm`, build, test, or generator command fails because the sandbox blocks credentials, network, IPC, watching, or nested `sandbox-exec`, retry unchanged with the narrowest host escalation. Require sandbox evidence; never bypass test failures or the product sandbox.",
+      "weight": 1.28
+    },
+    {
+      "id": "3ddb707be2f15240f3f2",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Run relevant checks locally",
+      "text": "Before pushing, follow [dsh-pre-push-checks](.agents/skills/dsh-pre-push-checks/SKILL.md); report only commands run. After `gh stack sync`, validate immediately; do not merge before checks pass.\n\n- Match evidence to the surface: focused behavior tests, model/user-output snapshots, `doc-sync` for docs, built smokes for published paths, and real-API e2e for providers.\n- Never default to the full suite or repeat a passing check for commit or push. CI owns exhaustive coverage and the platform matrix; rehearse all locally only by explicit request, for CI diagnosis, or for an irreducibly repository-wide change.\n- `test:coverage`, not `test`, is the CI coverage gate ([why](docs/testing.md)).\n- **Web browser automation and GIF recording:** launch with `pnpm dsh web --patch apps/web/tests/pin-browse-picker.overlay.yml` to use the [in-page directory picker](apps/web/tests/pin-browse-picker.overlay.yml); omit this override only when testing native picker behavior explicitly.",
+      "weight": 1.28
+    },
+    {
+      "id": "1b0b707d935a24fa58f3",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Secrets / .env",
+      "text": "Windows packaging/signing: [required reading](apps/desktop/README.md#windows-ev-signing).\n\nReal-API tests/demos read `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, and root `.env`. cordis.yml allows `!!js` (never `!js`) under plugin `config` and entry `disabled`; other metadata stays literal, so conditional composition also uses overlays ([primer](docs/cordis-primer.md#loader-configuration)). Never commit credentials. CI e2e skips without a key; [testing.md](docs/testing.md) owns key policy.",
+      "weight": 1.28
+    },
+    {
+      "id": "6150f11450aa60c6b217",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "- Packages use `@deepseek-ai/dsh-<name>`; vendor is [rescoped](docs/rescope.md) and `private: true`. Harness packages declare `@deepseek-ai/cordis` in `peerDependencies`/`devDependencies`. Workspace dependency sections use DSH `workspace:*`, vendor/native `workspace:~` ([rules](.agents/notes/implemented/process/2026-09-22-workspace-release-ranges.md)).\n- ESM everywhere (`\"type\": \"module\"`). Use package names across packages and `.ts` in local relative imports. Config subprocesses run built `lib/` under plain Node; source regressions use their declared launcher ([testing policy](docs/testing.md#test-subprocess-launch-modes)). The `dsh` CLI source launch runs through tsx's ESM-only hook (`node --import tsx/esm`); modules it reaches must stay ESM (no CJS-only exports) — Node's native TypeScript modes are unavailable across the engines range ([source-launch contract](.agents/notes/implemented/architecture/2026-07-29-dsh-source-launch-tsx-esm.md)). Raw/Web `cordis.yml` bare plugins must appear in their resolver manifest's `dependencies`; `verify-cordis-config` enforces it.\n- **Registrations are effects**: every contribution goes through `ctx.effect()` / `ctx.on()`; a registry's `registe",
+      "weight": 1.28
+    },
+    {
+      "id": "d0d12fe9e41eef5f2cb9",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "r()` returns the disposer.\n- **Runtime invariants assert owned relationships.** Publish `./invariant` only when independent observations can diverge. Otherwise omit its source and wiring and record why in its README; empty installers and checks of service presence, plugin metadata, effects, or fixed examples are invalid ([package invariant rules](packages/AGENTS.md)).\n- **Typed events use declaration merging** and merge-extensible maps. Event JSDoc needs `@mode` and payload `@param`; scoped keys absent from payloads need `@dshScopeScan unsupported`. Public service methods document parameters and non-void returns. `SessionEventMap` members are required-on-read by default — builds that do not know a type refuse the log unless the event carries the envelope's `ignorable: true`; only structural format changes bump `SESSION_FORMAT_VERSION` ([mechanism](.agents/notes/implemented/architecture/2026-08-10-session-log-version-mechanism.md)).",
+      "weight": 1.28
+    },
+    {
+      "id": "76353ba7ed3a821378b1",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "- **Switch on discriminant tags.** Closed unions end in `assertNever`; merge-extensible unions fall through a documented default.\n- **Waterfall listeners MUST call `next()`** to delegate; returning without it short-circuits the chain ([semantics](docs/cordis-primer.md#cordis-waterfall-semantics)).\n- **Model-visible ⟺ logged**: anything that reaches a model request must be reconstructable from the session log; a new model-visible input requires a session event.\n- **Plugins, not loop changes**: new behavior goes on documented extension points; changing `agent-loop` requires updating docs/architecture.md.\n- **A capability seam comprises Service Definition / Service Provider / Consumer roles.** It is complete, never one role; split only when roles evolve independently ([glossary](docs/glossary.md#capability-seam)).\n- **Prefer maintained dependencies over hand-rolling** when they genuinely delete owned code and tests ([policy](.agents/notes/implemented/process/2026-07-26-dependencies-over-hand-rolling.md)).\n- **Explicit > implicit at package boundaries**: defaulting is an explicit `resolve(request): Spec` step in the owning implementation, never a hidden `?? default` inside `run()` (the",
+      "weight": 1.28
+    },
+    {
+      "id": "545b55759082b9b3db33",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "`dsh-shell` request/spec split is the template).\n- **No hardcoded tunables in plugins**: deployment-varying choices are validated `Config` fields changeable from cordis.yml; a `DEFAULT_*` constant or test hook is not configurability. Protocol constants, external specs, and security invariants stay fixed.\n- **Misconfiguration fails loud** at load when self-contained, otherwise at the earliest resolvable point; never silently skip a missing referent.\n- **Opaque cross-boundary ids are branded** (`Branded<B>` from `dsh-brand`), never bare `string`.\n- **Trust TypeScript at typed same-process boundaries.** Do not add runtime validation, fallback behavior, or hostile-input tests solely for values the static interface requires; validate at parser/config, queued, model/tool JSON, durable/file, worker, process, and wire boundaries.",
+      "weight": 1.28
+    },
+    {
+      "id": "de9b2f7a96433f917f76",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "- **No new assertions to `unknown`** (`as unknown` or `<unknown>`). Preserve or reduce the exact legacy baseline; use typed values or validation for replacements ([rule](.agents/notes/implemented/process/2026-09-19-no-unknown-casts.md)).\n- **Source plane vs artifact plane, never mixed.** Static gates and tests resolve workspace imports through tsconfig `paths` to `src` and pass on a clean tree; gates consuming built `lib/` declare that dependency ([layout](docs/development.md#typescript-project-layout)).\n- **Keep compiler faces explicit.** A package with both Host and Client programs exposes face-specific leaf configs and a solution-only root; repo-wide programs seed a face config, never the root solution ([layout](docs/development.md#typescript-project-layout)).\n- **An empty `catch` names the error** and why; keep its `try` to one statement.\n- **Keep comments local.** Do not restate code, expand unrelated comments, or explain distant behavior without local need ([rationale](.agents/notes/implemented/process/2026-08-09-concrete-prose-names-actors-and-recorded-facts.md)).\n- **Ban `prove` + `nance`** ([rule](.agents/notes/implemented/process/2026-08-26-ban-ambiguous-origin-label.md))",
+      "weight": 1.28
+    },
+    {
+      "id": "6285793033127f6c2d09",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": ".\n- **Prefer symmetry for parallel values**; unexplained asymmetry usually signals a missed extraction.\n- **Tests describe behavior, not correctness.** Change obsolete behavior with its tests; explain why in the PR.\n- **Create Agent Notes only for durable decision rationale;** mechanical/local edits are exempt, including local UI changes ([scope](.agents/notes/README.md#when-to-write-one)). Archived notes are frozen: never edit or treat them as current authority ([archive policy](.agents/notes/README.md#archiving-and-deletion)).\n- **Client UI copy is locale-owned.** Route product text through typed dictionaries and `t` or localized primitive props; `verify-client-ui-i18n` rejects hardcoded copy ([decision](.agents/notes/implemented/architecture/2026-08-23-locale-owned-client-ui-copy.md)).",
+      "weight": 1.28
+    },
+    {
+      "id": "5e614939cf5f16b45f70",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "- **Testing policy** — [docs/testing.md](docs/testing.md). Every non-trivial model- or product-user-visible change updates a keyless recorded-session snapshot; [snapshot ownership](snapshots/AGENTS.md) reserves the top-level tree for session-driven cases and keeps other expected output owner-local. Fixtures replay on macOS/Linux; fix fixtures, not normalizers.\n- **Design each tool's UI presentation up front.** Host presenters stay pure; Web cards derive from raw events and persisted result metadata ([cookbook](docs/cookbook/adding-a-tool.md)).\n- **Plan unit, e2e, and snapshot coverage** for capability seams, lifecycle paths, and transcript output; include missing snapshot-harness support in the same change.\n- **Both SDKs project the loop.** Agent-loop, session-lifecycle, and `SessionEventMap` changes update the TypeScript and Python SDK expected outputs in the same PR; `pnpm run test` covers neither ([surfaces](docs/testing.md#when-a-snapshot-test-is-required)).\n- **Choose PR history deliberately.** Split independent changes and fix the introducing PR before propagation. Standalone/stack branches may merge-forward or rebase. Rewrites use `--force-with-lease`, abort on remote moveme",
+      "weight": 1.28
+    },
+    {
+      "id": "d59a7cc08f8541182c8c",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Conventions",
+      "text": "nt, never raw `--force`; preserve an in-progress merge-forward checkpoint before taking a newer base ([rationale](.agents/notes/implemented/process/2026-08-02-native-github-stacks-and-optional-rebases.md)).\n- **Labels:** one PR `kind/*`, all material `area/*`, and native Issue Type ([taxonomy](.agents/notes/implemented/process/2026-08-08-unified-github-label-taxonomy.md)).\n- TODO markers: `FIXME`/`TODO`/`XXX` by urgency ([semantics](docs/development.md)).\n- Files end with exactly one trailing newline; `git diff --cached --check` (pre-commit) gates it.",
+      "weight": 1.28
+    },
+    {
+      "id": "3cd62520946990414e65",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Defensive patterns",
+      "text": "Read [docs/defensive-patterns.md](docs/defensive-patterns.md) before lifecycle, concurrency, subprocess, or teardown work.",
+      "weight": 1.28
+    },
+    {
+      "id": "f52c383f6415395b717e",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Type safety and documentation",
+      "text": "Everything compiles under `strict: true` with `noImplicitAny`; every remaining `any` explains why narrowing is infeasible. Every module and export has concise JSDoc for its non-obvious contract; function-like exports include `@param`/`@returns`, as enforced by `verify-export-jsdoc`. Heritage-declared members, plugin-protocol slots, and constructors keep their docs at the declaring Service Definition, protocol, or class.\n\nComments and docs state complete contracts and context, not reasoning transcripts. Use direct, concrete terms. Do not use metaphors. Before writing `contract`, `boundary`, or `shape`, ask whether a more exact term names the subject: write `response fields`, `JSON validation`, or `ESM exports` instead of `response shape`, `validation boundary`, or `module shape`. Keep `contract` for preconditions, postconditions, invariants, compatibility promises, and other obligations that callers, callees, implementers, providers, producers, or consumers rely on. Keep a literal process, wire, security, transaction, or lifecycle boundary. Do not narrate control flow or tests, preserve review history, or restate code. Keep behavior, failure, timing, ownership, and safe-use facts; l",
+      "weight": 1.28
+    },
+    {
+      "id": "e8b22487b2a819a6356c",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Type safety and documentation",
+      "text": "ink the rationale. Use [dsh-prose-standard](.agents/skills/dsh-prose-standard/SKILL.md) for decisions. Wire mechanically checkable invariants into an executed top-level gate and prove each changed acceptance path rejects an invalid case. Use narrow, justified exceptions instead of disabling a rule globally.\n\nDocs accompany every code change: update affected README and JSDoc contracts together. Routine bilingual work follows [docs/AGENTS.md](docs/AGENTS.md); only explicit user invocation may run `dsh-translate-docs`. Current-state prose, one physical line per paragraph, one home per fact, and word budgets live there.",
+      "weight": 1.28
+    },
+    {
+      "id": "202bf0da1ac1ffa2b67b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Editing these instructions",
+      "text": "`CLAUDE.md` symlinks `AGENTS.md` at root and `packages/`; edit the real file. Keep each rule self-contained while linking high-level docs. Condense when clarity survives; raise a `verify-doc-budgets` ceiling when the required content genuinely needs more space.",
+      "weight": 1.28
+    },
+    {
+      "id": "5cbe9269c7896859e8de",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Vendoring policy",
+      "text": "`vendor/` packages are pinned source copies (manifest with upstream SHAs in [vendor/README.md](vendor/README.md)). Update via the sync procedure there; re-apply or retire the logged local modifications; rerun `pnpm run test && pnpm run build`.",
+      "weight": 1.28
+    },
+    {
+      "id": "a2ac285307d59b134685",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "DeepSeek Harness",
+      "text": "English | [中文](README.zh.md)\n\nDeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).\n\nIt is built on an **everything-is-a-plugin** architecture and powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512).\n\nDocumentation: [https://deepseek-harness.github.io/deepseek-harness/](https://deepseek-harness.github.io/deepseek-harness/)",
+      "weight": 1.28
+    },
+    {
+      "id": "0e2d5760538c0ea1b17b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Developer preview",
+      "text": "DeepSeek Harness is in _developer preview_ and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**\n\nReview the [safety notice](SAFETY.md) before running the project.",
+      "weight": 1.28
+    },
+    {
+      "id": "0186ca7b864ae6fd65ba",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Run from `npm`",
+      "text": "Install `Node.js`, then run:\n\n```sh\nnpx @deepseek-ai/dsh web\n```\n\nThe command starts the Web UI at `http://127.0.0.1:3080` by default and opens it in the default browser for a local launch. An SSH launch only prints the host URL because the SSH client or editor owns the local forwarded address. Pass `--no-open` to run the server without opening a browser. See [Web UI guide](docs/user/guide/index.md).",
+      "weight": 1.28
+    },
+    {
+      "id": "83147598e3563a9b29cc",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Run from source",
+      "text": "To run from a repository checkout:\n\n```sh\ngit clone https://github.com/deepseek-ai/deepseek-harness.git\ncd deepseek-harness\npnpm install\npnpm run build\npnpm dsh web\n```\n\n`pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.",
+      "weight": 1.28
+    },
+    {
+      "id": "c850ba33f0235f8f39f7",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Community and support",
+      "text": "- Submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).\n- Add the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic to your plugin repository for discoverability.\n- Join <a href=\"https://discord.gg/Ycq5dCaS4\">DeepSeek Harness Discord community</a>.",
+      "weight": 1.28
+    },
+    {
+      "id": "0eea3f3cb6414892edf6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Development",
+      "text": "Start with the [development guide](docs/development.md) and [architecture documentation](docs/architecture.md).\n\n`pnpm run dev:web` builds, serves, and rebuilds client bundles on source edits in one terminal, and `make help` lists the matching Make targets for Web and Desktop; the guide's application commands section owns the full table.\n\nFor agents, follow [AGENTS.md](AGENTS.md).",
+      "weight": 1.28
+    },
+    {
+      "id": "87eb2c8d4fd98ca52504",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Citation",
+      "text": "```bibtex\n@misc{deepseek-harness2026,\n  title={DeepSeek Harness: Everything is a Plugin},\n  author={DeepSeek-AI},\n  year={2026},\n  publisher={GitHub},\n  howpublished={\\url{https://github.com/deepseek-ai/deepseek-harness}},\n}\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "cae2ffe65525ffb4a185",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "License",
+      "text": "[MIT](LICENSE)\n\nThird-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).",
+      "weight": 1.28
+    },
+    {
+      "id": "cab3be37b54c7d886c82",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "DeepSeek Harness Architecture",
+      "text": "English | [中文](architecture.zh.md)\n\nRead this before changing anything under `packages/`. It assumes you know Cordis; if you do not, start with the [primer](cordis-primer.md) or the [tutorial](cordis-tutorial/index.md).\n\nWe recommend using an agent to explore the codebase and understand its architecture.",
+      "weight": 1.28
+    },
+    {
+      "id": "c54169c00074d2f30e07",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Cordis",
+      "text": "[Cordis](cordis-primer.md) is the framework under dsh: plugins contribute services, typed events, and reversible effects to a shared context. Every part of the product is a plugin, including the model adapter, the tool registry, the session log, and the agent loop itself, so each is replaceable from configuration.\n\nThere is no privileged core to patch: you extend dsh by mounting a plugin beside the others, and registrations are effects that unwind when their plugin unloads.",
+      "weight": 1.28
+    },
+    {
+      "id": "672c26c6de630351fd2f",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Profiles and bundles",
+      "text": "A running `dsh` is a plugin tree composed at boot from ordered layers.\n\nA **profile** is a named composition stored in the Harness home. It lists the bundles it stacks, holds any out-of-tree plugins it installs, and keeps the user's own `cordis.patch.yml`. `web`, `headless`, `sdk`, `sdk-minimal`, and `acp` ship as templates.\n\nA **bundle** is a distribution format for Cordis config rows and the code they mount, so whatever it inserts stays patchable by the layers above it.\n\nEach declares itself in its own `package.json` under a `dsh` field: `dsh.profile` lists a profile's bundles, and `dsh.bundle` points at a bundle's patch file.\n\n[`dsh-base`](../packages/bundle/base/README.md) is the shared first layer of the `web`, `headless`, `sdk`, and `acp` profiles: model adapters, tools, persistence, sandbox and approval policy, settings, credentials, telemetry. [`dsh-web-app`](../packages/bundle/web-app/README.md) adds the browser application, [`dsh-headless`](../packages/bundle/headless/README.md) adds a one-shot runner with no server, [`dsh-sdk-app`](../packages/bundle/sdk-app/README.md) adds the SDK JSON-RPC server, and [`dsh-acp-app`](../packages/bundle/acp-app/README.md) adds the automa",
+      "weight": 1.28
+    },
+    {
+      "id": "217907c9cc41ab919d31",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Profiles and bundles",
+      "text": "tion-only ACP server. [`dsh-sdk-minimal`](../packages/bundle/sdk-minimal/README.md) is the deliberate exception: one bundle owns its complete explicit SDK tree and does not apply `dsh-base`.\n\nLayers apply to an empty entry list in this order: each bundle in the profile's listed order, then the profile's `cordis.patch.yml`, then the home-level one, then any `--patch` overlay. A patch targets a row by id and replaces its whole config, or inserts new rows.\n\nYAML controls HMR: base enables config-only `dsh-hmr`; headless, SDK and ACP disable it; `sdk-minimal` omits it. Profile patches override these defaults. HMR coordinates watching and reloads; the launcher provides profile data and readiness.",
+      "weight": 1.28
+    },
+    {
+      "id": "0f97078ec5753b40ecbb",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Profiles and bundles",
+      "text": "Base includes [Plugin Manager](../packages/boot/plugin-manager/README.md) for Web and agents.\n\nTo see the tree your machine boots:\n\n```sh\ndsh --profile web --dump-config\n```\n\nAny row it prints can be replaced by a patch of your own.\n\nComposition mechanics are in [app-boot](../packages/boot/app-boot/README.md#profiles); config fields are in the generated [config catalog](config-catalog.md).",
+      "weight": 1.28
+    },
+    {
+      "id": "09bdc2acb42c489e76a2",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Application launch",
+      "text": "Supported Node applications launch through named `dsh` profiles. The shipped profiles are `web`, `headless`, `sdk`, `sdk-minimal`, and `acp`, selected with `dsh --profile <name>` or `dsh <name>`. `plugin` names the management command; a profile with that name requires `--profile plugin`. The TypeScript SDK resolves its same-version `dsh` dependency and selects `sdk`; custom plugin composition remains a profile plus ordered patch files, not another executable or inline application tree. `sdk-minimal` is a repository-owned standalone bundle behind the same launcher, not a caller-supplied Cordis tree.\n\nVendored CLIs, build-only and test-only executables, direct in-process plugin mounting, and the private browser WebWorker preview are not Harness application launchers. [`verify-application-entrypoints`](../scripts/verify-application-entrypoints.ts) keeps every package bin, executable source, root demo, and the root `start:web` and `dev:web` scripts in an explicit class and rejects a Node application path that bypasses `dsh`.\n\nThe Python SDK follows the same application architecture. Its runtime wheel packages the normal `dsh` CLI as `deepseek-harness-sdk-runtime-<platform>-<arch>`, and",
+      "weight": 1.28
+    },
+    {
+      "id": "3ad7309fb1391ddf114a",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Application launch",
+      "text": "the client launches `dsh --profile sdk` with an explicit Harness home by default. The minimal example selects the shipped `sdk-minimal` profile. Python exposes profile selection and ordered patch files rather than a complete Cordis tree; persistent external plugins are installed through `dsh plugin`. The removed private direct-config carrier has no compatibility bin or fallback parser.",
+      "weight": 1.28
+    },
+    {
+      "id": "19fa1112148032ef17c4",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Desktop application",
+      "text": "The [Electron desktop application](../apps/desktop/README.md) carries its exact dsh production runtime in signed resources and owns the reserved `$DSH_HOME/profiles/desktop`. Shared profile helpers initialize its files, reconcile installed bundles, and resolve installation and bundle dependencies without replacing pnpm-owned packages. CLI and Desktop share product data, while executable packages, activation choices, and lockfiles remain separate. The public CLI cannot manage Desktop’s profile.\n\nElectron starts the private Desktop Host in Electron Node mode. The Host invokes the shared CLI profile runner and complete Web application. The window immediately loads packaged Web assets and waits for boot injections before activating client plugins in the same document. Web owns RPC and streams; the desktop carrier connects the local page to the authenticated Host. Node IPC carries boot injections, readiness, fatal errors, and shutdown. Desktop defaults to port `19387`; profile configuration can override it. Shell-owned UI runs plugin transactions through bundled pnpm with normal user and profile configuration.",
+      "weight": 1.28
+    },
+    {
+      "id": "a818f51e76d977d33d91",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Core packages",
+      "text": "Here are some core packages that contribute to the Cordis tree.\n\n| Package | Owns | `ctx` key |\n|---|---|---|\n| [`core/session`](subsystems/session.md) | The append-only `SessionEvent` log and in-memory store | `ctx.sessions` |\n| [`core/system-prompt`](subsystems/system-prompt.md) | Prompt-section and tool-schema assembly | `ctx.systemPrompt` |\n| [`core/tools`](subsystems/tools.md) | The scoped tool registry and guarded execution pipeline | `ctx.tools` |\n| [`core/agent`](subsystems/core.md) | The `Agent` interface, live registry, and `agent/*` events | `ctx.agents` |\n| [`core/agent-loop`](subsystems/core.md) | The default driver implementing that interface | `ctx.agentLoop` |\n| [`core/scope`](subsystems/scope.md) | The per-agent scoped-registration primitive | library, no key |\n| [`llm/llm`](subsystems/llm-streaming.md) | Message and stream vocabulary plus the adapter seam | `ctx.llm` |\n| [`webhook/webhook`](subsystems/webhook.md) | Authenticated-delivery dispatch and Workspace Session creation | `ctx.webhookRuntime` |",
+      "weight": 1.28
+    },
+    {
+      "id": "6839d3dab938c08487b5",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Events",
+      "text": "Events are the extension points, and picking the right domain is the first decision in most changes.\n\n- **Session events** are durable facts appended to the log and broadcast through `session/event`. Use one when the fact must survive a reload.\n- **Agent events** (`agent/*`) carry a live `Agent`: inbox, step, status, request, validation, continuation. Use one to observe or intercept work in flight.\n- **Capability events** attach policy and adapters to a seam (`fs/*`, `tools/*`, `telemetry/*`) without importing the loop.\n\nAgentLoop awaits serial `agent/created` initialization before starting queued work. Initialization failure rolls back creation; [agent-loop](../packages/core/agent-loop/README.md#understand-the-implementation) defines teardown ordering.\n\nThe [event map](event-producer-consumer.md) lists every event's producers and consumers.",
+      "weight": 1.28
+    },
+    {
+      "id": "2d57e134db772d3bc06a",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Turn flow",
+      "text": "A **step** is one model request plus the tools it calls. A **turn** is zero or more steps: it opens before its first input is claimed and closes once nothing is owed.\n\n```text\nturn/start\n  claim next-step input plus one queued message\n  assemble prompt sections + tool schemas; project runtime context\n  -> agent/pre-step                   reject | enter(messages, startsRequestSeries?)\n     reject, or a first enter rewritten empty -> close the turn with no step\n     step/start\n     agent/request -> prepareCall (cancellation commits neither system nor users)\n     reconcile system/message using the prepared call capability\n     append entered messages as user/message; log request/header and request/context as needed\n     derive and freeze model history from the log\n     stream the bound prepared call -> llm/stream -> agent/assistant-stream start\n       agent/assistant-stream chunk*\n       assistant/message | assistant/attempt -> agent/assistant-stream end\n     tool/call* -> tools/pre-execute -> tools/execute -> tools/post-execute -> tool/result*\n     step/end\n     tools owe another request, or next-step input arrived -> claim -> next step\n  -> agent/turn-stopping\nturn/end\n```\n\n`turn/*`",
+      "weight": 1.28
+    },
+    {
+      "id": "b7f67bb771db89afbcbb",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Turn flow",
+      "text": ", `step/*`, `system/message`, `user/message`, `assistant/message`, `assistant/attempt`, and `tool/*` are durable session events; the rest are live extension points across three domains. `agent/assistant-stream` publishes process-local start, transient chunk, and end frames. The loop commits the complete compact stream as one message or log-only attempt before a committed end frame, and the Web Session-follow adapter is the live event's only remote consumer. `agent/pre-step`, `agent/request`, `llm/stream`, and the three `tools/*` events are waterfalls, whose listeners must call `next()` to delegate; `agent/turn-stopping` is serial and has no `next()`.",
+      "weight": 1.28
+    },
+    {
+      "id": "84905df8ba3ebd3e2f2c",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Turn flow",
+      "text": "One inbox feeds the driver; injected context waits for a waking message. AgentLoop’s durable `inbox` projection exposes pending input without live Agents.\n\n`agent/pre-step` decides the accepted input. Listeners may rewrite or reject claimed messages; a rejected or empty first claim closes a durable turn without a step. An enter decision may set `startsRequestSeries`: the loop logs a fresh `request/header` (reason `series`, or `change` with `startsSeries: true` when the envelope also changed). Wrapping listeners preserve that declaration with `{ ...decision, messages }`. After assembly and `step/start`, `agent/request` and `prepareCall()` resolve the actual route before the system prompt and accepted users are committed; cancellation during either async phase commits neither. Prepared call capabilities govern prompt admission, not preceding `request/context`. Every attempt synchronously reconciles the same rendered assembly, appends users only on the first attempt, logs header/context as needed, and derives and freezes the request before streaming the bound call. Retries do not repeat assembly or `agent/pre-step`. Surface replacements and image-offload decisions after attachment sta",
+      "weight": 1.28
+    },
+    {
+      "id": "68bd9484197ee8d54c4d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Turn flow",
+      "text": "rt a new request series, including during the first resumed pre-step; unchanged resume continues the series. The first admitted step reserves the system head before user messages even for an empty prompt (no wire message). The prompt travels only as `system/message` history: an empty rendering clears all active system nodes, leaving no old prompt model-visible; capable routes append non-empty updates after cached history, including supported tool updates; incapable routes and new request series consolidate non-empty prompt text at the first system node, with logged empty replacements for non-empty later system nodes ([decision](../.agents/notes/implemented/architecture/2026-09-02-system-prompt-as-surface-node.md); [decision rule](../packages/core/agent-loop/README.md#understand-the-implementation)).",
+      "weight": 1.28
+    },
+    {
+      "id": "0050b1d2f9141782efb9",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Turn flow",
+      "text": "The loop sends immutable requests with live cancellation and reuses freeze evidence for frozen identities; [agent-loop](../packages/core/agent-loop/README.md) owns construction and cancellation causes.\n\nDetails: the [sequence diagram](agent-lifecycle.md), the [tool pipeline](tool-execution-pipeline.md), and [cancellation and error recovery](subsystems/core.md#the-agent-handle).",
+      "weight": 1.28
+    },
+    {
+      "id": "11909b913590dd9ad3e2",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Session log",
+      "text": "The session log is the source of the context the model sees. `deriveMessages()` projects model history from it. Each `assistant/message` embeds the exact compact timed stream that produced its assembled content; `assistant/attempt` retains settled failed, retried, cancelled, and stream-error attempts without adding model history. Fork, resume, transcripts, telemetry, and persistence all derive from these durable settlements, while live UI incrementality comes from `agent/assistant-stream`; a hard process loss before settlement leaves no durable attempt stream ([decision](../.agents/notes/implemented/architecture/2026-09-01-v2-embedded-assistant-streams.md)).\n\nSession consumers know only the current logical format. Header-only `stat` and `list` rescan each Session directory, select its numerically highest canonical generation, and translate a supported historical header without loading events or publishing a successor. A stored-session `open` selects that same generation, refuses a future version, or decodes and composes the static adjacent migration chain once before returning validated current logical events. A read open uses that in-memory result without publishing a successor; a",
+      "weight": 1.28
+    },
+    {
+      "id": "0f9d8321493dbc29d422",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Session log",
+      "text": "write open first encodes, verifies, and exclusively publishes the final version-named successor beside the unchanged source. Ordinary repair of an unsealed interrupted tail remains a handle consumer responsibility; migration inserts a missing interrupted `turn/end` only for the bounded released restart already sealed by a later `turn/start`. JSONL v0 uses `session.jsonl[.zstd]`, v1 and later use lowercase `session.vN.jsonl[.zstd]`, and committed generation paths are never renamed, replaced, or deleted. The JSONL provider owns physical framing, compression, generation selection, and exclusive publication, while each adjacent migration package owns exactly one `vN -> vN+1` step ([decision](../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.md)).",
+      "weight": 1.28
+    },
+    {
+      "id": "3211895734b67bb3f30f",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Session log",
+      "text": "**Model-visible means logged.** A runtime invariant checks model requests are reconstructable from the log. New model-visible inputs require session events. Plugins changing existing message content register [pure message projections](subsystems/session.md#plugin-owned-message-projections); detached readers supply the same definitions explicitly. Tool changes are capability-independent; [Session tool history](../packages/core/session/README.md) supplies provider declarations.\n\n**Projection seam.** `dsh-session-projection` owns `ctx.sessionProjections`: registered units fold committed events incrementally, host consumers read one typed state with `stateOf()`, and carriers batch cropped client views with `snapshot()`. A host reader either requires this service during activation or fails explicitly when the registry or required key is absent. Contributors may retain `ctx.inject(['sessionProjections'], ...)` registration without silently defaulting a missing host value. The agent loop registers shared `turnBoundary` state for its readers ([decision](../.agents/notes/implemented/architecture/2026-08-19-session-projection-mandatory-seam.md)).",
+      "weight": 1.28
+    },
+    {
+      "id": "a0b41a387764492e12f0",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Capability seams",
+      "text": "A **seam** is a swappable capability with three roles: a **Service Definition** declaring the interface, a **Service Provider** implementing it, and a **Consumer** using it, commonly a model-facing tool. A package may combine roles, but one role alone is not a seam; adding a capability means designing all three ([capability graph](capability-seams.md)).\n\nSeams are why one provider swap changes the whole product. Filesystem and subprocess providers share one execution world, so pointing them at a remote sandbox moves Bash, PTY, and LSP with them, with no provider forks. [Subagent providers](subsystems/subagent.md) vary just as widely behind one interface, from a fresh child agent to a delegated turn in another product.\n\n[Experimental Agent Teams](subsystems/agent-team.md) is a published opt-in coordination seam on `ctx.agentTeams`, with a durable roster, task board, and mailbox layered over continuable subagents.",
+      "weight": 1.28
+    },
+    {
+      "id": "0bc850a5a20dcce665d8",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Where new behavior goes",
+      "text": "New behavior attaches to a documented extension point. Changing the loop itself updates this map.\n\n| Goal | Mechanism |\n|---|---|\n| Add a model provider | register its adapter on `ctx.llm` |\n| Add a model-facing capability | register on `ctx.tools`; its schema joins prompt assembly |\n| Give one session a different capability set | compose an agent preset; a service row there needs an `isolate` realm |\n| Add shell execution | register a `ctx.shell` backend; the local one spawns through `ctx.subprocess` |\n| Add persistent terminal execution | register a `ctx.terminals` backend plus `dsh-tool-terminal` |\n| Add a human command | register on `ctx.commands`; it dispatches without a model turn |\n| Manage background jobs | register on `ctx.jobs`; `job_*` tools read or stop jobs |\n| Start a Session from an external webhook | register a trusted rule on `ctx.webhookRuntime` and mount a provider adapter |\n| Add filesystem access or policy | register a `ctx.fs` provider or listen to `fs/*` events |\n| Confine spawned processes | use a `ctx.sandbox` backend; consumers wrap argv before spawning |\n| Intercept a request, tool, or turn | use its `agent/*` or `tools/*` event; `agent/turn-stopping` sto",
+      "weight": 1.28
+    },
+    {
+      "id": "63f1afb939389eabbfa3",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Where new behavior goes",
+      "text": "ps a turn |\n| Add model-facing context | call `agent.inject()`; it lands in the next admitted request |\n| Add UI or editor integration | drive `ctx.agents` and render from `session/event` |\n| Add a Web Client Chat node | register a `ConversationNodeDefinition` + keyed renderer |\n| Add durable session state | extend `SessionEventMap`; render and replay from the log |\n| Generate session titles | register the sole `ctx.sessionTitle` provider |\n| Manage a same-session objective | use `ctx.goals`; continue through `agent/*` |\n| Fork a session at a turn boundary | `ctx.agents.create({ sessionId, seed, meta: { parentSession, seedLength } })` — only agent-loop-published sessions persist |",
+      "weight": 1.28
+    },
+    {
+      "id": "ca130d48e58aa8ad4442",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/architecture.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Where new behavior goes",
+      "text": "| Store sessions in a new backend | implement `SessionPersistence` (`create`/`open`/`stat`/`list`/`export`) over the shared handle scaffolding |\n| Scope a registration to one agent | use that agent's `agent.ctx` |\n\nThe [extension cookbook](cookbook/extension-cookbook.md) maps features to capabilities and indexes the step-by-step guides for [packages](cookbook/adding-a-package.md), [tools](cookbook/adding-a-tool.md), [LLM adapters](cookbook/adding-an-llm-adapter.md), and [settings pages](cookbook/adding-a-settings-card.md). The [Conversation subsystem](subsystems/conversation.md) owns Chat-node assembly.",
+      "weight": 1.28
+    },
+    {
+      "id": "79e50d304feb492233f5",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Development guide",
+      "text": "English | [中文](development.zh.md)\n\nThe setup tutorial takes a new contributor from prerequisites to a checked checkout. The contributor reference that follows covers repository layout, daily workflow, and CI organization. Design rationale and implementation details belong to the linked Agent Notes and scripts.",
+      "weight": 1.28
+    },
+    {
+      "id": "d43eefb5ee22d858db48",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Prerequisites",
+      "text": "- Node.js supports 22.19+ and 24+. CI covers 22.19, 24, and 26; see the [Node engine floor Agent Note](../.agents/notes/implemented/process/2026-07-06-node-engine-floor.md).\n- Corepack-enabled pnpm. The repo pins `pnpm@11.7.0` in `package.json`; run `corepack enable` if `pnpm --version` does not resolve through Corepack.\n- Git 2.26 or newer; hook setup enables Git's worktree-specific configuration extension.\n- Optional: a DeepSeek API key for the Web, headless, and ACP automation demos and real-API e2e tests.",
+      "weight": 1.28
+    },
+    {
+      "id": "9399c819b5813c6c44c6",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Windows and WSL 2",
+      "text": "On Windows, you can develop with native tools or use WSL 2 for a Linux environment. WSL 2 is useful for verifying Linux behavior and for using Linux toolchains when native dependency compilation or filesystem permissions obstruct Windows development. Each environment needs its own runtime, build tools, and permissions; WSL is optional.\n\nKeep the checkout, installed dependencies, and toolchain in the same operating system environment. For WSL 2, store the checkout in the Linux filesystem; for native Windows tools, use the Windows filesystem. Accessing files across the two filesystems adds overhead to I/O-intensive operations such as Git, dependency installation, and builds. See Microsoft's [file storage and performance guidance](https://learn.microsoft.com/en-us/windows/wsl/filesystems#file-storage-and-performance-across-file-systems).\n\nInstall dependencies separately in each environment because native binaries and links can differ between operating systems. Test results apply to the environment where the tests ran; Windows-specific behavior still needs native Windows validation.",
+      "weight": 1.28
+    },
+    {
+      "id": "cec3fd849c713ffaaf14",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "First-time setup",
+      "text": "Install dependencies from the repo root:\n\n```sh\npnpm install\n```\n\nThe install also configures worktree-local Lefthook hooks through `scripts/install-lefthook.mjs`. The [worktree-local hooks Agent Note](../.agents/notes/implemented/process/2026-07-27-worktree-local-lefthook.md) owns the hook-path safety contract.\n\nIf the hooks are missing because dependencies were restored from cache or `postinstall` was skipped, install them manually:\n\n```sh\nnode scripts/install-lefthook.mjs\n```\n\nIf the wrapper rejects existing Git configuration or reports a stale lock, follow its diagnostic and the linked Agent Note rather than editing worktree metadata speculatively. After moving a checkout, rerun the wrapper to regenerate the owned path.\n\nRun typecheck once after a fresh clone:\n\n```sh\npnpm run typecheck\n```\n\nSetup is complete when `pnpm run typecheck` exits successfully.",
+      "weight": 1.28
+    },
+    {
+      "id": "0a6b2f60b68e32615ae2",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "The repository uses isolated Host and Client aggregates. An ordinary package is registered in exactly one aggregate: Host packages in `tsconfig.host.json` and Client packages in `tsconfig.client.json`; three packages (`host/webserver`, `compaction/compaction`, `typert/registry`) are referenced by both aggregates as shared leaves so each side type-checks the same source.\n\n| File | Role | Forms a program? |\n|---|---|---|\n| `tsconfig.json` | Solution root: `extends` base, `files: []`, and references to the two aggregates. It is the tsserver discovery entry and the entry for explicitly running the complete Project Reference graph; through the inherited `paths`, it is also the resolution config for tsx running `scripts/`. | No |\n| `tsconfig.host.json` | Host aggregate: Host packages, examples, tests, scripts, website, and the exceptional Host project of `api/remotes`. | Yes |\n| `tsconfig.client.json` | Client aggregate: `packages/client/*` packages and their tests, `apps/web`, and the exceptional Client project of `api/remotes`. | Yes |\n| `tsconfig.base.json` | Shared compilerOptions and the source `paths` map. Also the resolution facade the vitest configs point vite-tsconfig-paths at:",
+      "weight": 1.28
+    },
+    {
+      "id": "14923f85037d7611a9de",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "it has no `include`, so its `paths` apply to every importer. | No |\n| `tsconfig.base.client.json` | Browser compiler settings (`jsx`, DOM libs, `types: []`) extended by the Client aggregate and every `packages/client/*` package. | No |\n\nHost and Client stay two aggregate programs because both sides declaration-merge the cordis `Context` interface under the same keys with different services; one program seeing both merges reports a collision. The collision exists only inside a `ts.Program` — module resolution never triggers it — which is why the solution may reference both aggregates and one paths facade may span both sides. Three disciplines follow:",
+      "weight": 1.28
+    },
+    {
+      "id": "18c4ba39ea908a59db90",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "- `tsconfig.base.json` never gains `include` or `files`: they would leak into every extending package project and narrow the facade's match-all scope.\n- A script that builds a repo-wide `ts.Program` seeds `tsconfig.host.json` or `tsconfig.client.json` explicitly — never the root solution, because flattening both aggregates into one program collides the `Context` merges.\n- A new package is registered in exactly one aggregate; only the split packages above carry both leaf configs, and the shared leaves are registered in both aggregates because each side must type-check the same source. Having both a Node loader entry and a browser entry is not a reason to split a package; an ordinary Client plugin produces both runtime artifacts during the Client build phase.\n\nSix packages split Host and Client tsconfigs: `api/remotes`, `api/gateway`, `api/session-controller`, `api/workspace-controller`, `client/connection`, and `session-query/session-log-export`. `api/remotes`' Host entry participates in the Host Typert graph while its Client entry imports generated `/remote` declarations; `session-log-export` keeps Node archive production out of its browser controller. Each split package-root `tsco",
+      "weight": 1.28
+    },
+    {
+      "id": "43c1404d43c2f62ec8f3",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "nfig.json` is therefore only a solution, and the two aggregates and direct consumers reference `tsconfig.host.json` or `tsconfig.client.json` respectively. The workspace `constraints` gate walks the reachable Project Reference graph and checks each referencing project's own compiler face: a single-config target remains valid from either face, while a split target must name the matching leaf rather than its solution root or opposite leaf; it discovers split packages from the presence of both leaf configs, so a new split joins the gate automatically. The [`api-remotes` README](../packages/api/remotes/README.md) and [`session-log-export` README](../packages/session-query/session-log-export/README.md) explain their splits.",
+      "weight": 1.28
+    },
+    {
+      "id": "c9415c1cf95ef81a2f86",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "The root build follows the generated dependency order:\n\n```sh\ntsc -b tsconfig.host.json\ntsdown --env.DSH_BUILD_FACE host\npnpm --filter @deepseek-ai/dsh-desktop run bundle\ntsc -b tsconfig.client.json\ntsdown --env.DSH_BUILD_FACE client\npnpm run build:web\n```\n\nBoth tsdown passes match `vendor/*`, `packages/*/*`, and `apps/cli`; the Host pass also matches `apps/desktop-host`. They neither scan build artifacts to discover Client packages nor maintain a Host/Client package filter list. Package-local tsdown configs select entries for the current phase through `DSH_BUILD_FACE`: an ordinary Client plugin produces both its Node loader and browser bundle during the Client phase; `api-remotes` uses `hostPhase: true` to produce its Host entry early and only its browser bundle during the Client phase. Tsdown consumes only the JavaScript emitted to `lib/types` by the preceding tsc phase. Tsdown builds the matched workspace members concurrently, so `apps/desktop`, whose main bundle inlines workspace devDependencies from their `lib/` output, bundles in its own step after the Host pass ([Desktop README](../apps/desktop/README.md#bundled-workspace-dependencies)).\n\nTypert runs only during Host tsdown,",
+      "weight": 1.28
+    },
+    {
+      "id": "04350a0f55b9080af493",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "seeded by `tsconfig.host.json`. It analyzes Host types and generates both Host reflection artifacts and the Host-for-Client Remote projection; Client tsdown does not start Typert. Consequently, `pnpm run typecheck` runs the complete Host lib phase before Client tsc, while `pnpm run build` continues through Client tsdown and the Web build.\n\n`pnpm run build` embeds the root package version, the seven-character source commit, and a dirty marker when Git reports local changes; it also inherits other caller-supplied `DSH_CLIENT_*` values. `pnpm run build:official` is the cross-platform local equivalent of the CI and release artifact build and omits the local dirty marker. Each successful complete build writes a gitignored record that binds the exact public values to the Vite output and dynamic client bundles; release packing and built Web tests reject a missing record or artifacts changed by a later partial build. `pnpm run dev:web` runs that complete build first (`--skip-build` reuses an existing artifact tree instead), then samples the current version and Git state once and shares that environment across every watcher stage for the session; it does not validate the complete-build rec",
+      "weight": 1.28
+    },
+    {
+      "id": "0e0222a6eda64560a6fe",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "Static analysis and tests resolve workspace imports through the base `paths` map to `src` and must pass on a clean tree; gates that consume built `lib/` output declare that dependency explicitly. Generated Host-for-Client Remote declarations are the deliberate exception: the public `typecheck`, `lint`, and `doc-typecheck` commands generate them first, while internal `*:contracts-ready` scripts assume that an invoking public command or scheduler gate already depends on the Typert contract-generation pass or the complete build. See the [ts-build-config note](../.agents/notes/implemented/process/2026-06-17-ts-build-config.md) for tsc-first emit ownership and the [Typert Remote note](../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.md) for the gate-preparation contract.\n\nBusiness services declare callable methods on the Host with `@Remote` or `@RemoteScope`; the Host build generates Host-for-Client types and runtime contributions, and the Client's `api-remotes` composition loads those contributions under `ctx.remote` and scoped `agentCtx.remote` namespaces. See [API Gateway](api-gateway.md) for the generated artifacts on both sides, their assembly relatio",
+      "weight": 1.28
+    },
+    {
+      "id": "a3f1cade2543d1b304ba",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TypeScript project layout",
+      "text": "nships, the SRC development fallback, and the Web build order.\n\nIf a relevant local check consumes built package output, build once first:\n\n```sh\npnpm run build\n```\n\n`pnpm run hygiene` includes `publint`, which validates package entrypoints against the built `lib/*.js` files, and `verify-node-next-types`, which validates built declarations against a temporary NodeNext consumer. A fresh worktree has no bundled JS or declarations until `pnpm run build` runs; ordinary commits and pushes do not require that build unless their selected checks consume it.",
+      "weight": 1.28
+    },
+    {
+      "id": "32dcdd956a638e70f62d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Environment variables",
+      "text": "The real DeepSeek adapter and key-backed agent demos read credentials from the environment or from a gitignored `.env` at the repo root:\n\n```sh\nDEEPSEEK_API_KEY=sk-...\nDEEPSEEK_BASE_URL=https://... # optional\n```\n\n`DEEPSEEK_BASE_URL` is optional and defaults to the public API. Never commit real credentials. The real-API e2e suites self-skip when `DEEPSEEK_API_KEY` is not set.",
+      "weight": 1.28
+    },
+    {
+      "id": "35b368e6d4ba62354b5a",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Git integrations",
+      "text": "`.i18n.yaml` records use Git's default text merge. A record conflicts only when both branches changed language-specific content in the same heading section; resolve the Markdown, then rerun `pnpm run verify-translation-pairing --write <pair>`. If `pre-merge-commit` rejects an otherwise clean merge, Git leaves the complete result staged without a commit; repair the failure and run `git commit`, or run `git merge --abort`.\n\nlefthook is configured in `lefthook.yml` as a fast local checkpoint:\n\n- `pre-commit` verifies staged pairing records against the staged owner blobs, validates staged files with the project-free `.oxlintrc.staged.json` profile and applies Oxlint fixes with one bounded retry, regenerates `THIRD_PARTY_NOTICES.md` when a staged file is one of its inputs, checks the staged diff for whitespace errors, and runs the vendor manifest guard.\n- `pre-merge-commit` performs the same index-backed pairing check before Git creates an automatic merge commit.\n- `pre-push` runs `pnpm run typecheck`, which completes the Host lib phase, including generated Typert contracts, before the Client TypeScript check.\n\nThe vendor manifest guard checks that changes under `vendor/*/src` are stage",
+      "weight": 1.28
+    },
+    {
+      "id": "d3c750ca28ebee7f3f1c",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Git integrations",
+      "text": "d with the matching `vendor/README.md` manifest update. See `vendor/README.md` before editing vendored code.\n\nApart from the scoped staged-record verification, the hooks intentionally do not run tests, snapshots, documentation checks, builds, or hygiene. Contributors run the [checks relevant to the changed behavior](../AGENTS.md#run-relevant-checks-locally) once; CI owns exhaustive coverage, built-artifact smokes, and the Node 22.19, 24, and 26 compatibility matrix.\n\nContributors can opt into the comprehensive local gate set with `pnpm run check:all`. The command is independent of the Git hooks and is not an agent instruction.",
+      "weight": 1.28
+    },
+    {
+      "id": "cee1fb1e0b0346e57fd0",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "CI gates",
+      "text": "The keyless [CI workflow](../.github/workflows/ci.yml) groups independent gates into broad lanes and runs a smaller compatibility signal across supported Node versions. Artifact consumers wait for one build within their lane. Required benchmarks run separately on standard GitHub-hosted Linux; the [benchmark runner decision](../.agents/notes/implemented/testing/2026-09-06-standard-hosted-benchmark-runner.md) owns routing and the job timeout. The separate real-API workflow runs `pnpm run test:e2e` with its configured worker bound. See [scripts/run-gates.ts](../scripts/run-gates.ts) and the workflow files for the current gate and job inventory.\n\nThe credential-free dsh dependency-layout and dsh/vendor pack rehearsals use the existing Linux self-hosted pool only when `DSH_CI_FAILOVER_LINUX=selfhosted` and the event is a trusted master push or same-repository, non-fork, non-Dependabot pull request. All other cases, including manual dispatch, use `ubuntu-24.04`; manual publication stays hosted. See the [release rehearsal runner decision](../.agents/notes/implemented/process/2026-09-06-release-rehearsal-selfhosted.md) for persistent-store isolation and fallback limits.",
+      "weight": 1.28
+    },
+    {
+      "id": "7458af258755714b3b8b",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Daily commands",
+      "text": "The root [contributor instructions](../AGENTS.md#commands) summarize common commands, while [`package.json`](../package.json) and [scripts/run-gates.ts](../scripts/run-gates.ts) own the current script and gate inventories. Select the smallest checks that cover the changed surface. Documentation changes use `pnpm run doc-sync`; package-public behavior changes also update the owning README or JSDoc, and built-artifact checks require `pnpm run build` first.",
+      "weight": 1.28
+    },
+    {
+      "id": "fc0ddf9d654c340ba855",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Profile runs",
+      "text": "Run the repository build separately before using these source-checkout demos:\n\n```sh\npnpm run build\n```\n\nThe one-shot Headless coding agent needs `DEEPSEEK_API_KEY` in the environment or repo-root `.env`:\n\n```sh\npnpm dsh --profile headless \"summarize this workspace\"\n```\n\nThe PTC mode demo runs the same headless profile with code presentation enabled:\n\n```sh\npnpm run demo:ptc -- \"summarize this workspace\"\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "ffa6867ee09b3ff68ba8",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Application commands",
+      "text": "Web and Desktop share one command pair. `start:*` launches the artifacts of a prior `pnpm run build`; `dev:*` runs that build first and then launches. Web additionally keeps client bundles rebuilt on source edits, because its Host runs from source while the browser loads built bundles:\n\n```sh\npnpm run start:web       # serve built Web artifacts through the source launcher (the same launch as pnpm dsh web)\npnpm run dev:web         # build, serve, and rebuild Web client bundles on source edits\npnpm run start:desktop   # launch built Desktop artifacts\npnpm run dev:desktop     # build, then launch Desktop\n```\n\nArguments after a Web command reach `dsh web`, for example `pnpm run dev:web --no-open --port 3081`; `dev:web` also accepts `--skip-build` to reuse the existing artifact tree and `--no-serve` to run only the rebuild watchers beside a server started elsewhere. Both Web commands use the normal Harness home, while the Desktop commands use the isolated development home described in the [Desktop README](../apps/desktop/README.md). The root `Makefile` names the same commands as `make web`, `make dev-web`, `make desktop`, `make dev-desktop`, and `make build`; `ARGS='--no-open'` forwards",
+      "weight": 1.28
+    },
+    {
+      "id": "e2d76f5dd2526ab79b8d",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "TODO markers",
+      "text": "Use one of three comment tags to flag known issues in the code, ordered by urgency:\n\n- `FIXME` — an issue that should block a new release. A release should not ship with an open `FIXME` unless reviewers explicitly agree the change can be merged anyway.\n- `TODO` — an issue that should be fixed soon, once we have the resources.\n- `XXX` — an issue that we may fix someday; lowest priority, no commitment.\n\nPick the tag that matches the urgency so anyone scanning the code can tell a release blocker from a someday-maybe.",
+      "weight": 1.28
+    },
+    {
+      "id": "cc1684c98fafeec27d5a",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Documenting types verbatim (`ts type-equiv`)",
+      "text": "The [subsystems](subsystems/README.md) pages paste source-equivalent declarations together with their original JSDoc so a reader sees the exact type definition and source contract. To keep a paste from drifting when source changes, fence it as ` ```ts type-equiv ` (instead of ` ```ts `) and register it in `scripts/type-equiv.manifest.json` with the source file and symbol it mirrors:\n\n```json\n{ \"doc\": \"docs/subsystems/session.md\", \"symbol\": \"SessionEvent\", \"source\": \"packages/core/session/src/types.ts\" }\n```\n\n`pnpm run verify-type-equiv` (part of `doc-sync`) then extracts that symbol's declaration and attached JSDoc from source via the TypeScript parser and asserts the block matches both. For a class whose implementation bodies do not belong in the catalog, use ` ```ts public-api ` and set `\"projection\": \"public-api\"`; the checked projection retains the public fields, constructor, accessors, methods, and original class/member JSDoc while omitting bodies and private or protected members. Comparison ignores whitespace and non-JSDoc comments but requires every original JSDoc comment, including member documentation, so readers see the source contract beside the exact type definition. Th",
+      "weight": 1.28
+    },
+    {
+      "id": "c77a10c6566a89ddf5a9",
+      "source": "deepseek-ai/deepseek-harness",
+      "ref": "477b4f420553",
+      "path": "docs/development.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "heading": "Documenting types verbatim (`ts type-equiv`)",
+      "text": "e gate enforces a 1:1 correspondence by document, symbol, and projection between primary blocks and manifest entries; a paired `.zh.md` block reuses its unsuffixed sibling's entry only when the whole tracked fence sequence is byte-identical and ordered identically. `doc-typecheck` applies the same derivative rule to compilable fences, while skipping both source-equivalence fence kinds from compilation and its opt-out ratio. When you change a documented declaration or its JSDoc, the gate fails until you update the paste; when you add or remove a primary block, update the manifest in the same change.",
+      "weight": 1.28
+    },
+    {
+      "id": "fa21896dc4ca90c6a397",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "README.md",
+      "text": "<div align=\"center\">\n\n<h1>\n  <picture>\n    <source media=\"(prefers-color-scheme: light)\" srcset=\"assets/free-claude-code-wordmark-light.svg\">\n    <img src=\"assets/free-claude-code-wordmark-dark.svg\" alt=\"Free Claude Code\" width=\"610\">\n  </picture>\n</h1>\n\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)\n[![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)\n[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json&style=for-the-badge)](https://github.com/astral-sh/uv)\n[![Testing: Pytest](https://img.shields.io/badge/Testing-Pytest-00c0ff.svg?style=for-the-badge)](https://github.com/Alishahryar1/free-claude-code/actions/workflows/tests.yml)\n[![Type checking: Ty](https://img.shields.io/badge/type%20checking-ty-ffcc00.svg?style=for-the-badge)](https://pypi.org/project/ty/)\n[![Code style: Ruff](https://img.shields.io/badge/code%20formatting-ruff-f5a623.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)\n[![Logging: Loguru](https://img.shields.io/b",
+      "weight": 1.16
+    },
+    {
+      "id": "129b57be6794f689a7f7",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "README.md",
+      "text": "adge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)\n\n[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Manage](#manage-your-installation)\n\n</div>\n\n<p align=\"center\">\n  <em>Independent open-source project. Not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.</em>\n</p>",
+      "weight": 1.16
+    },
+    {
+      "id": "5ffb43db46a2cd35c632",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "What You Get",
+      "text": "- **54 ToS-friendly providers. 1.3B+ free tokens every month.** Use free, paid, subscription, and local models from one searchable UI without putting your account at risk. FCC follows provider terms and removes integrations if they stop being allowed.\n- **10 coding agents. One model catalog.** Run [Claude Code](https://code.claude.com/docs/en/overview), [Codex](https://github.com/openai/codex), [Pi](https://github.com/earendil-works/pi), [OpenCode](https://github.com/anomalyco/opencode), [Cline](https://github.com/cline/cline), [Hermes](https://github.com/NousResearch/hermes-agent), [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), [Grok Build](https://github.com/xai-org/grok-build), [Muse Code](https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2/), or [Aider](https://aider.chat/) with your FCC models.\n- **Keep coding through provider outages.** After retries are exhausted, FCC automatically tries your next configured model without making you restart the turn—across every client.\n- **Up to 90% fewer terminal-output tokens.** Optional [RTK](https://github.com/rtk-ai/rtk) filters common command output, while five FCC optimizations handle quota pr",
+      "weight": 1.16
+    },
+    {
+      "id": "cc330510331060a8aa83",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "What You Get",
+      "text": "obes, command-prefix detection, titles, suggestions, and filepaths without calling a provider.\n- **Native Code sessions in your browser.** Choose a folder and run Codex in the browser with real-time and background support. Freely switch providers/models in the same session. Support for switching harnesses in the same session coming soon!\n- **Terminal, desktop, IDE, or phone.** Work through native launchers, [VS Code](https://code.visualstudio.com/), [Codex App](https://learn.chatgpt.com/docs/app), [JetBrains](https://www.jetbrains.com/), [Discord](https://discord.com/), or [Telegram](https://telegram.org/).",
+      "weight": 1.16
+    },
+    {
+      "id": "7fd0bbff0dbaa7ffc922",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "What You Get",
+      "text": "- **Voice notes in. Code out.** Talk to your agent using local [Whisper](https://github.com/openai/whisper) or [NVIDIA NIM](https://docs.nvidia.com/nim/speech/latest/asr/deploy-asr-models/whisper.html) transcription.\n- **Agent capabilities stay intact.** Stream responses, use tools, preserve native interleaved thinking for maximum performance, send images, and route [Fable](https://www.anthropic.com/claude/fable), [Opus](https://www.anthropic.com/claude/opus), [Sonnet](https://www.anthropic.com/claude/sonnet), and [Haiku](https://www.anthropic.com/claude/haiku) independently with compatible models.\n\nFree-tier availability and limits are controlled by each provider and may change.\n\n<div align=\"center\">\n  <img src=\"assets/pic.png\" alt=\"Claude Code running with Free Claude Code\" width=\"700\">\n  <p><em>Claude Code running with FCC.</em></p>\n</div>\n\n<div align=\"center\">\n  <img src=\"assets/browser-code-session.png\" alt=\"Native Codex browser session in FCC, showing model controls and a repository exploration\" width=\"700\">\n  <p><em>A native Codex session in FCC's browser UI.</em></p>\n</div>",
+      "weight": 1.16
+    },
+    {
+      "id": "506d4c3072cb02693b4e",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "1. Install",
+      "text": "macOS/Linux:\n\n```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh\" | sh\n```\n\nWindows PowerShell:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1\")))\n```\n\nWhen prompted, choose at least one coding agent and optionally RTK. You can review the installers before running them: [install.sh](scripts/install.sh) and [install.ps1](scripts/install.ps1).",
+      "weight": 1.16
+    },
+    {
+      "id": "a76c89e9f85c43bde068",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Linux",
+      "text": "Run:\n\n```bash\nfcc-server\n```\n\nFCC opens the Admin UI after starting. On Windows and macOS, use the tray or\nmenu-bar icon to open Admin, restart, or quit. When using `fcc-server`, keep its\nterminal open.\n\n<a id=\"nvidia-nim-provider\"></a>",
+      "weight": 1.16
+    },
+    {
+      "id": "d950ae51d49ffca630ad",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "3. Configure NVIDIA NIM",
+      "text": "1. Create an API key at [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys).\n2. Open the Admin UI URL from the server log.\n3. Paste the key into `NVIDIA_NIM_API_KEY`.\n4. Leave `MODEL` on the default `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`, or search the model dropdown and select another model.\n5. Click **Apply**.\n\nTo protect the local proxy with a bearer token, enable **Proxy Authentication**\nin Admin.\n\n<div align=\"center\">\n  <img src=\"assets/admin-page.png\" alt=\"Free Claude Code Admin UI\" width=\"700\">\n</div>",
+      "weight": 1.16
+    },
+    {
+      "id": "c2bbb3ed9043ce9a467c",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "4. Run Your Coding Agent",
+      "text": "Claude Code:\n\n```bash\nfcc-claude\n```\n\nCodex:\n\n```bash\nfcc-codex\n```\n\nPi:\n\n```bash\nfcc-pi\n```\n\nOpenCode 2:\n\n```bash\nfcc-opencode\n```\n\nTo upgrade from OpenCode 1, rerun the FCC installer with OpenCode selected. It\nupgrades the native installation in `~/.opencode/bin`; for npm or other package\nmanagers, follow [OpenCode's migration instructions](https://opencode.ai/v2/docs/migrate-v1/)\nfirst. For npm v1, run `npm uninstall -g opencode-ai`, then rerun the FCC installer.\nClose OpenCode before upgrading. OpenCode manages its own data upgrades.\n\nRTK integration is temporarily unavailable for OpenCode 2. The installer saves\nthe recognized old RTK plugin outside the plugin directory; customized plugins\nneed manual migration. RTK continues to work with the other supported agents.\n\nUse `fcc-opencode` for coding and sessions. Use plain `opencode` for commands\nsuch as upgrades, service management, ACP, and MCP setup.\n\nCline:\n\n```bash\nfcc-cline\n```\n\nHermes:\n\n```bash\nfcc-hermes\n```\n\nDeepSeek Harness Web:\n\n```bash\nfcc-dsh\n```\n\nGrok Build:\n\n```bash\nfcc-grok\n```\n\nMuse Code:\n\n```bash\nfcc-muse\n```\n\nAider:\n\n```bash\nfcc-aider\n```\n\n<a id=\"model-picker\"></a>\n\n<div align=\"center\">\n  <img src=\"assets/cc-mod",
+      "weight": 1.16
+    },
+    {
+      "id": "bcd8cd0c90fc312135d6",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "4. Run Your Coding Agent",
+      "text": "el-picker.png\" alt=\"Claude Code model picker showing FCC models\" width=\"700\">\n  <p><em>Select an FCC model from Claude Code's native <code>/model</code> picker.</em></p>\n</div>",
+      "weight": 1.16
+    },
+    {
+      "id": "b5907fea9aa21b4c6f98",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "1. Open a provider link below for its key, models, or setup instructions.\n2. In the Admin UI, configure the listed setting. For OpenAI / ChatGPT\n   subscription access, use **Providers → OAuth providers** instead.\n3. Search the `MODEL` dropdown and select a model. If the provider cannot list\n   models, enter `<provider-id>/<exact-provider-model-id>` manually.\n4. Click **Apply**.\n\nOptional: add an ordered **Fallback Models** list under **Model Config**. It\napplies to every connected client. A failed request may reach and consume usage\nfrom more than one provider before succeeding.\n\n<details>\n<summary><strong>Provider catalog</strong></summary>\n\n| Provider | Admin UI setting | Example `MODEL` |\n| --- | --- | --- |\n| [NVIDIA NIM](https://build.nvidia.com/settings/api-keys) | `NVIDIA_NIM_API_KEY` | `nvidia_nim/nvidia/nemotron-3-super-120b-a12b` |\n| [OpenRouter](https://openrouter.ai/keys) | `OPENROUTER_API_KEY` | `open_router/openrouter/free` |\n| [Groq](https://console.groq.com/keys) | `GROQ_API_KEY` | `groq/llama-3.3-70b-versatile` |\n| [ClinePass](https://docs.cline.bot/getting-started/clinepass) | `CLINE_API_KEY` | `cline_pass/cline-pass/kimi-k3` |\n| [OpenAI / ChatGPT](https://learn.",
+      "weight": 1.16
+    },
+    {
+      "id": "d9eb68aee077e8543798",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "chatgpt.com/docs/auth) | Connect ChatGPT in the Admin UI | `openai/<model-id>` |\n| [OpenAI API](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` | `openai_api/gpt-5.6-sol` |\n| [GitHub Copilot](https://docs.github.com/en/copilot/how-tos/copilot-sdk/auth/authenticate) | Connect GitHub Copilot in the Admin UI | `github_copilot/<model-id>` |\n| [xAI (Grok)](https://console.x.ai/team/default/api-keys) | `XAI_API_KEY` | `xai/grok-4.5` |\n| [QwenCloud Token Plan](https://home.qwencloud.com/api-keys) | `QWENCLOUD_API_KEY` | `qwencloud/qwen3.7-plus` |\n| [QwenCloud Coding Plan](https://home.qwencloud.com/api-keys) | `QWENCLOUD_CODING_API_KEY` | `qwencloud_coding/qwen3.7-plus` |",
+      "weight": 1.16
+    },
+    {
+      "id": "c5da8024b75331fa1018",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "| [Together AI](https://api.together.ai/settings/api-keys) | `TOGETHER_API_KEY` | `together/zai-org/GLM-5.2` |\n| [DeepInfra](https://deepinfra.com/dash/api_keys) | `DEEPINFRA_API_KEY` | `deepinfra/deepseek-ai/DeepSeek-V4-Flash` |\n| [SiliconFlow](https://cloud.siliconflow.com/account/ak) | `SILICONFLOW_API_KEY` | `siliconflow/Qwen/Qwen3-32B` |\n| [Nebius Token Factory](https://tokenfactory.nebius.com/project/api-keys) | `NEBIUS_API_KEY` | `nebius/Qwen/Qwen3-30B-A3B` |\n| [Chutes](https://chutes.ai/docs/getting-started/authentication) | `CHUTES_API_KEY` | `chutes/Qwen/Qwen3-32B-TEE` |\n| [Featherless AI](https://featherless.ai/account/api-keys) | `FEATHERLESS_API_KEY` | `featherless/Qwen/Qwen3-32B` |\n| [Agnes AI](https://agnes-ai.com/) | `AGNES_API_KEY` | `agnes/agnes-2.0-flash` |\n| [ZenMux](https://zenmux.ai/platform/pay-as-you-go) | `ZENMUX_API_KEY` | `zenmux/deepseek/deepseek-v4-flash-free` |\n| [W&B Inference](https://wandb.ai/settings) | `WANDB_API_KEY` | `wandb/openai/gpt-oss-20b` |\n| [Azure OpenAI](https://learn.microsoft.com/azure/foundry/openai/how-to/chatgpt) | `AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_BASE_URL` | `azure_openai/<deployment-name>` |\n| [Google AI Studio (Gemini)](",
+      "weight": 1.16
+    },
+    {
+      "id": "5e3a1fefefd1ba8a7c32",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "https://aistudio.google.com/apikey) | `GEMINI_API_KEY` | `gemini/models/gemini-3.1-flash-lite` |\n| [Google Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/start/openai) | `VERTEX_PROJECT_ID` + ADC | `vertex/google/gemini-3.5-flash` |\n| [DeepSeek](https://platform.deepseek.com/api_keys) | `DEEPSEEK_API_KEY` | `deepseek/deepseek-chat` |\n| [Mistral La Plateforme](https://console.mistral.ai/) | `MISTRAL_API_KEY` | `mistral/devstral-small-latest` |\n| [Mistral Codestral](https://console.mistral.ai/) | `CODESTRAL_API_KEY` | `mistral_codestral/codestral-latest` |\n| [OpenCode Zen](https://opencode.ai/auth) | `OPENCODE_API_KEY` | `opencode_zen/gpt-5.3-codex` |",
+      "weight": 1.16
+    },
+    {
+      "id": "28a46f1a69bb38acaa55",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "| [OpenCode Go](https://opencode.ai/auth) | `OPENCODE_API_KEY` | `opencode_go/minimax-m2.7` |\n| [Vercel AI Gateway](https://vercel.com/docs/ai-gateway/models-and-providers) | `AI_GATEWAY_API_KEY` | `vercel/openai/gpt-5.5` |\n| [Amazon Bedrock](https://console.aws.amazon.com/bedrock/) | `AWS_BEARER_TOKEN_BEDROCK` | `bedrock/openai.gpt-oss-120b` |\n| [Hugging Face Inference Providers](https://huggingface.co/settings/tokens) | `HUGGINGFACE_API_KEY` | `huggingface/Qwen/Qwen3-Coder-480B-A35B-Instruct:fastest` |\n| [Cohere](https://dashboard.cohere.com/api-keys) | `COHERE_API_KEY` | `cohere/command-a-plus-05-2026` |\n| [Wafer](https://wafer.ai/) | `WAFER_API_KEY` | `wafer/DeepSeek-V4-Pro` |\n| [Kimi API](https://platform.moonshot.ai/console/api-keys) | `KIMI_API_KEY` | `kimi/kimi-k2.5` |\n| [Kimi Code](https://www.kimi.com/code/console) | `KIMI_CODE_API_KEY` | `kimi_code/k3` |\n| [MiniMax](https://platform.minimax.io/user-center/basic-information/interface-key) | `MINIMAX_API_KEY` | `minimax/MiniMax-M3` |\n| [Cerebras Inference](https://cloud.cerebras.ai/) | `CEREBRAS_API_KEY` | `cerebras/gpt-oss-120b` |\n| [SambaNova](https://cloud.sambanova.ai/apis) | `SAMBANOVA_API_KEY` | `sambanova/Meta-Llama",
+      "weight": 1.16
+    },
+    {
+      "id": "716c79a955f19bba45a8",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "-3.3-70B-Instruct` |\n| [Kilo.ai](https://kilo.ai) | `KILO_API_KEY` | `kilo/kilo-auto/free` |\n| [Fireworks AI](https://fireworks.ai/account/api-keys) | `FIREWORKS_API_KEY` | `fireworks/accounts/fireworks/models/llama-v3p3-70b-instruct` |\n| [Novita AI](https://novita.ai/settings/key-management) | `NOVITA_API_KEY` | `novita/deepseek/deepseek-v4-flash-0731` |\n| [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) | `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` | `cloudflare/@cf/moonshotai/kimi-k2.6` |\n| [Z.ai Coding Plan](https://z.ai/manage-apikey/apikey-list) | `ZAI_API_KEY` | `zai/glm-5.2` |",
+      "weight": 1.16
+    },
+    {
+      "id": "e2fb2276acb29c62a350",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "| [Z.ai API (pay as you go)](https://z.ai/manage-apikey/apikey-list) | `ZAI_API_KEY` | `zai_api/glm-4.7-flash` |\n| [TokenRouter](https://www.tokenrouter.com/) | `TOKENROUTER_API_KEY` | `tokenrouter/moonshotai/kimi-k3-free` |\n| [NaraRoute](https://router.bynara.id/) | `NARAROUTE_API_KEY` | `nararoute/kimi-k3-free` |\n| [Poolside AI](https://platform.poolside.ai/) | `POOLSIDE_API_KEY` | `poolside/poolside/laguna-s-2.1` |\n| [LLM7.io](https://dash.llm7.io/) | `LLM7_API_KEY` | `llm7/default` |\n| [Scaleway](https://console.scaleway.com/iam/api-keys) | `SCW_SECRET_KEY` | `scaleway/deepseek/deepseek-v4-flash` |\n| [Lightning AI](https://lightning.ai/) | `LIGHTNING_API_KEY` | `lightning/lightning-ai/Qwen3.8-27B` |\n| [Experiential Labs](https://platform.experientiallabs.ai/) | `EXPLABS_API_KEY` | `experiential/union-alpha` |\n| [Ollama Cloud](https://ollama.com/settings/keys) | `OLLAMA_API_KEY` | `ollama_cloud/qwen3-coder:480b` |\n| [LM Studio](https://lmstudio.ai/) | `LM_STUDIO_BASE_URL` | `lmstudio/<model-id>` |\n| [llama.cpp](https://github.com/ggml-org/llama.cpp) | `LLAMACPP_BASE_URL` | `llamacpp/<model-id>` |\n| [Ollama](https://ollama.com/) | `OLLAMA_BASE_URL` | `ollama/<model-tag>` |\n\n</det",
+      "weight": 1.16
+    },
+    {
+      "id": "c3cc06a5d3a07a66bad0",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "ails>\n\n<details>\n<summary><strong>Provider-specific setup</strong></summary>\n\n- OpenAI / ChatGPT uses your ChatGPT subscription rather than an API key. Connect from\n  **Providers → OAuth providers → OpenAI / ChatGPT → Connect** in the Admin UI\n  and finish signing in through your browser. Restart an already-running agent after connecting.\n- OpenAI API uses a separate Platform API key. Enter it under\n  **Providers → Cloud providers → OpenAI API → Configure**. The model list may\n  include IDs that cannot handle coding requests; choose a text-generation model.\n- GitHub Copilot uses your signed-in GitHub account and subscription. Install",
+      "weight": 1.16
+    },
+    {
+      "id": "b3f99c55a1330cf30ed8",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "[Copilot CLI 1.0.83](https://github.com/github/copilot-cli/releases/tag/v1.0.83)\n  on PATH, then choose **Providers → OAuth providers → GitHub Copilot → Connect**.\n  FCC reuses the native profile or shows a GitHub device code when sign-in is needed.\n  You can also sign in first with `copilot login --device-code`. Select a concrete\n  `github_copilot/<model-id>` from the discovered list; available models and quotas\n  depend on your subscription and organization policies. Restart an already-running\n  agent after connecting. Disconnect stops FCC use and leaves the native login intact.\n  FCC pins its SDK and CLI compatibility because direct endpoint access is experimental.\n- Azure OpenAI uses the deployment names from your resource. Set\n  `AZURE_OPENAI_BASE_URL` to its complete v1 endpoint, such as\n  `https://YOUR-RESOURCE-NAME.openai.azure.com/openai/v1/`, and select a\n  deployment that supports Chat Completions. Enter the deployment name as a\n  custom model slug if it does not appear in the model dropdown.\n- Mistral Codestral uses a separate key from Mistral La Plateforme.\n- Kimi Code subscription keys use `kimi_code/`; Kimi API credit keys use\n  `kimi/`. Kimi Code plans are for perso",
+      "weight": 1.16
+    },
+    {
+      "id": "d7968bf028e67562c023",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "nal interactive coding-agent use under\n  [Kimi's community guidelines](https://www.kimi.com/code/docs/en/kimi-code/community-guidelines.html).\n- QwenCloud Coding Plan keys use `qwencloud_coding/`; QwenCloud Token Plan keys\n  use `qwencloud/`. The keys and endpoints are not interchangeable. Coding Plan\n  is for local, personal, interactive coding-agent use under the\n  [Coding Plan terms](https://www.alibabacloud.com/help/en/model-studio/coding-plan).\n- OpenCode Zen and OpenCode Go share `OPENCODE_API_KEY` but use the explicit\n  `opencode_zen/` and `opencode_go/` model prefixes.\n- For Amazon Bedrock, set `BEDROCK_BASE_URL` to the URL for the same region as",
+      "weight": 1.16
+    },
+    {
+      "id": "7749ee301bf82bf4afe7",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Choose A Provider",
+      "text": "the API key and select one of the listed models.\n- Vertex AI uses Google Application Default Credentials instead of an API key.\n  Locally, run `gcloud auth application-default login` once; service-account\n  files and attached service accounts also work. Set `VERTEX_PROJECT_ID`, and\n  optionally change `VERTEX_LOCATION` from its `global` default.\n- Cloudflare requires both its API token and account ID.\n- For Ollama Cloud, use the exact model IDs shown in the model picker. Local\n  Ollama uses the separate `ollama/` prefix.\n- Prefer tool-capable models for coding agents. Local models also need enough context for the agent's system prompt and tool definitions.\n\n</details>\n\n<details>\n<summary><strong>Local provider setup</strong></summary>",
+      "weight": 1.16
+    },
+    {
+      "id": "0cf3e086a20d7f54f64a",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "LM Studio",
+      "text": "Start LM Studio's local server, load a tool-capable model, and use the model identifier shown by LM Studio with the `lmstudio/` prefix. The default URL is `http://localhost:1234/v1`.",
+      "weight": 1.16
+    },
+    {
+      "id": "cc68c3891aaab72aa58b",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "llama.cpp",
+      "text": "Start `llama-server` with its OpenAI-compatible Chat Completions API and enough context for the model. Use the local model ID with the `llamacpp/` prefix. `LLAMACPP_BASE_URL` defaults to `http://localhost:8080/v1`; FCC accepts either the server root or an explicit `/v1` suffix.",
+      "weight": 1.16
+    },
+    {
+      "id": "bd58ce093eafed0a9974",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Ollama",
+      "text": "```bash\nollama pull llama3.1\nollama serve\n```\n\nUse the tag shown by `ollama list` with the `ollama/` prefix. `OLLAMA_BASE_URL` defaults to `http://localhost:11434`; FCC accepts either the root URL or an explicit `/v1` suffix.\n\n</details>\n\n<details>\n<summary><strong>Optional model-tier routing</strong></summary>\n\n`MODEL` is the fallback for every request. Select a model for `MODEL_FABLE`, `MODEL_OPUS`, `MODEL_SONNET`, or `MODEL_HAIKU` to override an individual Claude Code tier; select **None** to use `MODEL`.\n\nFor example, route Opus to `nvidia_nim/nvidia/nemotron-3-super-120b-a12b`, Sonnet to `open_router/openrouter/free`, Haiku to `lmstudio/qwen3.5-coder`, and keep `MODEL` on `zai/glm-5.2`.\n\n</details>\n\n<details>\n<summary><strong>Reasoning control</strong></summary>\n\nOpen **Admin UI → Model Config → Reasoning** and select the behavior you want.\n\n| Selection | Behavior |\n| --- | --- |\n| **From client** (default) | Use the effort sent by Claude Code, Codex, Pi, OpenCode, Cline, Hermes, DeepSeek Harness, Grok Build, Muse Code, or Aider. If none is sent, keep the provider default. |\n| **Off** | Request reasoning to be disabled. |\n| **Low**, **Medium**, **High**, **X-High**, or **Max**",
+      "weight": 1.16
+    },
+    {
+      "id": "f5bd5341d31a39ed2571",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Ollama",
+      "text": "| Override the client with the selected reasoning level. |\n| **Inherit** (Fable, Opus, Sonnet, and Haiku only) | Use the root Reasoning selection. |\n\nProviders that do not support a selected control retain their own behavior.\n\n</details>\n\n<a id=\"connect-your-client\"></a>",
+      "weight": 1.16
+    },
+    {
+      "id": "d0fcc9df04711ecffd00",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Connect Your Client",
+      "text": "For terminal use, start `fcc-server`, then run `fcc-claude`, `fcc-codex`,\n`fcc-pi`, `fcc-opencode`, `fcc-cline`, `fcc-hermes`, `fcc-dsh`, `fcc-grok`,\n`fcc-muse`, or `fcc-aider`.\n\nFor editor and app integrations, install the client, start FCC, then open\n**Admin UI → Integrations** and click **Connect** on its card.\n\n- **Claude Code in VS Code** — install the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code).\n- **Claude Desktop** — install [Claude Desktop](https://claude.ai/download). Fully quit it before connecting or disconnecting, then reopen it. Disconnect returns to normal Claude sign-in.\n- **Codex in VS Code and App** — install the [Codex extension](https://marketplace.visualstudio.com/items?itemName=openai.chatgpt) or Codex App.\n- **Claude Code in JetBrains ACP** — install Claude Agent in JetBrains AI Assistant and start it once, then click **Connect** in FCC. Reopen the IDE, select **Claude Code (FCC)**, and start a new chat. After JetBrains updates the agent, restart FCC before starting a new chat. Requires a local IDE in its standard installation locations.\n\nReload VS Code or restart the app/IDE after connecting. In Codex and",
+      "weight": 1.16
+    },
+    {
+      "id": "2cd01e1056cba570600f",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Connect Your Client",
+      "text": "Claude Desktop, select an FCC\nmodel from the model picker. FCC keeps connected integrations up to date when it\nstarts; reload or restart the client when FCC reports updated settings. Use\n**Disconnect** on the same card to remove the integration.\n\nRun FCC on the same computer and in the same user environment as the client you\nare configuring.\n\n<a id=\"optional-integrations\"></a>",
+      "weight": 1.16
+    },
+    {
+      "id": "136ca8c04ff677ba0ea1",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Optional Integrations",
+      "text": "Configure integrations from **Admin UI → Messaging**, then click **Apply**.\n\n<details>\n<summary><strong>Discord bot</strong></summary>\n\n1. Create a bot in the [Discord Developer Portal](https://discord.com/developers/applications).\n2. Enable **Message Content Intent** and invite it with read, send,\n   message-history, and **Manage Messages** permissions so `/clear` can remove\n   user prompts.\n3. Set **Messaging Platform** to **discord**.\n4. Enter **Discord Bot Token**, **Allowed Discord Channels**, and an absolute **Allowed Directory**.\n5. Apply the settings and restart the server if requested.\n\n</details>\n\n<details>\n<summary><strong>Telegram bot</strong></summary>\n\n1. Create a bot with [@BotFather](https://t.me/BotFather).\n2. Get your numeric user ID from [@userinfobot](https://t.me/userinfobot).\n   In groups, grant the bot permission to delete messages.\n3. Set **Messaging Platform** to **telegram**.\n4. Enter **Telegram Bot Token**, **Allowed Telegram User ID**, and an absolute **Allowed Directory**.\n5. Apply the settings and restart the server if requested.\n\n</details>",
+      "weight": 1.16
+    },
+    {
+      "id": "129bc942882d1e03393d",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Messaging commands",
+      "text": "| Usage | Behavior |\n| --- | --- |\n| `/stats` | Show session state. |\n| Standalone `/stop` | Cancel all work. |\n| Reply with `/stop` | Cancel only the selected request while other queued requests continue. |\n| Standalone `/clear` | Reset all FCC state and remove every tracked message in that chat, including user prompts, voice notes, FCC replies, Telegram's online notice, and the clear command itself. |\n| Reply with `/clear` | Delete the selected message and its literal platform reply subtree while preserving its ancestors and siblings. |\n\n<details>\n<summary><strong>Voice notes</strong></summary>\n\nRe-run the installer with the command for your voice backend.\n\nmacOS/Linux:\n\nNVIDIA NIM transcription:\n\n```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh\" | sh -s -- --voice-nim\n```\n\nLocal Whisper on CPU or CUDA:\n\n```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh\" | sh -s -- --voice-local\n```\n\nBoth backends:\n\n```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh\" | sh -s -- --voice-all\n```\n\nLocal Whisper with CUDA 13.0:",
+      "weight": 1.16
+    },
+    {
+      "id": "ff8c02fc98dc4ec93119",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Messaging commands",
+      "text": "```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.sh\" | sh -s -- --voice-local --torch-backend cu130\n```\n\nWindows PowerShell:\n\nNVIDIA NIM transcription:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1\"))) -VoiceNim\n```\n\nLocal Whisper on CPU or CUDA:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1\"))) -VoiceLocal\n```\n\nBoth backends:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1\"))) -VoiceAll",
+      "weight": 1.16
+    },
+    {
+      "id": "dd3fa30c99b63aa5ba95",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Messaging commands",
+      "text": "```\n\nLocal Whisper with CUDA 13.0:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install.ps1\"))) -VoiceLocal -TorchBackend cu130\n```\n\nRestart `fcc-server`. In **Admin UI → Messaging → Voice**, enable voice notes, select `cpu`, `cuda`, or `nvidia_nim`, and choose the Whisper model. Local gated models need `HUGGINGFACE_API_KEY`; NVIDIA NIM transcription needs `NVIDIA_NIM_API_KEY`.\n\n</details>",
+      "weight": 1.16
+    },
+    {
+      "id": "a7f5b44bf18d8cc890c3",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Update",
+      "text": "Stop all running FCC commands, then run:\n\n```sh\nfcc-update\n```\n\nThis runs the same installer as above, including its coding-agent prompts and checks. If you use voice support, pass the same voice options used during installation.\n\nIf your installation does not have `fcc-update` yet, run the [installer](#install) once to add it.",
+      "weight": 1.16
+    },
+    {
+      "id": "0ba6dffd90ebb487e8e9",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Muse Code on native Windows",
+      "text": "Rerunning FCC's Windows installer with Muse Code selected installs or updates FCC's managed Muse executable. To install or update only Muse Code:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/install-muse.ps1\")))\n```\n\nTo remove only that managed Muse executable while preserving Muse data and other installations:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/uninstall-muse.ps1\")))\n```\n\nFCC's ordinary uninstaller below continues to leave Muse Code installed.",
+      "weight": 1.16
+    },
+    {
+      "id": "d9dddc22a215a2c73008",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Uninstall",
+      "text": "Stop every running FCC command before uninstalling.\n\n**Removes**\n\n- Free Claude Code, including its desktop launcher and commands\n- `~/.fcc/`\n\n**Keeps**\n\n- uv and Python\n- Claude Code, Codex, Pi, OpenCode, Cline, Hermes, DeepSeek Harness, Grok Build, Muse Code, Aider, and RTK\n- Shared PATH entries\n\nmacOS/Linux:\n\n```bash\ncurl -fsSL \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/uninstall.sh\" | sh\n```\n\nWindows PowerShell:\n\n```powershell\n& ([scriptblock]::Create((irm \"https://raw.githubusercontent.com/Alishahryar1/free-claude-code/main/scripts/uninstall.ps1\")))\n```",
+      "weight": 1.16
+    },
+    {
+      "id": "2fc6a3f33038976136b1",
+      "source": "Alishahryar1/free-claude-code",
+      "ref": "82408c5adb18",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "heading": "Project Links",
+      "text": "- [Report bugs or request features](https://github.com/Alishahryar1/free-claude-code/issues)\n- [Contributing guide](CONTRIBUTING.md)",
+      "weight": 1.16
+    },
     {
       "id": "78d6597704929363a09f",
       "source": "mindsdb/mindshub",
@@ -3049,40 +5914,6 @@
       "weight": 1.12
     },
     {
-      "id": "431d0fd5a10a23c74b0e",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Conventions",
-      "text": "- **Switch on discriminant tags.** Closed unions end in `assertNever`; merge-extensible unions fall through a documented default.\n- **Waterfall listeners MUST call `next()`** to delegate; returning without it short-circuits the chain ([semantics](docs/cordis-primer.md#cordis-waterfall-semantics)).\n- **Model-visible ⟺ logged**: anything that reaches a model request must be reconstructable from the session log; a new model-visible input requires a session event.\n- **Plugins, not loop changes**: new behavior goes on documented extension points; changing `agent-loop` requires updating docs/architecture.md.\n- **A capability seam comprises Service Definition / Service Provider / Consumer roles.** It is complete, never one role; split only when roles evolve independently ([glossary](docs/glossary.md#capability-seam)).\n- **Prefer maintained dependencies over hand-rolling** when they genuinely delete owned code and tests ([policy](.agents/notes/implemented/process/2026-07-26-dependencies-over-hand-rolling.md)).\n- **Explicit > implicit at package boundaries**: defaulting is an explicit `resolve(request): Spec` step in the owning implementation, never a hidden `?? default` inside `run()` (the",
-      "weight": 1.12
-    },
-    {
-      "id": "20c76f885155873f9961",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Conventions",
-      "text": "`dsh-shell` request/spec split is the template).\n- **No hardcoded tunables in plugins**: deployment-varying choices are validated `Config` fields changeable from cordis.yml; a `DEFAULT_*` constant or test hook is not configurability. Protocol constants, external specs, and security invariants stay fixed.\n- **Misconfiguration fails loud** at load when self-contained, otherwise at the earliest resolvable point; never silently skip a missing referent.\n- **Opaque cross-boundary ids are branded** (`Branded<B>` from `dsh-brand`), never bare `string`.\n- **Trust TypeScript at typed same-process boundaries.** Do not add runtime validation, fallback behavior, or hostile-input tests solely for values the static interface requires; validate at parser/config, queued, model/tool JSON, durable/file, worker, process, and wire boundaries.",
-      "weight": 1.12
-    },
-    {
       "id": "29b5283c4385495e3e4d",
       "source": "Haifai-AI/baby-whale",
       "ref": "b82162b7fce6",
@@ -3134,57 +5965,6 @@
       "weight": 1.12
     },
     {
-      "id": "26f336d49f7f49538864",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Defensive patterns",
-      "text": "Read [docs/defensive-patterns.md](docs/defensive-patterns.md) before lifecycle, concurrency, subprocess, or teardown work.",
-      "weight": 1.12
-    },
-    {
-      "id": "7b3bdedc232426f769ce",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Type safety and documentation",
-      "text": "Everything compiles under `strict: true` with `noImplicitAny`; every remaining `any` explains why narrowing is infeasible. Every module and export has concise JSDoc for its non-obvious contract; function-like exports include `@param`/`@returns`, as enforced by `verify-export-jsdoc`. Heritage-declared members, plugin-protocol slots, and constructors keep their docs at the declaring Service Definition, protocol, or class.\n\nComments and docs state complete contracts and context, not reasoning transcripts. Use direct, concrete terms. Do not use metaphors. Before writing `contract`, `boundary`, or `shape`, ask whether a more exact term names the subject: write `response fields`, `JSON validation`, or `ESM exports` instead of `response shape`, `validation boundary`, or `module shape`. Keep `contract` for preconditions, postconditions, invariants, compatibility promises, and other obligations that callers, callees, implementers, providers, producers, or consumers rely on. Keep a literal process, wire, security, transaction, or lifecycle boundary. Do not narrate control flow or tests, preserve review history, or restate code. Keep behavior, failure, timing, ownership, and safe-use facts; l",
-      "weight": 1.12
-    },
-    {
-      "id": "54a7a218c38795ed6bae",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Type safety and documentation",
-      "text": "ink the rationale. Use [dsh-prose-standard](.agents/skills/dsh-prose-standard/SKILL.md) for decisions. Wire mechanically checkable invariants into an executed top-level gate and prove each changed acceptance path rejects an invalid case. Use narrow, justified exceptions instead of disabling a rule globally.\n\nDocs accompany every code change: update affected README and JSDoc contracts together. Routine bilingual work follows [docs/AGENTS.md](docs/AGENTS.md); only explicit user invocation may run `dsh-translate-docs`. Current-state prose, one physical line per paragraph, one home per fact, and word budgets live there.",
-      "weight": 1.12
-    },
-    {
       "id": "cfd3060bd9f7d853f5df",
       "source": "Haifai-AI/baby-whale",
       "ref": "b82162b7fce6",
@@ -3199,23 +5979,6 @@
       ],
       "heading": "Editing these instructions",
       "text": "`CLAUDE.md` symlinks `AGENTS.md` at root, `packages/`, and `examples/`; edit the real file. Keep each rule self-contained while linking high-level docs. Condense when clarity survives; raise a `verify-doc-budgets` ceiling when the required content genuinely needs more space.",
-      "weight": 1.12
-    },
-    {
-      "id": "2824b0e9544bf94f6eac",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "Vendoring policy",
-      "text": "`vendor/` packages are pinned source copies (manifest with upstream SHAs in [vendor/README.md](vendor/README.md)). Update via the sync procedure there; re-apply or retire the logged local modifications; rerun `pnpm run test && pnpm run build`.",
       "weight": 1.12
     },
     {
@@ -3335,23 +6098,6 @@
       ],
       "heading": "Development",
       "text": "```sh\npnpm install\npnpm run build\npnpm dsh web\n```\n\nStart with the [development guide](docs/development.md) and [architecture documentation](docs/architecture.md). For agents, follow [AGENTS.md](AGENTS.md). Release engineering lives in [scripts/make-bundle.sh](scripts/make-bundle.sh) (macOS/Linux), [scripts/make-bundle.ps1](scripts/make-bundle.ps1) (Windows), and [.github/workflows/bundle.yml](.github/workflows/bundle.yml).",
-      "weight": 1.12
-    },
-    {
-      "id": "cc760284ec38060d33a5",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "License",
-      "text": "[MIT](LICENSE)\n\nThird-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).",
       "weight": 1.12
     },
     {
@@ -4304,23 +7050,6 @@
       ],
       "heading": "边界",
       "text": "Remote 只处理有单个请求与单个结果的一元方法调用。会话事件流、分页、增量 reduce、projection 和实体子流需要独立的数据协议与注册模型；即使它们复用 Connection，也不应伪装成 Remote 方法或放入调用描述符。\n\nAPI 各层按 `remotes → gateway → connection → webserver` 组织。BFF 与 Typert RPC 层位于 `packages/api`；Connection 与 WebServer 位于 `packages/client/connection` 和 `packages/host/webserver`。位于 `packages/host/apiproxy` 的 API Proxy 处理没有 Remote 描述符的 endpoint。\n\nlookup 策略按 key 配置，因此所有 `agent` 或 `session` 参数共享冷恢复行为。只接受 live 对象需要显式的逐参数或逐 endpoint 策略，而这种策略并不存在；不能通过业务方法内部猜测对象是否来自恢复。",
-      "weight": 1.12
-    },
-    {
-      "id": "aa53e9f3d65cd24052c7",
-      "source": "Haifai-AI/baby-whale",
-      "ref": "b82162b7fce6",
-      "path": "docs/architecture.md",
-      "license": "MIT",
-      "domains": [
-        "artifacts",
-        "office",
-        "preview",
-        "local-first",
-        "skills"
-      ],
-      "heading": "DeepSeek Harness Architecture",
-      "text": "English | [中文](architecture.zh.md)\n\nRead this before changing anything under `packages/`. It assumes you know Cordis; if you do not, start with the [primer](cordis-primer.md) or the [tutorial](cordis-tutorial/index.md).\n\nWe recommend using an agent to explore the codebase and understand its architecture.",
       "weight": 1.12
     },
     {
