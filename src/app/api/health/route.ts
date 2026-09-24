@@ -11,6 +11,7 @@ import { createLegalDossier } from '@/lib/legal/dossier';
 import { isAggressiveLegalRequest, isLegalDossierRequest } from '@/lib/legal/mode';
 import { assessFraudRisk } from '@/lib/security/fraud-defense';
 import { sourceQuality } from '@/lib/security/source-quality';
+import { githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 
 export const runtime = 'nodejs';
 
@@ -148,6 +149,17 @@ export async function GET(){
     threatRepoIsReference:threatSource.tier==='threat-reference'&&threatSource.score<githubSource.score
   };
 
+  const githubStats=githubKnowledgeStats();
+  const workspaceKnowledge=retrieveGitHubKnowledge('agent workspace memory artifacts model router',3);
+  const programmingKnowledge=retrieveGitHubKnowledge('programming learning resources books',3);
+  const bypassKnowledge=retrieveGitHubKnowledge('free chatgpt bypass jailbreak',5);
+  const githubKnowledge={
+    seededIndex:githubStats.chunks>=5&&githubStats.sources>=4,
+    workspaceRetrieval:workspaceKnowledge.some(x=>x.source==='mindsdb/mindshub'||x.source==='rowboatlabs/rowboat'),
+    learningResourceRetrieval:programmingKnowledge.some(x=>x.source==='EbookFoundation/free-programming-books'),
+    quarantineAbsent:!bypassKnowledge.some(x=>/bxvdfsur|ChatGPT-5\.6-Free-Desktop|chatgpt-plus-prime/i.test(x.source))
+  };
+
   const legalArtifactBehavior={
     dossierIntent:isLegalDossierRequest('gere um dossiê sobre isso'),
     normalStatusIsNotDossier:!isLegalDossierRequest('como está o processo?'),
@@ -162,7 +174,7 @@ export async function GET(){
     dossierHasFraudSection:standardDossier.includes('FRAUDE / AUTENTICIDADE')&&standardDossier.includes('Sinal de risco não comprova fraude')
   };
 
-  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean);
+  const ok=calculatorSmoke.ok&&packageChecks.every(x=>x.ok)&&packageInfo.runnable&&crmBackend&&Object.values(crmTemplateSerialization).every(Boolean)&&Object.values(continuity).every(Boolean)&&Object.values(chatIntelligence).every(Boolean)&&Object.values(legalModule).every(Boolean)&&Object.values(legalArtifactBehavior).every(Boolean)&&Object.values(fraudSecurity).every(Boolean)&&Object.values(githubKnowledge).every(Boolean);
 
   return Response.json({
     ok,
@@ -187,6 +199,7 @@ export async function GET(){
       twinCoreX10:true,
       fraudShield:true,
       sourceProvenance:true,
+      githubKnowledgeEngine:true,
       grokUnifiedShell:true,
       saoPauloFunctions:true
     },
@@ -202,6 +215,8 @@ export async function GET(){
       legalModule,
       legalArtifactBehavior,
       fraudSecurity,
+      githubKnowledge,
+      githubKnowledgeStats:githubStats,
       packagedFiles:packaged.length
     },
     optional:{
