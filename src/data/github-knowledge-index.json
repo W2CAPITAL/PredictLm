@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "knowledgeVersion": "seed-2026-09-23",
+  "generatedAt": "2026-09-23T00:00:00.000Z",
+  "sourceCount": 5,
+  "chunkCount": 9,
+  "chunks": [
+    {
+      "id": "mindshub-workspace",
+      "source": "mindsdb/mindshub",
+      "ref": "main",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "workspace",
+        "memory",
+        "artifacts"
+      ],
+      "heading": "Agent workspace",
+      "text": "Agent workspaces become more useful when model routing, connected data, artifacts, memory, reusable skills and scheduled work are explicit product capabilities. Credentials should remain scoped to connections rather than exposed to agents.",
+      "weight": 1.15
+    },
+    {
+      "id": "mindshub-router",
+      "source": "mindsdb/mindshub",
+      "ref": "main",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "models",
+        "router",
+        "providers"
+      ],
+      "heading": "Model Router",
+      "text": "A model router should keep provider choice separate from the workspace so agents can switch models without rewriting memory, tools or artifacts. Provider configuration must describe real availability and cost instead of pretending every model is connected.",
+      "weight": 1.15
+    },
+    {
+      "id": "rowboat-graph",
+      "source": "rowboatlabs/rowboat",
+      "ref": "main",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "knowledge-graph",
+        "memory",
+        "context"
+      ],
+      "heading": "Living knowledge graph",
+      "text": "A personal assistant can turn email, meetings and conversations into a linked knowledge graph so later tasks retrieve durable context rather than raw full history. Retrieval should be scoped by workspace/project and keep source links.",
+      "weight": 1.15
+    },
+    {
+      "id": "rowboat-background",
+      "source": "rowboatlabs/rowboat",
+      "ref": "main",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "agents",
+        "scheduling",
+        "browser",
+        "tools"
+      ],
+      "heading": "Background agents",
+      "text": "Background agents should have explicit event or schedule triggers, isolated browser/tool access and bounded account permissions. The user should decide which accounts are exposed to an agent.",
+      "weight": 1.15
+    },
+    {
+      "id": "cowork-streaming",
+      "source": "composio-community/open-claude-cowork",
+      "ref": "master",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "streaming",
+        "sessions",
+        "tools",
+        "skills"
+      ],
+      "heading": "Persistent sessions and tool visualization",
+      "text": "A cowork-style assistant benefits from persistent sessions, token streaming, visible tool inputs/outputs and skills that are loaded only for matching tasks. Integrations belong behind a tool router rather than inside chat presentation code.",
+      "weight": 1.08
+    },
+    {
+      "id": "cowork-integrations",
+      "source": "composio-community/open-claude-cowork",
+      "ref": "master",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "integrations",
+        "approval",
+        "tools"
+      ],
+      "heading": "Integration boundaries",
+      "text": "Large app-integration catalogs need a routing boundary, scoped credentials and observable tool calls. The existence of an integration catalog does not mean an integration is connected or authorized.",
+      "weight": 1.08
+    },
+    {
+      "id": "babywhale-artifacts",
+      "source": "Haifai-AI/baby-whale",
+      "ref": "main",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artifacts",
+        "office",
+        "preview",
+        "local-first"
+      ],
+      "heading": "Deliverables and previews",
+      "text": "Knowledge-work agents should return finished deliverables such as spreadsheets, presentations, documents and PDFs as artifacts, with previews and editable workspace state. File/session state can remain local while only configured model calls leave the machine.",
+      "weight": 1.12
+    },
+    {
+      "id": "babywhale-plugin",
+      "source": "Haifai-AI/baby-whale",
+      "ref": "main",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "skills",
+        "plugins",
+        "local-first"
+      ],
+      "heading": "Plugin architecture",
+      "text": "Capabilities are easier to reason about when tools and skills are plugins that can be enabled or disabled. Disabling a capability should remove its UI and runtime path instead of leaving fake controls.",
+      "weight": 1.12
+    },
+    {
+      "id": "fpb-learning",
+      "source": "EbookFoundation/free-programming-books",
+      "ref": "main",
+      "path": "books/free-programming-books-pt_BR.md",
+      "license": "CC-BY-4.0",
+      "domains": [
+        "programming",
+        "learning",
+        "resources"
+      ],
+      "heading": "Curated programming resources",
+      "text": "For programming-learning requests, prefer curated resources grouped by language/topic and surface the original resource links. A resource catalog is discovery context, not a substitute for verifying the linked material or license.",
+      "weight": 0.95
+    }
+  ]
+}
