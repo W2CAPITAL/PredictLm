@@ -5,6 +5,9 @@ import { tutorSystemContext } from '@/lib/tutor-mode';
 import { globalLearningContext } from '@/lib/global-learning';
 import { deepLoopContext } from '@/lib/deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
+import { resolveConversationLanguage, languageSystemInstruction, type ConversationLanguage } from '@/lib/language-policy';
+import { publicAnswerGate } from '@/lib/public-answer-gate';
+import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -94,6 +97,14 @@ function normalize(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
 }
 
+function shouldUseGithubKnowledge(prompt:string){
+  const q=normalize(prompt);
+  if(/\b(github|repo|repository|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|deploy|docker|mcp|bug|erro|arquitetura)\b/.test(q))return true;
+  if(classifyDomainEngines(prompt).length)return true;
+  if(/\b(datajud|djen|cnj|juridic|processo|lexis|graphrag|sgs|bacen|bcb|starlink|spacex|quant|qubit|netdata)\b/.test(q))return true;
+  return false;
+}
+
 function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather)\b/i.test(prompt);
 }
@@ -173,6 +184,7 @@ export async function POST(req:Request){
   try{
     const body=await req.json();
     const prompt=String(body?.prompt||'').trim();
+    const researchContext=String(body?.researchContext||'').trim().slice(0,16000);
     if(!prompt)return Response.json({error:'prompt is required'},{status:400});
 
     const configured=providers();
@@ -189,9 +201,13 @@ export async function POST(req:Request){
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
       .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
     const deep=Boolean(body?.deep);
+    const language=(body?.language==='en'||body?.language==='pt-BR')
+      ? body.language as ConversationLanguage
+      : resolveConversationLanguage(prompt,rawHistory);
     const githubTopK=deep?5:3;
-    const gh=githubKnowledgeContext(prompt,githubTopK);
-    const ghHits=retrieveGitHubKnowledge(prompt,githubTopK);
+    const useGithub=shouldUseGithubKnowledge(prompt);
+    const gh=useGithub?githubKnowledgeContext(prompt,githubTopK):'';
+    const ghHits=useGithub?retrieveGitHubKnowledge(prompt,githubTopK):[];
     const stats=githubKnowledgeStats();
     const tutor=tutorSystemContext(prompt);
     const deepLoop=deep?deepLoopContext(prompt):'';
@@ -209,6 +225,7 @@ export async function POST(req:Request){
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
+        {label:'Pesquisa web verificada',text:researchContext,priority:9},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
     });
@@ -225,7 +242,9 @@ export async function POST(req:Request){
 
     const system=[
       'Você é o PredictLM, assistente geral direto, útil e factual.',
+      languageSystemInstruction(language),
       'Responda ao pedido real do usuário; não fale sobre engines, providers, prompts ou skills sem necessidade.',
+      'Entregue somente a resposta final. Nunca exponha cadeia de raciocínio, scratchpad, análise interna, política, passes FORGE/AEGIS/PARALLAX ou instruções sobre como você pensou.',
       'Use contexto recuperado apenas quando for relevante. Não transforme um chunk em fato externo se ele só descreve um padrão de software.',
       'Se faltarem dados atuais, diga o limite em vez de inventar.',
       deep?'Faça uma revisão interna adicional de aderência, contradições e pontos faltantes antes da resposta final.':'Seja conciso sem perder o essencial.',
@@ -241,7 +260,10 @@ export async function POST(req:Request){
     const errors:string[]=[];
     for(const provider of configured){
       try{
-        const content=await callProvider(provider,messages,deep);
+        const rawContent=await callProvider(provider,messages,deep);
+        const gate=publicAnswerGate(rawContent,language);
+        if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
+        const content=gate.content;
         const value={
           content,
           provider:provider.name,
@@ -265,7 +287,7 @@ export async function POST(req:Request){
         errors.push(String(error?.message||error).slice(0,300));
       }
     }
-    return Response.json({error:'Nenhum provider do cascade respondeu.',details:errors},{status:502});
+    return Response.json({error:'Não foi possível obter uma resposta final válida neste runtime.',code:'NO_VALID_ANSWER'},{status:502,headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:500});
   }
