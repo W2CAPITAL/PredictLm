@@ -61,3 +61,30 @@ Qwen2.5-3B-Instruct is not a default candidate because its current model card us
 - Do not call RAG, repository ingestion or adaptive memory a weight fine-tune.
 - Do not silently substitute an unverified model/license.
 - Do not report a model as active until inference self-test succeeds.
+
+
+## Optional local runtime adapters
+
+The browser Qwen path remains independent and mandatory as the local-first baseline.
+
+Optional adapters, activated only by the user:
+
+| Adapter | Endpoint | Role |
+|---|---|---|
+| Ollama | 127.0.0.1:11434 | local model manager/runtime |
+| OpenAI local 4891 | 127.0.0.1:4891/v1 | mobile/desktop local API compatibility |
+| llamafile / NanoMind | 127.0.0.1:8080/v1 | CPU/GGUF local server |
+| Qualcomm GenieX | 127.0.0.1:18181/v1 | supported Snapdragon on-device inference |
+| LowRAM | 127.0.0.1:8766 | constrained custom generation API |
+
+The Local Runtime Router runs on the client because a hosted Vercel process cannot reach the user's localhost. The runtime must expose browser-accessible CORS/local-network access.
+
+Every local runtime receives Token-Budgeted context before generation. Model selection/quantization remains the responsibility of the chosen runtime; PredictLM does not silently download a large GGUF through the web app.
+
+### Low-RAM policy
+
+- shorten context before forcing a smaller quantization;
+- cap generation length;
+- prefer an already-running local runtime over loading a second browser model;
+- if no runtime is available, fall back to Browser Qwen Lite;
+- do not claim a repository's published RAM number is guaranteed on the user's hardware.
