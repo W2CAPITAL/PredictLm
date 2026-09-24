@@ -2,7 +2,7 @@ import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
 import { mediaErrorText } from '@/lib/media/media-errors';
-import { buildDisplayTitle, buildSafeCaptionPtBr, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -79,7 +79,8 @@ export async function POST(req:Request){
 
     const preparedPrompt=compactText(rawPrompt,1100);
     const sourcePrompt=compactText(originalPrompt,700);
-    const style=String(body?.style||'Cinematic').trim()||'Cinematic';
+    const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
+    const style=recommendedImageStyle(sourcePrompt,requestedStyle);
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
@@ -209,7 +210,9 @@ export async function POST(req:Request){
             displayTitle:buildDisplayTitle(sourcePrompt),
             parityContract:'grok-imagine-parity',
             promptMode:effectivePromptMode,
-            negativePrompt
+            negativePrompt,
+            style,
+            fidelityLimited:false
           });
         }
       }catch{
@@ -237,7 +240,10 @@ export async function POST(req:Request){
       displayTitle:buildDisplayTitle(sourcePrompt),
       parityContract:'grok-imagine-parity',
       promptMode:effectivePromptMode,
-      negativePrompt
+      negativePrompt,
+      style,
+      fidelityLimited:true,
+      providerWarning:'Fallback público ativo: fidelidade de personagens e franquias pode ser limitada. Configure um provider de imagem forte para melhor identidade.'
     });
   }catch(error:any){
     return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
