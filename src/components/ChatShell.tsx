@@ -368,7 +368,7 @@ export function ChatShell({onOpenLegal}:Props){
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
       const researchContext=web.text;
-      const fallbackText=direct||research?.content||undefined;
+      const fallbackText=direct||((kind==='factual'||kind==='current')?research?.content:undefined);
 
       if(kind!=='casual'&&kind!=='context'){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
@@ -477,7 +477,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       const gate=publicAnswerGate(reply.content,language);
       if(!gate.ok){
-        const candidates=[direct,research?.content].filter(Boolean) as string[];
+        const candidates=[direct,...((kind==='factual'||kind==='current')&&research?.content?[research.content]:[])].filter(Boolean) as string[];
         const valid=candidates.map(x=>publicAnswerGate(x,language)).find(x=>x.ok);
         if(valid)reply={...reply,content:valid.content,sources:web.sources.slice(0,6)};
         else throw new Error('Não foi possível produzir uma resposta final válida para exibição.');
