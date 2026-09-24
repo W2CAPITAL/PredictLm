@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.16.0"
+  version: "1.17.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -549,3 +549,22 @@ Carregar `WEB-REACH.md` para pesquisa e referência web.
 - fallback livre continua disponível;
 - Agent-Reach/FastChat/Open Lovable/Freebuff alimentam arquitetura e skills;
 - bridges sociais permanecem opt-in e source-grounded.
+
+
+## Predict Auto v1.17
+Carregar `AUTO-AI.md` para chat/model routing.
+
+- uma única identidade pública: Predict Auto;
+- servidor/provider mesh antes de inferência pesada local;
+- nenhum download neural no primeiro acesso;
+- nenhum scan automático de portas localhost;
+- Lite CPU/WASM usa geração única e limitada;
+- resposta de provider passa por relevância/qualidade antes de ser exibida.
+
+## LexisPredict SaaS + Office Artifacts v1.17
+
+Skills vinculadas:
+- `../lexispredict-saas/SKILL.md` — SaaS jurídico/financeiro, CRM, OCR, processos, KPI, documentos, offline/sync;
+- `../office-artifacts/SKILL.md` — DOCX/PPTX/PDF/XLSX e padrões visuais.
+
+Regra de dossiê: Dossier Brain é segundo cérebro de fatos/evidências/artefatos. A resposta final continua pertencendo ao Predict Auto.
