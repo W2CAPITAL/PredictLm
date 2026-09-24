@@ -57,11 +57,31 @@ function bm25(query:string,doc:{chunk:GitHubKnowledgeChunk;terms:string[]}){
 export function retrieveGitHubKnowledge(query:string,limit=3){
   const q=toks(query);
   if(!q.length)return [];
-  return docs.map(doc=>({chunk:doc.chunk,score:bm25(query,doc)}))
+  const target=Math.max(1,Math.min(5,limit));
+  const ranked=docs.map(doc=>({chunk:doc.chunk,score:bm25(query,doc)}))
     .filter(x=>x.score>.05)
-    .sort((a,b)=>b.score-a.score)
-    .slice(0,Math.max(1,Math.min(5,limit)))
-    .map(x=>({...x.chunk,score:x.score}));
+    .sort((a,b)=>b.score-a.score);
+
+  // Diversity-first: prefer one chunk per repository before allowing repeats.
+  // This prevents one large/verbose source from monopolizing top-k context.
+  const selected:typeof ranked=[];
+  const seenSources=new Set<string>();
+  for(const item of ranked){
+    if(seenSources.has(item.chunk.source))continue;
+    selected.push(item);
+    seenSources.add(item.chunk.source);
+    if(selected.length>=target)break;
+  }
+  if(selected.length<target){
+    const selectedIds=new Set(selected.map(x=>x.chunk.id));
+    for(const item of ranked){
+      if(selectedIds.has(item.chunk.id))continue;
+      selected.push(item);
+      if(selected.length>=target)break;
+    }
+  }
+
+  return selected.map(x=>({...x.chunk,score:x.score}));
 }
 
 export function githubKnowledgeContext(query:string,limit=3){
