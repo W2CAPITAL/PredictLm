@@ -7,6 +7,7 @@ import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
 import { domainEngineContext } from '@/lib/domain-engine-fabric';
 import { lexisOperationalContext } from '@/lib/lexis-operational-fabric';
 import { humanPresenceContext } from '@/lib/human-presence';
+import { predictLMMasterContext } from '@/lib/predictlm-master';
 
 export function compileSystemPrompt(opts:{userText:string;hasAttachment?:boolean;extra?:string[]}){
   const intent=classifyPromptIntent(opts.userText,!!opts.hasAttachment);
@@ -22,6 +23,7 @@ export function compileSystemPrompt(opts:{userText:string;hasAttachment?:boolean
       lexisOperationalContext(opts.userText),
       'CONTRATO DE RESPOSTA',
       responseContract(intent),
+      predictLMMasterContext(opts.userText,false),
       humanPresenceContext(opts.userText),
       centum,
       parallax,
