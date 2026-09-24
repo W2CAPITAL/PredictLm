@@ -518,7 +518,7 @@ export function ChatShell({onOpenLegal}:Props){
         fallbackText,
         deep:s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded),
         onStage:stage=>{
-          if(!s.deepThink||!currentNeural.loaded)return;
+          if(!s.deepThink||!(currentNeural.loaded||currentWebLLM.loaded))return;
           const stages={
             recall:['RECALL · recuperando contexto'],
             plan:['RECALL · contexto recuperado','ROUTE · assunto identificado','FORGE · gerando rascunho neural'],
@@ -534,7 +534,7 @@ export function ChatShell({onOpenLegal}:Props){
       const replyScore=answerQuality(prompt,reply.content);
       const researchScore=research?answerQuality(prompt,research.content):-99;
 
-      const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart')&&responseTopicAlignment(prompt,reply.content).relevant;
+      const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm')&&responseTopicAlignment(prompt,reply.content).relevant;
       if(direct&&!neuralRelevant&&directScore>=replyScore){
         reply={...reply,content:direct,sources:web.sources.slice(0,4)};
       }else if(research&&!neuralRelevant&&researchScore>replyScore){
@@ -553,7 +553,7 @@ export function ChatShell({onOpenLegal}:Props){
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
         ...(currentNeural.loaded?['Modelo local ONNX: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
         ...(currentWebLLM.loaded?['Modelo local WebLLM: '+(currentWebLLM.tier||'local')+' · WebGPU']:[]),
-        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?['Deep executou duas passagens: FORGE → AEGIS']:[]),
+        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?[reply.engine==='webllm'?'Deep WebLLM: revisão FORGE/AEGIS/PARALLAX aplicada internamente':'Deep executou duas passagens: FORGE → AEGIS']:[]),
         ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
         'Gate final verificou relevância ao assunto principal'
       ];
