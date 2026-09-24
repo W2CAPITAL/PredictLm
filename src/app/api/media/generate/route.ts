@@ -1,6 +1,6 @@
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
-import { expandImagePromptForParity, parityCaptionPtBr } from '@/lib/media/grok-imagine-parity';
+import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
 import { mediaErrorText } from '@/lib/media/media-errors';
 import {
   buildReferenceEvidencePrompt,
@@ -8,6 +8,7 @@ import {
   fetchReferenceInlineData,
   inlineImageFromDataUrl,
   isPersistentSelfPortraitRequest,
+  isSpecificVisualPrompt,
   resolveVisualReferences
 } from '@/lib/media/visual-reference';
 
@@ -79,22 +80,36 @@ export async function POST(req:Request){
     const sourcePrompt=compactText(originalPrompt,700);
     const style=String(body?.style||'Cinematic').trim()||'Cinematic';
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
+    const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
+      ? String(body?.promptMode||'auto').toLowerCase()
+      : 'auto') as ImagePromptMode;
+    const effectivePromptMode=chooseImagePromptMode(requestedPromptMode,isSpecificVisualPrompt(sourcePrompt));
+    const userNegative=compactText(String(body?.negativePrompt||'').trim(),500);
+    const negativePrompt=buildDefaultNegativePrompt(sourcePrompt,userNegative);
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
     const referencePlan=referenceMode==='off'
       ? {query:'',references:[],warnings:[] as string[]}
       : await resolveVisualReferences(sourcePrompt);
     const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
-    const groundedPrompt=expandImagePromptForParity({
-      originalPrompt:sourcePrompt,
-      preparedPrompt,
-      style,
-      width,
-      height,
-      attempt,
-      identityLock,
-      referenceEvidence:evidencePrompt
-    });
+    const groundedPrompt=effectivePromptMode==='literal'
+      ? buildLiteralImagePrompt({
+          originalPrompt:sourcePrompt,
+          style,
+          identityLock,
+          referenceEvidence:evidencePrompt,
+          negativePrompt
+        })
+      : expandImagePromptForParity({
+          originalPrompt:sourcePrompt,
+          preparedPrompt,
+          style,
+          width,
+          height,
+          attempt,
+          identityLock,
+          referenceEvidence:evidencePrompt
+        })+'\n\nNEGATIVE CONSTRAINTS: '+negativePrompt+'.';
 
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)
@@ -109,6 +124,7 @@ export async function POST(req:Request){
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
+    const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
     const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
     const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1').trim().replace(/\/$/,'');
     const geminiModel=String(process.env.GEMINI_IMAGE_MODEL||'gemini-3.1-flash-image').trim();
@@ -152,6 +168,9 @@ export async function POST(req:Request){
           quality:'high',
           ...(provider.id==='configured-image'&&mediaReferenceField&&configuredReferenceValues.length
             ? {[mediaReferenceField]:configuredReferenceValues}
+            : {}),
+          ...(provider.id==='configured-image'&&mediaNegativeField&&negativePrompt
+            ? {[mediaNegativeField]:negativePrompt}
             : {})
         };
 
@@ -186,7 +205,9 @@ export async function POST(req:Request){
             originalPrompt:sourcePrompt,
             expandedPrompt:groundedPrompt,
             caption:parityCaptionPtBr(sourcePrompt),
-            parityContract:'grok-imagine-parity'
+            parityContract:'grok-imagine-parity',
+            promptMode:effectivePromptMode,
+            negativePrompt
           });
         }
       }catch{
@@ -211,7 +232,9 @@ export async function POST(req:Request){
       originalPrompt:sourcePrompt,
       expandedPrompt:groundedPrompt,
       caption:parityCaptionPtBr(sourcePrompt),
-      parityContract:'grok-imagine-parity'
+      parityContract:'grok-imagine-parity',
+      promptMode:effectivePromptMode,
+      negativePrompt
     });
   }catch(error:any){
     return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
