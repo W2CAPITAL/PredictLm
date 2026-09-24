@@ -466,6 +466,8 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
       role:'system',
       content:[
         'Você é o Media Director interno do PredictLM.',
+        apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false),
+        'A API/provider remoto executa esta direção de mídia; runtime local não define o brief final.',
         'Retorne somente um brief operacional compacto, sem chain-of-thought.',
         'Preserve literalmente sujeito, identidade, criatura, roupa, cor, poder, ação e relações pedidos pelo usuário.',
         'Não invente binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs, armaduras ou fendas dimensionais sem pedido explícito.',
