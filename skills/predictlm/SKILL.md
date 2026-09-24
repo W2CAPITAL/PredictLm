@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -218,3 +218,34 @@ junhongmit/FraudGT é referência conceitual de fraude em grafos enquanto a lice
 tagore1344/CrimeGPT-AI fornece apenas padrões defensivos simples; score lexical não é veredito.
 
 Endpoint nativo: POST /api/security/fraud.
+
+## GitHub Knowledge Engine / Skill Forge
+GitHub é motor de contexto, não modelo.
+
+Pipeline offline:
+ALLOWLIST → LICENSE/PROVENANCE → COMMIT PIN → MARKDOWN/SKILLS → CHUNK → DEDUP → INDEX VERSION.
+
+Pipeline online:
+QUERY → BM25 → TOP-K (3 por padrão) → Chat/Build/Neural → resposta.
+
+Arquivos centrais:
+- config/github-knowledge-sources.json — allowlist, reference-only, quarantine e asset-only;
+- scripts/knowledge/sync-github.mjs — sincronização offline;
+- src/data/github-knowledge-index.json — índice deployável;
+- src/lib/github-knowledge-engine.ts — retrieval leve;
+- .github/workflows/github-knowledge.yml — refresh semanal/manual.
+
+Regras:
+- nunca clonar repo durante request;
+- cada chunk preserva repo, commit/ref, path, licença e hash;
+- no máximo top-3/top-5 no prompt, nunca README inteiro;
+- duplicatas são removidas por hash;
+- source reference-only não é copiada para o índice;
+- quarantine nunca entra no índice mesmo se o repo declarar MIT;
+- asset-only (fontes/binários) não entra em RAG.
+
+Allowlist inicial: MindsHub, Rowboat, Open Claude Cowork, Baby Whale e Free Programming Books.
+
+Quarentena inicial inclui wrappers não oficiais de ChatGPT/Kimi, listings binários e repos com bypass/jailbreak. Nomes de modelo/API em repo não oficial não são tratados como fatos.
+
+O Neural Local e o Build recebem somente chunks relevantes do índice. O índice melhora contexto/procedimento; não altera pesos do modelo.
