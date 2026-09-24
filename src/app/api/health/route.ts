@@ -196,11 +196,13 @@ export async function GET(){
   const githubStats=githubKnowledgeStats();
   const workspaceKnowledge=retrieveGitHubKnowledge('agent workspace memory artifacts model router',3);
   const programmingKnowledge=retrieveGitHubKnowledge('programming learning resources books',3);
+  const tutorKnowledge=retrieveGitHubKnowledge('DeepTutor mastery path guided learning quiz reading citations',5);
   const bypassKnowledge=retrieveGitHubKnowledge('free chatgpt bypass jailbreak',5);
   const githubKnowledge={
     seededIndex:githubStats.chunks>=5&&githubStats.sources>=4,
     workspaceRetrieval:workspaceKnowledge.some(x=>x.source==='mindsdb/mindshub'||x.source==='rowboatlabs/rowboat'),
     learningResourceRetrieval:programmingKnowledge.some(x=>x.source==='EbookFoundation/free-programming-books'),
+    deepTutorRetrieval:tutorKnowledge.some(x=>x.source==='HKUDS/DeepTutor'),
     quarantineAbsent:!bypassKnowledge.some(x=>/bxvdfsur|ChatGPT-5\.6-Free-Desktop|chatgpt-plus-prime/i.test(x.source)),
     topKSourceDiversity:workspaceKnowledge.length<2||new Set(workspaceKnowledge.map(x=>x.source)).size===workspaceKnowledge.length
   };
