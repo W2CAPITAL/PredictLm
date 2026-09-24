@@ -539,7 +539,8 @@ export function ChatShell({onOpenLegal}:Props){
             const cloudText=gatedCloud.ok?gatedCloud.content:'';
             const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
             const quality=cloudText?answerQuality(prompt,cloudText):-99;
-            if(!relevant||(kind==='howto'&&quality<3)){
+            const minCloudQuality=kind==='howto'?3:kind==='factual'?1:-99;
+            if(!relevant||quality<minCloudQuality){
               setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor','Validando a resposta final']);
             }else{
             const cloudSources=filterDisplayedSources(prompt,[
