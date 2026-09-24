@@ -694,16 +694,101 @@ export async function POST(req:Request){
     const errors:string[]=[];
     const startedAt=Date.now();
     const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
-    for(const provider of candidates){
+    const reviewSurface=researchContext?'research':'chat';
+    const agenticPlan=planAgenticRun(prompt,reviewSurface,deep);
+
+    for(let candidateIndex=0;candidateIndex<candidates.length;candidateIndex++){
+      const provider=candidates[candidateIndex];
       const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
       if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
         const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
-        const content=gate.content;
+        let content=gate.content;
         const simpleIssue=conversationAnswerIssue(prompt,content)||(simpleTurn?simpleAnswerIssue(prompt,content):'');
         if(simpleIssue){errors.push(provider.name+' rejected: '+simpleIssue);continue;}
+
+        let reviewMeta:any={performed:false};
+        const reviewBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+        const shouldReview=agenticPlan.staged&&!simpleTurn&&reviewBudget>=6500;
+        if(shouldReview){
+          const reviewer=candidates.length>1
+            ? candidates[(candidateIndex+1)%candidates.length]
+            : provider;
+          try{
+            const reviewRaw=await callProvider(reviewer,[
+              {
+                role:'system',
+                content:[
+                  'You are an independent answer reviewer.',
+                  buildReviewContract(reviewSurface),
+                  'Return JSON only: {"approved":true,"confidence":0,"issues":[{"severity":"high|medium|low","issue":"...","fix":"..."}],"missing":["..."]}.',
+                  'Validate issues before reporting them. Do not add unrelated preferences. Never expose chain-of-thought.'
+                ].join('\n')
+              },
+              {
+                role:'user',
+                content:[
+                  'USER REQUEST:\n'+compactText(prompt,1300),
+                  'DRAFT ANSWER:\n'+compactText(content,2400),
+                  researchContext?'EVIDENCE CONTEXT:\n'+compactText(researchContext,1800):''
+                ].filter(Boolean).join('\n\n')
+              }
+            ],false,Math.min(6500,Math.max(2000,reviewBudget-1000)));
+
+            const review=parseJsonObject<ChatDraftReview>(reviewRaw);
+            reviewMeta={
+              performed:true,
+              provider:reviewer.name,
+              approved:review?.approved??null,
+              confidence:Number(review?.confidence||0),
+              issues:(review?.issues||[]).slice(0,6),
+              missing:(review?.missing||[]).slice(0,6)
+            };
+
+            if(draftNeedsRepair(review)){
+              const repairBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+              if(repairBudget<4500){
+                errors.push(provider.name+' draft review requested repair but request budget was exhausted');
+                continue;
+              }
+              const finalizer=candidates[Math.min(candidateIndex,candidates.length-1)]||provider;
+              const repairedRaw=await callProvider(finalizer,[
+                {
+                  role:'system',
+                  content:[
+                    system,
+                    'You are now the final answer editor.',
+                    'Use the independent review below only to fix validated defects or missing requirements.',
+                    'Preserve correct parts of the draft and stay tightly aligned to the user request.',
+                    'Return only the corrected final answer. Never mention the review, agents, skills, providers or chain-of-thought.',
+                    'INDEPENDENT REVIEW:\n'+compactText(JSON.stringify(review),1600)
+                  ].join('\n\n')
+                },
+                ...history.slice(-4),
+                {role:'user',content:compactText(prompt,1400)},
+                {role:'assistant',content:compactText(content,2400)},
+                {role:'user',content:'Produce the corrected final answer now.'}
+              ],deep,Math.min(8000,Math.max(3000,repairBudget-700)));
+
+              const repairedGate=publicAnswerGate(repairedRaw,language,prompt);
+              const repairedIssue=repairedGate.ok
+                ? conversationAnswerIssue(prompt,repairedGate.content)||(simpleTurn?simpleAnswerIssue(prompt,repairedGate.content):'')
+                : repairedGate.reason;
+              if(!repairedGate.ok||repairedIssue){
+                errors.push(finalizer.name+' repaired draft rejected: '+String(repairedIssue||'gate'));
+                continue;
+              }
+              content=repairedGate.content;
+              reviewMeta.repaired=true;
+              reviewMeta.finalizer=finalizer.name;
+            }
+          }catch(reviewError:any){
+            reviewMeta={performed:false,error:String(reviewError?.message||reviewError).slice(0,180)};
+          }
+        }
+
         const value={
           content,
           provider:provider.name,
@@ -711,6 +796,11 @@ export async function POST(req:Request){
           cache:'miss',
           knowledgeVersion:stats.version,
           tokenBudget:packed.stats,
+          agentic:{
+            mode:agenticPlan.staged?'staged':'direct',
+            roles:agenticPlan.roles,
+            review:reviewMeta
+          },
           sources:ghHits.map(x=>({
             title:x.heading,
             source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
