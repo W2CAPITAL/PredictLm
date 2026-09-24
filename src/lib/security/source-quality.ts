@@ -1,4 +1,4 @@
-export type SourceTier='official'|'academic'|'primary'|'established'|'community'|'unknown'|'threat-reference';
+export type SourceTier='official'|'academic'|'primary'|'investigative'|'established'|'community'|'unknown'|'threat-reference';
 
 export interface SourceQuality{
   score:number;
@@ -17,21 +17,32 @@ const THREAT_REPOS=[
   'github.com/techjarves/uncensored-local-ai-multiplatform'
 ];
 
+const THREAT_HOSTS=new Set([
+  'darkforums.as',
+  'watchpeopledie.tv'
+]);
+
+const INVESTIGATIVE_HOSTS=new Set([
+  'analyzer.vecert.io'
+]);
+
 const OFFICIAL_SUFFIXES=['.gov.br','.jus.br','.gov'];
 const OFFICIAL_HOSTS=new Set([
   'gov.br','bcb.gov.br','cvm.gov.br','cnj.jus.br','stj.jus.br','stf.jus.br',
   'cert.br','nic.br','receita.economia.gov.br','planalto.gov.br',
-  'nhtsa.gov','unece.org','eur-lex.europa.eu','nasa.gov','earthdata.nasa.gov','gibs.earthdata.nasa.gov','api.bcb.gov.br'
+  'nhtsa.gov','unece.org','eur-lex.europa.eu','nasa.gov','earthdata.nasa.gov','gibs.earthdata.nasa.gov','api.bcb.gov.br',
+  'ibge.gov.br','clinicaltrials.gov'
 ]);
 const ACADEMIC_HOSTS=new Set([
   'arxiv.org','doi.org','dl.acm.org','ieeexplore.ieee.org','springer.com','nature.com','sciencedirect.com',
-  'sae.org','iso.org'
+  'sae.org','iso.org','openalex.org','api.openalex.org','semanticscholar.org','api.semanticscholar.org',
+  'pubmed.ncbi.nlm.nih.gov','ncbi.nlm.nih.gov','pmc.ncbi.nlm.nih.gov','cochranelibrary.com','scielo.br','redalyc.org','doaj.org'
 ]);
 const PRIMARY_HOSTS=new Set([
   'vercel.com','docs.vercel.com','api.vercel.com','github.com','api.spacexdata.com','market.ft.tech','ftai.chat'
 ]);
 const ESTABLISHED_HOSTS=new Set([
-  'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk'
+  'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk','poynter.org','bndigital.bn.gov.br'
 ]);
 
 export function sourceHost(url:string){
@@ -43,8 +54,13 @@ export function sourceQuality(url:string,source?:string):SourceQuality{
   const host=sourceHost(url);
   const reasons:string[]=[];
 
-  if(THREAT_REPOS.some(x=>raw.includes(x))){
-    return {score:18,tier:'threat-reference',reasons:['repositório mantido apenas como referência adversarial/ameaça; não é fonte factual primária']};
+  if(THREAT_REPOS.some(x=>raw.includes(x))||THREAT_HOSTS.has(host)){
+    return {score:18,tier:'threat-reference',reasons:['fonte adversarial/extrema mantida apenas para threat-model e sinais defensivos; conteúdo bruto não comprova fatos e não deve fornecer PII, credenciais ou mídia gráfica ao modelo']};
+  }
+
+  if(INVESTIGATIVE_HOSTS.has(host)){
+    reasons.push('fonte de threat intelligence/investigação; útil como lead e contexto, exige corroboração oficial ou independente');
+    return {score:72,tier:'investigative',reasons};
   }
 
   if(OFFICIAL_HOSTS.has(host)||OFFICIAL_SUFFIXES.some(s=>host.endsWith(s))){
@@ -81,9 +97,20 @@ export function sourceQuality(url:string,source?:string):SourceQuality{
   return {score:48,tier:'unknown',reasons};
 }
 
+export function isThreatReferenceUrl(url:string){
+  const raw=String(url||'').toLowerCase();
+  const host=sourceHost(url);
+  return THREAT_HOSTS.has(host)||THREAT_REPOS.some(x=>raw.includes(x));
+}
+
+export function suppressRawResearchContent(url:string){
+  const host=sourceHost(url);
+  return host==='watchpeopledie.tv'||host==='darkforums.as';
+}
+
 export function isSensitiveResearchQuery(query:string){
   const q=String(query||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
-  return /\b(fraude|fraud|golpe|phishing|scam|lavagem|money laundering|crime|criminos|malware|ransomware|roubo|furto|otp|pix|banco|processo|juridic|tribunal|seguranca|security|vulnerab)\b/.test(q);
+  return /\b(fraude|fraud|golpe|phishing|scam|lavagem|money laundering|crime|criminos|malware|ransomware|roubo|furto|otp|pix|banco|processo|juridic|tribunal|seguranca|security|vulnerab|amea[cç]a|threat|abuso|assedi|manipul|coerc|doxx|vazamento|leak|breach|dark web|darkweb)\b/.test(q);
 }
 
 export function qualityLabel(score:number){
