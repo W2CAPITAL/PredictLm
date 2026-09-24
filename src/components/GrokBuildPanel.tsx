@@ -17,6 +17,7 @@ import { answerLocally, generateNeuralBuildPatch, neuralStatus } from '@/lib/bro
 import { runExecutableCouncilX10 } from '@/lib/council-runtime';
 import { runLocalSmokeTest } from '@/lib/local-tools';
 import { runLocalCouncil } from '@/lib/council';
+import { formatBuildReview, runBuildDiffReview } from '@/lib/build-diff-review';
 
 export function GrokBuildPanel(){
   const s=useStudio();
@@ -66,21 +67,32 @@ export function GrokBuildPanel(){
 
       let finalSmoke=runLocalSmokeTest(finalFiles);
       let finalCouncil=runLocalCouncil(finalFiles);
+      let finalReview=runBuildDiffReview(files,finalFiles);
+      const reviewPhase:BuildPhase={
+        id:'diff-review',
+        label:'Changed-file review',
+        status:finalReview.ok?'done':'warn',
+        detail:finalReview.score+'/100 review · '+finalReview.changedPaths.length+' changed · '+finalReview.findings.length+' finding(s)'
+      };
+      finalPhases.push(reviewPhase);
       const verifyPhase:BuildPhase={
         id:'final-verify',
         label:'Final verification',
-        status:finalSmoke.ok&&finalCouncil.score>=75?'done':'warn',
-        detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council'
+        status:finalSmoke.ok&&finalCouncil.score>=75&&finalReview.ok?'done':'warn',
+        detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council · '+finalReview.score+'/100 review'
       };
       finalPhases.push(verifyPhase);
 
-      if(s.deepThinkLevel==='max'&&local.loaded&&(!finalSmoke.ok||finalCouncil.score<75)){
+      if(s.deepThinkLevel==='max'&&local.loaded&&(!finalSmoke.ok||finalCouncil.score<75||!finalReview.ok)){
         const smokeFailures=finalSmoke.checks.filter(x=>!x.ok).map(x=>x.name+': '+x.detail).join('; ');
+        const reviewFindings=formatBuildReview(finalReview);
         const repairTask=[
           'Repair the current project after final verification.',
           'Original task: '+turn.effectivePrompt,
           'Smoke failures: '+(smokeFailures||'none'),
           'Council findings: '+finalCouncil.consensus.join(' '),
+          'Changed-file review: '+reviewFindings,
+          'Fix blocker/high review findings first, then medium findings that affect real behavior.',
           'Apply only focused code changes that fix real behavior. Do not replace the project or add decorative docs instead of fixes.'
         ].join('\n');
         const repair=await generateNeuralBuildPatch(repairTask,finalFiles);
@@ -90,14 +102,22 @@ export function GrokBuildPanel(){
           finalFiles=Array.from(map.values());
           finalSmoke=runLocalSmokeTest(finalFiles);
           finalCouncil=runLocalCouncil(finalFiles);
-          verifyPhase.status=finalSmoke.ok&&finalCouncil.score>=75?'done':'warn';
-          verifyPhase.detail='Repair applied to '+repair.files.length+' file(s) · '+finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council';
+          finalReview=runBuildDiffReview(files,finalFiles);
+          reviewPhase.status=finalReview.ok?'done':'warn';
+          reviewPhase.detail=finalReview.score+'/100 review · '+finalReview.changedPaths.length+' changed · '+finalReview.findings.length+' finding(s)';
+          verifyPhase.status=finalSmoke.ok&&finalCouncil.score>=75&&finalReview.ok?'done':'warn';
+          verifyPhase.detail='Repair applied to '+repair.files.length+' file(s) · '+finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council · '+finalReview.score+'/100 review';
           finalPlan.push('DONE · Verification repair — '+repair.files.map(x=>x.path).join(', '));
         }else{
           verifyPhase.detail+=' · repair pass produced no safe structured patch';
           finalPlan.push('CHECK · Final verification — repair pass produced no safe patch');
         }
       }else{
+        if(finalReview.findings.length){
+          finalPlan.push((finalReview.blocking?'BLOCK':'CHECK')+' · Changed-file review — '+finalReview.findings.slice(0,4).map(x=>x.severity.toUpperCase()+' '+x.path+': '+x.title).join(' · '));
+        }else{
+          finalPlan.push('DONE · Changed-file review — no deterministic findings');
+        }
         finalPlan.push((verifyPhase.status==='done'?'DONE':'CHECK')+' · Final verification — '+verifyPhase.detail);
       }
 
