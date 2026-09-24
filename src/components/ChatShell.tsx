@@ -181,6 +181,24 @@ export function ChatShell({onOpenLegal}:Props){
     return()=>window.removeEventListener('predictlm:neural-warmup',onWarm as EventListener);
   },[]);
 
+  useEffect(()=>{
+    const mq=window.matchMedia('(max-width: 760px)');
+    const sync=(event?:MediaQueryListEvent)=>{
+      if((event?.matches??mq.matches))setSidebar(false);
+    };
+    sync();
+    mq.addEventListener?.('change',sync);
+    document.documentElement.dataset.predictlmMobileShell='ready';
+    return()=>{
+      mq.removeEventListener?.('change',sync);
+      delete document.documentElement.dataset.predictlmMobileShell;
+    };
+  },[]);
+
+  function closeSidebarOnMobile(){
+    if(typeof window!=='undefined'&&window.matchMedia('(max-width: 760px)').matches)setSidebar(false);
+  }
+
   async function webContext(query:string,signal?:AbortSignal){
     try{
       const r=await fetchWithTimeout('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:8})},10000,signal);
@@ -900,6 +918,7 @@ export function ChatShell({onOpenLegal}:Props){
   function openChat(id?:string){
     if(id)s.setActive(id);
     setScreen('chat');
+    closeSidebarOnMobile();
   }
 
   function unloadNeural(){
@@ -938,13 +957,13 @@ export function ChatShell({onOpenLegal}:Props){
 
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
-        <button className={screen==='build'?'active':''} onClick={()=>setScreen('build')}><span><Code2 size={16}/></span>Build</button>
-        <button className={screen==='simulation'?'active':''} onClick={()=>setScreen('simulation')}><span><Activity size={16}/></span>Simulação</button>
-        <button onClick={onOpenLegal}><span><Scale size={16}/></span>Processos</button>
-        <button className={screen==='imagine'?'active':''} onClick={()=>setScreen('imagine')}><span><ImageIcon size={16}/></span>Imagine</button>
-        <button className={screen==='vision'?'active':''} onClick={()=>setScreen('vision')}><span><Eye size={16}/></span>Visão</button>
-        <button className={screen==='library'?'active':''} onClick={()=>setScreen('library')}><span><Library size={16}/></span>Library</button>
-        <button className={s.webEnabled?'active':''} onClick={()=>{s.setWebEnabled(true);setScreen('chat')}}><span><Globe2 size={16}/></span>Pesquisa no Chat</button>
+        <button className={screen==='build'?'active':''} onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><span><Code2 size={16}/></span>Build</button>
+        <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Simulação</button>
+        <button onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}><span><Scale size={16}/></span>Processos</button>
+        <button className={screen==='imagine'?'active':''} onClick={()=>{setScreen('imagine');closeSidebarOnMobile()}}><span><ImageIcon size={16}/></span>Imagine</button>
+        <button className={screen==='vision'?'active':''} onClick={()=>{setScreen('vision');closeSidebarOnMobile()}}><span><Eye size={16}/></span>Visão</button>
+        <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><span><Library size={16}/></span>Library</button>
+        <button className={s.webEnabled?'active':''} onClick={()=>{s.setWebEnabled(true);setScreen('chat');closeSidebarOnMobile()}}><span><Globe2 size={16}/></span>Pesquisa no Chat</button>
       </nav>
 
       <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
@@ -956,10 +975,11 @@ export function ChatShell({onOpenLegal}:Props){
       </div>)}</div>
 
       <div className="grok-sidebar-bottom">
-        <button className={screen==='plugins'?'active':''} onClick={()=>setScreen('plugins')}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Local</b><small>private · local-first</small></span></div>
+        <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>API-first · local assist</small></span></div>
       </div>
     </aside>
+    {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
 
     <main className="grok-main">
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
@@ -975,7 +995,7 @@ export function ChatShell({onOpenLegal}:Props){
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
         <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
-        <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>setScreen('simulation')}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
+        <button className="grok-build-card" onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> conversa · memória · criação</div>
       </section>:
       <section className="grok-conversation-wrap">
@@ -995,20 +1015,20 @@ function Composer(props:any){
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa"/>
     <div className="grok-composer-actions">
-      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenLegal}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Simulação ativa</b><small>Personagem, mundo, memória e NeuroCore</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
+      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Simulação ativa</b><small>Personagem, mundo, memória e NeuroCore</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
         <div className="grok-model-wrap">
           <button className="predict-auto-trigger" onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>
           {modelMenu&&<div className="grok-model-menu grok-auto-menu">
-            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>Um único motor lógico. O roteador escolhe servidor, pesquisa, memória e runtime local sem expor modelos.</span></div></div>
+            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>APIs respondem; pesquisa, agents e skills entram no servidor quando úteis. O runtime local atua apenas como crítico auxiliar.</span></div></div>
             <div className="grok-auto-status">
-              <span><i className="online"/> Provider Mesh automático</span>
-              <span><i className={localReady?'online':''}/> {localReady?'Modo offline pronto':'Local sob demanda'}</span>
+              <span><i className="online"/> Provider Mesh · resposta principal</span>
+              <span><i className={localReady?'online':''}/> {localReady?'Auxiliar local pronto':'Auxiliar local sob demanda'}</span>
               <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
-            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar modo offline</b><span>Baixa apenas o motor local econômico quando você pedir. Nada é carregado automaticamente.</span></button>}
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar auxiliar local</b><span>Baixa o motor econômico apenas para crítica e segunda opinião. A resposta final continua sendo das APIs.</span></button>}
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
           </div>}
         </div>
