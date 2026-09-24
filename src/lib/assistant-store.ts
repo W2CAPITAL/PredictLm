@@ -51,7 +51,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   sessions:[initial],
   activeId:initial.id,
   webEnabled:false,
-  deepThink:true,
+  deepThink:false,
   cloudEnabled:false,
   localRuntimeEnabled:false,
   createChat:()=>set(s=>{const chat=empty();return {sessions:[chat,...s.sessions],activeId:chat.id}}),
@@ -83,4 +83,12 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   setDeepThink:(deepThink)=>set({deepThink}),
   setCloudEnabled:(cloudEnabled)=>set({cloudEnabled}),
   setLocalRuntimeEnabled:(localRuntimeEnabled)=>set({localRuntimeEnabled})
-}),{name:'predictlm-assistant-v1'}));
+}),{
+  name:'predictlm-assistant-v1',
+  version:2,
+  migrate:(persisted:any,version)=>{
+    const state=persisted||{};
+    if(version<2)return {...state,deepThink:false};
+    return state;
+  }
+}));
