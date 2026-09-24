@@ -10,7 +10,8 @@
       "Apache-2.0",
       "BSD-2-Clause",
       "BSD-3-Clause",
-      "CC-BY-4.0"
+      "CC-BY-4.0",
+      "CC0-1.0"
     ],
     "note": "Only allow sources are copied into the runtime index. reference-only is distilled manually; quarantine and asset-only are never ingested.",
     "maxChunksPerRepo": 260
@@ -1738,6 +1739,367 @@
         "sales"
       ],
       "reason": "Architecture/reference with attribution requirements; generated code remains independently authored."
+    },
+    {
+      "repo": "Starlink/starlink",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "space",
+        "starlink",
+        "astronomy",
+        "scientific-software"
+      ],
+      "reason": "No repository license detected; architecture/history reference only."
+    },
+    {
+      "repo": "nasa-gibs/worldview",
+      "branch": "main",
+      "license": "NASA-1.3",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "doc/"
+      ],
+      "domains": [
+        "earth-observation",
+        "satellite-imagery",
+        "gibs",
+        "maps"
+      ],
+      "reason": "NASA Open Source Agreement 1.3 has custom obligations; use as architecture/data-service reference."
+    },
+    {
+      "repo": "gibme-npm/starlink",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "starlink",
+        "grpc",
+        "telemetry",
+        "enterprise-api",
+        "network"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "r-spacex/SpaceX-API",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "space",
+        "spacex",
+        "rest-api",
+        "launch-data"
+      ],
+      "weight": 1.02,
+      "reason": "Archived but useful for public space-data/API patterns."
+    },
+    {
+      "repo": "Baptajck/space",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "space",
+        "frontend",
+        "spacex-data"
+      ],
+      "weight": 0.9
+    },
+    {
+      "repo": "Kitsunp/kistmath-ai",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "KistMath_AI/",
+        "models/",
+        "training/"
+      ],
+      "domains": [
+        "math",
+        "symbolic-reasoning",
+        "curriculum-learning",
+        "memory"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "adjs/am-cq",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "machine-learning",
+        "quantum-computing",
+        "education"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "quantumgercom/Link-Layer-Schudeling",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "networking",
+        "scheduling",
+        "notebooks"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "krissiazawadzki/informacao_computacao_quantica",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "information",
+        "education",
+        "notebooks"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "smendoncabruna/ComputacaoQuantica",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "education",
+        "portuguese"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "Universidade-Livre/matematica",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "math",
+        "curriculum",
+        "education",
+        "portuguese"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "TechTastic/Advanced-Math",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "modules/"
+      ],
+      "domains": [
+        "math",
+        "linear-algebra",
+        "statistics",
+        "quaternions",
+        "pid"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "oalanicolas/ia",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ai",
+        "learning",
+        "tools"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "MoKangMedical/digital-sage",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "socratic-dialogue",
+        "persona",
+        "tutoring",
+        "memory",
+        "saas"
+      ],
+      "weight": 1.01
+    },
+    {
+      "repo": "vercel/vercel",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "packages/cli/README.md",
+        "packages/"
+      ],
+      "domains": [
+        "vercel",
+        "deploy",
+        "build",
+        "cli",
+        "platform"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "ronilsondesouza045-beep/wotlk-local-server-kit",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "local-server",
+        "service-orchestration",
+        "health-check",
+        "portable-kit"
+      ],
+      "reason": "No license detected; local service/runbook patterns only."
+    },
+    {
+      "repo": "netdata/netdata",
+      "branch": "master",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "observability",
+        "metrics",
+        "alerts",
+        "anomaly-detection",
+        "edge"
+      ],
+      "reason": "GPL-3.0; architecture/observability patterns only."
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-MCP",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README_EN.md",
+        "docs/"
+      ],
+      "domains": [
+        "finance",
+        "mcp",
+        "structured-data",
+        "agents"
+      ],
+      "weight": 1.04,
+      "reason": "Hosted data-service rights/quotas are separate from repository license."
+    },
+    {
+      "repo": "edilsonaguiais/sgs-peritos",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "sgs_peritos/",
+        "exemplos/"
+      ],
+      "domains": [
+        "bcb",
+        "sgs",
+        "forensic-finance",
+        "interest-rates",
+        "brazil"
+      ],
+      "weight": 1.12
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-skill",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "ftshare-market-data/"
+      ],
+      "domains": [
+        "finance",
+        "agent-skill",
+        "routing",
+        "structured-data"
+      ],
+      "weight": 1.04,
+      "reason": "Hosted data-service rights/quotas are separate from repository license."
+    },
+    {
+      "repo": "protonspy/JusChat",
+      "branch": "main",
+      "license": "CC0-1.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/",
+        "tests/"
+      ],
+      "domains": [
+        "legal",
+        "graphrag",
+        "knowledge-graph",
+        "documents",
+        "rag"
+      ],
+      "weight": 1.1
     }
   ]
 }
