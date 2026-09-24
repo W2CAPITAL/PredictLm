@@ -48,10 +48,12 @@ Padrões incorporados: cena/storyboard, continuidade, provider adapters, keyfram
 
 ### Optional generative video providers
 
-The default path stays local/free. When server credentials exist, PredictLM exposes normalized async adapters for:
+Auto now prefers a configured **real temporal generator**. Motion/storyboard stays an explicit fallback, never a fake substitute. PredictLM exposes normalized async adapters for:
 - Veo 3 / Veo 3 Fast via Mountsea (`/veo/generate` + `/veo/task`);
 - Sora 2 via Mountsea (`/sora/generate` + `/sora/task`);
-- Seedance 2 via Seegen (`/jobs/createTask` + `/jobs/queryTask`).
+- Seedance 2 via Seegen (`/jobs/createTask` + `/jobs/queryTask`);
+- Gemini Veo 3.1 official long-running generation with text-to-video, image-to-video and reference-image grounding;
+- user-configured ComfyUI workflows for LTX/SANA/compatible neural video engines (`/prompt` → `/history` → `/view`).
 
 Provider keys stay server-side. The UI disables providers that are not configured and never pretends an unavailable provider is working.
 
@@ -77,3 +79,25 @@ Caso de regressão obrigatório: **Naruto Uzumaki em Kurama Chakra Mode vs Sasuk
 ### Autoimagem do Predict
 
 Quando o usuário pedir explicitamente "como você se vê", "como você é na vida real", "sua aparência" ou equivalente, a geração não reinterpreta a identidade: retorna exatamente a referência persistente embutida em `src/lib/entity-self-model.ts`. Não aplicar upscale, variação, filtro ou regeneração sobre essa resposta.
+
+## Deep Think + Deep Research for Media
+
+Quando ativados no Imagine:
+
+**pedido → Deep Research → Media Director / Deep Think → identity/reference lock → provider → temporal/image review → resultado**
+
+- **Deep Research** usa pesquisa abrangente e limitada para encontrar contexto visual relevante, fontes e referências; resultados irrelevantes são descartados.
+- **Deep Think** gera apenas um brief operacional de direção (sujeito, composição, câmera, ação, continuidade, materiais, áudio), sem expor raciocínio privado.
+- Para vídeo, o prompt final exige movimento temporal novo e coerente; slideshow, Ken Burns, pan/zoom de still ou crossfade não contam como vídeo neural.
+- Para Gemini Veo 3.1, first-frame e até três referências podem ser enviados como imagem real quando o modo/provider aceitar.
+- `Auto` escolhe o primeiro provider temporal real configurado. `local` só entra explicitamente ou quando nenhum provider real existe.
+- Erros de provider devem ser normalizados para texto legível; nunca mostrar `[object Object]`.
+
+### ComfyUI neural adapter
+
+`COMFYUI_VIDEO_BASE_URL` + `COMFYUI_VIDEO_WORKFLOW_JSON` habilitam um bridge genérico para workflows API-format de LTX/SANA/outros modelos temporais.
+
+Placeholders suportados:
+`{{PROMPT}}`, `{{NEGATIVE_PROMPT}}`, `{{WIDTH}}`, `{{HEIGHT}}`, `{{DURATION}}`, `{{FPS}}`, `{{SEED}}`, `{{IMAGE_URL}}`, `{{IMAGE_BASE64}}`, `{{IMAGE_FILENAME}}`.
+
+No Vercel, `localhost` do usuário não é alcançável. ComfyUI local requer desktop/self-hosted PredictLM ou um endpoint de rede acessível. Nunca marcar o provider como disponível sem endpoint + workflow configurados.
