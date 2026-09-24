@@ -26,6 +26,10 @@ const INVESTIGATIVE_HOSTS=new Set([
   'analyzer.vecert.io'
 ]);
 
+const LOW_EVIDENCE_HOSTS=new Set([
+  'tiktok.com','youtube.com','youtu.be','etsy.com','dreamina.capcut.com','pinterest.com'
+]);
+
 const OFFICIAL_SUFFIXES=['.gov.br','.jus.br','.gov'];
 const OFFICIAL_HOSTS=new Set([
   'gov.br','bcb.gov.br','cvm.gov.br','cnj.jus.br','stj.jus.br','stf.jus.br',
@@ -42,7 +46,8 @@ const PRIMARY_HOSTS=new Set([
   'vercel.com','docs.vercel.com','api.vercel.com','github.com','api.spacexdata.com','market.ft.tech','ftai.chat'
 ]);
 const ESTABLISHED_HOSTS=new Set([
-  'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk','poynter.org','bndigital.bn.gov.br'
+  'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk','poynter.org','bndigital.bn.gov.br',
+  'millerwelds.com','lincolnelectric.com','thefabricator.com'
 ]);
 
 export function sourceHost(url:string){
@@ -56,6 +61,11 @@ export function sourceQuality(url:string,source?:string):SourceQuality{
 
   if(THREAT_REPOS.some(x=>raw.includes(x))||THREAT_HOSTS.has(host)){
     return {score:18,tier:'threat-reference',reasons:['fonte adversarial/extrema mantida apenas para threat-model e sinais defensivos; conteúdo bruto não comprova fatos e não deve fornecer PII, credenciais ou mídia gráfica ao modelo']};
+  }
+
+  if(LOW_EVIDENCE_HOSTS.has(host)){
+    reasons.push('fonte social/comercial útil apenas como exemplo ou pista; não deve superar documentação técnica, fonte oficial ou literatura especializada');
+    return {score:34,tier:'community',reasons};
   }
 
   if(INVESTIGATIVE_HOSTS.has(host)){
