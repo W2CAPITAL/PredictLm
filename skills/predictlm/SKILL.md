@@ -249,3 +249,16 @@ Allowlist inicial: MindsHub, Rowboat, Open Claude Cowork, Baby Whale e Free Prog
 Quarentena inicial inclui wrappers não oficiais de ChatGPT/Kimi, listings binários e repos com bypass/jailbreak. Nomes de modelo/API em repo não oficial não são tratados como fatos.
 
 O Neural Local e o Build recebem somente chunks relevantes do índice. O índice melhora contexto/procedimento; não altera pesos do modelo.
+
+## Cloud Cascade opcional
+
+Zero API continua sendo o default. O usuário pode ativar Cloud Cascade quando quiser qualidade de modelo hospedado sem carregar um modelo maior no PC.
+
+Ordem server-side:
+1. cache por prompt/histórico/deep/knowledgeVersion/provider-model;
+2. provider genérico AI_* se configurado;
+3. Groq se GROQ_API_KEY + GROQ_MODEL existirem;
+4. OpenRouter se OPENROUTER_API_KEY + OPENROUTER_MODEL existirem;
+5. se todos falharem, o Chat retorna ao Neural/Knowledge local.
+
+Secrets nunca usam NEXT_PUBLIC_. Nenhuma key é obrigatória e nenhuma cota é descrita como ilimitada.
