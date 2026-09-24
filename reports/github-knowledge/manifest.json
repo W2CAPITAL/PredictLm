@@ -1,0 +1,277 @@
+{
+  "generatedAt": "2026-09-24T01:10:17.477Z",
+  "knowledgeVersion": "4d5193e6430ae46b",
+  "chunkCount": 2304,
+  "sources": [
+    {
+      "repo": "mindsdb/mindshub",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "780bbcbb8b9367c667e9b6af2aecc8277f24c0ad",
+      "files": 1,
+      "chunks": 15,
+      "error": null
+    },
+    {
+      "repo": "rowboatlabs/rowboat",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "f8ad82b02b094d783b60d712910786836c5e5f5b",
+      "files": 9,
+      "chunks": 134,
+      "error": null
+    },
+    {
+      "repo": "composio-community/open-claude-cowork",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "52335ef50fd033cb5ce87068be0b5b546fa5b73d",
+      "files": 1,
+      "chunks": 16,
+      "error": null
+    },
+    {
+      "repo": "Haifai-AI/baby-whale",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "b82162b7fce6059472a7741c527f6878f437512e",
+      "files": 120,
+      "chunks": 1833,
+      "error": null
+    },
+    {
+      "repo": "EbookFoundation/free-programming-books",
+      "mode": "allow",
+      "license": "CC-BY-4.0",
+      "commit": "11540c8bf2940d7ee685a2b99c682f9fd58e03e1",
+      "files": 2,
+      "chunks": 187,
+      "error": null
+    },
+    {
+      "repo": "Carlos-CGS/InteligenciaArtificial-IA",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "danielgines/infra-ai-prompts",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "tiagopgr/skills-ia",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "IntelligenzaArtificiale/Free-personal-AI-Assistant-with-plugin",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "kimik3moonshotAI/Kimi-K3-Code-Free-Desktop",
+      "mode": "quarantine",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop",
+      "mode": "quarantine",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "RollerManor1/chatgpt-plus-prime",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "LynxAnnihilate16/bxvdfsur",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "ryanoasis/nerd-fonts",
+      "mode": "asset-only",
+      "license": "mixed-MIT-OFL",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "adobe-fonts/source-code-pro",
+      "mode": "asset-only",
+      "license": "OFL-1.1",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "WestFox-AwA/dsh-prompt-optimizer",
+      "mode": "allow",
+      "license": "BSD-3-Clause",
+      "commit": "db7f23bba630a5805ebbab5c0e128e1fe9e514fd",
+      "files": 3,
+      "chunks": 47,
+      "error": null
+    },
+    {
+      "repo": "drona23/claude-token-efficient",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "0d30a6db75af983b8ababf585f28faefdfc87895",
+      "files": 17,
+      "chunks": 59,
+      "error": null
+    },
+    {
+      "repo": "jnbno1163/LG-token-saver",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": "422 https://api.github.com/repos/jnbno1163/LG-token-saver/commits/main"
+    },
+    {
+      "repo": "atjsh/llmlingua-2-js",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "70f5ff0442c43fa3119f57e2463dab7fde40a43b",
+      "files": 1,
+      "chunks": 10,
+      "error": null
+    },
+    {
+      "repo": "nadimtuhin/claude-token-optimizer",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "130f25cf721c0f39a7fb1b6fff912001fba8ca84",
+      "files": 1,
+      "chunks": 23,
+      "error": null
+    },
+    {
+      "repo": "Mintplex-Labs/anything-llm",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "ad97bc8dfcb6919f34f7d6d0c722efdda64d66d9",
+      "files": 1,
+      "chunks": 32,
+      "error": null
+    },
+    {
+      "repo": "Zackriya-Solutions/meetily",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "a2cb62e827da7ef59f65064c97233efb2313878e",
+      "files": 5,
+      "chunks": 80,
+      "error": null
+    },
+    {
+      "repo": "kwistzzqq-byte/image2-ads-studio",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "f055a79c0840a6a193060d2d84b8a957fc0bbc80",
+      "files": 7,
+      "chunks": 40,
+      "error": null
+    },
+    {
+      "repo": "bentoml/llm-optimizer",
+      "mode": "reference-only",
+      "license": "Apache-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "mozilla-ai/llamafile",
+      "mode": "reference-only",
+      "license": "Apache-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "qualcomm/GenieX",
+      "mode": "reference-only",
+      "license": "BSD-3-Clause",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Minhajul-Mahib/nanomind",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "df72afa7842f39ced4200beaf6c4ae41a188241e",
+      "files": 1,
+      "chunks": 11,
+      "error": null
+    },
+    {
+      "repo": "techjarves/Uncensored-Local-AI-Multiplatform",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "DeVenLucaz/llamdrop",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Quincunx33/LowRAM-AI-Compiler",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    }
+  ]
+}
