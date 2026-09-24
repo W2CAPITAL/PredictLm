@@ -2165,6 +2165,343 @@
         "rate-limit"
       ],
       "reason": "Use only for consent-aware tone/sarcasm patterns and server-side key/rate-limit boundaries; never train humiliation as a default interaction style."
+    },
+    {
+      "repo": "neurolib-dev/neurolib",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "neuroscience",
+        "whole-brain-modeling",
+        "neural-mass",
+        "connectivity",
+        "simulation"
+      ],
+      "weight": 1.14
+    },
+    {
+      "repo": "openMetadataInitiative/openMINDS",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "neuroscience",
+        "metadata",
+        "provenance",
+        "ontology",
+        "brain-data"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "HumanBrainProject/openMINDS",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "neuroscience",
+        "metadata",
+        "deprecated"
+      ],
+      "reason": "Deprecated upstream; use only as migration/history pointer to openMetadataInitiative/openMINDS."
+    },
+    {
+      "repo": "TheDragonChild/FlyPuter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "connectome",
+        "sensorimotor",
+        "flywire",
+        "brian2",
+        "physics-bridge"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "FoundationAgents/MetaGPT",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "agents",
+        "roles",
+        "sop",
+        "orchestration",
+        "software-company"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "PavelDoGreat/WebGL-Fluid-Simulation",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "webgl",
+        "simulation",
+        "visual-dynamics",
+        "browser"
+      ],
+      "weight": 0.92
+    },
+    {
+      "repo": "ludenio/SuperWEIRDGameKit",
+      "branch": "main",
+      "license": "CC0-1.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README_Portuguese.md"
+      ],
+      "domains": [
+        "simulation",
+        "world-management",
+        "production",
+        "2d-world",
+        "state"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "fullya99/worldbox-mcp",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/architecture.md",
+        "docs/multi-agent.md",
+        "docs/protocol.md"
+      ],
+      "domains": [
+        "simulation",
+        "observe-act-loop",
+        "world-state",
+        "multi-agent",
+        "mcp"
+      ],
+      "weight": 1.1
+    },
+    {
+      "repo": "A2Faisal/SESAME",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "geospatial",
+        "human-earth",
+        "grids",
+        "simulation-data",
+        "visualization"
+      ],
+      "weight": 0.98
+    },
+    {
+      "repo": "developerrahulofficial/AI-Girlfriend",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "avatar",
+        "voice",
+        "persona",
+        "memory",
+        "human-interface"
+      ],
+      "reason": "Use only avatar/voice/persona interface patterns; no romantic/sexual dependency framing or third-party audio capture defaults."
+    },
+    {
+      "repo": "bulletphysics/bullet3",
+      "branch": "master",
+      "license": "Zlib",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "physics",
+        "collision",
+        "robotics",
+        "simulation"
+      ],
+      "reason": "Native physics architecture reference; not a required browser runtime and Zlib is outside the current RAG allow-license set."
+    },
+    {
+      "repo": "dhorions/Capital-and-Cargo",
+      "branch": "master",
+      "license": "Unlicense",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "economy",
+        "transport",
+        "reputation",
+        "automation",
+        "simulation"
+      ],
+      "reason": "Public-domain style license; distill high-level economy/automation concepts only."
+    },
+    {
+      "repo": "OpenRCT2/OpenRCT2",
+      "branch": "develop",
+      "license": "GPL-3.0+",
+      "mode": "reference-only",
+      "include": [
+        "readme.md"
+      ],
+      "domains": [
+        "management-simulation",
+        "agent-ai",
+        "world-state",
+        "simulation"
+      ],
+      "reason": "GPL/copyleft implementation remains architecture reference only."
+    },
+    {
+      "repo": "WorldBoxOpenMods/ModLoader",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "world-modules",
+        "plugins",
+        "simulation"
+      ],
+      "reason": "Use modular world/plugin lifecycle patterns only; PredictLM simulation is independent of WorldBox."
+    },
+    {
+      "repo": "Sairamg18814/shvayambhu",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "consciousness-claims",
+        "self-modification",
+        "introspection"
+      ],
+      "reason": "Repository makes extraordinary consciousness claims that are not established evidence. Do not ingest claims as facts or enable autonomous self-modification from this source."
+    },
+    {
+      "repo": "robert1811/life-simulator",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "events",
+        "career",
+        "relationships"
+      ],
+      "reason": "No license verified; concepts only. Harmful/crime mechanics are not imported as defaults."
+    },
+    {
+      "repo": "bitlifefreeonline/bitlife",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "events",
+        "local-storage"
+      ],
+      "reason": "License/IP status not verified; use generic life-simulation concepts only, not branding/assets/code."
+    },
+    {
+      "repo": "Krobix/life.html",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "life-simulation",
+        "negative-reference"
+      ],
+      "reason": "README states the project is nonfunctional/bad implementation inspiration; keep as negative reference only."
+    },
+    {
+      "repo": "Qwizer/realmap-10x",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "legacy-game-server",
+        "credentials-risk"
+      ],
+      "reason": "README exposes credentials and project is unrelated to PredictLM life simulation. Never ingest secrets or binaries."
+    },
+    {
+      "repo": "alestanalves/real-life-gaming",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-world",
+        "phaser",
+        "local-storage",
+        "simulation-ui"
+      ],
+      "reason": "License not verified; architecture concepts only."
+    },
+    {
+      "repo": "SimonSaysGiveMeSmile/gtasf.lol",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "world-rendering",
+        "react-three-fiber",
+        "simulation-ui"
+      ],
+      "reason": "License not verified; rendering architecture concepts only."
     }
   ]
 }
