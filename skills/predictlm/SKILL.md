@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.24.0"
+  version: "1.25.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -717,3 +717,16 @@ Ações mudam estado persistente (posição, tempo, dinheiro, necessidades, inve
 Autonomia é **opt-in** e limitada ao mundo simulado. O usuário pode ativar “IA Auto”/“decida o que fazer” e desativar com “modo manual”. Nenhuma autonomia da simulação vira ação externa no computador, web ou contas.
 
 Repositórios Sims-like são usados somente como referência arquitetural compatível com suas licenças; ferramentas de desbloqueio/DLC ficam em quarentena e não entram no código/corpus/runtime.
+
+
+## Visual fidelity / referência antes de gerar
+
+Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
+1. extrair a identidade solicitada;
+2. aplicar **identity lock** canônico;
+3. buscar referência visual quando a infraestrutura estiver configurada (Google Images + consulta Pinterest; Firecrawl complementar);
+4. entregar referências visuais ao provider multimodal compatível;
+5. manter o mesmo lock no provider local/textual;
+6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
+
+Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity Self Model exatamente como fornecida pelo usuário; não reimaginar nem variar.
