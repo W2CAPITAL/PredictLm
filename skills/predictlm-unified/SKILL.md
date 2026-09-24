@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -17,7 +17,7 @@ A infraestrutura existe para melhorar a resposta. Ela não deve aparecer no text
 
 ## Loop obrigatório
 
-RECALL → CLASSIFY → PLAN → FORGE → AEGIS → EXECUTE → VERIFY → CAPTURE → IMPROVE.
+RECALL → CLASSIFY → CENTUM(when decision) → PLAN → FORGE → AEGIS → COUNCIL X10 → CHAIR → PARALLAX → EXECUTE/ANSWER → VERIFY → CAPTURE → IMPROVE.
 
 ### RECALL
 - recuperar build, conversa, processo, decisões e experiências relevantes;
@@ -75,6 +75,20 @@ Tenta quebrar a solução:
 - legal/privacidade;
 - operações/custo;
 - contra-caso.
+
+### PARALLAX
+Terceiro cérebro depois de FORGE + AEGIS + Council/Chair.
+
+Não faz média entre os lados. Procura:
+- enquadramento errado;
+- variável escondida;
+- opção C ou híbrida;
+- teste reversível;
+- efeito de segunda ordem;
+- condição de reversão;
+- unknown-unknown proxy.
+
+Se nenhum terceiro frame agrega evidência/robustez, não inventar novidade.
 
 ### VERIFY
 Nunca dizer:
@@ -344,3 +358,18 @@ Preservar em qualquer evolução:
 - image generate→review→repair→optional super-resolution;
 - Build changed-file review + smoke/Council + focused repair;
 - skill files atualizados sempre que runtime, arquitetura ou fontes mudarem.
+
+
+## Centum decision gate
+
+Em decisão/certeza/comparação/risco/aprovação/prontidão:
+- executar 100 checks em 10 grupos;
+- classificar supported/contradicted/unknown/not-applicable;
+- passar pelas 10 lentes X10;
+- Chair;
+- PARALLAX;
+- Strict Intent final.
+
+As 100 perguntas são internas por padrão.
+Sem fallback de conteúdo: falha/retrieval irrelevante nunca autoriza responder outra coisa.
+Fallback técnico entre runtimes continua permitido apenas para entregar o mesmo pedido.
