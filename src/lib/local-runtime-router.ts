@@ -1,6 +1,8 @@
 import { adaptiveContext, adaptiveInstructionContext } from './adaptive-memory';
 import { knowledgeContext } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
+import { languageSystemInstruction, type ConversationLanguage } from './language-policy';
+import { publicAnswerGate } from './public-answer-gate';
 import { trainingContext } from './training/context';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
@@ -227,7 +229,7 @@ async function generateLowRam(
 export async function answerViaLocalRuntime(
   prompt:string,
   history:{role:string;content:string}[],
-  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto'}
+  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string}
 ):Promise<LocalRuntimeReply>{
   if(typeof window==='undefined')throw new Error('Local Runtime Router requires the browser/desktop client.');
   const statuses=await probeLocalRuntimes();
@@ -255,6 +257,7 @@ export async function answerViaLocalRuntime(
     messages:sanitizeMessages(history),
     mode:runtime.kind==='lowram'?'ultra':(options?.deep?'lite':'full'),
     sections:[
+      {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'GitHub Knowledge',text:github,priority:5},
       {label:'Knowledge',text:knowledge,priority:5},
       {label:'Memória adaptativa',text:learned,priority:4},
@@ -269,7 +272,7 @@ export async function answerViaLocalRuntime(
   });
   const compiled=compileSystemPrompt({
     userText:prompt,
-    extra:[packed.context].filter(Boolean)
+    extra:[languageSystemInstruction(options?.language||'pt-BR'),packed.context].filter(Boolean)
   });
   const messages=[
     {role:'system',content:compiled.system},
@@ -282,13 +285,16 @@ export async function answerViaLocalRuntime(
   else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep);
   else generated=await generateOpenAI(runtime,messages,!!options?.deep);
 
+  const gate=publicAnswerGate(generated.content,options?.language||'pt-BR');
+  if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
+
   const sources=retrieveGitHubKnowledge(prompt,topK).map(x=>({
     title:x.heading,
     source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
   }));
 
   return {
-    content:generated.content,
+    content:gate.content,
     runtime:runtime.id,
     label:runtime.label,
     model:generated.model,
