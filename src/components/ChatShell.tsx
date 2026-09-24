@@ -459,7 +459,7 @@ export function ChatShell({onOpenLegal}:Props){
           },33000,turnController.signal);
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
-            const gatedCloud=publicAnswerGate(String(cloudData.content||''),language);
+            const gatedCloud=publicAnswerGate(String(cloudData.content||''),language,prompt);
             const cloudText=gatedCloud.ok?gatedCloud.content:'';
             const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
             const quality=cloudText?answerQuality(prompt,cloudText):-99;
