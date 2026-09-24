@@ -423,9 +423,9 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   const guard=mode==='hypothetical'
     ? [
         'Responda diretamente à hipótese imaginária do usuário.',
-        'Trate a premissa como ficção/experimento mental; não troque de assunto.',
-        'Se envolver pessoa real, não invente fatos reais sobre ela: descreva somente consequências da hipótese de forma neutra e, se couber, leve.',
-        'Não introduza direito, perícia, finanças, programação, livros, pesquisas ou contexto externo que o usuário não pediu.'
+        'Entre na premissa e desenvolva uma resposta natural, coerente e interessante.',
+        'Se envolver pessoa real, não invente fatos reais: trate somente a hipótese.',
+        'Não pesquise, não peça contexto e não introduza assuntos externos quando a pergunta for autocontida.'
       ].join(' ')
     : mode==='howto'
       ? [
@@ -435,23 +435,20 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
           'Não diga que falta contexto se a pergunta puder ser respondida de forma geral.'
         ].join(' ')
       : [
-          'Responda somente ao pedido atual, de forma natural e direta.',
+          'Responda somente ao pedido atual, de forma natural, útil e direta.',
           'Não use tópicos, bases, skills ou contexto não solicitado.',
           'Não acrescente assuntos correlatos só porque compartilham uma palavra com o prompt.'
         ].join(' ');
 
-  const skillEnvelope=apiAgentSkillEnvelope(prompt,false,false);
-  const localAdvisory=compactText(String(body?.localAdvisory||''),1200);
-  const answerAnchor=compactText(String(body?.answerAnchor||''),1800);
+  // Clean Chat deliberately avoids Agent Fabric, RAG, local advisory and
+  // skill dumps. Claude-Code-style orchestration is useful for work; ordinary
+  // conversation should be a direct provider turn.
   const system=[
-    'Você é o PredictLM em modo conversa limpa.',
+    'Você é o PredictLM. Converse como uma IA geral competente.',
     languageSystemInstruction(language),
     guard,
-    skillEnvelope,
-    localAdvisory?'LOCAL ADVISORY (opcional; critique, não copie automaticamente): '+localAdvisory:'',
-    answerAnchor?'ANSWER FLOOR (use apenas como piso de utilidade; a API continua responsável pela resposta): '+answerAnchor:'',
-    'Entregue somente a resposta final ao usuário. Nunca exponha cadeia de raciocínio, roteamento, provider, skill, memória interna ou relatório operacional.'
-  ].filter(Boolean).join('\n\n');
+    'Responda com conteúdo substantivo. Não exponha chain-of-thought, roteamento, provider, skill ou runtime.'
+  ].join('\n\n');
 
   const messages:Msg[]=[
     {role:'system',content:system},
@@ -459,37 +456,53 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
-  const errors:string[]=[];
-  for(const provider of candidates){
-    try{
-      const raw=await callProvider(provider,messages,false,PROVIDER_TIMEOUT_MS);
-      const gate=publicAnswerGate(raw,language,prompt);
-      if(!gate.ok){errors.push(provider.name+': '+gate.reason);continue}
-      const issue=conversationAnswerIssue(prompt,gate.content);
-      const alignment=responseTopicAlignment(prompt,gate.content);
-      if(issue||!alignment.relevant){
-        errors.push(provider.name+': '+(issue||'off-topic'));
-        continue;
-      }
-      return Response.json({
-        content:gate.content,
-        provider:provider.name,
-        model:provider.model,
-        mode:'clean-chat',
-        sources:[]
-      },{headers:{'Cache-Control':'no-store'}});
-    }catch(error:any){
-      errors.push(provider.name+': '+String(error?.message||error).slice(0,160));
-    }
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
+  if(!candidates.length){
+    return Response.json({
+      available:false,
+      content:null,
+      code:'NO_REMOTE_PROVIDER',
+      mode:'clean-chat',
+      errors:['Nenhuma API remota configurada ou disponível.']
+    },{status:503,headers:{'Cache-Control':'no-store'}});
   }
+
+  // Race several configured APIs inside one bounded window. We still select
+  // the highest-priority valid response, but a slow/dead first provider can no
+  // longer consume the entire browser timeout before another API is attempted.
+  const attempts=await Promise.allSettled(candidates.map(async provider=>{
+    const raw=await callProvider(provider,messages,false,8500);
+    const gate=publicAnswerGate(raw,language,prompt);
+    if(!gate.ok)throw new Error(gate.reason);
+    const issue=conversationAnswerIssue(prompt,gate.content);
+    const alignment=responseTopicAlignment(prompt,gate.content);
+    if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
+    return {provider,content:gate.content};
+  }));
+
+  const errors:string[]=[];
+  for(let i=0;i<attempts.length;i++){
+    const result=attempts[i];
+    if(result.status==='fulfilled'){
+      return Response.json({
+        content:result.value.content,
+        provider:result.value.provider.name,
+        model:result.value.provider.model,
+        mode:'clean-chat',
+        sources:[],
+        apiRace:{attempted:candidates.map(x=>x.name),winner:result.value.provider.name}
+      },{headers:{'Cache-Control':'no-store'}});
+    }
+    errors.push(candidates[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
+  }
+
   return Response.json({
     available:false,
     content:null,
     code:'NO_CLEAN_ANSWER',
     mode:'clean-chat',
-    errors:errors.slice(0,3)
-  },{headers:{'Cache-Control':'no-store'}});
+    errors:errors.slice(0,4)
+  },{status:502,headers:{'Cache-Control':'no-store'}});
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
