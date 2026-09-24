@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -29,6 +29,8 @@ Rotas primárias:
 - general-chat
 - build
 - research
+- token-budget
+- local-runtime
 - github-knowledge
 - process-scan
 - legal-analysis
@@ -283,3 +285,15 @@ Skill Forge não importa automaticamente todo SKILL.md encontrado. Somente allow
 Cloud Cascade é uma rota explícita, desligada por padrão.
 Quando ativa: CACHE → GitHub top-k → provider configurado → VERIFY.
 Falha do server nunca apaga a rota local; o host continua com Neural/Knowledge.
+
+## Token + runtime routing
+
+Antes de gerar:
+1. ROUTE intenção;
+2. TOKEN BUDGET compacta histórico e contexto;
+3. SKILL/RAG seleciona somente top-k;
+4. se Local API Router ativo, tenta runtime local compatível;
+5. se Cloud Cascade ativo e local falhar, tenta provider server;
+6. caso contrário/erro, Neural Browser/Knowledge continua disponível.
+
+Nunca carregar todas as skills, todas as ferramentas e todo o histórico no mesmo prompt.
