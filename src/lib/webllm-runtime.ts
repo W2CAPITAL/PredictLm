@@ -25,6 +25,7 @@ let loadedTier:WebLLMTier|null=null;
 let loadedModelId:string|null=null;
 let loadingTier:WebLLMTier|null=null;
 let lastError='';
+let loadEpoch=0;
 
 function readPreference():WebLLMTier|null{
   if(typeof window==='undefined')return null;
@@ -97,10 +98,12 @@ export async function loadWebLLMModel(
   if(loadingTier)throw new Error('WebLLM já está carregando outro modelo.');
   loadingTier=tier;
   lastError='';
+  const epoch=++loadEpoch;
   try{
     await assertWebGPU();
     onProgress?.({progress:null,status:'WebGPU confirmado · carregando runtime WebLLM'});
     const mod=await importWebLLM();
+    if(epoch!==loadEpoch)throw new Error('Carregamento WebLLM cancelado.');
     const modelId=WEBLLM_MODELS[tier];
     const next=await mod.CreateMLCEngine(modelId,{
       initProgressCallback:(report:any)=>{
@@ -111,12 +114,14 @@ export async function loadWebLLMModel(
         });
       }
     });
+    if(epoch!==loadEpoch){try{await next.unload?.()}catch{};throw new Error('Carregamento WebLLM cancelado.');}
     const probe=await next.chat.completions.create({
       messages:[{role:'user',content:'Responda apenas OK.'}],
       temperature:0,
       max_tokens:8,
       stream:false
     });
+    if(epoch!==loadEpoch){try{await next.unload?.()}catch{};throw new Error('Carregamento WebLLM cancelado.');}
     const text=String(probe?.choices?.[0]?.message?.content||'').trim();
     if(!text)throw new Error('WebLLM carregou, mas o self-test retornou vazio.');
     if(engine&&engine!==next){
@@ -169,6 +174,14 @@ export function webLLMStatus(){
     lastError:lastError||null,
     version:MODULE_VERSION
   };
+}
+
+export async function cancelWebLLMLoad(){
+  if(!loadingTier)return false;
+  loadEpoch++;
+  loadingTier=null;
+  lastError='Carregamento WebLLM cancelado para preservar a responsividade.';
+  return true;
 }
 
 export async function unloadWebLLMModel(options?:{keepPreference?:boolean}){
