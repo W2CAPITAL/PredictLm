@@ -77,7 +77,21 @@ const SOURCES=[
   ['cortextorlab/airLLM','main','Apache-2.0','reference',['local-inference','layerwise-offload','low-vram','prefetch','quantization']],
   ['nguefackuriel/Run-Llama3-70B-with-just-4GB-memory-GPU','main','unverified','reference',['airllm','llama3','low-vram']],
   ['xinntao/Real-ESRGAN','master','BSD-3-Clause','reference',['image-upscaling','super-resolution','restoration','media']],
-  ['JingyunLiang/SwinIR','main','Apache-2.0','reference',['image-restoration','super-resolution','denoise','media']]
+  ['JingyunLiang/SwinIR','main','Apache-2.0','reference',['image-restoration','super-resolution','denoise','media']],
+  ['AIGeniusInstitute/deepthink','main','MIT','reference',['deep-reasoning','loop-engineering','agents','observability','self-improve']],
+  ['WatVis/DeepThInk','main','unverified','reference',['human-ai','creative-ai','computer-vision','collaboration']],
+  ['ashishpatel26/500-AI-Machine-learning-Deep-learning-Computer-vision-NLP-Projects-with-code','main','unverified','reference',['ml-projects','computer-vision','nlp','learning']],
+  ['qxresearch/qxresearch-event-1','master','MIT','reference',['python','ml-projects','apps','learning']],
+  ['felladrin/awesome-ai-web-search','main','unverified','reference',['web-search','research','rag','agents']],
+  ['darkdevil3610/100-AI-Machine-learning-Deep-learning-Computer-vision-NLP','main','unverified','reference',['ml-projects','computer-vision','nlp','learning']],
+  ['microsoft/ML-For-Beginners','main','MIT','reference',['machine-learning','curriculum','projects','quiz']],
+  ['lutzroeder/netron','main','MIT','reference',['model-inspection','onnx','gguf','tflite','safetensors']],
+  ['dragen1860/Deep-Learning-with-TensorFlow-book','master','noncommercial-notice','reference',['tensorflow','deep-learning','learning']],
+  ['ludwig-ai/ludwig','main','Apache-2.0','reference',['training','finetuning','lora','quantization','ml']],
+  ['clearml/clearml','master','Apache-2.0','reference',['mlops','experiments','observability','artifacts']],
+  ['ikaijua/Awesome-AITools','main','unverified','reference',['ai-tools','discovery','providers']],
+  ['EwingYangs/awesome-open-gpt','main','unverified','reference',['open-gpt','agents','tools']],
+  ['ashishpatel26/Tools-to-Design-or-Visualize-Architecture-of-Neural-Network','master','unverified','reference',['model-visualization','neural-network','architecture']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
