@@ -45,7 +45,7 @@ const qualityCore=[
 ].join(', ');
 
 export function buildQualityImagePrompt(input:string,options:QualityPromptOptions={}){
-  const raw=compactText(String(input||'').trim(),320);
+  const raw=compactText(String(input||'').trim(),900);
   const style=compactText(String(options.style||'Cinematic').trim(),32);
   const attempt=Math.max(0,Math.floor(options.attempt||0));
   const variation=attempt>0
@@ -55,9 +55,9 @@ export function buildQualityImagePrompt(input:string,options:QualityPromptOption
     ? 'Maintain character/object identity, wardrobe/materials, environment and color palette consistently for use as a video keyframe.'
     : '';
   const previous=options.previousPrompt?.trim()
-    ? 'Previous generation intent: '+compactText(options.previousPrompt.trim(),120)+'.'
+    ? 'Previous generation intent: '+compactText(options.previousPrompt.trim(),260)+'.'
     : '';
-  return compactText([raw,style+' visual direction',qualityCore,variation,continuity,previous].filter(Boolean).join('. '),520);
+  return compactText([raw,style+' visual direction',qualityCore,variation,continuity,previous].filter(Boolean).join('. '),1800);
 }
 
 export function autoVariationSeed(previous?:number){
