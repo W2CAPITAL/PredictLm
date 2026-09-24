@@ -170,7 +170,7 @@ const SOURCES=[
   ['JacobEvelyn/friends','main','MIT','reference',['relationship-crm','activities','reminders','notes']],
   ['Peppermint-Lab/peppermint','main','unverified','reference',['helpdesk','tickets','sla','notes','customers']],
   ['go2ismail/Free-CRM','master','CC-BY-4.0','reference',['crm','campaigns','leads','budgets','sales']],
-  ['Dioque/Livros','main','unverified','reference',['quarantine','books']]
+  ['Dioque/Livros','main','unverified','reference',['quarantine','books']],
   ['Starlink/starlink','master','unverified','reference',['space','starlink','scientific-software']],
   ['nasa-gibs/worldview','main','NASA-1.3','reference',['earth-observation','satellite-imagery','gibs','maps']],
   ['gibme-npm/starlink','master','MIT','train',['starlink','grpc','telemetry','enterprise-api']],
@@ -191,6 +191,10 @@ const SOURCES=[
   ['FTShare-Lab/FTShare-MCP','main','MIT','train',['finance','mcp','structured-data','agents']],
   ['edilsonaguiais/sgs-peritos','main','MIT','train',['bcb','sgs','forensic-finance','interest-rates','brazil']],
   ['FTShare-Lab/FTShare-skill','main','MIT','train',['finance','agent-skill','routing','structured-data']],
+  ['ergonzamarian/Analisador-de-Sentimentos','master','unverified','reference',['sentiment-analysis','human-signals','classification','evaluation']],
+  ['msfidelis/gmud-for-the-win','master','unverified','reference',['change-management','git','ci','release-ops']],
+  ['sheepzh/make-zero','main','MIT','reference',['privacy','browser-extension','local-encryption','security-ux']],
+  ['leonardosegfault/humilhador-de-github','main','MIT','reference',['tone','sarcasm','consent','github-profile','rate-limit']],
   ['protonspy/JusChat','main','CC0-1.0','train',['legal','graphrag','knowledge-graph','documents','rag']],
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
