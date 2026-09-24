@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.8.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.8.2. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.8.0"
+  version: "5.8.2"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.8.0
+# LEXIS TwinCore X10 v5.8.2
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -371,3 +371,7 @@ Cada motor recebe contexto já orçado. Council recebe fatos/resposta necessári
 Para dossiê, compressão nunca pode remover fonte, data, classe de evidência ou lacuna crítica.
 
 Runtimes externos locais são opcionais; ausência deles nunca quebra o modo browser/local-first.
+
+## Retrieval adaptativo
+
+Fast = top-3 diverso. Deep = até top-5 diverso. LowRAM = top-2. O aumento de cobertura nunca remove o Token Budget nem o gate de relevância.
