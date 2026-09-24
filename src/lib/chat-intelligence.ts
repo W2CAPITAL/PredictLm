@@ -7,7 +7,7 @@ const clean=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f
 
 export function isHypotheticalPrompt(prompt:string){
   const p=clean(prompt);
-  return /^(?:e se|imagine se|imagina se|suponha que|supondo que|como seria se|o que aconteceria se|what if|imagine if)\b/.test(p)
+  return /^(?:e se|imagine se|imagina se|suponha que|supondo que|como seria(?: se)?|o que aconteceria se|what if|imagine if)\b/.test(p)
     || /\b(?:fosse|virasse|se transformasse em|became|turned into)\b/.test(p)&&/\b(?:e se|imagine|imagina|suponha|what if)\b/.test(p);
 }
 
