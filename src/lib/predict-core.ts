@@ -401,6 +401,50 @@ function landingCss(){
   ].join(''));
 }
 
+
+function workspaceApp(title:string,prompt:string){
+  const safeTitle=JSON.stringify(title);
+  const domain=inferDomainAppBlueprint(prompt);
+  const saas=inferSaaSBlueprint(prompt,'workspace');
+  const nav=Array.from(new Set([...(domain?.modules||[]),...(saas?.modules||[])]));
+  const entities=Array.from(new Set([...(domain?.entities||[]),...(saas?.entities||[])]));
+  const integrations=Array.from(new Set(domain?.integrations||[]));
+  const safeNav=JSON.stringify((nav.length?nav:['Visão geral','Registros','Integrações','Configurações']).slice(0,12));
+  const safeEntities=JSON.stringify((entities.length?entities:['Record','Activity','User']).slice(0,10));
+  const safeIntegrations=JSON.stringify(integrations.slice(0,10));
+  return [
+    "export default function App(){",
+    " const nav="+safeNav+";",
+    " const entityTypes="+safeEntities+";",
+    " const integrations="+safeIntegrations+";",
+    " const [active,setActive]=useState(nav[0]||'Visão geral');",
+    " const [query,setQuery]=useState('');",
+    " const [name,setName]=useState('');",
+    " const [type,setType]=useState(entityTypes[0]||'Record');",
+    " const [notice,setNotice]=useState('');",
+    " const [records,setRecords]=useState(()=>{try{const raw=localStorage.getItem('predict-workspace-records');return raw?JSON.parse(raw):[]}catch{return []}});",
+    " const [health,setHealth]=useState(()=>Object.fromEntries(integrations.map(x=>[x,'não testado'])));",
+    " useEffect(()=>{try{localStorage.setItem('predict-workspace-records',JSON.stringify(records))}catch{}},[records]);",
+    " const add=()=>{const v=name.trim();if(!v){setNotice('Informe um nome antes de salvar.');return}const id=(globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now());setRecords(xs=>[{id,name:v,type,createdAt:new Date().toISOString()},...xs]);setName('');setNotice('Registro salvo com sucesso.');};",
+    " const remove=id=>setRecords(xs=>xs.filter(x=>x.id!==id));",
+    " const shown=records.filter(x=>(x.name+' '+x.type).toLowerCase().includes(query.toLowerCase()));",
+    " const testIntegration=async id=>{setHealth(h=>({...h,[id]:'testando…'}));try{const r=await fetch('/api/integrations/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({integration:id})});const d=await r.json().catch(()=>({}));setHealth(h=>({...h,[id]:r.ok&&d.ok?'online':'não configurado'}))}catch{setHealth(h=>({...h,[id]:'indisponível'}))}};",
+    " return <main className='workspace-app'><aside className='workspace-side'><div className='workspace-brand'><span>P</span><div><b>"+safeTitle+"</b><small>Predict workspace</small></div></div><nav>{nav.map(x=><button key={x} className={active===x?'active':''} onClick={()=>setActive(x)}>{x}</button>)}</nav><footer>{records.length} registro(s)</footer></aside>",
+    " <section className='workspace-main'><header className='workspace-top'><div><small>Workspace / {active}</small><h1>{active}</h1></div><input value={query} onChange={e=>setQuery(e.target.value)} placeholder='Buscar registros'/></header>",
+    " <div className='workspace-content'><section className='workspace-metrics'><article><span>Registros</span><strong>{records.length}</strong><small>persistência local ativa</small></article><article><span>Tipos</span><strong>{entityTypes.length}</strong><small>{entityTypes.slice(0,3).join(' · ')}</small></article><article><span>Integrações</span><strong>{integrations.length}</strong><small>status só após teste</small></article><article><span>Módulos</span><strong>{nav.length}</strong><small>arquitetura do domínio</small></article></section>",
+    " <section className='workspace-panels'><article className='workspace-card'><div className='workspace-card-head'><div><b>Novo registro</b><small>CRUD funcional para validar o fluxo</small></div></div><label>Nome<input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()}/></label><label>Tipo<select value={type} onChange={e=>setType(e.target.value)}>{entityTypes.map(x=><option key={x}>{x}</option>)}</select></label><button className='workspace-primary' onClick={add}>Salvar</button>{notice&&<p className='workspace-notice'>{notice}</p>}</article>",
+    " <article className='workspace-card'><div className='workspace-card-head'><div><b>Fontes e integrações</b><small>nenhuma conexão fictícia</small></div></div>{integrations.length===0?<div className='workspace-empty'>Nenhuma integração externa obrigatória.</div>:integrations.map(id=><div className='workspace-integration' key={id}><div><b>{id}</b><small>{health[id]}</small></div><button onClick={()=>testIntegration(id)}>Testar</button></div>)}</article></section>",
+    " <section className='workspace-card workspace-records'><div className='workspace-card-head'><div><b>Registros</b><small>{shown.length} resultado(s)</small></div></div>{shown.length===0?<div className='workspace-empty'>Nenhum registro neste filtro.</div>:shown.map(r=><div className='workspace-record' key={r.id}><div><b>{r.name}</b><small>{r.type} · {new Date(r.createdAt).toLocaleString('pt-BR')}</small></div><button onClick={()=>remove(r.id)}>Excluir</button></div>)}</section></div></section></main>",
+    "}"
+  ].join('\n');
+}
+
+function workspaceCss(){
+  return baseCss([
+    '.workspace-app{min-height:100vh;display:grid;grid-template-columns:240px 1fr;background:#07090d}.workspace-side{height:100vh;position:sticky;top:0;border-right:1px solid var(--line);background:#0b0e14;padding:16px;display:flex;flex-direction:column}.workspace-brand{display:flex;align-items:center;gap:10px;padding:8px 5px 18px}.workspace-brand>span{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-weight:900}.workspace-brand div{display:flex;flex-direction:column}.workspace-brand small,.workspace-side footer{font-size:10px;color:var(--muted)}.workspace-side nav{display:flex;flex-direction:column;gap:5px}.workspace-side nav button{border:0;background:transparent;color:#9ba5b6;text-align:left;padding:10px 11px;border-radius:10px}.workspace-side nav button.active{background:#171b25;color:#fff}.workspace-side footer{margin-top:auto;padding:8px}.workspace-top{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 24px}.workspace-top h1{margin:2px 0 0;font-size:24px}.workspace-top small{color:var(--muted)}.workspace-top input,.workspace-card input,.workspace-card select{background:#0d1016;border:1px solid var(--line);color:#fff;border-radius:10px;padding:10px 12px;outline:0}.workspace-top input{width:min(320px,46vw)}.workspace-content{padding:20px;max-width:1300px;margin:auto}.workspace-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.workspace-metrics article,.workspace-card{border:1px solid var(--line);background:#0d1016;border-radius:15px;padding:16px}.workspace-metrics span,.workspace-metrics small,.workspace-card-head small,.workspace-record small,.workspace-integration small{display:block;color:var(--muted);font-size:10px}.workspace-metrics strong{display:block;font-size:28px;margin:7px 0 3px}.workspace-panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}.workspace-card label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:10px;margin:10px 0}.workspace-primary{border:0;background:var(--accent);color:#fff;border-radius:10px;padding:10px 14px;font-weight:750}.workspace-notice{color:#7de3bd;font-size:11px}.workspace-card-head{display:flex;justify-content:space-between;margin-bottom:12px}.workspace-card-head div{display:flex;flex-direction:column;gap:3px}.workspace-integration,.workspace-record{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:10px 0}.workspace-integration div,.workspace-record div{display:flex;flex-direction:column}.workspace-integration button,.workspace-record button{border:1px solid var(--line);background:#151923;color:#cbd1dc;border-radius:9px;padding:7px 9px}.workspace-empty{color:var(--muted);padding:18px 0}.workspace-records{margin-bottom:30px}@media(max-width:900px){.workspace-app{grid-template-columns:88px 1fr}.workspace-brand div{display:none}.workspace-side nav button{font-size:10px;padding:9px 6px}.workspace-metrics{grid-template-columns:1fr 1fr}.workspace-panels{grid-template-columns:1fr}}@media(max-width:620px){.workspace-app{display:block}.workspace-side{height:auto;position:static;border-right:0;border-bottom:1px solid var(--line)}.workspace-brand div{display:flex}.workspace-side nav{flex-direction:row;overflow:auto}.workspace-side nav button{white-space:nowrap;font-size:11px}.workspace-side footer{display:none}.workspace-top{height:auto;align-items:flex-start;flex-direction:column;padding:14px}.workspace-top input{width:100%}.workspace-content{padding:12px}}'
+  ].join(''));
+}
+
 function genericApp(title:string,prompt:string){
   return landingApp(title,prompt);
 }
@@ -416,6 +460,7 @@ function buildApp(spec:CoreSpec,prompt:string){
   if(spec.intent==='portfolio')return portfolioApp(spec.title);
   if(spec.intent==='store')return storeApp(spec.title);
   if(spec.intent==='dashboard')return dashboardApp(spec.title);
+  if(spec.intent==='workspace')return workspaceApp(spec.title,prompt);
   return genericApp(spec.title,prompt);
 }
 
@@ -429,6 +474,7 @@ function buildCss(spec:CoreSpec){
   if(spec.intent==='portfolio')return portfolioCss();
   if(spec.intent==='store')return storeCss();
   if(spec.intent==='dashboard')return dashboardCss();
+  if(spec.intent==='workspace')return workspaceCss();
   return genericCss();
 }
 
