@@ -117,3 +117,26 @@ export const TRAINING_KNOWLEDGE:KnowledgeEntry[]=[
   {id:'chat-web-is-permission-not-mandate',title:'Web habilitada é capacidade, não busca obrigatória',tags:['chat','web','research','retrieval','routing'],source:'PredictLM WebDeep regression',body:'Perguntas estáticas e procedimentos cotidianos não devem disparar pesquisa só porque Web está ligada. Busca é obrigatória para atualidade ou solicitação explícita e útil em alto risco/documentação. Snippets laterais podem degradar modelos fortes.'},
   {id:'chat-howto-procedure-first',title:'Como + verbo exige procedimento antes de definição',tags:['chat','howto','quality','retrieval'],source:'PredictLM how-to regression',body:'Perguntas práticas iniciadas por como mais um verbo devem ser classificadas como how-to. A resposta deve trazer passos acionáveis; uma definição enciclopédica do objeto ou conteúdo homônimo é falha de aderência.'},
 ];
+
+
+## Clean Chat / Strict Intent
+
+Para mensagens simples, o PredictLM deve responder ao turno atual antes de usar a infraestrutura acumulada.
+
+- Hipóteses do tipo `e se...`, `imagine se...` e `suponha que...` entram em rota **clean-chat**: provider + prompt atual + guard mínimo, sem GitHub RAG, Centum, PARALLAX, Digital Brain, livros ou contexto jurídico lateral.
+- How-tos seguros conhecidos podem terminar em resposta prática interna sem pesquisa/provider.
+- Factual estático conhecido pode terminar em resposta estável interna.
+- Toda candidata clean-chat passa por public gate + aderência temática; resposta fora do assunto é descartada antes da UI.
+- Web, tools, skills, bases e memória são recursos sob demanda; quantidade de contexto nunca é objetivo.
+- Nunca preencher uma lacuna com conteúdo aleatório de outra base. Falhar limpo é preferível a responder outro assunto.
+
+## Canonical battle composition
+
+Para `Naruto + Kurama vs Sasuke + Perfect Susanoo`:
+- Auto → Literal + Anime;
+- se a proporção ainda estiver no default 1:1, usar 16:9 automaticamente; escolha manual continua soberana;
+- Kurama deve ser avatar completo de raposa/chakra dourado com nove caudas distintas, não Naruto humanoide duplicado;
+- Perfect Susanoo deve ser avatar humanoide blindado violeta completo, com asas e espada;
+- explosão central não pode esconder os combatentes;
+- manter divisão visual laranja/dourado versus violeta/roxo e silhuetas legíveis;
+- Vale do Fim/estátuas entram somente quando pedidos.
