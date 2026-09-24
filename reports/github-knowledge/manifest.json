@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T18:50:23.918Z",
-  "knowledgeVersion": "b1927e5c640978b5",
-  "chunkCount": 3854,
+  "generatedAt": "2026-09-24T19:11:27.805Z",
+  "knowledgeVersion": "2e3a570280a99c09",
+  "chunkCount": 3938,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -574,7 +574,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "2db9c3b555d6660a8274d1120dbb1cdf63a11c48",
+      "commit": "ef4a7511910b8fe287f0bc32f6802d861678a808",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -610,7 +610,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "332f9d7d5c3f11e2be5976e8a76f97eaa35473c3",
+      "commit": "40fa90412f5afd89ad9ee00cc6fe445eebae656f",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -1523,6 +1523,69 @@
       "files": 0,
       "chunks": 0,
       "error": null
+    },
+    {
+      "repo": "HBAI-Ltd/Toonflow-app",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "acdf33ce4ec0c33dac3bccf2d6d7c03f4d2f6807",
+      "files": 2,
+      "chunks": 57,
+      "error": null
+    },
+    {
+      "repo": "jamez-bondos/awesome-gpt4o-images",
+      "mode": "reference-only",
+      "license": "CC-BY-4.0-with-case-exceptions",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "FoundationVision/Infinity",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "9f9fcd1de7ead377ddf1106db1249a35f3a59143",
+      "files": 1,
+      "chunks": 27,
+      "error": null
+    },
+    {
+      "repo": "adobe-research/custom-diffusion",
+      "mode": "reference-only",
+      "license": "Adobe-Research-License",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Lightricks/ComfyUI-LTXVideo",
+      "mode": "reference-only",
+      "license": "LTX-2-Community-License",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "NVlabs/Sana",
+      "mode": "allow",
+      "license": "Apache-2.0-code",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": "license-not-allowed"
+    },
+    {
+      "repo": "muzishen/IMAGDressing",
+      "mode": "allow",
+      "license": "Apache-2.0-code",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": "license-not-allowed"
     }
   ]
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "b1927e5c640978b5",
-  "generatedAt": "2026-09-24T18:50:23.918Z",
-  "sourceCount": 78,
-  "chunkCount": 3854,
+  "knowledgeVersion": "2e3a570280a99c09",
+  "generatedAt": "2026-09-24T19:11:27.805Z",
+  "sourceCount": 80,
+  "chunkCount": 3938,
   "chunks": [
     {
       "id": "78d6597704929363a09f",
@@ -36708,9 +36708,9 @@
       "weight": 1.04
     },
     {
-      "id": "efc35b8399209b038dda",
+      "id": "a09c232d856a128d42f1",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36724,9 +36724,9 @@
       "weight": 1.05
     },
     {
-      "id": "59849294d9bb4ebfe7f4",
+      "id": "b5c6285368da71d16d0b",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36740,9 +36740,9 @@
       "weight": 1.05
     },
     {
-      "id": "a1ad1749b1e7b23ec34e",
+      "id": "7f6712879b2902fc1542",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36756,9 +36756,9 @@
       "weight": 1.05
     },
     {
-      "id": "868e57faadaadb04250b",
+      "id": "a644ca4d683b13ee9206",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36772,9 +36772,9 @@
       "weight": 1.05
     },
     {
-      "id": "4c1596e4ea535d315089",
+      "id": "94266f888b8ce3ce6a70",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36788,9 +36788,9 @@
       "weight": 1.05
     },
     {
-      "id": "71d18404883c55d35c91",
+      "id": "50f0d1c68bc5fc651816",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36804,9 +36804,9 @@
       "weight": 1.05
     },
     {
-      "id": "e82420f929ce973b8ea7",
+      "id": "7e12042fe6eb3ef763db",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36816,13 +36816,13 @@
         "review"
       ],
       "heading": "Option 1: Without a Sandbox",
-      "text": "> [!WARNING]\n> This runs the agent-server directly on the machine you're installing on — the agent will have full access to your filesystem!\n\n**Prerequisites**: Node.js 22.12.x or later, `uv`\n\n```sh\nnpm install -g @openhands/agent-canvas\nagent-canvas\n```\n\nThe `agent-canvas` command starts the full local stack by default. You can also split it when you want to run pieces separately:\n\n```sh\nagent-canvas --frontend-only  # static frontend + ingress only\nagent-canvas --backend-only   # agent server + automation backend + ingress only\n```",
+      "text": "> [!WARNING]\n> This runs the agent-server directly on the machine you're installing on — the agent will have full access to your filesystem!\n\n**Prerequisites**: [Node.js](https://nodejs.org/) 24 or later, `uv`\n\n```sh\nnpm install -g @openhands/agent-canvas\nagent-canvas\n```\n\nThe `agent-canvas` command starts the full local stack by default. You can also split it when you want to run pieces separately:\n\n```sh\nagent-canvas --frontend-only  # static frontend + ingress only\nagent-canvas --backend-only   # agent server + automation backend + ingress only\n```",
       "weight": 1.05
     },
     {
-      "id": "ecdf21f630e2143399de",
+      "id": "950fb00d0ffd59f38a8f",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36836,9 +36836,9 @@
       "weight": 1.05
     },
     {
-      "id": "616f10a4d9dfc62f822a",
+      "id": "f99c6c6fea6f65312d67",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36848,13 +36848,13 @@
         "review"
       ],
       "heading": "Option 3: From Source",
-      "text": "> [!WARNING]\n> This runs the agent-server directly on the machine you're installing on — the agent will have full access to your filesystem!\n\n**Prerequisites**: Node.js 22.12.x or later, `npm`, `uv` (for running the agent server via `uvx`)\n\n```sh\ngit clone https://github.com/OpenHands/OpenHands.git\ncd OpenHands\nnpm install\nnpm run dev\n```\n\n---\n\nAccess the UI at [http://localhost:8000](http://localhost:8000) for the npm/source launchers, or [http://localhost:8000/canvas](http://localhost:8000/canvas) for the Docker image. You can add additional backends directly from the UI.",
+      "text": "> [!WARNING]\n> This runs the agent-server directly on the machine you're installing on — the agent will have full access to your filesystem!\n\n**Prerequisites**: [Node.js](https://nodejs.org/) 24 or later, `npm`, `uv` (for running the agent server via `uvx`)\n\n```sh\ngit clone https://github.com/OpenHands/OpenHands.git\ncd OpenHands\nnpm install\nnpm run dev\n```\n\n---\n\nAccess the UI at [http://localhost:8000](http://localhost:8000) for the npm/source launchers, or [http://localhost:8000/canvas](http://localhost:8000/canvas) for the Docker image. You can add additional backends directly from the UI.",
       "weight": 1.05
     },
     {
-      "id": "af543724a62d434968ba",
+      "id": "5571839c481739cea612",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36868,9 +36868,9 @@
       "weight": 1.05
     },
     {
-      "id": "ff85a6755949a7ce87a5",
+      "id": "4a3cf78b037c3c04b52d",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36884,9 +36884,9 @@
       "weight": 1.05
     },
     {
-      "id": "f3d77c04ede0016cb42e",
+      "id": "64eee49abe703ef35ac9",
       "source": "OpenHands/OpenHands",
-      "ref": "2db9c3b555d6",
+      "ref": "ef4a7511910b",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38160,9 +38160,9 @@
       "weight": 1.02
     },
     {
-      "id": "91985f9a3023437e3d6a",
+      "id": "94bf6d35bb341d09488f",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38175,9 +38175,9 @@
       "weight": 1.03
     },
     {
-      "id": "d254a96f838d5b6aa2b9",
+      "id": "0a5bf13b0a0af3214132",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38190,9 +38190,9 @@
       "weight": 1.03
     },
     {
-      "id": "968db9669865307b4dc7",
+      "id": "8be2da97e02767da5015",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38205,9 +38205,9 @@
       "weight": 1.03
     },
     {
-      "id": "ccbb529ffc4647cc9ed0",
+      "id": "c28d136404a833553803",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38220,9 +38220,9 @@
       "weight": 1.03
     },
     {
-      "id": "8a35a80b866a4ff29ac2",
+      "id": "b57b927ee719fd4a6cef",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38235,9 +38235,9 @@
       "weight": 1.03
     },
     {
-      "id": "10b2b14a3a9386be3609",
+      "id": "e160c8323ba069b19e6a",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38250,9 +38250,9 @@
       "weight": 1.03
     },
     {
-      "id": "73708f2567502e5e4a09",
+      "id": "f02baba5d209fc320403",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38265,9 +38265,9 @@
       "weight": 1.03
     },
     {
-      "id": "0795466b009d68a191dd",
+      "id": "15d9237154cd1e62b2ed",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38280,9 +38280,9 @@
       "weight": 1.03
     },
     {
-      "id": "048ccfafc8a4a50a69ad",
+      "id": "8e0a66c615a2d9e84fef",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38295,9 +38295,9 @@
       "weight": 1.03
     },
     {
-      "id": "9bcc05d58aaf51e0a37a",
+      "id": "5096069478481c6c032e",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38310,9 +38310,9 @@
       "weight": 1.03
     },
     {
-      "id": "6e0f867da39c9f223796",
+      "id": "0c24345bae53a3a90a3c",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38325,9 +38325,9 @@
       "weight": 1.03
     },
     {
-      "id": "f96737ce10d75260bfa8",
+      "id": "ab686908e2dfd7f6deaa",
       "source": "CodebuffAI/freebuff",
-      "ref": "332f9d7d5c3f",
+      "ref": "40fa90412f5a",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -63390,6 +63390,1407 @@
       "heading": "Contributing Changes Back To This Repo",
       "text": "Once you’re confident with your changes, push your changes to your forked repository, create an Issue on this HTML5 repo to document the change properly for everyone else (if you didn't do this already), and then create a Pull Request in the original repository (click on \"compare across forks\") and link this to your Issue.\n\n**Always** attach a clearly-documented GameMaker project export onto your Issue/Pull Request for **all** changes you make, demonstrating that you have tested your changes before you submitted them and showing how the change is expected to be used, otherwise your PR may not be accepted - do this using `Help > Upload a Bug/Ticket Sample` inside GameMaker, then paste the link GameMaker gives you into your bug report.\n\n_You may be asked to make fixes to your Issue documentation and/or changes to your source if our team finds any problems during the review, so be aware your pull request may not be accepted in its initial form._\n\nWe look forward to seeing your contributions!",
       "weight": 1.03
+    },
+    {
+      "id": "95c61a97d3c81e5ed421",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "<img src=\"https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&section=header&text=Toonflow&fontSize=90&fontColor=ffffff&animation=fadeIn&fontAlignY=50\" alt=\"Toonflow\" width=\"100%\" />\n\n<p>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white\" alt=\"GitHub\" />\n  </a>\n  &nbsp;|&nbsp;\n  <a href=\"https://gitee.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/Gitee-C71D23?style=flat-square&logo=gitee&logoColor=white\" alt=\"Gitee\" />\n  </a>\n  &nbsp;|&nbsp;\n  <a href=\"https://atomgit.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"./docs/atomgitLogo.svg\" alt=\"AtomGit\" height=\"20\" />\n  </a>\n</p>\n\n<p align=\"center\">\n  <strong>简体中文</strong> |\n  <a href=\"./docs/README.zhtw.md\">繁體中文</a> |\n  <a href=\"./docs/README.en.md\">English</a> |\n  <a href=\"./docs/README.th.md\">ไทย</a> |\n  <a href=\"./docs/README.vi.md\">Tiếng Việt</a> |\n  <a href=\"./docs/README.ja.md\">日本語</a> |\n  <a href=\"./docs/README.ru.md\">Русский</a>\n</p>\n\n<div align=\"center\">\n\n<p align=\"center\">\n  <img src=\"./docs/logo.png\" alt=\"Toonflow Logo\" width=\"120\" height=\"120\" />\n</",
+      "weight": 1.12
+    },
+    {
+      "id": "bed9ac9cd1de54cd2210",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "p>\n\n<a href=\"https://git.io/typing-svg\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://readme-typing-svg.demolab.com?font=Fira+Code&size=40&duration=3000&pause=1000&color=FFFFFF&center=true&vCenter=true&width=600&lines=Toonflow;AI%E7%9F%AD%E5%89%A7%E5%B7%A5%E5%8E%82;%E8%AE%A9%E7%81%B5%E6%84%9F%E6%88%90%E4%B8%BA%E7%9C%8B%E5%BE%97%E8%A7%81%E7%9A%84%E6%95%85%E4%BA%8B\" />\n    <img src=\"https://readme-typing-svg.demolab.com?font=Fira+Code&size=40&duration=3000&pause=1000&color=000000&center=true&vCenter=true&width=600&lines=Toonflow;AI%E7%9F%AD%E5%89%A7%E5%B7%A5%E5%8E%82;%E8%AE%A9%E7%81%B5%E6%84%9F%E6%88%90%E4%B8%BA%E7%9C%8B%E5%BE%97%E8%A7%81%E7%9A%84%E6%95%85%E4%BA%8B\" alt=\"Toonflow · AI 短剧工厂 · 让灵感成为看得见的故事\" width=\"600\" />",
+      "weight": 1.12
+    },
+    {
+      "id": "88bc0711c1f963a6bddc",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "</picture>\n</a>\n\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/stargazers\">\n    <img src=\"https://img.shields.io/github/stars/HBAI-Ltd/Toonflow-app?style=for-the-badge&logo=github\" alt=\"Stars Badge\" />\n  </a>\n  <a href=\"./LICENSE\">\n    <img src=\"https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge\" alt=\"MIT License Badge\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/releases\">\n    <img src=\"https://img.shields.io/github/v/release/HBAI-Ltd/Toonflow-app?style=for-the-badge\" alt=\"Release\" />\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/network/members\">\n    <img src=\"https://img.shields.io/github/forks/HBAI-Ltd/Toonflow-app?style=for-the-badge&logo=github&color=orange\" alt=\"Forks Badge\" />\n  </a>\n  <a href=\"https://atomgit.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/AtomGit-G--Star%20No.540-FF6B35?style=for-the-badge&logo=git&logoColor=white\" alt=\"AtomGit G-Star No.540\" />\n  </a>\n  <a href=\"https://discord.gg/HEjKmpNpAZ\">\n    <img src=\"https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Discord\" />\n  </a>\n<",
+      "weight": 1.12
+    },
+    {
+      "id": "0c01e1384ff9a20d0b29",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "/p>\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/issues\">\n    <img src=\"https://img.shields.io/github/issues/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=F48D73\" alt=\"Issues\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/graphs/contributors\">\n    <img src=\"https://img.shields.io/github/contributors/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=2088FF\" alt=\"Contributors\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/commits\">\n    <img src=\"https://img.shields.io/github/last-commit/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=blueviolet\" alt=\"Last Commit\" />",
+      "weight": 1.12
+    },
+    {
+      "id": "a89cae423e4f3e1d8ceb",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "</a>\n</p>\n<p align=\"center\">\n  <img src=\"https://ziadoua.github.io/m3-Markdown-Badges/badges/TypeScript/typescript2.svg\" alt=\"TypeScript\" height=\"28\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Bun-1.3.14-14151A?style=for-the-badge&logo=bun&logoColor=white\" alt=\"Bun 1.3.14\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Vue-3-42B883?style=for-the-badge&logo=vuedotjs&logoColor=white\" alt=\"Vue 3\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Desktop-Electrobun-8257E5?style=for-the-badge\" alt=\"Electrobun\" />\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/24197?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-24197\" target=\"_blank\" rel=\"noopener noreferrer\">\n    <img src=\"https://trendshift.io/api/badge/trendshift/repositories/24197/daily?language=TypeScript\" alt=\"HBAI-Ltd/Toonflow-app | Trendshift\" width=\"250\" height=\"55\" />\n  </a>\n</p>\n\n**开源 AI 短剧漫剧视频创作平台**\n\n> 🚀 **一站式短剧创作**：集成剧本创作、资产管理、图像与视频生成，在无限画布中组织完整的创作流程。\n\n</div>\n\n<div align=\"center\">\n  <table>\n    <tr>\n      <td width=\"50%\" align=\"center\">\n        <a href=\"./docs/gStar.png\">\n          <img src=\"./docs/gStar.png\" alt=\"Toonflow AtomGit G-Star 认证证书 No.540\" wid",
+      "weight": 1.12
+    },
+    {
+      "id": "c25e9d2bd59d98587056",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "README.md",
+      "text": "th=\"100%\" />\n        </a>\n      </td>\n      <td width=\"50%\" align=\"center\">\n        <a href=\"./docs/gvp.jpg\">\n          <img src=\"./docs/gvp.jpg\" alt=\"Toonflow Gitee GVP 认证证书\" width=\"100%\" />\n        </a>\n      </td>\n    </tr>\n  </table>\n</div>\n\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/releases\">下载客户端</a> ·\n  <a href=\"https://qcn7xdsqgc4z.feishu.cn/docx/RXFqdgR2Xo0dXZxGfd0cZCGgnwf\">使用教程</a> ·\n  <a href=\"https://api.toonflow.net/console/plugIn\">插件市场</a> ·\n  <a href=\"https://qcn7xdsqgc4z.feishu.cn/docx/KNBNd9naqolsy6xjAOCcEAkqnRd\">开发者文档</a> ·\n  <a href=\"https://api.toonflow.net/\">官方模型平台</a>",
+      "weight": 1.12
+    },
+    {
+      "id": "f09ef32750cf8e936502",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "1. 💛 赞助与支持",
+      "text": "感谢以下合作伙伴对 Toonflow 开源项目的支持。\n\n<table>\n  <tr>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://metaso.cn/minimax-h3/?s=toon\"><img src=\"./docs/sponsors/metaso.svg\" alt=\"秘塔\" height=\"28\" valign=\"middle\" /> <strong>秘塔</strong></a>\n      <br />\n      <sub>秘塔科技提供高性价比的 MiniMax H3 视频生成服务：768P 仅 0.09 元/秒，2K 仅 0.15 元/秒。支持原生 2K、音画同步，API 兼容 OpenAI 协议，同时支持 ComfyUI、无限画布，无需自行部署 GPU。</sub>\n      <br /><br />\n      <sub>🎁 通过 <a href=\"https://metaso.cn/minimax-h3/?s=toon\">专属链接注册</a>，即可领取赠送额度及专属优惠。商务对接可加微信：metasota12</sub>\n    </td>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://go.apimart.ai/gh-toonflow-app\"><img src=\"./docs/sponsors/apiMart.svg\" alt=\"APIMart\" height=\"28\" valign=\"middle\" /> <strong>APIMart</strong></a>\n      <br />\n      <sub>感谢 APIMart 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费，通过此<a href=\"https://go.apimart.ai/gh-toonflow-app\">注册链接</a>注册即可开用。</sub>\n    </td>\n  </tr>\n  <tr>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://www.compshare.cn/video-studio?ytag=GPU_YY_YX_git_toonflow\"><img src=\"./docs/sponsors/compShare.png\" alt=\"优云智算\" height=\"28\" valign=\"middle\" /> <str",
+      "weight": 1.12
+    },
+    {
+      "id": "6a296ea5044aa7c652e2",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "1. 💛 赞助与支持",
+      "text": "ong>优云智算</strong></a>\n      <br />\n      <sub>优云智算提供高性价比 H3 视频生成服务，涵盖文生视频、首尾帧及全能参考。支持最长 30s 视频、原生 2K 画质，768P 仅 0.08 元/秒。支持 API 调用、企业高并发、自助开票。</sub>\n      <br /><br />\n      <sub>🎁 通过 <a href=\"https://www.compshare.cn/video-studio?ytag=GPU_YY_YX_git_toonflow\">专属链接注册</a>，可得免费 5 元平台体验金！</sub>\n    </td>\n    <td width=\"50%\" valign=\"top\"></td>\n  </tr>\n</table>\n\n<details>\n<summary><strong>👉成为赞助商👈</strong></summary>\n\n<p align=\"center\">\n  <img src=\"./docs/businessQr.png\" alt=\"商务合作微信二维码\" width=\"200\" />\n</p>\n\n<p align=\"center\"><sub>此联系方式仅用于商务合作接洽，不提供问题答疑。使用问题欢迎在交流群交流，需求与 BUG 可通过反馈表提交。感谢理解。</sub></p>\n\n</details>",
+      "weight": 1.12
+    },
+    {
+      "id": "e1a006a2bf1df32cdbfa",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "2. 🌟 亮点",
+      "text": "Toonflow 是面向短剧、漫剧与短视频制作的开源 AI 创作平台，把剧本、资产与视频片段整合进同一张无限画布。\n\n| 能力 | 说明 |\n| --- | --- |\n| 🏠 **本地部署** | 项目与素材保存在自己的设备或服务器，支持桌面、Docker 与服务器部署。 |\n| 🖼️ **无限画布** | 在同一画布中组织剧本、角色、场景与视频片段。 |\n| 🔌 **MCP** | 通过 MCP 连接外部工具与服务。 |\n| 🧩 **插件市场** | 通过[插件市场](https://api.toonflow.net/console/plugIn)扩展节点、工具与创作能力。 |\n| 🤖 **开放 Agent** | 开放提示词、工具和 A2A，支持自定义 Agent 行为及外部协作。 |\n| 🔧 **自由接入模型** | 配置第三方 API，也可接入本地 ComfyUI 和 LLM。 |\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "a38c21bd18f0a4fe8b35",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "3. 📸 截图",
+      "text": "<div align=\"center\">\n\n<a href=\"./docs/screenshots/projectHome.png\"><img src=\"./docs/screenshots/projectHome.png\" alt=\"Toonflow 项目首页与灵感创作\" width=\"80%\" /></a><br /><sub>项目首页与灵感创作</sub>\n\n<a href=\"./docs/screenshots/quickStart.png\"><img src=\"./docs/screenshots/quickStart.png\" alt=\"Toonflow 首次启动与快速配置\" width=\"80%\" /></a><br /><sub>首次启动与快速配置</sub>\n\n<a href=\"./docs/screenshots/canvasDark.png\"><img src=\"./docs/screenshots/canvasDark.png\" alt=\"Toonflow 深色主题画布与 AI 助手\" width=\"80%\" /></a><br /><sub>创作画布 · 深色主题</sub>\n\n<a href=\"./docs/screenshots/canvasLight.png\"><img src=\"./docs/screenshots/canvasLight.png\" alt=\"Toonflow 浅色主题画布与 AI 助手\" width=\"80%\" /></a><br /><sub>创作画布 · 浅色主题</sub>\n\n<a href=\"./docs/screenshots/assetCanvas.png\"><img src=\"./docs/screenshots/assetCanvas.png\" alt=\"Toonflow 角色、场景与道具资产画布\" width=\"80%\" /></a><br /><sub>角色、场景与道具资产</sub>\n\n<a href=\"./docs/screenshots/directorStudio.png\"><img src=\"./docs/screenshots/directorStudio.png\" alt=\"Toonflow 3D 导演台与镜头预演\" width=\"80%\" /></a><br /><sub>3D 导演台与镜头预演</sub>\n\n<a href=\"./docs/screenshots/characterImageGeneration.png\"><img src=\"./docs/screenshots/characterImageGeneration.png\" alt=\"Toonflow 角色三视图图片生成\" width=\"80%\" /></a><br /><sub>角色三视图与图片生成</s",
+      "weight": 1.12
+    },
+    {
+      "id": "a9e6642c4ee8a480f954",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "3. 📸 截图",
+      "text": "ub>\n\n<a href=\"./docs/screenshots/videoGeneration.png\"><img src=\"./docs/screenshots/videoGeneration.png\" alt=\"Toonflow 多参考素材视频生成\" width=\"80%\" /></a><br /><sub>多参考素材视频生成</sub>\n\n<a href=\"./docs/screenshots/nodeMenu.png\"><img src=\"./docs/screenshots/nodeMenu.png\" alt=\"Toonflow 节点菜单与分组操作\" width=\"80%\" /></a><br /><sub>节点菜单与分组操作</sub>\n\n<a href=\"./docs/screenshots/pluginMarket.png\"><img src=\"./docs/screenshots/pluginMarket.png\" alt=\"Toonflow 插件市场\" width=\"80%\" /></a><br /><sub>插件市场</sub>\n\n</div>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "f2de835ec53634fc56f1",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.1 桌面安装",
+      "text": "| 操作系统 | GitHub                                                       |\n| -------- | ------------------------------------------------------------ |\n| Windows  | [Release](https://github.com/HBAI-Ltd/Toonflow-app/releases) |\n| macOS    | [Release](https://github.com/HBAI-Ltd/Toonflow-app/releases) |\n\nWindows 安装器会自动检测并安装 WebView2；如果安装后打开闪退，请前往 [WebView2 下载页面](https://developer.microsoft.com/microsoft-edge/webview2/) 手动安装运行时。\n\nmacOS（Apple Silicon）将 Toonflow 拖入“应用程序”后直接打开即可，无需预先执行终端命令。若遇到系统安全提示，请按以下顺序处理。\n\n<details>\n<summary><strong>macOS 无法安装或打开时的处理方法</strong></summary>\n\n**1. 在“隐私与安全性”中允许 Toonflow**\n\n如果提示“无法验证开发者”或“Apple 无法检查 App 是否包含恶意软件”，先尝试打开 Toonflow，再前往“系统设置 → 隐私与安全性”，找到 Toonflow 被阻止的提示，点击“仍要打开”，并按提示确认。详见 [Apple 官方说明](https://support.apple.com/zh-cn/102445)。\n\n**2. 仍因系统隔离限制无法打开时，再尝试移除隔离属性**\n\n确认应用来自官方发布页，并已放入“应用程序”后，在终端执行以下命令，再重新打开。应用名称或安装位置不同时，请调整路径。\n\n```bash\nsudo xattr -rd com.apple.quarantine /Applications/toonflow.app\n```\n\n**3. 最后手段：临时允许任何来源的 App**\n\n前两种方法均无效且确认应用来源可信时，可尝试在终端执行：\n\n```bash\nsudo spctl --master-disable\n```\n\n随后打开“系统设置 → 隐私与安全性”，在“安全性”中的“允许从以下位置下载的 App”选择“任何来源”（如果系统提供该选项），并按提示确认。不同 macOS 版本的选项与命令支持可能不同。\n\n此操作会放宽所有 App 的安全限制。完成后建议将允许来源恢复为“App Store 和被认可的开发者”。\n\n</details>",
+      "weight": 1.12
+    },
+    {
+      "id": "715a68e85ebd14f599d9",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.2 Docker 安装",
+      "text": "先安装 Git、[Docker Engine](https://docs.docker.com/engine/install/) 和 Docker Compose；Windows / macOS 可使用 Docker Desktop 的 Linux 容器模式。仓库提供 [Dockerfile](./Dockerfile)、[Compose 配置](./compose.yaml) 和 [构建排除规则](./.dockerignore)，基于 Bun 1.3.14 构建，镜像内包含 FFmpeg。\n\n<details>\n<summary><strong>展开 Docker 安装步骤</strong></summary>\n\n克隆源码后，在仓库根目录执行：\n\n```sh\ngit clone https://github.com/HBAI-Ltd/Toonflow-app.git\ncd Toonflow-app\ndocker compose up -d --build\n```\n\n首次构建会安装依赖并编译内置节点、工具、Web 与 Server。启动后访问 `http://127.0.0.1:3000`；远程主机可按下方“访问与数据说明”通过 SSH 隧道访问。首次启动会初始化内置插件，并提供 `myProject` 工作目录。\n\n配置、插件和项目文件保存在 Docker 命名卷 `toonflowData` 中，挂载至容器的 `/app/data/`。卷的实际名称带有 Compose 项目前缀；停止或重建容器会保留数据，**请勿使用 `docker compose down -v`，该命令会删除数据卷**。\n\n```sh\ndocker compose logs -f toonflow  # 查看日志\ndocker compose stop             # 停止服务\ndocker compose start            # 再次启动\ndocker compose down             # 删除容器，保留数据卷\n```\n\n需要增加项目目录时，可在页面的“选择服务器工作目录”弹窗中点击“新建文件夹”。弹窗也支持文件和文件夹的重命名、删除。也可在服务运行期间通过命令行创建：\n\n```sh\ndocker compose exec toonflow mkdir -p /app/data/workspaces/newProject\n```\n\n备份时先停止服务，复制完成后再启动：\n\n```sh\ndocker compose stop\ndocker compose cp toonflow:/app/data ./toonflowBackup\ndocker compose start\n```\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "17a4d1b4826b1eff4402",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.3 服务器安装",
+      "text": "适用于直接在 Linux 服务器上运行 Web 与 Server。以下以 Ubuntu / Debian 为例，使用项目指定的 [Bun 1.3.14](https://bun.sh/docs/installation)。\n\n<details>\n<summary><strong>展开服务器安装步骤</strong></summary>\n\n安装运行环境：\n\n```sh\nsudo apt-get update\nsudo apt-get install -y git curl unzip ffmpeg\ncurl -fsSL https://bun.com/install | bash -s \"bun-v1.3.14\"\nexport PATH=\"$HOME/.bun/bin:$PATH\"\nbun --version\n```\n\n克隆源码并启动：\n\n```sh\ngit clone https://github.com/HBAI-Ltd/Toonflow-app.git\ncd Toonflow-app\nbun install --frozen-lockfile",
+      "weight": 1.12
+    },
+    {
+      "id": "cfd2896e571b40d8b4ad",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "构建内置节点、工具、Web 与 Server",
+      "text": "bun run build:server\nmkdir -p data/workspaces/myProject\nbun run start:server\n```\n\n看到“服务启动成功”后，可在服务器本机访问 `http://127.0.0.1:3000`。上述命令以前台方式运行，按 `Ctrl+C` 停止；需要开机自启和进程托管时，可参考 [Bun 的 systemd 部署指南](https://bun.sh/guides/ecosystem/systemd)，将工作目录设为仓库目录，启动命令设为 Bun 的绝对路径加 `run start:server`，使用有权读写该目录的用户运行。\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "d69860088180a5b8a1fb",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.4 访问与数据说明",
+      "text": "- 当前服务使用固定端口 `3000`，业务页面与 API 没有独立登录鉴权。服务器安装时，请通过防火墙或安全组限制 `3000` 端口的访问来源；公网访问需配置带认证的反向代理。\n- 个人远程使用可在自己的电脑上执行 `ssh -N -L 3000:127.0.0.1:3000 用户名@服务器地址`，保持连接后打开 `http://127.0.0.1:3000`，无需将服务器的 `3000` 端口向公网开放。\n- 直接安装时，配置、插件与工作区默认保存在仓库的 `data/`；Docker 安装则保存在数据卷内的 `/app/data/`。迁移或备份时请完整保留。进入页面后选择服务器工作区内的 `myProject`，更多项目可在对应的 `workspaces/` 下创建子目录。\n- 两种安装方式均包含系统 FFmpeg。模型服务的 API Key 仍需在页面内配置。\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "e2a664800d7d900a1045",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.5 云平台部署",
+      "text": "合作平台 [智星云](https://www.ai-galaxy.com/) 提供官方授权的 Toonflow 商用镜像，可直接使用预装环境。具体步骤见 [镜像部署图文教程](https://mp.weixin.qq.com/s/lq9X1ovQ1_TKeXMOLgicKg?scene=1)。\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "6e7cb50d42fee0c54116",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "案例信息",
+      "text": "| 项目           | 原仓库记录                                          |\n| -------------- | --------------------------------------------------- |\n| 制作周期与成片 | 约 2 小时，成片约 2 分钟。                          |\n| 视频模型       | Seedance 2.0                                        |\n| 图片模型       | GPT Image 2                                         |\n| 语言模型       | Claude Opus 4.6                                     |\n| 模型调用费用   | 约 ¥130，其中语言约 ¥10、视频约 ¥120、图片不足 ¥1。 |\n\n费用为该案例的记录，仅供参考，实际成本取决于模型服务、生成次数与参数。演示视频为压缩后的 480p 版本。\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "d62bf374b12f738e5f2f",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router 官方中转平台",
+      "text": "<p align=\"center\">\n  <a href=\"https://api.toonflow.net/\">\n    <img src=\"https://img.shields.io/badge/TF--Router_官方中转平台-181717?style=for-the-badge&logoColor=white\" alt=\"TF-Router\" />\n  </a>\n</p>\n\nTF-Router 是 Toonflow 自营的官方模型中转平台，欢迎使用。其平台源码已完全开源，可自行部署审计：[HBAI-Ltd/TF-Router](https://github.com/HBAI-Ltd/TF-Router)。\n\n<details>\n<summary><strong>致 Toonflow 社区的一封信（发于2026-06-08）</strong></summary>\n\n> ### 致 Toonflow 社区的一封信\n> 130天。\n> 不长，但足够让我们看清楚一些事情。\n> 从第一行代码提交到今天，我们走过了 130天，发布了 20个版本，留下了 800+ 次Commits，写下了 213,765 行代码、640,810 个字符。\n> 两次重构，一套供应商系统，一个我们引以为傲的工作流程。\n> 我们以为这已经足够了。\n> 但它不够。\n> 有人跟我们说，想在 Toonflow 里加一个自己的模块，改半天看不懂。\n> 有人跟我们说，社区太小，遇到问题找不到人。\n> 有人跟我们说，商业条款让他们的项目无法落地。\n> 我们听到了。\n> 这 130 天里，团队成员轮流守在群里，7×24 小时回答每一个问题。没有赞助，没有补贴，全部是我们自己掏腰包支撑的人力成本。\n> 不是因为我们有多少钱。\n> 是因为我们相信这件事值得做。\n> 所以，我们决定进行第三次重构。\n> Toonflow 的每一次重构，都往更开源更开放的方向发展。\n> 这一次重构，我们选择：彻底开放。\n> 　\n> 一、MIT License\n> 重构完成后我们决定把许可证从 Apache-2.0 更换为 MIT License 并去掉全部的商业附加条款。\n> 它将完全的开放。没有任何的商业限制。\n> 你可以用它做任何事。\n> 　\n> 二、全自由度插件系统\n> 我们要重新设计整个插件架构。\n> 故事板、全景图、时间轴、甚至——小游戏。\n> 只要你想得到，就可以塞进来。\n> 不是 Hack，是设计如此。\n> 　\n> 三、Drizzle ORM + 多数据库支持\n> 升级至 Drizzle ORM。\n> 本地、PostgreSQL、MySQL，按你的需要选择。\n> 二开不再是噩梦。\n> 　\n> 四、Monorepo 全链路打通\n> 插件开发、SDK 集成、发布上线，一条龙。\n> 让贡献变得足够简单，简单到一个",
+      "weight": 1.12
+    },
+    {
+      "id": "0824820ae20cfba06dea",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router 官方中转平台",
+      "text": "人就能做到。\n> 　\n> 五、新模块\n> 无限画布 —— 不止于大，更在于自由\n> 灵感模式 —— 为创作者而生\n> 插件 Hub —— 让好插件被看见\n> Skill Hub —— 让经验可以传递\n> 供应商 Hub —— 生态从这里开始\n> 完善的 Docker 整合 —— 部署不再是门槛\n> 　\n> 然后，说一件我们一直不太好意思说的事。\n> 重构需要时间。这段时间里，服务器在跑，域名在续费，团队在熬夜，咖啡在涨价。\n> 我们没有融资，没有广告，没有任何隐藏的商业计划。\n> 但我们需要活着，才能继续把这件事做完。\n> 所以我们上线了「Toonflow 官方中转平台」 TF-Router。\n> 说实话，这个平台我们犹豫了很久。\n> 这个平台，不是我们想做的，我们不想因为一个中转平台，让人觉得 Toonflow 开始\"恰饭\"了。\n> 这个包袱，我们背了很久。\n> 但很多用户没有开白资格，用不上 Seedance 2.0，反复问我们有没有办法。\n> 我们想了很久，没办法最后只能决定搭一个，我们自己和火山签了Seedance年框合同。\n> **同时，我们决定平台活动期间对Seedance 2.0平进平出，不赚一分钱差价。**\n> 活动结束后我们会正常收取一点点点点服务费——但现在，先让你们用上再说。\n> 更重要的是——TF-Router平台源码已经全部开源打包【<a href=\"https://github.com/HBAI-Ltd/TF-Router\" target=\"_blank\">开源地址</a>】。",
+      "weight": 1.12
+    },
+    {
+      "id": "60d5226433cd1d8532f6",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router 官方中转平台",
+      "text": "> 你不信任我们？没关系，你可以自己看代码，自己部署，自己跑。\n> 这就是我们的态度。\n> 如果你愿意去试用，是对我们目前唯一能支撑下去的方式投一票信任。\n> 如果你不愿意，也没关系，继续用 Toonflow，继续骂我们，继续提需求。\n> 我们都在。\n> 最后说一句真心话\n> 我们只是一群相信「创作工具应该属于每个人」的普通人。\n> Toonflow 从来不是我们的产品。\n> 它是我们一起写的故事。\n> 第三次重构，不是终点。\n> 是我们重新出发的地方。\n> 感谢每一个用过它、骂过它、给过建议的人。\n> 你们才是让它走到今天的原因。\n> 谢谢你们。\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "fdae828924ccd7c14459",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "7. 👨‍👩‍👧‍👦 微信交流群",
+      "text": "拉群小助手:\n\n<img src=\"./docs/qr.png\" alt=\"Toonflow QR\" height=\"400\"/>\n\n也可以点击图标加入 Discord：\n\n[![Join our Discord](https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/67d00cf7266d2c75571aebde_Example.svg)](https://discord.gg/HEjKmpNpAZ)\n\n或点击邀请连接： [https://discord.gg/HEjKmpNpAZ](https://discord.gg/HEjKmpNpAZ)\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "839dd3758fca80ba4de1",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "9. 📜 开源许可",
+      "text": "Toonflow 采用 [MIT 许可证](./LICENSE)。第三方依赖和素材遵循各自的许可与版权声明。\n\n[![Toonflow Star History](https://api.star-history.com/svg?repos=HBAI-Ltd/Toonflow-app&type=Date)](https://www.star-history.com/#HBAI-Ltd/Toonflow-app&Date)\n\n> **不追溯条款**：v1.0.8 发布前基于 AGPL-3.0 使用的用户，继续按 AGPL-3.0 执行，v1.0.8 ~ v1.1.8 继续按 Apache-2.0 与附加协议执行，不受本协议变更约束。\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "5d44aed6b1da10296201",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "10. 🙏 致谢",
+      "text": "- **合作伙伴**：算能云、腾讯混元 3D、智星云。\n- **项目贡献者**：感谢参与代码开发、文档完善、插件分享和问题排查的所有贡献者。\n- **社区用户**：感谢持续提供反馈、分享创作成果并支持项目发展的所有用户。\n\n仰起脸笑的像满月：贡献 Codex 20x 开发算力。\n西安中星数字智能科技有限公司：贡献苹果证书签名。\n\n<div align=\"center\">\n\nCopyright © 2026 北京爱阿科技有限公司\n\n</div>\n\n<img src=\"https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=90&section=footer\" alt=\"Toonflow 页脚\" width=\"100%\" />",
+      "weight": 1.12
+    },
+    {
+      "id": "dc2c6933c0259ef00073",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "<img src=\"https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&section=header&text=Toonflow&fontSize=90&fontColor=ffffff&animation=fadeIn&fontAlignY=50\" alt=\"Toonflow\" width=\"100%\" />\n\n<p>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white\" alt=\"GitHub\" />\n  </a>\n  &nbsp;|&nbsp;\n  <a href=\"https://gitee.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/Gitee-C71D23?style=flat-square&logo=gitee&logoColor=white\" alt=\"Gitee\" />\n  </a>\n  &nbsp;|&nbsp;\n  <a href=\"https://atomgit.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"./atomgitLogo.svg\" alt=\"AtomGit\" height=\"20\" />\n  </a>\n</p>\n\n<p align=\"center\">\n  <a href=\"../README.md\">简体中文</a> |\n  <a href=\"./README.zhtw.md\">繁體中文</a> |\n  <strong>English</strong> |\n  <a href=\"./README.th.md\">ไทย</a> |\n  <a href=\"./README.vi.md\">Tiếng Việt</a> |\n  <a href=\"./README.ja.md\">日本語</a> |\n  <a href=\"./README.ru.md\">Русский</a>\n</p>\n\n<div align=\"center\">\n\n<p align=\"center\">\n  <img src=\"./logo.png\" alt=\"Toonflow Logo\" width=\"120\" height=\"120\" />\n</p>\n\n<a href=\"https://git.io/typing-svg\">",
+      "weight": 1.12
+    },
+    {
+      "id": "ccc92e78f28c687591f4",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "<picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://readme-typing-svg.demolab.com?font=Fira+Code&size=40&duration=3000&pause=1000&color=FFFFFF&center=true&vCenter=true&width=600&lines=Toonflow;AI%20Short%20Drama%20Studio;Turn%20ideas%20into%20stories\" />\n    <img src=\"https://readme-typing-svg.demolab.com?font=Fira+Code&size=40&duration=3000&pause=1000&color=000000&center=true&vCenter=true&width=600&lines=Toonflow;AI%20Short%20Drama%20Studio;Turn%20ideas%20into%20stories\" alt=\"Toonflow · AI Short Drama Studio · Turn ideas into stories\" width=\"600\" />\n  </picture>\n</a>\n\n<p align=\"center\">",
+      "weight": 1.12
+    },
+    {
+      "id": "0ccfd61971fde213feb6",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "<a href=\"https://github.com/HBAI-Ltd/Toonflow-app/stargazers\">\n    <img src=\"https://img.shields.io/github/stars/HBAI-Ltd/Toonflow-app?style=for-the-badge&logo=github\" alt=\"Stars Badge\" />\n  </a>\n  <a href=\"../LICENSE\">\n    <img src=\"https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge\" alt=\"MIT License Badge\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/releases\">\n    <img src=\"https://img.shields.io/github/v/release/HBAI-Ltd/Toonflow-app?style=for-the-badge\" alt=\"Release\" />\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/network/members\">\n    <img src=\"https://img.shields.io/github/forks/HBAI-Ltd/Toonflow-app?style=for-the-badge&logo=github&color=orange\" alt=\"Forks Badge\" />\n  </a>\n  <a href=\"https://atomgit.com/HBAI-Ltd/Toonflow-app\">\n    <img src=\"https://img.shields.io/badge/AtomGit-G--Star%20No.540-FF6B35?style=for-the-badge&logo=git&logoColor=white\" alt=\"AtomGit G-Star No.540\" />\n  </a>\n  <a href=\"https://discord.gg/HEjKmpNpAZ\">\n    <img src=\"https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Discord\" />\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"htt",
+      "weight": 1.12
+    },
+    {
+      "id": "bc2c4632f897ce5b1e3f",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "ps://github.com/HBAI-Ltd/Toonflow-app/issues\">\n    <img src=\"https://img.shields.io/github/issues/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=F48D73\" alt=\"Issues\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/graphs/contributors\">\n    <img src=\"https://img.shields.io/github/contributors/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=2088FF\" alt=\"Contributors\" />\n  </a>\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/commits\">\n    <img src=\"https://img.shields.io/github/last-commit/HBAI-Ltd/Toonflow-app?style=for-the-badge&color=blueviolet\" alt=\"Last Commit\" />\n  </a>\n</p>",
+      "weight": 1.12
+    },
+    {
+      "id": "48a68a232b951c306810",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "<p align=\"center\">\n  <img src=\"https://ziadoua.github.io/m3-Markdown-Badges/badges/TypeScript/typescript2.svg\" alt=\"TypeScript\" height=\"28\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Bun-1.3.14-14151A?style=for-the-badge&logo=bun&logoColor=white\" alt=\"Bun 1.3.14\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Vue-3-42B883?style=for-the-badge&logo=vuedotjs&logoColor=white\" alt=\"Vue 3\" />&nbsp;\n  <img src=\"https://img.shields.io/badge/Desktop-Electrobun-8257E5?style=for-the-badge\" alt=\"Electrobun\" />\n</p>\n\n<p align=\"center\">\n  <a href=\"https://trendshift.io/repositories/24197?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-24197\" target=\"_blank\" rel=\"noopener noreferrer\">\n    <img src=\"https://trendshift.io/api/badge/trendshift/repositories/24197/daily?language=TypeScript\" alt=\"HBAI-Ltd/Toonflow-app | Trendshift\" width=\"250\" height=\"55\" />\n  </a>\n</p>\n\n**An open-source AI platform for short dramas, animated comics, and video creation**\n\n> 🚀 **All-in-one short drama creation**：Write scripts, manage assets, and generate images and videos, with your entire creative workflow organized on an infinite canvas.\n\n</div>\n\n<div align=\"center\">\n  <ta",
+      "weight": 1.12
+    },
+    {
+      "id": "80c023a8583bc49a4871",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "ble>\n    <tr>\n      <td width=\"50%\" align=\"center\">\n        <a href=\"./gStar.png\">\n          <img src=\"./gStar.png\" alt=\"Toonflow AtomGit G-Star Certificate No.540\" width=\"100%\" />\n        </a>\n      </td>\n      <td width=\"50%\" align=\"center\">\n        <a href=\"./gvp.jpg\">\n          <img src=\"./gvp.jpg\" alt=\"Toonflow Gitee GVP Certificate\" width=\"100%\" />\n        </a>\n      </td>\n    </tr>\n  </table>\n</div>\n\n<p align=\"center\">\n  <a href=\"https://github.com/HBAI-Ltd/Toonflow-app/releases\">Download</a> ·\n  <a href=\"https://qcn7xdsqgc4z.feishu.cn/docx/RXFqdgR2Xo0dXZxGfd0cZCGgnwf\">User Guide</a> ·\n  <a href=\"https://api.toonflow.net/console/plugIn\">Plugin Marketplace</a> ·",
+      "weight": 1.12
+    },
+    {
+      "id": "463e26d5e8e0b319f0d4",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "docs/README.en.md",
+      "text": "<a href=\"https://qcn7xdsqgc4z.feishu.cn/docx/KNBNd9naqolsy6xjAOCcEAkqnRd\">Developer Documentation</a> ·\n  <a href=\"https://api.toonflow.net/\">Official Model Platform</a>\n</p>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "e0349bc1ee9dee7ef866",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "1. 💛 Sponsors and Support",
+      "text": "Thank you to the following partners for supporting the Toonflow open-source project.\n\n<table>\n  <tr>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://metaso.cn/minimax-h3/?s=toon\"><img src=\"./sponsors/metaso.svg\" alt=\"Metaso\" height=\"28\" valign=\"middle\" /> <strong>Metaso</strong></a>\n      <br />\n      <sub>Cost-effective MiniMax H3 video generation: just ¥0.09/second at 768P and ¥0.15/second at 2K (CNY). Supports native 2K, synchronized audio and video, an OpenAI-compatible API, ComfyUI, and infinite canvases, without deploying your own GPU. <a href=\"https://metaso.cn/minimax-h3/?s=toon\">Register through this dedicated link</a> to receive bonus credits and exclusive offers. For business inquiries, contact metasota12 on WeChat.</sub>\n    </td>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://go.apimart.ai/gh-toonflow-app\"><img src=\"./sponsors/apiMart.svg\" alt=\"APIMart\" height=\"28\" valign=\"middle\" /> <strong>APIMart</strong></a>\n      <br />\n      <sub>Thank you to APIMart for sponsoring this project's compute resources! APIMart is an affordable API platform for AI image and video generation. GPT-Image-2 starts at $0.006 per image, delivering 160+ images for $1. Imag",
+      "weight": 1.12
+    },
+    {
+      "id": "c59ea81cd63ab4188968",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "1. 💛 Sponsors and Support",
+      "text": "es and videos share one asynchronous API: submit a task, receive its ID, and get results through a callback. Process batches of 10,000 images without timeouts and switch models without changing code. Pay as you go, with no monthly fees. <a href=\"https://go.apimart.ai/gh-toonflow-app\">Register here</a> to get started.</sub>\n    </td>\n  </tr>\n  <tr>\n    <td width=\"50%\" valign=\"top\">\n      <a href=\"https://www.compshare.cn/video-studio?ytag=GPU_YY_YX_git_toonflow\"><img src=\"./sponsors/compShare.png\" alt=\"CompShare\" height=\"28\" valign=\"middle\" /> <strong>CompShare</strong></a>\n      <br />\n      <sub>CompShare offers cost-effective H3 video generation, including text-to-video, first- and last-frame control, and all-in-one reference modes. Generate videos up to 30 seconds long in native 2K, with 768P priced at just CNY 0.08 per second. Supports API access, high concurrency for enterprises, and self-service invoicing.</sub>",
+      "weight": 1.12
+    },
+    {
+      "id": "b5f8959c553f370fe1c2",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "1. 💛 Sponsors and Support",
+      "text": "<br /><br />\n      <sub>🎁 <a href=\"https://www.compshare.cn/video-studio?ytag=GPU_YY_YX_git_toonflow\">Register through this dedicated link</a> to receive CNY 5 in free platform trial credits!</sub>\n    </td>\n    <td width=\"50%\" valign=\"top\"></td>\n  </tr>\n</table>\n\n<details>\n<summary><strong>👉 Become a Sponsor 👈</strong></summary>\n\n<p align=\"center\">\n  <img src=\"./businessQr.png\" alt=\"WeChat QR code for business inquiries\" width=\"200\" />\n</p>\n\n<p align=\"center\"><sub>This contact is for business inquiries only and does not provide technical support. For usage questions, please join the community groups. Submit feature requests and bugs through the feedback form. Thank you for your understanding.</sub></p>\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "bfeb235558f108af0e23",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "2. 🌟 Highlights",
+      "text": "Toonflow is an open-source AI creation platform for short dramas, animated comics, and short videos, bringing scripts, assets, and video clips together on one infinite canvas.\n\n| Capability | Description |\n| --- | --- |\n| 🏠 **Local deployment** | Keep projects and assets on your own device or server, with desktop, Docker, and server deployment options. |\n| 🖼️ **Infinite canvas** | Organize scripts, characters, scenes, and video clips on the same canvas. |\n| 🔌 **MCP** | Connect external tools and services through MCP. |\n| 🧩 **Plugin marketplace** | Extend nodes, tools, and creative capabilities through the [Plugin Marketplace](https://api.toonflow.net/console/plugIn). |\n| 🤖 **Open Agent** | Open access to prompts, tools, and A2A to customize Agent behavior and collaborate with external Agents. |\n| 🔧 **Flexible model integration** | Configure third-party APIs or connect local ComfyUI instances and LLMs. |\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "d330f87150e6155210ce",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "3. 📸 Screenshots",
+      "text": "<div align=\"center\">\n\n<a href=\"./screenshots/projectHome.png\"><img src=\"./screenshots/projectHome.png\" alt=\"Toonflow project home and idea creation\" width=\"80%\" /></a><br /><sub>Project home and idea creation</sub>\n\n<a href=\"./screenshots/quickStart.png\"><img src=\"./screenshots/quickStart.png\" alt=\"Toonflow first launch and quick setup\" width=\"80%\" /></a><br /><sub>First launch and quick setup</sub>\n\n<a href=\"./screenshots/canvasDark.png\"><img src=\"./screenshots/canvasDark.png\" alt=\"Toonflow dark canvas and AI assistant\" width=\"80%\" /></a><br /><sub>Creative canvas · Dark theme</sub>\n\n<a href=\"./screenshots/canvasLight.png\"><img src=\"./screenshots/canvasLight.png\" alt=\"Toonflow light canvas and AI assistant\" width=\"80%\" /></a><br /><sub>Creative canvas · Light theme</sub>\n\n<a href=\"./screenshots/assetCanvas.png\"><img src=\"./screenshots/assetCanvas.png\" alt=\"Toonflow canvas for character, scene, and prop assets\" width=\"80%\" /></a><br /><sub>Character, scene, and prop assets</sub>\n\n<a href=\"./screenshots/directorStudio.png\"><img src=\"./screenshots/directorStudio.png\" alt=\"Toonflow 3D director's studio and shot previsualization\" width=\"80%\" /></a><br /><sub>3D director's studio and sh",
+      "weight": 1.12
+    },
+    {
+      "id": "49e3b380e2a705376faa",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "3. 📸 Screenshots",
+      "text": "ot previsualization</sub>\n\n<a href=\"./screenshots/characterImageGeneration.png\"><img src=\"./screenshots/characterImageGeneration.png\" alt=\"Toonflow three-view character sheets and image generation\" width=\"80%\" /></a><br /><sub>Three-view character sheets and image generation</sub>\n\n<a href=\"./screenshots/videoGeneration.png\"><img src=\"./screenshots/videoGeneration.png\" alt=\"Toonflow video generation with multiple reference assets\" width=\"80%\" /></a><br /><sub>Video generation with multiple reference assets</sub>\n\n<a href=\"./screenshots/nodeMenu.png\"><img src=\"./screenshots/nodeMenu.png\" alt=\"Toonflow node menu and grouping operations\" width=\"80%\" /></a><br /><sub>Node menu and grouping operations</sub>",
+      "weight": 1.12
+    },
+    {
+      "id": "7acdd9093f11f70649fa",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "3. 📸 Screenshots",
+      "text": "<a href=\"./screenshots/pluginMarket.png\"><img src=\"./screenshots/pluginMarket.png\" alt=\"Toonflow Plugin Marketplace\" width=\"80%\" /></a><br /><sub>Plugin Marketplace</sub>\n\n</div>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "554c0ce9c0aeee276eb4",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.1 Desktop Installation",
+      "text": "| Operating System | GitHub |\n| --- | --- |\n| Windows | [Release](https://github.com/HBAI-Ltd/Toonflow-app/releases) |\n| macOS | [Release](https://github.com/HBAI-Ltd/Toonflow-app/releases) |\n\nThe Windows installer automatically detects and installs WebView2. If the app closes immediately after installation, download and install the runtime manually from the [WebView2 download page](https://developer.microsoft.com/microsoft-edge/webview2/).\n\nOn macOS (Apple Silicon), drag Toonflow into Applications and open it directly. No terminal commands are required beforehand. If macOS displays a security warning, follow the steps below in order.\n\n<details>\n<summary><strong>If Toonflow cannot be installed or opened on macOS</strong></summary>\n\n**1. Allow Toonflow in Privacy & Security**\n\nIf you see a warning that the developer cannot be verified or that Apple cannot check the app for malicious software, first try opening Toonflow. Then go to System Settings → Privacy & Security, find the message stating that Toonflow was blocked, click Open Anyway, and confirm as prompted. See [Apple's official instructions](https://support.apple.com/zh-cn/102445).\n\n**2. If quarantine restrictions still preven",
+      "weight": 1.12
+    },
+    {
+      "id": "02e892dbc8cdea840574",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.1 Desktop Installation",
+      "text": "t opening, try removing the quarantine attribute**\n\nAfter confirming that the app came from the official release page and is in Applications, run the following command in Terminal and try opening it again. Adjust the path if the app name or installation location differs.\n\n```bash\nsudo xattr -rd com.apple.quarantine /Applications/toonflow.app\n```\n\n**3. Last resort: temporarily allow apps from anywhere**\n\nIf neither of the first two methods works and you trust the source of the app, try running:\n\n```bash\nsudo spctl --master-disable\n```\n\nThen open System Settings → Privacy & Security. Under Security, set “Allow applications downloaded from” to “Anywhere” if your system offers that option, and confirm as prompted. Available options and command support may vary across macOS versions.",
+      "weight": 1.12
+    },
+    {
+      "id": "87062d65aeac2b31dff1",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.1 Desktop Installation",
+      "text": "This relaxes security restrictions for all apps. Afterward, we recommend restoring the setting to “App Store and identified developers.”\n\n</details>\n\nFor more instructions, see the [User Guide](https://qcn7xdsqgc4z.feishu.cn/docx/RXFqdgR2Xo0dXZxGfd0cZCGgnwf).\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "ea8212881ce29705f589",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.2 Docker Installation",
+      "text": "Install Git, [Docker Engine](https://docs.docker.com/engine/install/), and Docker Compose first. On Windows and macOS, you can use Docker Desktop in Linux container mode. The repository includes a [Dockerfile](../Dockerfile), [Compose configuration](../compose.yaml), and [build exclusions](../.dockerignore). The image is built with Bun 1.3.14 and includes FFmpeg.\n\n<details>\n<summary><strong>Expand Docker installation steps</strong></summary>\n\nClone the source and run the following in the repository root:\n\n```sh\ngit clone https://github.com/HBAI-Ltd/Toonflow-app.git\ncd Toonflow-app\ndocker compose up -d --build\n```\n\nThe first build installs dependencies and builds the bundled nodes, tools, Web, and Server. Once started, open `http://127.0.0.1:3000`. For a remote host, use an SSH tunnel as described under “Access and Data” below. The first startup initializes the bundled plugins and provides a `myProject` working directory.\n\nSettings, plugins, and project files are stored in the Docker named volume `toonflowData`, mounted at `/app/data/` inside the container. The actual volume name includes the Compose project prefix. Stopping or rebuilding the container preserves your data. **Do not",
+      "weight": 1.12
+    },
+    {
+      "id": "e5b482d8b53329b63122",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.2 Docker Installation",
+      "text": "use `docker compose down -v`: this command deletes the data volume.**\n\n```sh\ndocker compose logs -f toonflow  # View logs\ndocker compose stop             # Stop the service\ndocker compose start            # Start it again\ndocker compose down             # Remove containers, retaining the data volume\n```\n\nTo add a project directory, click “New Folder” in the “Select Server Working Directory” dialog. The dialog also supports renaming and deleting files and folders. Alternatively, create a directory from the command line while the service is running:\n\n```sh\ndocker compose exec toonflow mkdir -p /app/data/workspaces/newProject",
+      "weight": 1.12
+    },
+    {
+      "id": "d837e0404b7756b5f977",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.2 Docker Installation",
+      "text": "```\n\nFor a backup, stop the service first, copy the data, then restart it:\n\n```sh\ndocker compose stop\ndocker compose cp toonflow:/app/data ./toonflowBackup\ndocker compose start\n```\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "de21023111bb6edde448",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.3 Server Installation",
+      "text": "Use this option to run Web and Server directly on a Linux server. The example below uses Ubuntu / Debian and the project's specified version, [Bun 1.3.14](https://bun.sh/docs/installation).\n\n<details>\n<summary><strong>Expand server installation steps</strong></summary>\n\nInstall the runtime environment:\n\n```sh\nsudo apt-get update\nsudo apt-get install -y git curl unzip ffmpeg\ncurl -fsSL https://bun.com/install | bash -s \"bun-v1.3.14\"\nexport PATH=\"$HOME/.bun/bin:$PATH\"\nbun --version\n```\n\nClone the source and start the service:\n\n```sh\ngit clone https://github.com/HBAI-Ltd/Toonflow-app.git\ncd Toonflow-app\nbun install --frozen-lockfile",
+      "weight": 1.12
+    },
+    {
+      "id": "6c949cb41ce15cc45683",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "Build bundled nodes, tools, Web, and Server",
+      "text": "bun run build:server\nmkdir -p data/workspaces/myProject\nbun run start:server\n```\n\nWhen you see “服务启动成功” (service started successfully), open `http://127.0.0.1:3000` on the server itself. The command above runs in the foreground; press `Ctrl+C` to stop it. For startup at boot and process management, see [Bun's systemd deployment guide](https://bun.sh/guides/ecosystem/systemd). Set the working directory to the repository directory and the start command to the absolute path of Bun followed by `run start:server`. Run it as a user with read and write access to that directory.\n\n</details>\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "2dec0559f4fca661f457",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.4 Access and Data",
+      "text": "- The service currently uses the fixed port `3000`. The web interface and API do not have separate login authentication. For server installations, restrict access to port `3000` through a firewall or security group. Public access requires a reverse proxy with authentication.\n- For personal remote access, run `ssh -N -L 3000:127.0.0.1:3000 username@server-address` on your own computer. Keep the connection open, then visit `http://127.0.0.1:3000`. You do not need to expose the server's port `3000` to the public internet.\n- With direct installation, settings, plugins, and workspaces are stored in the repository's `data/` directory by default. With Docker, they are stored at `/app/data/` inside the data volume. Preserve the entire directory when migrating or backing up. After opening the page, select `myProject` in the server workspace. Create subdirectories under the corresponding `workspaces/` directory for additional projects.\n- Both installation methods include system FFmpeg. You still need to configure API keys for model services in the interface.\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "30fa95fb587087b5a4e6",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "4.5 Cloud Deployment",
+      "text": "Our partner [AI Galaxy (智星云)](https://www.ai-galaxy.com/) provides an officially authorized commercial Toonflow image with a ready-to-use environment. For instructions, see the [illustrated image deployment guide](https://mp.weixin.qq.com/s/lq9X1ovQ1_TKeXMOLgicKg?scene=1).\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "24dadc11c291438e077c",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "Production Details",
+      "text": "| Item | Recorded in the original repository |\n| --- | --- |\n| Production time and final length | Approximately 2 hours of work for a video of about 2 minutes. |\n| Video model | Seedance 2.0 |\n| Image model | GPT Image 2 |\n| Language model | Claude Opus 4.6 |\n| Model API costs | Approximately ¥130 CNY (Chinese yuan): about ¥10 for language, ¥120 for video, and less than ¥1 for images. |\n\nThese costs are the recorded figures for this example and are provided for reference only. Actual costs depend on the model service, number of generations, and parameters. The demo video is a compressed 480p version.\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "b067ff3a37025c8dc1e2",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router Official Model Gateway",
+      "text": "<p align=\"center\">\n  <a href=\"https://api.toonflow.net/\">\n    <img src=\"https://img.shields.io/badge/TF--Router_Official%20Model%20Gateway-181717?style=for-the-badge&logoColor=white\" alt=\"TF-Router\" />\n  </a>\n</p>\n\nTF-Router is Toonflow's official, self-operated model gateway. You are welcome to use it. Its entire source code is open source and available for self-hosting and auditing: [HBAI-Ltd/TF-Router](https://github.com/HBAI-Ltd/TF-Router).\n\n<details>\n<summary><strong>A Letter to the Toonflow Community (published 2026-06-08)</strong></summary>\n\n> ### A Letter to the Toonflow Community\n> 130 days.\n> Not long, but long enough for us to see some things clearly.\n> From our first line of committed code to today, 130 days have passed. We have released 20 versions, made 800+ commits, and written 213,765 lines of code containing 640,810 characters.\n> Two rewrites, a provider system, and a workflow we are proud of.\n> We thought that would be enough.\n> But it was not.\n> Some people told us they wanted to add their own module to Toonflow, but spent hours trying to understand how to change it.\n> Some told us the community was too small and they could not find help when they ran into proble",
+      "weight": 1.12
+    },
+    {
+      "id": "405aa32dab8f1f0d866f",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router Official Model Gateway",
+      "text": "ms.\n> Some told us the commercial terms prevented them from putting their projects into use.\n> We heard you.\n> Over these 130 days, our team members have taken turns staying in the chat groups, answering every question 7×24. No sponsors, no subsidies: we have paid all the labor costs ourselves.\n> Not because we have a lot of money.\n> But because we believe this is worth doing.\n> So we have decided to undertake a third rewrite.\n> Every Toonflow rewrite has moved toward greater openness and open source.\n> This time, we have chosen to open everything up.\n>\n> 1. MIT License\n> We have decided to replace Apache-2.0 with the MIT License and remove all additional commercial terms once the rewrite is complete.",
+      "weight": 1.12
+    },
+    {
+      "id": "7d6f71c40504b90fd4ea",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router Official Model Gateway",
+      "text": "> It will be fully open, with no commercial restrictions.\n> You can use it for anything.\n>\n> 2. A Fully Flexible Plugin System\n> We will redesign the entire plugin architecture.\n> Storyboards, panoramas, timelines, even mini-games.\n> If you can imagine it, you can add it.\n> Not through hacks, but by design.\n>\n> 3. Drizzle ORM + Multiple Database Support\n> We will upgrade to Drizzle ORM.\n> Local storage, PostgreSQL, or MySQL: choose what you need.\n> Custom development will no longer be a nightmare.\n>\n> 4. An End-to-End Monorepo Workflow\n> Plugin development, SDK integration, and releases, all connected.\n> Making contribution simple enough for one person to manage.\n>\n> 5. New Modules\n> Infinite Canvas — more than space: freedom.\n> Inspiration Mode — built for creators.\n> Plugin Hub — helping great plugins get discovered.\n> Skill Hub — making experience shareable.\n> Provider Hub — where the ecosystem begins.\n> Complete Docker integration — making deployment accessible.\n>\n> Now, something we have been reluctant to talk about.\n> Rewrites take time. During that time, the servers keep running, domains need renewing, the team works late, and coffee gets more expensive.\n> We have no investm",
+      "weight": 1.12
+    },
+    {
+      "id": "6e64f024c1c176304a1d",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router Official Model Gateway",
+      "text": "ent funding, no advertising, and no hidden commercial plans.\n> But we need to stay afloat to finish what we have started.\n> That is why we launched TF-Router, the official Toonflow model gateway.\n> Honestly, we hesitated over this platform for a long time.\n> It was not something we wanted to build. We did not want a gateway to make people feel that Toonflow had started “cashing in.”\n> We carried that burden for a long time.\n> But many users could not get approved access to Seedance 2.0 and kept asking us whether there was a way to use it.\n> After much thought, we finally decided to build one ourselves and signed an annual Seedance framework agreement with Volcengine.",
+      "weight": 1.12
+    },
+    {
+      "id": "75f7f1bb0b263929b777",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "6. 🚀 TF-Router Official Model Gateway",
+      "text": "> **We also decided to offer Seedance 2.0 at cost during the platform's promotional period, without earning a single cent in markup.**\n> After the promotion ends, we will charge a very small service fee. For now, our priority is to give you access.\n> More importantly, the entire TF-Router source code has been released as open source: 【<a href=\"https://github.com/HBAI-Ltd/TF-Router\" target=\"_blank\">Source Code</a>】.\n> Do not trust us? That is fine. Read the code, deploy it yourself, and run it yourself.\n> That is where we stand.\n> If you choose to try it, you are placing your trust in the only way we currently have to keep this work going.\n> If you do not, that is fine too. Keep using Toonflow, keep criticizing us, and keep asking for features.\n> We are here.\n> One last thing, from the heart:\n> We are just a group of ordinary people who believe that creative tools should belong to everyone.\n> Toonflow has never been just our product.\n> It is the story we are writing together.\n> The third rewrite is not the finish line.\n> It is where we start again.\n> Thank you to everyone who has used it, criticized it, or offered suggestions.\n> You are the reason it has made it this far.\n> Thank yo",
+      "weight": 1.12
+    },
+    {
+      "id": "601e10f3f8fbc56a6b56",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "7. 👨‍👩‍👧‍👦 WeChat Community",
+      "text": "Scan the QR code to contact the group invitation assistant:\n\n<img src=\"./qr.png\" alt=\"Toonflow community QR code\" height=\"400\"/>\n\nYou can also click the icon to join Discord:\n\n[![Join our Discord](https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/67d00cf7266d2c75571aebde_Example.svg)](https://discord.gg/HEjKmpNpAZ)\n\nOr use the invitation link: [https://discord.gg/HEjKmpNpAZ](https://discord.gg/HEjKmpNpAZ)\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "fe30347b4382563da12b",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "9. 📜 Open-Source License",
+      "text": "Toonflow is licensed under the [MIT License](../LICENSE). Third-party dependencies and assets remain subject to their respective licenses and copyright notices.\n\n[![Toonflow Star History](https://api.star-history.com/svg?repos=HBAI-Ltd/Toonflow-app&type=Date)](https://www.star-history.com/#HBAI-Ltd/Toonflow-app&Date)\n\n> **Non-retroactivity clause**: Users who used versions before v1.0.8 under AGPL-3.0 remain subject to AGPL-3.0. Versions v1.0.8 through v1.1.8 remain subject to Apache-2.0 and its additional agreement. These users are not bound by this license change.\n\n---",
+      "weight": 1.12
+    },
+    {
+      "id": "94a28460e4afb4b30f8e",
+      "source": "HBAI-Ltd/Toonflow-app",
+      "ref": "acdf33ce4ec0",
+      "path": "docs/README.en.md",
+      "license": "MIT",
+      "domains": [
+        "media",
+        "video",
+        "provider-adapters",
+        "references",
+        "workflow"
+      ],
+      "heading": "10. 🙏 Acknowledgments",
+      "text": "- **Partners**: 算能云, Tencent Hunyuan 3D, and AI Galaxy (智星云).\n- **Project contributors**: Thank you to everyone who has contributed code, improved documentation, shared plugins, and helped troubleshoot issues.\n- **Community users**: Thank you to everyone who continues to provide feedback, share creative work, and support the project.\n\n仰起脸笑的像满月: contributed Codex 20x development compute resources.\nXi'an Zhongxing Digital Intelligence Technology Co., Ltd. (西安中星数字智能科技有限公司): contributed Apple certificate signing.\n\n<div align=\"center\">\n\nCopyright © 2026 北京爱阿科技有限公司\n\n</div>\n\n<img src=\"https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=90&section=footer\" alt=\"Toonflow footer\" width=\"100%\" />",
+      "weight": 1.12
+    },
+    {
+      "id": "f071638c4be31cb56e28",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Infinity $\\infty$: Scaling Bitwise AutoRegressive Modeling for High-Resolution Image Synthesis",
+      "text": "<div align=\"center\">\n\n[![demo platform](https://img.shields.io/badge/Play%20with%20Infinity%21-Infinity%20demo%20platform-lightblue)](https://opensource.bytedance.com/gmpt/t2i/invite)&nbsp;\n[![arXiv](https://img.shields.io/static/v1?label=Project%20Page&message=Github&color=blue&logo=github-pages)](https://foundationvision.github.io/infinity.project/)&nbsp;\n[![arXiv](https://img.shields.io/badge/arXiv%20paper-2412.04431-b31b1b.svg)](https://arxiv.org/abs/2412.04431)&nbsp;\n[![huggingface weights](https://img.shields.io/badge/%F0%9F%A4%97%20Weights-FoundationVision/Infinity-yellow)](https://huggingface.co/FoundationVision/infinity)&nbsp;\n[![code](https://img.shields.io/badge/%F0%9F%A4%96%20Code-FoundationVision/Infinity-green)](https://github.com/FoundationVision/Infinity)&nbsp;\n[![Replicate](https://replicate.com/chenxwh/infinity/badge)](https://replicate.com/chenxwh/infinity)&nbsp;\n\n</div>\n<p align=\"center\" style=\"font-size: larger;\">\n  <a href=\"https://arxiv.org/abs/2412.04431\">Infinity: Scaling Bitwise AutoRegressive Modeling for High-Resolution Image Synthesis</a>\n</p>\n\n\n<p align=\"center\">\n<img src=\"assets/show_images.jpg\" width=95%>\n<p>",
+      "weight": 1.04
+    },
+    {
+      "id": "5bd91e7ff2b1f69c374d",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🔥 Updates!!",
+      "text": "* April 16, 2026: 🔥 We Release [GRN](https://github.com/MGenAI/GRN), a next-generation visual synthesis framework. Neither diffusion nor autoregressive — GRN is a third way. 🧠 Refines globally like an artist. ⚡ Generates adaptively by complexity. 🏆 New SOTA across image & video. The visual generation paradigm just got rewritten.\n* Nov 7, 2025: 🔥 We Release our Text-to-Video generation based on VAR & Infinity, please check [Infinity⭐️](https://github.com/FoundationVision/InfinityStar).\n* Jun 24, 2025: 🍉 Release a middle stage model of Infinity-8B generating 512x512 images.\n* May 25, 2025: 🔥 Release Infinity Image tokenizer training code & setting, Check [Link](https://github.com/FoundationVision/BitVAE)\n* Apr 24, 2025: 🔥 Infinity is accepted as CVPR 2025 Oral.\n* Feb 18, 2025: 🔥 Infinity-8B Weights & Code is released!\n* Feb 7, 2025: 🌺 Infinity-8B Demo is released! Check [demo](https://opensource.bytedance.com/gmpt/t2i/invite).\n* Dec 24, 2024: 🔥 Training and Testing Codes && Checkpoints && Demo released!\n* Dec 12, 2024: 💻 Add Project Page\n* Dec 10, 2024: 🏆 Visual AutoRegressive Modeling received NeurIPS 2024 Best Paper Award.\n* Dec 5, 2024: 🤗 Paper release",
+      "weight": 1.04
+    },
+    {
+      "id": "cfca7182f4314d97a6d8",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🕹️ Try and Play with Infinity!",
+      "text": "We provide a [demo website](https://opensource.bytedance.com/gmpt/t2i/invite) for you to play with Infinity and generate images interactively. Enjoy the fun of bitwise autoregressive modeling!\n\nWe also provide [interactive_infer.ipynb](tools/interactive_infer.ipynb) and [interactive_infer_8b.ipynb](tools/interactive_infer_8b.ipynb) for you to see more technical details about Infinity-2B & Infinity-8B.",
+      "weight": 1.04
+    },
+    {
+      "id": "f872e2113a4c9740c5e5",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "📑 Open-Source Plan",
+      "text": "- [x] Infinity Image tokenizer training code & setting\n  - [x] Infinity-8B Checkpoints (512x512)\n  - [x] Infinity-8B Checkpoints (1024x1024)\n  - [x] Training Code\n  - [x] Web Demo\n  - [x] Inference Code\n  - [x] Infinity-2B Checkpoints\n  - [x] Visual Tokenizer Checkpoints",
+      "weight": 1.04
+    },
+    {
+      "id": "08587235df4fdc9f3aa5",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "📖 Introduction",
+      "text": "We present Infinity, a Bitwise Visual AutoRegressive Modeling capable of generating high-resolution and photorealistic images. Infinity redefines visual autoregressive model under a bitwise token prediction framework with an infinite-vocabulary tokenizer & classifier and bitwise self-correction. Theoretically scaling the tokenizer vocabulary size to infinity and concurrently scaling the transformer size, our method significantly unleashes powerful scaling capabilities. Infinity sets a new record for autoregressive text-to-image models, outperforming top-tier diffusion models like SD3-Medium and SDXL. Notably, Infinity surpasses SD3-Medium by improving the GenEval benchmark score from 0.62 to 0.73 and the ImageReward benchmark score from 0.87 to 0.96, achieving a win rate of 66%. Without extra optimization, Infinity generates a high-quality 1024×1024 image in 0.8 seconds, making it 2.6× faster than SD3-Medium and establishing it as the fastest text-to-image model.",
+      "weight": 1.04
+    },
+    {
+      "id": "d77b5d46bdd3519b7755",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🔥 Redefines VAR under a bitwise token prediction framework 🚀:",
+      "text": "<p align=\"center\">\n<img src=\"assets/framework_row.png\" width=95%>\n<p>\n\nInfinite-Vocabulary Tokenizer✨: We proposes a new bitwise multi-scale residual quantizer, which significantly reduces memory usage, enabling the training of extremely large vocabulary, e.g. $V_d = 2^{32}$ or $V_d = 2^{64}$.\n\nInfinite-Vocabulary Classifier✨: Conventional classifier predicts $2^d$ indices. IVC predicts $d$ bits instead. Slight perturbations to near-zero values in continuous features cause a complete change of indices labels. Bit labels change subtly and still provide steady supervision. Besides, if d = 32 and h = 2048, a conventional classifier requires 8.8T parameters. IVC only requires 0.13M.\n\nBitwise Self-Correction✨: Teacher-forcing training in AR brings severe train-test discrepancy. It lets the transformer only refine features without recognizing and correcting mistakes. Mistakes will be propagated and amplified, finally messing up generated images. We propose Bitwise Self-Correction (BSC) to mitigate the train-test discrepancy.",
+      "weight": 1.04
+    },
+    {
+      "id": "d98427e7d48dbb6d91a0",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🏘 Infinity Model ZOO",
+      "text": "We provide Infinity models for you to play with, which are on <a href='https://huggingface.co/FoundationVision/infinity'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20weights-FoundationVision/Infinity-yellow'></a> or can be downloaded from the following links:",
+      "weight": 1.04
+    },
+    {
+      "id": "978dc498230eb7751773",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Visual Tokenizer",
+      "text": "* Release Infinity Image tokenizer training code & setting, Check [Link](https://github.com/FoundationVision/BitVAE)\n\n|   vocabulary    | stride |   IN-256 rFID $\\downarrow$    | IN-256 PSNR $\\uparrow$ | IN-512 rFID $\\downarrow$ | IN-512 PSNR $\\uparrow$ | HF weights🤗                                                                        |\n|:----------:|:-----:|:--------:|:---------:|:-------:|:-------:|:------------------------------------------------------------------------------------|\n|  $V_d=2^{16}$   |  16  |   1.22   |  20.9   |    0.31    |  22.6   | [infinity_vae_d16.pth](https://huggingface.co/FoundationVision/infinity/blob/main/infinity_vae_d16.pth) |\n|  $V_d=2^{24}$   |  16  |   0.75   |  22.0   |    0.30    |  23.5   | [infinity_vae_d24.pth](https://huggingface.co/FoundationVision/infinity/blob/main/infinity_vae_d24.pth) |\n|  $V_d=2^{32}$   |  16  |   0.61   |  22.7   |    0.23    |  24.4   | [infinity_vae_d32.pth](https://huggingface.co/FoundationVision/infinity/blob/main/infinity_vae_d32.pth) |\n|  $V_d=2^{64}$   |  16  |   0.33   |  24.9   |     0.15     |  26.4   | [infinity_vae_d64.pth](https://huggingface.co/FoundationVision/infinity/blob/main/infinity_vae_d64.pth",
+      "weight": 1.04
+    },
+    {
+      "id": "20859babf1e651bed562",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Visual Tokenizer",
+      "text": ") |\n| $V_d=2^{32}$ |  16  | 0.75 |  21.9   |     0.32     |  23.6   | [infinity_vae_d32_reg.pth](https://huggingface.co/FoundationVision/Infinity/blob/main/infinity_vae_d32reg.pth) |",
+      "weight": 1.04
+    },
+    {
+      "id": "079faee95cd07da3c77d",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Infinity",
+      "text": "|   model    | Resolution |   GenEval    | DPG | HPSv2.1 | HF weights🤗                                                                        |\n|:----------:|:-----:|:--------:|:---------:|:-------:|:------------------------------------------------------------------------------------|\n|  Infinity-2B   |  1024  |   0.69 / 0.73 $^{\\dagger}$   |    83.5    |  32.2   | [infinity_2b_reg.pth](https://huggingface.co/FoundationVision/infinity/blob/main/infinity_2b_reg.pth) |\n|  Infinity-8B   |  1024  |  0.79 $^{\\dagger}$  |    86.6    |  -   | [infinity_8b_weights](https://huggingface.co/FoundationVision/Infinity/tree/main/infinity_8b_weights) |\n|  Infinity-8B   |  512  |  -  |    -    |  -   | [infinity_8b_512x512_weights](https://huggingface.co/FoundationVision/Infinity/tree/main/infinity_8b_512x512_weights) |\n|  Infinity-20B   |  1024  |  -  |    -    |  -   | [Coming Soon](TBD) |\n\n${\\dagger}$ result is tested with a [prompt rewriter](tools/prompt_rewriter.py).\n\nYou can load these models to generate images via the codes in [interactive_infer.ipynb](tools/interactive_infer.ipynb) and [interactive_infer_8b.ipynb](tools/interactive_infer_8b.ipynb) .",
+      "weight": 1.04
+    },
+    {
+      "id": "972df658c340716c61ee",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "⚽️ Installation",
+      "text": "1. We use FlexAttention to speedup training, which requires `torch>=2.5.1`.\n2. Install other pip packages via `pip3 install -r requirements.txt`.\n3. Download weights from huggingface. Besides vae & transformers weights on <a href='https://huggingface.co/FoundationVision/infinity'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20weights-FoundationVision/Infinity-yellow'></a>, you should also download [flan-t5-xl](https://huggingface.co/google/flan-t5-xl).\n```\nfrom transformers import T5Tokenizer, T5ForConditionalGeneration\ntokenizer = T5Tokenizer.from_pretrained(\"google/flan-t5-xl\")\nmodel = T5ForConditionalGeneration.from_pretrained(\"google/flan-t5-xl\")\n```\nThese three lines will download flan-t5-xl to your ~/.cache/huggingface directory.",
+      "weight": 1.04
+    },
+    {
+      "id": "170f8856a90bd2fda4e3",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🎨 Data Preparation",
+      "text": "The structure of the training dataset is listed as bellow. The training dataset contains a list of json files with name \"[h_div_w_template1]_[num_examples].jsonl\". Here [h_div_w_template] is a float number, which is the template ratio of height to width of the image. [num_examples] is the number of examples where $h/w$ is around h_div_w_template. [dataset_t2i_iterable.py](infinity/dataset/dataset_t2i_iterable.py) supports traing with >100M examples. But we have to specify the number of examples for each h/w template ratio in the filename.\n\n  ```\n  /path/to/dataset/:\n    [h_div_w_template1]_[num_examples].jsonl\n    [h_div_w_template2]_[num_examples].jsonl\n    [h_div_w_template3]_[num_examples].jsonl\n  ```\n\nEach \"[h_div_w_template1]_[num_examples].jsonl\" file contains lines of dumped json item. Each json item contains the following information:\n  ```\n  {\n    \"image_path\": \"path/to/image, required\",\n    \"h_div_w\": \"float value of h_div_w for the image, required\",\n    \"long_caption\": long caption of the image, required\",\n    \"long_caption_type\": \"InternVL 2.0, required\",\n    \"text\": \"short caption of the image, optional\",\n    \"short_caption_type\": \"user prompt, optional\"\n  }\n  ```\n\n  S",
+      "weight": 1.04
+    },
+    {
+      "id": "c8c9cc7deade68de7e91",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🎨 Data Preparation",
+      "text": "till have questions about the data preparation? Easy, we have provided a toy dataset with 10 images. You can prepare your dataset by referring [this](data/infinity_toy_data).",
+      "weight": 1.04
+    },
+    {
+      "id": "20b71a0df1c6d9e89514",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🧁 Training Scripts",
+      "text": "We provide [train.sh](scripts/train.sh) for train Infinity-2B with one command\n```shell\nbash scripts/train.sh\n```\n\nTo train Infinity with different model sizes {125M, 1B, 2B} and different {256/512/1024} resolutions, you can run the following command:\n```shell",
+      "weight": 1.04
+    },
+    {
+      "id": "7aebb55b58ae2325b837",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "125M, layer12, pixel number = 256 x 256 = 0.06M Pixels",
+      "text": "torchrun --nproc_per_node=8 --nnodes=... --node_rank=... --master_addr=... --master_port=... train.py \\\n  --model=layer12c4 --pn 0.06M --exp_name=infinity_125M_pn_0.06M \\",
+      "weight": 1.04
+    },
+    {
+      "id": "9dc17f7d67f75801eeea",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "1B, layer24, pixel number = 256 x 256 = 0.06M Pixels",
+      "text": "torchrun --nproc_per_node=8 --nnodes=... --node_rank=... --master_addr=... --master_port=... train.py \\\n  --model=layer24c4 --pn 0.06M --exp_name=infinity_1B_pn_0.06M \\",
+      "weight": 1.04
+    },
+    {
+      "id": "8f4611547052f574787c",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "2B, layer32, pixel number = 256 x 256 = 0.06M Pixels",
+      "text": "torchrun --nproc_per_node=8 --nnodes=... --node_rank=... --master_addr=... --master_port=... train.py \\\n  --model=2bc8 --pn 0.06M --exp_name=infinity_2B_pn_0.06M \\",
+      "weight": 1.04
+    },
+    {
+      "id": "198da89a88629543f99d",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "2B, layer32, pixel number = 512 x 512 = 0.25M Pixels",
+      "text": "torchrun --nproc_per_node=8 --nnodes=... --node_rank=... --master_addr=... --master_port=... train.py \\\n  --model=2bc8 --pn 0.25M --exp_name=infinity_2B_pn_0.25M \\",
+      "weight": 1.04
+    },
+    {
+      "id": "1033d8a7728244bbc06f",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "2B, layer32, pixel number = 1024 x 1024 = 1M Pixels",
+      "text": "torchrun --nproc_per_node=8 --nnodes=... --node_rank=... --master_addr=... --master_port=... train.py \\\n  --model=2bc8 --pn 1M --exp_name=infinity_2B_pn_1M \\\n```\nA folder named `local_output` will be created to save the checkpoints and logs.\nYou can monitor the training process by checking the logs in `local_output/log.txt` and `local_output/stdout.txt`. We highly recommend you use [wandb](https://wandb.ai/site/) for detailed logging.\n\nIf your experiment is interrupted, just rerun the command, and the training will **automatically resume** from the last checkpoint in `local_output/ckpt*.pth`.",
+      "weight": 1.04
+    },
+    {
+      "id": "f60d63f4397d05b44907",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "🍭 Evaluation",
+      "text": "We provide [eval.sh](scripts/eval.sh) for evaluation on various benchmarks with only one command. In particular, [eval.sh](scripts/eval.sh) supports evaluation on commonly used metrics such as [GenEval](https://github.com/djghosh13/geneval), [ImageReward](https://github.com/THUDM/ImageReward), [HPSv2.1](https://github.com/tgxs002/HPSv2), FID and Validation Loss. Please refer to [evaluation/README.md](evaluation/README.md) for more details.\n```shell\nbash scripts/eval.sh\n```",
+      "weight": 1.04
+    },
+    {
+      "id": "b47bce7da463d551c315",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "✨ Fine-Tuning",
+      "text": "Fine-tuning Infinity is quite simple where you only need to append ```--rush_resume=[infinity_2b_reg.pth]``` to [train.sh](scripts/train.sh). Note that you have to carefully set ```--pn``` for training and inference code since it decides the resolution of images.\n\n```\n--pn=0.06M  # 256x256 resolution (including other aspect ratios with same number of pixels)\n--pn=0.25M  # 512x512 resolution\n--pn=1M     # 1024x1024 resolution\n```\n\nAfter fine-tuning, you will get a checkpoint like [model_dir]/ar-ckpt-giter(xxx)K-ep(xxx)-iter(xxx)-last.pth. Note that this checkpoint cotains training states besides model weights. Inference with this model should enable ```--enable_model_cache=1``` in [eval.sh](scripts/eval.sh) or [interactive_infer.ipynb](tools/interactive_infer.ipynb).",
+      "weight": 1.04
+    },
+    {
+      "id": "f1fb90a9a572844f7ce4",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Use Docker",
+      "text": "If you are interested in reproducing the paper model locally (inference only) you can refer to our Docker container. This one-stop approach is especially suitable for people with no background knowledge.",
+      "weight": 1.04
+    },
+    {
+      "id": "ff37df3b890e4c49dcf3",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "1. Download weights",
+      "text": "Download `flan-t5-xl` folder, `infinity_2b_reg.pth` and `infinity_vae_d32reg.pth` files to weights folder.",
+      "weight": 1.04
+    },
+    {
+      "id": "36f0f559f7dff70af450",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "2. Build Docker container",
+      "text": "```\n docker build -t my-flash-attn-env .\n docker run --gpus all -it --name my-container -v {your-local-path}:/workspace my-flash-attn-env\n```",
+      "weight": 1.04
+    },
+    {
+      "id": "1ebee2a2bde936b0ba36",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "3. Run",
+      "text": "```\npython Infinity/tools/reproduce.py\n```\n\nNote: You can also use your own prompts, just modify the prompt in `reproduce.py`.",
+      "weight": 1.04
+    },
+    {
+      "id": "53e248ebfeb7d0df3071",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "Infinity-8B v.s. Infinity-2B",
+      "text": "Infinity shows strong scaling capabilities as illustrated before. Thus we are encouraged to continue to scale up the model size to larger size. Here we present the side-by-side comparison results between Infinity-2B and Infinity-8B.\n\n| Prompt     | Infinity (# params=2B)     | Infinity (# params=8B)     |\n| ------------ | -------- | -------- |\n| a cat holds a sign with the text 'Diffusion is dead' | ![](assets/2b_8b/1l.webp) | ![](assets/2b_8b/1r.webp) |\n| A beautiful Chinese woman with graceful features, close-up portrait, long flowing black hair, wearing a traditional silk cheongsam delicately embroidered with floral patterns, face softly illuminated by ambient light, serene expression    | ![](assets/2b_8b/2l.webp) | ![](assets/2b_8b/2r.webp) |\n| a Chinese model is sitting on a train, magazine cover, clothes made of plastic, photorealistic, futuristic style, gray and green light, movie lighting, 32K HD      | ![](assets/2b_8b/3l.webp) | ![](assets/2b_8b/3r.webp) |\n| A  group of students in a class    | ![](assets/2b_20b/4l.jpg) | ![](assets/2b_8b/4r.webp) |",
+      "weight": 1.04
+    },
+    {
+      "id": "67359a028e83994c3a3f",
+      "source": "FoundationVision/Infinity",
+      "ref": "9f9fcd1de7ea",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "image-generation",
+        "prompt-rewrite",
+        "self-correction",
+        "high-resolution"
+      ],
+      "heading": "📖 Citation",
+      "text": "If our work assists your research, feel free to give us a star ⭐ or cite us using:\n\n```\n@misc{Infinity,\n    title={Infinity: Scaling Bitwise AutoRegressive Modeling for High-Resolution Image Synthesis},\n    author={Jian Han and Jinlai Liu and Yi Jiang and Bin Yan and Yuqi Zhang and Zehuan Yuan and Bingyue Peng and Xiaobing Liu},\n    year={2024},\n    eprint={2412.04431},\n    archivePrefix={arXiv},\n    primaryClass={cs.CV},\n    url={https://arxiv.org/abs/2412.04431},\n}\n```\n\n```\n@misc{VAR,\n      title={Visual Autoregressive Modeling: Scalable Image Generation via Next-Scale Prediction},\n      author={Keyu Tian and Yi Jiang and Zehuan Yuan and Bingyue Peng and Liwei Wang},\n      year={2024},\n      eprint={2404.02905},\n      archivePrefix={arXiv},\n      primaryClass={cs.CV},\n      url={https://arxiv.org/abs/2404.02905},\n}\n```",
+      "weight": 1.04
     }
   ]
 }
