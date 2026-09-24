@@ -1,9 +1,15 @@
 import type { AssistantMessage } from './assistant-store';
 import { isCnjContextReference } from './legal/cnj';
 
-export type ConversationKind='casual'|'context'|'factual'|'current'|'technical'|'howto'|'general';
+export type ConversationKind='casual'|'context'|'factual'|'current'|'technical'|'howto'|'hypothetical'|'general';
 
 const clean=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+export function isHypotheticalPrompt(prompt:string){
+  const p=clean(prompt);
+  return /^(?:e se|imagine se|imagina se|suponha que|supondo que|como seria se|o que aconteceria se|what if|imagine if)\b/.test(p)
+    || /\b(?:fosse|virasse|se transformasse em|became|turned into)\b/.test(p)&&/\b(?:e se|imagine|imagina|suponha|what if)\b/.test(p);
+}
 
 export function isGenericHowTo(prompt:string){
   const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
@@ -21,6 +27,10 @@ export function conversationAnswerIssue(prompt:string,content:string){
   if(!out)return 'empty';
   if(/nao tenho contexto local suficiente|nao tenho contexto suficiente|ative (?:o )?neural|^fallback\b/.test(out))return 'weak-local';
   if(isGenericHowTo(prompt)&&!answerLooksProcedural(content))return 'missing-procedure';
+  if(isHypotheticalPrompt(prompt)){
+    const topical=responseTopicAlignment(prompt,content);
+    if(!topical.relevant)return 'off-topic-hypothetical';
+  }
   if(/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
     && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|ranking|mais rico)\b/.test(p)
     && /\b(mais rico|fortuna|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes)\b/.test(out))return 'unsolicited-volatile-claims';
@@ -41,6 +51,7 @@ export function classifyConversation(prompt:string,history:AssistantMessage[]=[]
   if(/^(voce me ama|gosta de mim|sente algo por mim|obrigad[oa]|valeu|kkk+|haha|rsrs|boa|legal|bacana)[!.?\s]*$/.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
   if(/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|cotacao|preco|placar|presidente atual|versao atual)\b/.test(p))return 'current';
+  if(isHypotheticalPrompt(prompt))return 'hypothetical';
   if(isGenericHowTo(prompt))return 'howto';
   if(/^(quem (e|foi)|o que (e|foi)|defina|explique|como funciona|por que|porque|qual a diferenca|qual e|onde fica|quando nasceu|quando foi)\b/.test(p))return 'factual';
   if(/\b(codigo|programa|javascript|typescript|react|next|python|api|banco de dados|database|frontend|backend|git|github|vercel|docker|linux|windows|erro|bug|arquitetura|algoritmo)\b/.test(p))return 'technical';
@@ -226,7 +237,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
 
 export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean,prompt=''){
   if(!webEnabled)return false;
-  if(kind==='casual'||kind==='context')return false;
+  if(kind==='casual'||kind==='context'||kind==='hypothetical')return false;
   const p=clean(prompt);
   if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
 
@@ -249,7 +260,7 @@ export function shouldPreferLocalRuntimeFirst(kind:ConversationKind,prompt:strin
   const p=clean(prompt);
   if(/\b(pesquis|fonte|cite|verifique|compare|atual|hoje|agora|noticia|notícias?|preco|preço|cotacao|cotação)\b/.test(p))return false;
   if(prompt.length>520)return false;
-  return kind==='howto'||kind==='factual'||kind==='general';
+  return kind==='howto'||kind==='factual'||kind==='hypothetical'||kind==='general';
 }
 
 export interface ResearchItem{
