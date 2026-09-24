@@ -216,6 +216,11 @@ const SOURCES=[
   ['Qwizer/realmap-10x','master','unverified','reference',['quarantine','credentials-risk']],
   ['alestanalves/real-life-gaming','main','unverified','reference',['2d-world','phaser','local-storage','simulation-ui']],
   ['SimonSaysGiveMeSmile/gtasf.lol','main','unverified','reference',['world-rendering','react-three-fiber','simulation-ui']],
+  ['HelloFangaming/HelloMarioEngine','master','BSD-3-Clause','distill',['2d-engine','objects','rooms','event-loop','simulation-ui']],
+  ['EasyRPG/Player','master','GPL-3.0','reference',['2d-runtime','interpreter','platform-abstraction','emscripten']],
+  ['niksudan/prettylight','master','MIT','distill',['2d-lighting','shaders','surfaces','simulation-ui']],
+  ['YoYoGames/GameMaker-HTML5','develop','Apache-2.0','distill',['html5-runtime','canvas','input','audio','render-loop','browser']],
+  ['YoYoGames/GameMaker-Manual','develop','copyrighted-docs','reference',['gamemaker','runtime-docs','html5','assets','build']],
   ['protonspy/JusChat','main','CC0-1.0','train',['legal','graphrag','knowledge-graph','documents','rag']],
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
