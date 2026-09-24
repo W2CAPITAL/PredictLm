@@ -168,7 +168,10 @@
     "saas-env-preserving-export",
     "tenant-rbac-audit-scaffold",
     "real-generative-video-priority",
-    "higgsfield-cli-external-bridge"
+    "higgsfield-cli-external-bridge",
+    "gemini-veo-3-1-video",
+    "gemini-nano-banana-2-image",
+    "server-proxied-media-secrets"
   ],
   "hosts": [
     "PredictLM",
