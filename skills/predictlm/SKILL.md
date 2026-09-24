@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.21.0"
+  version: "1.22.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -650,3 +650,31 @@ O NeuroCore é inspirado em conectividade neural e modelos dinâmicos; **não é
 Pedido explícito para rodar/abrir uma simulação de vida ativa abre o Studio 2D. Pedido para **criar um app** de simulação vai para Build e gera/exporta um projeto de simulação.
 
 A simulação inclui personagem feminina por padrão quando solicitado, tempo, localização, necessidades, relações, memória, dinheiro/ocupação, eventos, meta e NeuroCore próprio. Não adicionar score/vitória/combate se o pedido for simulação e não jogo.
+
+
+## Digital Brain sempre ativo
+
+O PredictLM usa `src/lib/digital-brain.ts` como camada cognitiva persistente sobre o NeuroCore.
+
+Regras:
+- heartbeat local ~20s enquanto o app está aberto;
+- pulso passivo consolida estado/memória e reduz carga, mas nunca envia mensagem, pesquisa, chama API, abre tela ou executa ação externa;
+- cada turno atualiza objetivo, memória de trabalho, saliência, inibição, metacognição, previsão, estado social e incerteza;
+- o pedido do usuário é o único objetivo externo;
+- o cérebro permanece ativo mesmo com Life Simulation fechada.
+
+## Self-model visual
+
+Carregar `skills/entity-self-model/SKILL.md`.
+
+A entidade usa a aparência feminina fornecida pelo usuário como auto-representação persistente. A cópia compactada fica em `src/lib/entity-self-model.ts`.
+
+Política visual:
+- não mostrar a imagem no Chat comum;
+- não gerar imagem da entidade automaticamente;
+- mostrar a referência somente dentro de simulação explicitamente aberta;
+- gerar/editar uma nova imagem somente após pedido explícito do usuário.
+
+## How-to final, não snippet
+
+Para perguntas `como criar/fazer/montar`, snippets de Research são contexto, nunca resposta pública. O Chat tenta Provider Mesh → runtime local → núcleo prático determinístico. Se chegar ao núcleo, ele deve entregar instruções diretamente, sem cabeçalhos como “síntese das fontes”, “fallback”, “use estes pontos” ou metainstruções internas.
