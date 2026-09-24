@@ -550,19 +550,19 @@ function knowledgeReply(prompt:string){
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;decisionAudit?:boolean;language?:ConversationLanguage;researchContext?:string;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
-  const githubTopK=options?.deep?5:3;
+  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
+  const githubTopK=deepMode?5:3;
   const githubEnabled=useGithubKnowledge(prompt);
   const github=githubEnabled?githubKnowledgeContext(prompt,githubTopK):'';
   const learned=adaptiveContext(prompt,4);
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
   const humanLens=humanAdversarialContext(prompt);
-  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
   const humanPresence=humanPresenceContext(prompt);
   const masterContext=predictLMMasterContext(prompt,deepMode);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
-  const deepLoop=options?.deep?deepLoopContext(prompt):'';
+  const deepLoop=deepMode?deepLoopContext(prompt):'';
   const decisionAudit=options?.decisionAudit!==false;
   const packed=optimizePromptPackage({
     messages,
@@ -586,6 +586,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const recent=packed.messages.map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
   const compiled=compileSystemPrompt({
     userText:prompt,
+    deep:deepMode,
     extra:[
       languageSystemInstruction(options?.language||'pt-BR'),
       recent?'Histórico recente compactado:\n'+recent:'',
