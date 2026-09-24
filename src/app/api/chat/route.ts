@@ -4,6 +4,7 @@ import { compactText, optimizePromptPackage } from '@/lib/token-budget';
 import { tutorSystemContext } from '@/lib/tutor-mode';
 import { globalLearningContext } from '@/lib/global-learning';
 import { deepLoopContext } from '@/lib/deep-loop-policy';
+import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -112,6 +113,8 @@ export async function POST(req:Request){
     const stats=githubKnowledgeStats();
     const tutor=tutorSystemContext(prompt);
     const deepLoop=deep?deepLoopContext(prompt):'';
+    const centum=centumDecisionContext(prompt);
+    const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
@@ -120,6 +123,8 @@ export async function POST(req:Request){
       sections:[
         {label:'Instruções persistentes do usuário',text:localInstructions,priority:8},
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+        {label:'Centum Decision Gate',text:centum,priority:10},
+        {label:'Third Brain PARALLAX',text:parallax,priority:10},
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
