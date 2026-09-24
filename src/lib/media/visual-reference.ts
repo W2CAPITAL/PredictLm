@@ -1,4 +1,5 @@
 import { compactText } from '@/lib/token-budget';
+import { isSpecificFranchisePrompt } from '@/lib/media/media-fidelity';
 
 export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google';
 
@@ -43,7 +44,7 @@ export function isPersistentSelfPortraitRequest(input:string){
 export function isSpecificVisualPrompt(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
-  if(/\b(naruto|sasuke|kurama|susanoo|sharingan|rinnegan|uchiha|uzumaki|pokemon|pikachu|goku|vegeta|sonic|mario|zelda|batman|superman|spider[- ]?man|homem aranha|kuromi|hello kitty)\b/.test(p))return true;
+  if(isSpecificFranchisePrompt(raw))return true;
   if(/\b(personagem|character|anime|manga|franquia|franchise|jogo|game|filme|movie|serie|series|marca|brand)\b/.test(p)&&/[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\d_-]{2,}/u.test(raw))return true;
   if(/[“"'‘’][^”"'‘’]{3,}[”"'‘’]/.test(raw))return true;
   return /\b(?:personagem|character)\s+[\p{L}\d_-]{3,}/iu.test(raw);
@@ -67,6 +68,15 @@ export function buildVisualIdentityLock(input:string){
   if(/\b(naruto|uzumaki)\b/.test(p)&&/\b(sasuke|uchiha)\b/.test(p)){
     rules.push('Matchup lock: stage Naruto/Kurama and Sasuke/Perfect Susanoo as two opposing, readable combatants in the same battle; preserve orange/gold versus violet/purple separation and show an actual clash or imminent strike.');
   }
+  if(/\b(freeza|frieza)\b/.test(p)){
+    rules.push('Frieza lock: preserve the canonical Dragon Ball Frieza identity — smooth white bio-armor/body with purple plates and dome, sleek alien silhouette, recognizable face and proportions. Never substitute a red/black armored demon, dragon, generic monster or Saiyan.');
+  }
+  if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p)){
+    rules.push('Dragon Ball Great Ape lock: depict the canonical Saiyan Oozaru/Great Ape — gigantic brown ape-like Saiyan transformation with tail and ferocious face. Never substitute an armored demon, robot ape, ordinary small monkey or unrelated kaiju.');
+  }
+  if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\b(naruto|anime naruto)\b/.test(p)){
+    rules.push('Naruto Four-Tails Bijuu lock: depict Son Goku, the canonical Four-Tails tailed beast from Naruto — huge red/orange ape-like bijuu with exactly four tails and recognizable Naruto franchise design. Do not depict human Goku from Dragon Ball or another tailed beast.');
+  }
   return rules.join(' ');
 }
 
@@ -78,6 +88,9 @@ export function buildVisualReferenceQuery(input:string){
   }
   if(/\bnaruto\b/.test(p)&&/\bkurama\b/.test(p))return 'Naruto Uzumaki Kurama Chakra Mode Nine Tails canonical anime reference';
   if(/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p))return 'Sasuke Uchiha Perfect Susanoo canonical anime reference';
+  if(/\b(freeza|frieza)\b/.test(p))return 'Frieza Dragon Ball canonical anime character design reference white purple final form';
+  if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p))return 'Dragon Ball Oozaru Great Ape Saiyan canonical anime reference';
+  if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\b(naruto|anime naruto)\b/.test(p))return 'Naruto Four Tails Son Goku Bijuu canonical tailed beast anime reference';
   return compactText(raw+' official character design visual reference',320);
 }
 
