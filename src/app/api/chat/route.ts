@@ -10,7 +10,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
-type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>};
+type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>;protocol?:'openai'|'anthropic'};
 
 declare global{
   var __predictlmChatCache:Map<string,{expires:number,value:any}>|undefined;
@@ -45,6 +45,33 @@ function providers():Provider[]{
       model:process.env.OLLAMA_MODEL
     });
   }
+  if(process.env.OPENCODE_API_KEY){
+    push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL||'nemotron-3.5-lightning-free'});
+  }
+  if(process.env.NVIDIA_API_KEY){
+    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL||'nvidia/nemotron-3.5-lightning-30b-a3b'});
+  }
+  if(process.env.DEEPSEEK_API_KEY){
+    push({name:'deepseek',base:process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com/v1',key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL||'deepseek-flash'});
+  }
+  if(process.env.KIMI_API_KEY){
+    push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL||'kimi-k2.5'});
+  }
+  if(process.env.ZAI_API_KEY){
+    push({name:'zai',base:process.env.ZAI_BASE_URL||'https://api.z.ai/api/paas/v4',key:process.env.ZAI_API_KEY,model:process.env.ZAI_MODEL||'glm-4.6'});
+  }
+  if(process.env.MINIMAX_API_KEY){
+    push({name:'minimax',base:process.env.MINIMAX_BASE_URL||'https://api.minimax.io/v1',key:process.env.MINIMAX_API_KEY,model:process.env.MINIMAX_MODEL||'MiniMax-M3'});
+  }
+  if(process.env.GEMINI_API_KEY){
+    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL||'gemini-3.8-flash'});
+  }
+  if(process.env.ANTHROPIC_API_KEY){
+    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL||'claude-sonnet-4-6',protocol:'anthropic'});
+  }
+  if(process.env.ARK_API_KEY&&process.env.ARK_MODEL){
+    push({name:'ark',base:process.env.ARK_BASE_URL||'https://ark.cn-beijing.volces.com/api/v3',key:process.env.ARK_API_KEY,model:process.env.ARK_MODEL});
+  }
   if(process.env.GROQ_API_KEY&&process.env.GROQ_MODEL){
     push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL});
   }
@@ -57,7 +84,10 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  return out;
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'server,freellmapi,opencode,nvidia,deepseek,kimi,zai,minimax,gemini,groq,openrouter,anthropic,ark,ollama')
+    .split(',').map(x=>x.trim()).filter(Boolean);
+  const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
+  return out.sort((a,b)=>rank(a.name)-rank(b.name));
 }
 
 function normalize(input:string){
@@ -70,8 +100,46 @@ function volatileQuery(prompt:string){
 
 async function callProvider(provider:Provider,messages:Msg[],deep:boolean){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),45000);
+  const timer=setTimeout(()=>controller.abort(),60000);
   try{
+    if(provider.protocol==='anthropic'){
+      const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
+      const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
+      const r=await fetch(provider.base.replace(/\/$/,'')+'/messages',{
+        method:'POST',
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':provider.key,
+          'anthropic-version':'2023-06-01',
+          ...(provider.headers||{})
+        },
+        body:JSON.stringify({model:provider.model,system,messages:dialog,max_tokens:deep?1800:1000})
+      });
+      const raw=await r.text();
+      if(!r.ok)throw new Error(provider.name+' '+r.status+' '+raw.slice(0,240));
+      let data:any={};
+      try{data=JSON.parse(raw)}catch{}
+      const content=Array.isArray(data?.content)
+        ? data.content.filter((x:any)=>x?.type==='text').map((x:any)=>x.text).join('\n').trim()
+        : '';
+      if(!content)throw new Error(provider.name+' empty response');
+      return content;
+    }
+
+    const body:any={
+      model:provider.model,
+      messages,
+      temperature:deep?0.25:0.45,
+      max_tokens:deep?1400:900,
+      stream:false
+    };
+    if(provider.name==='nvidia'){
+      body.chat_template_kwargs={enable_thinking:deep};
+      if(deep)body.reasoning_budget=2048;
+    }
+    if(provider.name==='minimax')body.thinking={type:'disabled'};
+
     const r=await fetch(provider.base.replace(/\/$/,'')+'/chat/completions',{
       method:'POST',
       signal:controller.signal,
@@ -80,13 +148,7 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean){
         'Authorization':'Bearer '+provider.key,
         ...(provider.headers||{})
       },
-      body:JSON.stringify({
-        model:provider.model,
-        messages,
-        temperature:deep?0.25:0.45,
-        max_tokens:deep?1400:900,
-        stream:false
-      })
+      body:JSON.stringify(body)
     });
     const raw=await r.text();
     if(!r.ok)throw new Error(provider.name+' '+r.status+' '+raw.slice(0,240));
@@ -107,7 +169,7 @@ export async function POST(req:Request){
     const configured=providers();
     if(!configured.length){
       return Response.json({
-        error:'Cloud Cascade não configurado. Defina AI_*, FREELLMAPI_*, GROQ_* ou OPENROUTER_* no servidor.',
+        error:'Cloud Cascade não configurado. Configure pelo menos um provider server-side (AI_*, FreeLLMAPI, OpenCode, NVIDIA, DeepSeek, Kimi, Z.AI, MiniMax, Gemini, Anthropic, Groq, OpenRouter ou Ark).',
         code:'NO_PROVIDER'
       },{status:503});
     }
