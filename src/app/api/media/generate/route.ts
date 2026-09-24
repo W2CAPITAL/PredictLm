@@ -1,5 +1,7 @@
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
+import { expandImagePromptForParity, parityCaptionPtBr } from '@/lib/media/grok-imagine-parity';
+import { mediaErrorText } from '@/lib/media/media-errors';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -48,14 +50,15 @@ export async function POST(req:Request){
   try{
     const body=await req.json().catch(()=>({}));
     const rawPrompt=String(body?.prompt||'').trim();
-    if(!rawPrompt)return Response.json({error:'Descreva a imagem.'},{status:400});
+    const originalPrompt=String(body?.originalPrompt||rawPrompt).trim();
+    if(!rawPrompt||!originalPrompt)return Response.json({error:'Descreva a imagem.'},{status:400});
 
     const width=clamp(Number(body?.width)||1024,256,2048);
     const height=clamp(Number(body?.height)||1024,256,2048);
     const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(body?.seed)||1)));
 
     // A autoimagem persistente não sofre reimaginação/drift do provider.
-    if(isPersistentSelfPortraitRequest(rawPrompt)){
+    if(isPersistentSelfPortraitRequest(originalPrompt)){
       return Response.json({
         url:ENTITY_REFERENCE_IMAGE,
         provider:'entity-self-reference',
@@ -65,21 +68,33 @@ export async function POST(req:Request){
         seed,
         identityLocked:true,
         exactReference:true,
-        referencesUsed:[]
+        referencesUsed:[],
+        originalPrompt,
+        expandedPrompt:originalPrompt,
+        caption:parityCaptionPtBr(originalPrompt)
       });
     }
 
-    const prompt=compactText(rawPrompt,700);
+    const preparedPrompt=compactText(rawPrompt,1100);
+    const sourcePrompt=compactText(originalPrompt,700);
+    const style=String(body?.style||'Cinematic').trim()||'Cinematic';
+    const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
     const referencePlan=referenceMode==='off'
       ? {query:'',references:[],warnings:[] as string[]}
-      : await resolveVisualReferences(prompt);
-    const identityLock=buildVisualIdentityLock(prompt);
+      : await resolveVisualReferences(sourcePrompt);
+    const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
-    const groundedPrompt=compactText(
-      [prompt,identityLock,evidencePrompt].filter(Boolean).join('\n\n'),
-      1400
-    );
+    const groundedPrompt=expandImagePromptForParity({
+      originalPrompt:sourcePrompt,
+      preparedPrompt,
+      style,
+      width,
+      height,
+      attempt,
+      identityLock,
+      referenceEvidence:evidencePrompt
+    });
 
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)
@@ -167,7 +182,11 @@ export async function POST(req:Request){
             referenceQuery:referencePlan.query||null,
             referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
             referenceImagesPassed:provider.gemini?inlineReferences.length:(mediaReferenceField?configuredReferenceValues.length:0),
-            referenceWarnings:referencePlan.warnings
+            referenceWarnings:referencePlan.warnings,
+            originalPrompt:sourcePrompt,
+            expandedPrompt:groundedPrompt,
+            caption:parityCaptionPtBr(sourcePrompt),
+            parityContract:'grok-imagine-parity'
           });
         }
       }catch{
@@ -188,9 +207,13 @@ export async function POST(req:Request){
       referenceQuery:referencePlan.query||null,
       referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
       referenceImagesPassed:0,
-      referenceWarnings:referencePlan.warnings
+      referenceWarnings:referencePlan.warnings,
+      originalPrompt:sourcePrompt,
+      expandedPrompt:groundedPrompt,
+      caption:parityCaptionPtBr(sourcePrompt),
+      parityContract:'grok-imagine-parity'
     });
   }catch(error:any){
-    return Response.json({error:error?.message||'Falha ao gerar imagem.'},{status:500});
+    return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
   }
 }
