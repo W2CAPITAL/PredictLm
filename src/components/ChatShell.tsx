@@ -15,6 +15,7 @@ import { legalChatAnswer, legalDossierSummary, legalSources } from '@/lib/legal/
 import { createLegalDossier } from '@/lib/legal/dossier';
 import { isLegalDossierRequest, legalDossierMode } from '@/lib/legal/mode';
 import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '@/lib/security/fraud-defense';
+import { isTutorRequest } from '@/lib/tutor-mode';
 import { answerViaLocalRuntime, probeLocalRuntimes } from '@/lib/local-runtime-router';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
@@ -114,6 +115,7 @@ export function ChatShell({onOpenLegal}:Props){
     const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const fraudIntent=isFraudAnalysisRequest(prompt);
+    const tutorIntent=isTutorRequest(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const currentNeural=neuralStatus();
@@ -129,6 +131,8 @@ export function ChatShell({onOpenLegal}:Props){
         ? ['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']
         : fraudIntent
           ? ['Classificando sinais de fraude','Verificando links, credenciais e pagamento','Buscando contexto independente quando habilitado','Separando sinal de prova','Preparando triagem defensiva']
+        : tutorIntent
+          ? ['TUTOR · identificando objetivo de aprendizagem','PROBE · verificando o que precisa ser testado','TEACH/PRACTICE · recuperando contexto relevante','ASSESS · preparando checagem de domínio','REVIEW · preservando próximos passos']
         : mediaKind==='video'
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
@@ -433,6 +437,7 @@ export function ChatShell({onOpenLegal}:Props){
       const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine;
       const actions=[
         'Intenção identificada: '+kind,
+        ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
         ...(currentNeural.loaded?['Modelo local: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
         ...(s.deepThink&&currentNeural.loaded&&neuralRelevant?['Deep executou duas passagens: FORGE → AEGIS']:[]),
