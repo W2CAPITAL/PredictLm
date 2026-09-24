@@ -488,7 +488,7 @@ PROBE → TEACH/PRACTICE → ASSESS → REVIEW.
 # Mídia / Imagine
 
 Imagem:
-pedido → Deep Research opcional → Deep Think/Media Director → identity/reference grounding → prompt quality → provider real → review → repair/upscale quando necessário → resultado.
+pedido → `grok-imagine-parity` → Deep Research opcional → Deep Think/Media Director → Firecrawl-first identity/reference grounding → prompt expandido → provider real → review técnico/semântico quando disponível → repair/upscale → resultado.
 
 Vídeo:
 pedido → Deep Research opcional → Deep Think/Media Director → referências/first frame → **provider temporal neural real** → polling → arquivo de vídeo → preview/export.
@@ -636,7 +636,7 @@ Uma resposta excelente:
 Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
 1. extrair a identidade solicitada;
 2. aplicar **identity lock** canônico;
-3. buscar referência visual quando a infraestrutura estiver configurada (Google Images + consulta Pinterest; Firecrawl complementar);
+3. buscar referência visual com Firecrawl como padrão (Images + consulta `site:pinterest.com/pin/`); Google CSE é opcional;
 4. entregar referências visuais ao provider multimodal compatível;
 5. manter o mesmo lock no provider local/textual;
 6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
