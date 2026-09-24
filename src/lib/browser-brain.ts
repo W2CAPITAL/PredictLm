@@ -18,6 +18,7 @@ import { languageSystemInstruction, type ConversationLanguage } from './language
 import { publicAnswerGate } from './public-answer-gate';
 import { classifyDomainEngines } from './domain-engine-fabric';
 import { humanAdversarialContext } from './human-adversarial-lens';
+import { neuroCognitiveContext, readBrowserNeuroState } from './neurocore';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -477,6 +478,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
   const humanLens=humanAdversarialContext(prompt);
+  const neuroContext=neuroCognitiveContext(prompt,readBrowserNeuroState());
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
   const decisionAudit=options?.decisionAudit!==false;
@@ -491,6 +493,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
+      {label:'NeuroCore control layer',text:neuroContext,priority:9},
       {label:'Deep Loop',text:deepLoop,priority:9},
       {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
