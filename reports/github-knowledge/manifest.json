@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-24T18:09:25.160Z",
-  "knowledgeVersion": "115d679d7000004f",
+  "generatedAt": "2026-09-24T18:50:23.918Z",
+  "knowledgeVersion": "b1927e5c640978b5",
   "chunkCount": 3854,
   "sources": [
     {
@@ -538,7 +538,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "d3005fbf3ed416e2d1f9c6a2bd31e95791edf1ba",
+      "commit": "d3960229bfddd3de9afd9e3197630ce757827a45",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -610,7 +610,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "3fa3c652c0044fd09a8fe8200ebcff63da61609b",
+      "commit": "332f9d7d5c3f11e2be5976e8a76f97eaa35473c3",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -1483,6 +1483,42 @@
       "repo": "savannah-medina85/sims-4-dlc-unlock",
       "mode": "quarantine",
       "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Ankit-exe/Anime-Character-Generator",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "seregazhuk/php-pinterest-bot",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "DynamiteBob17/Pinterest-Clone-Client",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "SocQAPI/pinterest-pins-api",
+      "mode": "reference-only",
+      "license": "MIT",
       "commit": null,
       "files": 0,
       "chunks": 0,

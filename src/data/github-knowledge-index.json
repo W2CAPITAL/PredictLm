@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "115d679d7000004f",
-  "generatedAt": "2026-09-24T18:09:25.160Z",
+  "knowledgeVersion": "b1927e5c640978b5",
+  "generatedAt": "2026-09-24T18:50:23.918Z",
   "sourceCount": 78,
   "chunkCount": 3854,
   "chunks": [
@@ -30461,9 +30461,9 @@
       "weight": 1.06
     },
     {
-      "id": "b5c7ed0735717d53ad56",
+      "id": "3965952da714cf48270f",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30476,9 +30476,9 @@
       "weight": 1.03
     },
     {
-      "id": "1bc67ac2dcec64504f31",
+      "id": "300f52f691c8b9cb0cd6",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30491,9 +30491,9 @@
       "weight": 1.03
     },
     {
-      "id": "81c26784c9be47c79dbd",
+      "id": "967e95bfd999298df6fd",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30506,9 +30506,9 @@
       "weight": 1.03
     },
     {
-      "id": "f3e84a2b16875600b837",
+      "id": "39ca87563b6088dec321",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30521,9 +30521,9 @@
       "weight": 1.03
     },
     {
-      "id": "e3aee049368abade8b05",
+      "id": "4c2a9ad372ed65f685d2",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30536,9 +30536,9 @@
       "weight": 1.03
     },
     {
-      "id": "1a4520eee3536f511d4c",
+      "id": "67790d168d5866b37dbf",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30551,9 +30551,9 @@
       "weight": 1.03
     },
     {
-      "id": "d00f248a192b5c988c28",
+      "id": "4ec97c9df19d51be0742",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30566,9 +30566,9 @@
       "weight": 1.03
     },
     {
-      "id": "03f86015d2810ea47a55",
+      "id": "19cbd9b08e65b3fc57da",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30581,9 +30581,9 @@
       "weight": 1.03
     },
     {
-      "id": "9a16d4bab0c64a34502c",
+      "id": "b604bca6ef96cf717aa3",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30596,9 +30596,9 @@
       "weight": 1.03
     },
     {
-      "id": "66b1d1145e72680d589b",
+      "id": "ca9239edb2425a08e763",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30611,9 +30611,9 @@
       "weight": 1.03
     },
     {
-      "id": "8c9d6cc60d275881d937",
+      "id": "d4bdf82b167b7322721d",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30626,9 +30626,9 @@
       "weight": 1.03
     },
     {
-      "id": "86d7e3a55c98f96daae1",
+      "id": "69c14115d3bf6d250a9b",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30641,9 +30641,9 @@
       "weight": 1.03
     },
     {
-      "id": "f6adce92caced486c415",
+      "id": "55dfc326ebf1a13ed85d",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30656,9 +30656,9 @@
       "weight": 1.03
     },
     {
-      "id": "94f8c5815539d66bd961",
+      "id": "88be1c3b0e15033e3335",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -30671,9 +30671,9 @@
       "weight": 1.03
     },
     {
-      "id": "53d83cd426a3abc51f1d",
+      "id": "9969b32994934d503fae",
       "source": "ComposioHQ/composio",
-      "ref": "d3005fbf3ed4",
+      "ref": "d3960229bfdd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38160,9 +38160,9 @@
       "weight": 1.02
     },
     {
-      "id": "8b7e1fde756ca6c2b9a6",
+      "id": "91985f9a3023437e3d6a",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38175,9 +38175,9 @@
       "weight": 1.03
     },
     {
-      "id": "366239a7903fffa1c14a",
+      "id": "d254a96f838d5b6aa2b9",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38190,9 +38190,9 @@
       "weight": 1.03
     },
     {
-      "id": "36ffadc850cd7accb8c0",
+      "id": "968db9669865307b4dc7",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38205,9 +38205,9 @@
       "weight": 1.03
     },
     {
-      "id": "5226c3ca18d1f97aa564",
+      "id": "ccbb529ffc4647cc9ed0",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38220,9 +38220,9 @@
       "weight": 1.03
     },
     {
-      "id": "11a4f93e77bd45fa6757",
+      "id": "8a35a80b866a4ff29ac2",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38235,9 +38235,9 @@
       "weight": 1.03
     },
     {
-      "id": "1dd6ecf81526839be7a5",
+      "id": "10b2b14a3a9386be3609",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38250,9 +38250,9 @@
       "weight": 1.03
     },
     {
-      "id": "983d34e0d63dab1dfcbc",
+      "id": "73708f2567502e5e4a09",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38265,9 +38265,9 @@
       "weight": 1.03
     },
     {
-      "id": "0c504f7a14def68a85d4",
+      "id": "0795466b009d68a191dd",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38280,9 +38280,9 @@
       "weight": 1.03
     },
     {
-      "id": "cda4405f01f223c10cb9",
+      "id": "048ccfafc8a4a50a69ad",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38295,9 +38295,9 @@
       "weight": 1.03
     },
     {
-      "id": "30a09b39312452e9f5e4",
+      "id": "9bcc05d58aaf51e0a37a",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38310,9 +38310,9 @@
       "weight": 1.03
     },
     {
-      "id": "2593057d636f44e96425",
+      "id": "6e0f867da39c9f223796",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38325,9 +38325,9 @@
       "weight": 1.03
     },
     {
-      "id": "a2109bd50aea19401b18",
+      "id": "f96737ce10d75260bfa8",
       "source": "CodebuffAI/freebuff",
-      "ref": "3fa3c652c004",
+      "ref": "332f9d7d5c3f",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
