@@ -1,6 +1,6 @@
 'use client';
 
-export type ExperienceSource='local-model'|'native-model'|'build'|'feedback'|'instruction';
+export type ExperienceSource='local-model'|'webllm'|'native-model'|'build'|'feedback'|'instruction';
 
 export interface AdaptiveExperience{
   id:string;
