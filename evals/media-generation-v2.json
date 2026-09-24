@@ -184,6 +184,94 @@
         "shortPtBrCaption": true,
         "captionDoesNotExposeTechnicalPrompt": true
       }
+    },
+    {
+      "id": "library-hides-technical-prompt-leaks",
+      "input": {
+        "prompt": "[ESTILO] Fotografia de fantasia hiper-realista e cinematográfica...",
+        "caption": "Epic anime battle key visual, highly detailed, 4k"
+      },
+      "expect": {
+        "cardUsesDisplayTitle": true,
+        "cardUsesSafeCaption": true,
+        "visibleTextExcludes": [
+          "[ESTILO]",
+          "Epic anime battle key visual",
+          "seed",
+          "4k"
+        ]
+      }
+    },
+    {
+      "id": "freeza-auto-literal-and-canonical",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça o freeza",
+        "firecrawlConfigured": true
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "referenceQueryIncludes": [
+          "Frieza",
+          "Dragon Ball"
+        ],
+        "negativeIncludes": [
+          "armored demon",
+          "Goku face"
+        ],
+        "canonicalIdentityLock": true
+      }
+    },
+    {
+      "id": "dragon-ball-oozaru-auto-literal",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça o macaco de dragon ball anime 4k"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "displayTitle": "Oozaru de Dragon Ball",
+        "referenceQueryIncludes": [
+          "Oozaru",
+          "Great Ape"
+        ],
+        "negativeIncludes": [
+          "ordinary monkey portrait",
+          "armored demon"
+        ]
+      }
+    },
+    {
+      "id": "naruto-four-tails-disambiguates-son-goku",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça a bijuu de quatro caudas do anime naruto"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "referenceQueryIncludes": [
+          "Naruto",
+          "Four Tails",
+          "Son Goku",
+          "Bijuu"
+        ],
+        "negativeIncludes": [
+          "Dragon Ball Goku",
+          "missing four tails"
+        ]
+      }
+    },
+    {
+      "id": "old-library-items-normalize-on-read",
+      "input": {
+        "prompt": "Naruto Uzumaki blonde spiky hair whisker marks orange jacket Epic anime key visual",
+        "meta": {}
+      },
+      "expect": {
+        "displayTitle": "Naruto",
+        "captionPtBr": true,
+        "technicalPromptNotUsedAsCardTitle": true
+      }
     }
   ]
 }

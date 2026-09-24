@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.3.0"
+  version: "3.4.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.3
+# PredictLM Master v3.4
 
 ## Regra soberana
 
@@ -658,3 +658,13 @@ No Literal:
 - quality repair não substitui o prompt literal por um prompt expandido.
 
 A superfície final mostra **imagem + legenda curta pt-BR**. Prompt original, prompt expandido/efetivo, seed, provider, model, promptMode e negative ficam persistidos em metadados.
+
+
+## Biblioteca de mídia e fidelidade de franquia
+
+- cards usam `displayTitle` + `caption` limpos; prompt técnico/expandido não aparece como legenda;
+- itens antigos são normalizados ao carregar, preservando a imagem sem exigir migração manual;
+- Auto força Literal para personagens/franquias reconhecidas, incluindo Freeza/Frieza, Oozaru/Great Ape e Bijuu de Quatro Caudas do Naruto;
+- ambiguidades de franquia são desfeitas no identity lock e na busca Firecrawl;
+- legenda segura nunca começa com “faça/crie/gere” nem vaza `[ESTILO]`, seed, 4k ou instruções internas;
+- prompt original continua sendo a fonte da verdade para reabrir e regenerar um item.

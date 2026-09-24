@@ -1,4 +1,5 @@
 import { compactText } from '@/lib/token-budget';
+import { buildSpecificNegativePrompt } from '@/lib/media/media-fidelity';
 
 export type ImagineParityStyle='Cinematic'|'Photoreal'|'Editorial'|'3D'|'Anime'|'Minimal'|'Product'|string;
 export type ImagePromptMode='auto'|'literal'|'imagine';
@@ -68,29 +69,7 @@ export function parityCaptionPtBr(originalPrompt:string){
 
 
 export function buildDefaultNegativePrompt(originalPrompt:string,userNegative=''){
-  const base=[
-    'generic lookalike',
-    'wrong character identity',
-    'wrong hair color',
-    'wrong costume',
-    'missing requested transformation or power form',
-    'fused opponents',
-    'duplicated face',
-    'extra limbs',
-    'deformed hands',
-    'cropped head',
-    'blurry focal subject',
-    'low resolution',
-    'muddy textures',
-    'watermark',
-    'random text',
-    'fake UI'
-  ];
-  const p=String(originalPrompt||'').toLowerCase();
-  if(/naruto|kurama/.test(p))base.push('dragon instead of Kurama','lion instead of Kurama','generic blond warrior');
-  if(/sasuke|susanoo/.test(p))base.push('generic purple robot','generic demon instead of Perfect Susanoo');
-  if(userNegative.trim())base.unshift(userNegative.trim());
-  return Array.from(new Set(base)).join(', ');
+  return buildSpecificNegativePrompt(originalPrompt,userNegative);
 }
 
 export function buildLiteralImagePrompt(input:{

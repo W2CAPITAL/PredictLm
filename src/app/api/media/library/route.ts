@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createHash, randomUUID } from 'node:crypto';
+import { buildDisplayTitle, buildSafeCaptionPtBr, normalizeMediaLibraryItem } from '@/lib/media/media-fidelity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,7 +72,8 @@ export async function GET(req:Request){
       headers:headers(key,w)
     });
     if(!r.ok)throw new Error('Supabase '+r.status);
-    const items=await r.json();
+    const rawItems=await r.json();
+    const items=Array.isArray(rawItems)?rawItems.map((item:any)=>normalizeMediaLibraryItem(item)):[];
     const out=NextResponse.json({items,persisted:true});
     return applyCookies(out,w);
   }catch{
@@ -105,7 +107,16 @@ export async function POST(req:Request){
     remote_url:body?.url&&!String(body.url).startsWith('data:')?String(body.url).slice(0,4000):null,
     thumbnail_url:body?.thumbnailUrl?String(body.thumbnailUrl).slice(0,4000):null,
     pinned:!!body?.pinned,
-    meta:body?.meta&&typeof body.meta==='object'?body.meta:{}
+    meta:(()=>{
+      const incoming=body?.meta&&typeof body.meta==='object'?body.meta:{};
+      const promptOriginal=String(incoming?.promptOriginal||incoming?.originalPrompt||prompt).trim();
+      return {
+        ...incoming,
+        promptOriginal,
+        displayTitle:buildDisplayTitle(promptOriginal),
+        caption:buildSafeCaptionPtBr(promptOriginal,String(incoming?.caption||''))
+      };
+    })()
   };
 
   try{
@@ -115,7 +126,8 @@ export async function POST(req:Request){
       body:JSON.stringify(row)
     });
     if(!r.ok)throw new Error('Supabase '+r.status);
-    const created=(await r.json())?.[0]||null;
+    const createdRaw=(await r.json())?.[0]||null;
+    const created=createdRaw?normalizeMediaLibraryItem(createdRaw):null;
 
     // Metadata-only rows are tiny. Unpinned history older than 30 days is pruned
     // opportunistically; binary Storage is never written by this endpoint.

@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -157,3 +157,31 @@ Depois que a imagem real existir:
 - [ ] Legenda curta pt-BR
 - [ ] Prompt original/expandido/seed/provider/model persistidos
 - [ ] Sem fake URL / sem log de runtime
+
+
+## Media Library limpa
+
+A biblioteca não exibe prompt técnico como legenda.
+
+Cada item deve separar:
+- `promptOriginal`;
+- `promptExpanded`;
+- `displayTitle`;
+- `caption`;
+- `seed`, provider e model apenas como metadados.
+
+Card:
+- título amigável curto;
+- legenda pt-BR limpa;
+- estilo/aspecto discretos;
+- nunca mostrar `[ESTILO]`, `Epic anime battle key visual`, `masterpiece`, `4k`, seed ou prompt interno como título.
+
+Itens antigos são normalizados ao carregar para corrigir a UI sem depender de migração manual.
+
+## Desambiguação de franquias
+
+Casos que forçam Literal + referência Firecrawl:
+- Freeza/Frieza → identidade canônica branca/roxa de Dragon Ball;
+- Oozaru/“macaco de Dragon Ball” → Great Ape Saiyajin, não macaco comum ou demônio blindado;
+- “Bijuu de quatro caudas do Naruto” → Son Goku Four-Tails de Naruto, nunca Goku humano de Dragon Ball;
+- Naruto/Kurama vs Sasuke/Perfect Susanoo → dois combatentes distintos, laranja/dourado vs violeta.

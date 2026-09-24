@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.27.0"
+  version: "1.28.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -744,3 +744,13 @@ Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity S
 
 ## Grok Imagine Parity / Firecrawl-first
 Firecrawl já configurado é suficiente para referências visuais. Google Cloud Console/CSE não é requisito. A ausência de `GOOGLE_IMAGE_SEARCH_API_KEY`/`GOOGLE_IMAGE_SEARCH_CX` não deve gerar warning ao usuário. A geração preserva prompt original e prompt expandido, usa estilo como modificador real e não apresenta score técnico como aprovação semântica total.
+
+
+## Biblioteca de mídia e fidelidade de franquia
+
+- cards usam `displayTitle` + `caption` limpos; prompt técnico/expandido não aparece como legenda;
+- itens antigos são normalizados ao carregar, preservando a imagem sem exigir migração manual;
+- Auto força Literal para personagens/franquias reconhecidas, incluindo Freeza/Frieza, Oozaru/Great Ape e Bijuu de Quatro Caudas do Naruto;
+- ambiguidades de franquia são desfeitas no identity lock e na busca Firecrawl;
+- legenda segura nunca começa com “faça/crie/gere” nem vaza `[ESTILO]`, seed, 4k ou instruções internas;
+- prompt original continua sendo a fonte da verdade para reabrir e regenerar um item.
