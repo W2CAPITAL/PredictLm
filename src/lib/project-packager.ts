@@ -206,7 +206,7 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     {path:'RUNME.md',content:runme,language:'markdown'}
   ];
   const preserved=files.filter(f=>
-    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md','SAAS_BLUEPRINT.md','DOMAIN_ENGINE_BLUEPRINT.md'].includes(f.path)||
+    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md','SAAS_BLUEPRINT.md','DOMAIN_ENGINE_BLUEPRINT.md','LEXIS_OPERATING_MODEL.md'].includes(f.path)||
     f.path.startsWith('src/domain/')||
     f.path.startsWith('src/integrations/')||
     f.path.startsWith('src/types/')||
