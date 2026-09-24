@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.10.2"
+  version: "1.10.3"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -299,6 +299,8 @@ Auto-probe somente em loopback:
 
 Fluxo:
 TOKEN SAVER → PROBE LOCAL → Skill Forge top-k → runtime local → gate de assunto → fallback.
+
+Auto não escolhe pelo ping mais baixo: usa prioridade de capacidade e deixa a latência apenas como métrica. Ordem padrão: Ollama → OpenAI local 4891 → OpenAI local 8080 → GenieX → LowRAM.
 
 A página hospedada não presume que Vercel alcança o localhost do usuário. O Local Runtime Router roda no cliente e pode falhar se o runtime não expuser CORS/acesso local.
 
