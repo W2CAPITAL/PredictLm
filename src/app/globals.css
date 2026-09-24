@@ -397,3 +397,8 @@ button,input,textarea{font:inherit}
 .gmedia-result-caption b{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8f86b6}
 .gmedia-result-caption p{margin:0;font-size:9px;line-height:1.5;color:#b8b8c0}
 @media(max-width:620px){.gmedia-prompt-mode>div{grid-template-columns:1fr}}
+
+
+.gmedia-provider-warning{border-top:1px solid #3a2d18;background:#18130d;padding:9px 12px;display:flex;flex-direction:column;gap:3px}
+.gmedia-provider-warning b{font-size:8px;color:#d9b36d;text-transform:uppercase;letter-spacing:.08em}
+.gmedia-provider-warning span{font-size:8px;line-height:1.45;color:#a99575}
