@@ -28,6 +28,7 @@ import { GrokResearchPanel } from '@/components/GrokResearchPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
 import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
+import { advanceBrowserNeuroContext } from '@/lib/neurocore';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -124,6 +125,7 @@ export function ChatShell({onOpenLegal}:Props){
     const mediaKind=detectChatMediaRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
+    const neuroContext=advanceBrowserNeuroContext(prompt).context;
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
@@ -377,7 +379,7 @@ export function ChatShell({onOpenLegal}:Props){
           const cloudResponse=await fetch('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt,researchContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
+            body:JSON.stringify({prompt,researchContext,neuroContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
           });
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
