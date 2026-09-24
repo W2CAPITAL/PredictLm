@@ -18,6 +18,43 @@
   },
   "sources": [
     {
+      "repo": "tanbiralam/claude-code",
+      "branch": "main",
+      "license": "unlicensed-leaked-proprietary-source",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "agents",
+        "skills",
+        "cli",
+        "source-leak"
+      ],
+      "reason": "Repository explicitly describes itself as leaked Claude Code source and provides no verified license. Never copy, ingest, redistribute, train on, or depend on its source. Use the official Anthropic repository/documentation for architecture references instead."
+    },
+    {
+      "repo": "anthropics/claude-code",
+      "branch": "main",
+      "license": "proprietary-commercial-terms",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "plugins/README.md",
+        "mods/agents-md/README.md",
+        "mods/diff/README.md",
+        "examples/settings/README.md"
+      ],
+      "domains": [
+        "agents",
+        "skills",
+        "plugins",
+        "hooks",
+        "project-instructions",
+        "code-review",
+        "context"
+      ],
+      "reason": "Official Anthropic repository is all-rights-reserved under Anthropic Commercial Terms. PredictLM may study public architecture/documentation patterns, but must not copy or bulk-ingest proprietary source into runtime RAG."
+    },
+    {
       "repo": "mindsdb/mindshub",
       "branch": "main",
       "license": "MIT",
