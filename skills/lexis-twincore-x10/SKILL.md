@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.9.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.10.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.9.0"
+  version: "5.10.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.9.0
+# LEXIS TwinCore X10 v5.10.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -384,3 +384,17 @@ Quando a intenção for aprender/praticar/testar, carregar `modules/TUTOR-MODE.m
 O Tutor Mode mantém o mesmo RECALL/ROUTE/VERIFY da TwinCore, mas troca o objetivo do turno: otimiza aprendizagem e evidência de domínio, não apenas uma resposta pronta.
 
 Não rodar Council X10 em cada exercício. Usar Council somente para plano educacional complexo, conflito de fontes, conteúdo de alto risco ou pedido explícito.
+
+
+## Deep Research Tree
+
+Quando a tarefa exigir pesquisa ampla, carregar `modules/DEEP-RESEARCH.md`.
+Fast/Balanceado/Comprehensive usam budgets diferentes. Aprofundar somente diante de lacuna, contradição ou pedido explícito.
+Falha de uma branch não invalida as fontes verificadas das demais.
+
+## Books / Courses / external learning
+
+Carregar `modules/BOOKS-COURSES.md`.
+Livro/curso/vídeo é fonte somente dentro de seus direitos/proveniência.
+Repo-contêiner não relicencia obra embutida.
+Ciência Todo Dia pode complementar pesquisa científica; LinkedIn Learning serve para descoberta e material autorizado.
