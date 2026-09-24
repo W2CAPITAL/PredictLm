@@ -1,3 +1,5 @@
+import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+
 export type ProviderProtocol='openai'|'anthropic';
 export interface ProviderSpec{
   name:string;
@@ -109,7 +111,7 @@ function modelBonus(model:string,task:TaskClass){
 }
 
 export function rankProviders(prompt:string,deep=false){
-  const providers=configuredProviders().filter(provider=>!isAuxiliaryLocalProvider(provider));
+  const providers=rankHealthyProviders(configuredProviders().filter(provider=>!isAuxiliaryLocalProvider(provider)));
   const task=taskClass(prompt,deep);
   return providers
     .map((provider,index)=>({provider,index,score:modelBonus(provider.model,task)-index*0.15}))
@@ -154,6 +156,7 @@ export async function callProviderText(
         ? data.content.filter((x:any)=>x?.type==='text').map((x:any)=>x.text).join('\n').trim()
         : '';
       if(!text)throw new Error(provider.name+' empty response');
+      recordProviderSuccess(provider);
       return text;
     }
 
@@ -178,7 +181,11 @@ export async function callProviderText(
     let data:any={};try{data=JSON.parse(raw)}catch{}
     const text=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
     if(!text)throw new Error(provider.name+' empty response');
+    recordProviderSuccess(provider);
     return text;
+  }catch(error){
+    recordProviderFailure(provider,error);
+    throw error;
   }finally{clearTimeout(timer)}
 }
 
