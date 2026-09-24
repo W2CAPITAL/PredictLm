@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.14.0",
+  "version": "5.15.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -37,7 +37,10 @@
     "runtime-federation",
     "agent-fabric",
     "provider-mesh",
-    "web-reach"
+    "web-reach",
+    "predict-auto",
+    "lexispredict-saas",
+    "office-artifacts"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -146,7 +149,15 @@
     "apify-research-bridge",
     "web-reach",
     "open-lovable-build-patterns",
-    "fastchat-serving-patterns"
+    "fastchat-serving-patterns",
+    "predict-auto-unified-router",
+    "weak-device-runtime-budget",
+    "no-first-visit-model-download",
+    "safe-local-runtime-probe",
+    "lexispredict-saas-skill",
+    "dossier-second-brain",
+    "office-artifact-fabric",
+    "docx-pptx-pdf-xlsx-generation"
   ],
   "hosts": [
     "PredictLM",
