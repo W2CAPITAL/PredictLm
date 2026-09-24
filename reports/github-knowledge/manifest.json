@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T01:13:46.148Z",
-  "knowledgeVersion": "3fb0440a764b3943",
-  "chunkCount": 2329,
+  "generatedAt": "2026-09-24T01:15:27.071Z",
+  "knowledgeVersion": "5bcc951f65dcb6ad",
+  "chunkCount": 925,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -36,7 +36,7 @@
       "license": "MIT",
       "commit": "b82162b7fce6059472a7741c527f6878f437512e",
       "files": 120,
-      "chunks": 1833,
+      "chunks": 260,
       "error": null
     },
     {
