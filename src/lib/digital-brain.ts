@@ -100,14 +100,14 @@ export function advanceDigitalBrain(previous:DigitalBrainState|undefined,prompt:
     },
     executive:{
       currentGoal:inferGoal(prompt),
-      taskPersistence:clamp(prev.executive.taskPersistence*.72+(sig.build||sig.research?.92:.65)*.28),
+      taskPersistence:clamp(prev.executive.taskPersistence*.72+((sig.build||sig.research) ? .92 : .65)*.28),
       inhibition:clamp(prev.executive.inhibition*.55+neuro.circuits.inhibition*.45),
       confidence:clamp(prev.executive.confidence*.6+neuro.confidence*.4)
     },
     metacognition:{
       uncertainty:clamp(prev.metacognition.uncertainty*.52+neuro.uncertainty*.48),
       contradictionWatch:clamp(prev.metacognition.contradictionWatch*.72+(sig.research||sig.risk?.9:.58)*.28),
-      sourceDemand:clamp(prev.metacognition.sourceDemand*.6+(sig.research?.95:sig.risk?.8:.35)*.4)
+      sourceDemand:clamp(prev.metacognition.sourceDemand*.6+(sig.research ? .95 : (sig.risk ? .8 : .35))*.4)
     },
     memory:{
       working,
@@ -115,12 +115,12 @@ export function advanceDigitalBrain(previous:DigitalBrainState|undefined,prompt:
       consolidationCount:prev.memory.consolidationCount
     },
     social:{
-      empathy:clamp(prev.social.empathy*.8+(sig.social?.82:.62)*.2),
-      trustCalibration:clamp(prev.social.trustCalibration*.78+(sig.risk?.9:.68)*.22),
-      manipulationWatch:clamp(prev.social.manipulationWatch*.7+(sig.social||sig.risk?.85:.42)*.3)
+      empathy:clamp(prev.social.empathy*.8+(sig.social ? .82 : .62)*.2),
+      trustCalibration:clamp(prev.social.trustCalibration*.78+(sig.risk ? .9 : .68)*.22),
+      manipulationWatch:clamp(prev.social.manipulationWatch*.7+((sig.social||sig.risk) ? .85 : .42)*.3)
     },
     predictive:{
-      predictionError:clamp(prev.predictive.predictionError*.7+(sig.ambiguity?.72:.28)*.3),
+      predictionError:clamp(prev.predictive.predictionError*.7+(sig.ambiguity ? .72 : .28)*.3),
       modelUpdate:clamp(prev.predictive.modelUpdate*.75+neuro.curiosity*.25)
     }
   };
