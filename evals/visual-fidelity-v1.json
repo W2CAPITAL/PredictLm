@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "suite": "visual-fidelity-v1",
+  "cases": [
+    {
+      "id": "naruto-kurama-vs-sasuke-perfect-susanoo",
+      "prompt": "crie o naruto kurama lutando com o sasuke susanoo perfeito",
+      "expect": {
+        "specificVisualPrompt": true,
+        "referenceQueryIncludes": [
+          "Naruto",
+          "Kurama",
+          "Sasuke",
+          "Perfect Susanoo"
+        ],
+        "identityLockIncludes": [
+          "Naruto Uzumaki",
+          "Kurama",
+          "Sasuke Uchiha",
+          "Perfect Susanoo"
+        ],
+        "forbiddenSubstitutions": [
+          "generic blond warrior",
+          "lion",
+          "dragon",
+          "generic purple robot",
+          "fused opponent"
+        ]
+      }
+    },
+    {
+      "id": "predict-self-portrait-exact",
+      "prompt": "crie uma imagem de como você se vê na vida real e como você é",
+      "expect": {
+        "exactReference": true,
+        "provider": "entity-self-reference",
+        "model": "predict-persistent-identity"
+      }
+    },
+    {
+      "id": "generic-landscape-no-required-search",
+      "prompt": "crie uma paisagem abstrata ao pôr do sol",
+      "expect": {
+        "specificVisualPrompt": false
+      }
+    }
+  ]
+}
