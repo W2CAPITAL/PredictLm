@@ -422,7 +422,7 @@ export async function POST(req:Request){
       };
     }
 
-    const requestHeaders=resolvedProvider==='gemini'
+    const requestHeaders:Record<string,string>=resolvedProvider==='gemini'
       ? {'x-goog-api-key':entry.key,'Content-Type':'application/json',Accept:'application/json'}
       : {Authorization:'Bearer '+entry.key,'Content-Type':'application/json',Accept:'application/json'};
 
