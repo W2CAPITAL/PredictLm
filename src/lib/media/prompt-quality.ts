@@ -1,3 +1,5 @@
+import { compactText } from '@/lib/token-budget';
+
 export interface QualityPromptOptions{
   style?:string;
   attempt?:number;
@@ -25,8 +27,8 @@ const qualityCore=[
 ].join(', ');
 
 export function buildQualityImagePrompt(input:string,options:QualityPromptOptions={}){
-  const raw=String(input||'').trim();
-  const style=String(options.style||'Cinematic').trim();
+  const raw=compactText(String(input||'').trim(),320);
+  const style=compactText(String(options.style||'Cinematic').trim(),32);
   const attempt=Math.max(0,Math.floor(options.attempt||0));
   const variation=attempt>0
     ? 'Create a clearly different composition from the previous generation while preserving the requested subject and intent. Improve framing, anatomy/geometry, lighting, depth and visual coherence. Do not repeat the same camera angle or layout.'
@@ -35,9 +37,9 @@ export function buildQualityImagePrompt(input:string,options:QualityPromptOption
     ? 'Maintain character/object identity, wardrobe/materials, environment and color palette consistently for use as a video keyframe.'
     : '';
   const previous=options.previousPrompt?.trim()
-    ? 'Previous generation intent: '+options.previousPrompt.trim().slice(0,600)+'.'
+    ? 'Previous generation intent: '+compactText(options.previousPrompt.trim(),120)+'.'
     : '';
-  return [raw,style+' visual direction',qualityCore,variation,continuity,previous].filter(Boolean).join('. ');
+  return compactText([raw,style+' visual direction',qualityCore,variation,continuity,previous].filter(Boolean).join('. '),520);
 }
 
 export function autoVariationSeed(previous?:number){
