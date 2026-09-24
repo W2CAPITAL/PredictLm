@@ -19,6 +19,10 @@ function serverCanReach(base:string){
   return !(process.env.VERCEL&&loopbackBase(base));
 }
 
+export function isAuxiliaryLocalProvider(provider:ProviderSpec){
+  return provider.name==='ollama'||provider.name==='freellmapi'||loopbackBase(provider.base);
+}
+
 export function configuredProviders(){
   const out:ProviderSpec[]=[];
   const push=(p:ProviderSpec)=>{
@@ -105,7 +109,7 @@ function modelBonus(model:string,task:TaskClass){
 }
 
 export function rankProviders(prompt:string,deep=false){
-  const providers=configuredProviders();
+  const providers=configuredProviders().filter(provider=>!isAuxiliaryLocalProvider(provider));
   const task=taskClass(prompt,deep);
   return providers
     .map((provider,index)=>({provider,index,score:modelBonus(provider.model,task)-index*0.15}))
