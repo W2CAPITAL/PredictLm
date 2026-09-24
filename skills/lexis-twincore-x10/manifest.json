@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.15.0",
+  "version": "5.16.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -40,7 +40,9 @@
     "web-reach",
     "predict-auto",
     "lexispredict-saas",
-    "office-artifacts"
+    "office-artifacts",
+    "saas-builder-fabric",
+    "generative-media-auto-router"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -157,7 +159,12 @@
     "lexispredict-saas-skill",
     "dossier-second-brain",
     "office-artifact-fabric",
-    "docx-pptx-pdf-xlsx-generation"
+    "docx-pptx-pdf-xlsx-generation",
+    "saas-multitenant-rbac",
+    "saas-audit-jobs",
+    "nano-banana-first",
+    "generative-video-auto-router",
+    "honest-local-motion-fallback"
   ],
   "hosts": [
     "PredictLM",
