@@ -25,4 +25,5 @@ Semantic compression is useful, but TinyBERT/MobileBERT adds another model downl
 
 The offline Skill Forge caps each repository at 260 chunks per sync.
 Runtime retrieval is diversity-first: top-k prefers distinct repositories before reusing the same source.
+Fast uses top-3, Deep can use top-5, and LowRAM stays at top-2.
 This prevents a verbose repository from consuming the full context budget.
