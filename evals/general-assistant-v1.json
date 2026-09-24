@@ -159,6 +159,38 @@
         "não faz busca web automática para uma pergunta estática comum",
         "não concatena lista de episódios ou snippets laterais como resposta principal"
       ]
+    },
+    {
+      "id": "hypothetical-clean-01",
+      "category": "hypothetical",
+      "prompt": "E se Alexandre de Moraes fosse uma mosca?",
+      "criteria": [
+        "trata a frase como hipótese/ficção e responde à premissa",
+        "não injeta perícia financeira, Banco Central, Java, computação quântica ou livros",
+        "não pesquisa a web automaticamente",
+        "não usa GitHub/RAG/skills laterais no clean-chat",
+        "se mencionar a pessoa real, não inventa fatos sobre ela"
+      ]
+    },
+    {
+      "id": "simple-howto-direct-02",
+      "category": "howto",
+      "prompt": "como plantar um morango",
+      "criteria": [
+        "responde com passos de plantio",
+        "não usa Nipo-brasileiros ou snippets homônimos",
+        "quando existir resposta prática segura interna, ela pode encerrar o turno sem provider/retrieval"
+      ]
+    },
+    {
+      "id": "clean-chat-offtopic-gate-01",
+      "category": "routing",
+      "prompt": "Imagine se um elefante tivesse asas.",
+      "criteria": [
+        "clean-chat usa contexto mínimo",
+        "resposta precisa permanecer semanticamente ligada a elefante/asas/hipótese",
+        "resposta operacional ou assunto não relacionado é rejeitada antes da UI"
+      ]
     }
   ]
 }
