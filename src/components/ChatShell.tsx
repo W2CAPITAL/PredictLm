@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
@@ -20,7 +20,7 @@ import { isGlobalLearningInstruction } from '@/lib/global-learning';
 import { answerViaLocalRuntime, probeLocalRuntimes, setLocalRuntimeCredential } from '@/lib/local-runtime-router';
 import { resolveConversationLanguage } from '@/lib/language-policy';
 import { publicAnswerGate } from '@/lib/public-answer-gate';
-import { loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
+import { cancelWebLLMLoad, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
@@ -62,6 +62,22 @@ function mediaSubject(prompt:string){
     .trim()||prompt.trim();
 }
 
+async function fetchWithTimeout(input:RequestInfo|URL,init:RequestInit={},timeoutMs=15000,parentSignal?:AbortSignal){
+  const controller=new AbortController();
+  const onAbort=()=>controller.abort();
+  if(parentSignal){
+    if(parentSignal.aborted)controller.abort();
+    else parentSignal.addEventListener('abort',onAbort,{once:true});
+  }
+  const timer=window.setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    return await fetch(input,{...init,signal:controller.signal});
+  }finally{
+    window.clearTimeout(timer);
+    parentSignal?.removeEventListener('abort',onAbort);
+  }
+}
+
 export function ChatShell({onOpenLegal}:Props){
   const s=useAssistantStore();
   const studio=useStudio();
@@ -80,6 +96,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [modelTick,setModelTick]=useState(0);
   const [activity,setActivity]=useState<string[]>([]);
   const bottom=useRef<HTMLDivElement>(null);
+  const turnAbort=useRef<AbortController|null>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
   const webllm=useMemo(()=>webLLMStatus(),[modelTick,loadState]);
@@ -110,13 +127,13 @@ export function ChatShell({onOpenLegal}:Props){
     return()=>window.removeEventListener('predictlm:neural-warmup',onWarm as EventListener);
   },[]);
 
-  async function webContext(query:string){
+  async function webContext(query:string,signal?:AbortSignal){
     try{
-      const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:12})});
+      const r=await fetchWithTimeout('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:8})},10000,signal);
       const data=await r.json();
       if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
       const rawItems=[...(data.web||[]),...(data.news||[])];
-      const items=filterRelevantResearchItems(query,rawItems,10);
+      const items=filterRelevantResearchItems(query,rawItems,8);
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
@@ -137,6 +154,7 @@ export function ChatShell({onOpenLegal}:Props){
     const brainContext=advanceBrowserDigitalBrainContext(prompt).context;
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
+    const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
 
@@ -165,6 +183,8 @@ export function ChatShell({onOpenLegal}:Props){
     }
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
+    const turnController=new AbortController();
+    turnAbort.current=turnController;
     setBusy(true);
     setActivity(
       processNumber
@@ -177,7 +197,7 @@ export function ChatShell({onOpenLegal}:Props){
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
             ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
-            : s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)
+            : safeLocalDeep
               ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','FORGE · preparando rascunho neural','AEGIS · revisando relevância','VERIFY · preparando resposta']
               : s.deepThink
                 ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','VERIFY · usando apenas contexto relevante']
@@ -189,7 +209,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(fraudIntent&&!processNumber){
         setActivity(['Classificando sinais de fraude','Verificando links, credenciais e pagamento']);
         const assessment=assessFraudRisk({texts:[prompt]});
-        const web=s.webEnabled?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+        const web=s.webEnabled?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
         s.addMessage({
           role:'assistant',
           content:formatFraudAssessment(assessment),
@@ -388,7 +408,7 @@ export function ChatShell({onOpenLegal}:Props){
         return;
       }
 
-      const web=needsWeb?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+      const web=needsWeb?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
       const researchContext=web.text;
@@ -397,11 +417,11 @@ export function ChatShell({onOpenLegal}:Props){
       if(kind!=='casual'&&kind!=='context'){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
         try{
-          const cloudResponse=await fetch('/api/chat',{
+          const cloudResponse=await fetchWithTimeout('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({prompt,researchContext,brainContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
-          });
+          },33000,turnController.signal);
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
             const gatedCloud=publicAnswerGate(String(cloudData.content||''),language);
@@ -470,7 +490,7 @@ export function ChatShell({onOpenLegal}:Props){
         fallbackText,
         language,
         researchContext,
-        deep:s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded),
+        deep:safeLocalDeep,
         onStage:stage=>{
           if(!s.deepThink||!(currentNeural.loaded||currentWebLLM.loaded))return;
           const stages={
@@ -525,9 +545,30 @@ export function ChatShell({onOpenLegal}:Props){
       });
       fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
     }finally{
+      if(turnAbort.current===turnController)turnAbort.current=null;
       setBusy(false);
       setActivity([]);
       setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
+    }
+  }
+
+  function cancelCurrentTurn(){
+    turnAbort.current?.abort();
+    turnAbort.current=null;
+    cancelNeuralWork();
+    setBusy(false);
+    setActivity([]);
+    setModelTick(x=>x+1);
+    setModelError('Execução interrompida para manter o app responsivo.');
+  }
+
+  async function cancelModelLoad(){
+    const local=cancelNeuralLoad();
+    const web=await cancelWebLLMLoad();
+    if(local||web){
+      setLoadState(null);
+      setModelTick(x=>x+1);
+      setModelError('Carregamento local cancelado. O Predict Auto continua pelo servidor/pesquisa.');
     }
   }
 
@@ -707,23 +748,23 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>setScreen('simulation')}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
         <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.actions?.length?<details className={'grok-actions '+(m.status||'done')}><summary>{m.status==='error'?'Execução interrompida':m.status==='partial'?'Execução parcial':'O que foi feito'}</summary>{m.actions.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</details>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
-      {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
+      {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong><button onClick={cancelModelLoad}>Cancelar</button></div>}
       {modelError&&<div className="grok-model-error">{modelError}<button onClick={()=>setModelError('')}><X size={12}/></button></div>}
     </main>
   </div>
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenSimulation,onOpenLegal,compact}=props;
+  const {value,setValue,send,cancelTurn,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenSimulation,onOpenLegal,compact}=props;
   const localReady=!!(neural?.loaded||webllm?.loaded);
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — o Predict Auto escolhe o melhor motor disponível"/>
@@ -745,7 +786,7 @@ function Composer(props:any){
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
           </div>}
         </div>
-        <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
+        <button className="grok-send" onClick={busy?cancelTurn:send} disabled={!busy&&!value.trim()} title={busy?'Parar execução':'Enviar'}>{busy?<X size={17}/>:<Send size={17}/>}</button>
       </div>
     </div>
   </div>
