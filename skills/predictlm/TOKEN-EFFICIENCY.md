@@ -20,3 +20,9 @@ Image/video prompts are compiled from a scoped visual brief rather than the enti
 
 ## Why no mandatory LLMLingua
 Semantic compression is useful, but TinyBERT/MobileBERT adds another model download and inference pass. On weak PCs this can cost more than deterministic trimming. Keep it optional until dependency/runtime alignment is verified.
+
+## Knowledge diversity
+
+The offline Skill Forge caps each repository at 260 chunks per sync.
+Runtime retrieval is diversity-first: top-k prefers distinct repositories before reusing the same source.
+This prevents a verbose repository from consuming the full context budget.
