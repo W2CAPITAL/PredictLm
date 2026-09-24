@@ -1,0 +1,43 @@
+{
+  "name": "predictlm-master",
+  "displayName": "PredictLM Master",
+  "version": "3.0.0",
+  "entry": "SKILL.md",
+  "publicIdentity": "PredictLM",
+  "languageDefault": "pt-BR",
+  "mode": "single-sovereign-skill",
+  "capabilities": [
+    "general-chat",
+    "human-presence",
+    "build",
+    "research",
+    "deep-research",
+    "processes-datajud-djen",
+    "legal-analysis",
+    "dossier-pro",
+    "tutor",
+    "media",
+    "office-artifacts",
+    "memory",
+    "digital-brain",
+    "scenario-lab",
+    "life-simulation",
+    "centum-100",
+    "forge",
+    "aegis",
+    "council-x10",
+    "chair",
+    "parallax",
+    "provider-mesh",
+    "local-runtime",
+    "webllm",
+    "neural-local",
+    "security",
+    "fraud-shield",
+    "self-improve"
+  ],
+  "install": {
+    "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
+    "predictlm": "This skill is the sovereign public behavior contract; specialized modules remain internal implementation."
+  }
+}
