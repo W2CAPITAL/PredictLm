@@ -9,11 +9,12 @@ function normalized(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
 }
 
-type ResearchDomain='health'|'stem'|'software'|'legal'|'finance'|'history'|'factcheck'|'security'|'human'|'general';
+type ResearchDomain='health'|'stem'|'fabrication'|'software'|'legal'|'finance'|'history'|'factcheck'|'security'|'human'|'general';
 
 function researchDomain(query:string):ResearchDomain{
   const q=normalized(query);
   if(/\b(saude|saúde|medic|doenca|doença|sintoma|tratamento|clinico|clínico|farmaco|fármaco|vacina|biomed|epidemi)\b/.test(q))return 'health';
+  if(/\b(solda|soldagem|welding|metal|aco|aço|ferro|chapas?|vergalhao|vergalhão|fabricacao|fabricação|escultura metalica|escultura metálica)\b/.test(q))return 'fabrication';
   if(/\b(codigo|code|software|javascript|typescript|python|react|next\.?js|api|github|framework|backend|frontend|database|devops|vercel)\b/.test(q))return 'software';
   if(/\b(jurid|processo|tribunal|cnj|datajud|djen|lei|sentenca|sentença|jurisprud|contrato)\b/.test(q))return 'legal';
   if(/\b(financ|juros|selic|bacen|bcb|sgs|credito|crédito|mercado|econom|inflacao|inflação)\b/.test(q))return 'finance';
@@ -29,6 +30,7 @@ function authorityQueryFor(query:string){
   const domain=researchDomain(query);
   if(domain==='health')return query+' (site:pubmed.ncbi.nlm.nih.gov OR site:clinicaltrials.gov OR site:cochranelibrary.com OR site:who.int)';
   if(domain==='stem')return query+' (site:arxiv.org OR site:ieeexplore.ieee.org OR site:dl.acm.org OR site:openalex.org)';
+  if(domain==='fabrication')return query+' (site:osha.gov OR site:millerwelds.com OR site:lincolnelectric.com OR site:thefabricator.com)';
   if(domain==='software')return query+' (official documentation OR site:github.com)';
   if(domain==='legal')return query+' (site:cnj.jus.br OR site:stj.jus.br OR site:stf.jus.br OR site:gov.br)';
   if(domain==='finance')return query+' (site:bcb.gov.br OR site:ibge.gov.br OR site:gov.br)';
@@ -277,10 +279,16 @@ function enrichAndRank(query:string,items:any[],limit:number){
 
   const selected:any[]=[];
   let threatRefs=0;
+  let weakRefs=0;
+  const hasStrong=relevant.some((x:any)=>['official','academic','primary','investigative','established'].includes(x.qualityTier)&&Number(x.qualityScore||0)>=65);
   for(const row of relevant){
     if(row.qualityTier==='threat-reference'){
       if(threatRefs>=2)continue;
       threatRefs++;
+    }
+    if(hasStrong&&['community','unknown'].includes(row.qualityTier)){
+      if(weakRefs>=2)continue;
+      weakRefs++;
     }
     selected.push(row);
     if(selected.length>=Math.max(limit,12))break;
