@@ -369,38 +369,6 @@ export function ChatShell({onOpenLegal}:Props){
         : prompt;
       const fallbackText=direct||research?.content||undefined;
 
-      if(s.localRuntimeEnabled){
-        setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
-        try{
-          const localReply=await answerViaLocalRuntime(augmented,messages,{deep:s.deepThink,preferred:'auto'});
-          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
-          if(relevant){
-            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
-            const localSources=[
-              ...web.sources,
-              ...localReply.sources
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
-            s.addMessage({
-              role:'assistant',
-              content:localReply.content,
-              engine:'Predict Auto',
-              sources:localSources,
-              actions:[
-                'Runtime: '+localReply.label+' · '+localReply.model,
-                ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
-                'GitHub top-k + memória compactada',
-                'Resposta passou pelo gate de assunto'
-              ],
-              status:'done'
-            });
-            return;
-          }
-          setActivity(['Local API respondeu fora do assunto','Retornando ao próximo motor']);
-        }catch(err:any){
-          setActivity(['Local API indisponível: '+String(err?.message||'falha').slice(0,120),'Retornando ao próximo motor']);
-        }
-      }
-
       if(kind!=='casual'&&kind!=='context'){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
         try{
@@ -440,6 +408,39 @@ export function ChatShell({onOpenLegal}:Props){
           }
         }catch{}
         setActivity(['Provider Mesh não respondeu','Predict Auto usando próximo runtime disponível','VERIFY · preparando resposta']);
+      }
+
+
+      if(s.localRuntimeEnabled){
+        setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
+        try{
+          const localReply=await answerViaLocalRuntime(augmented,messages,{deep:s.deepThink,preferred:'auto'});
+          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
+          if(relevant){
+            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
+            const localSources=[
+              ...web.sources,
+              ...localReply.sources
+            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            s.addMessage({
+              role:'assistant',
+              content:localReply.content,
+              engine:'Predict Auto',
+              sources:localSources,
+              actions:[
+                'Runtime: '+localReply.label+' · '+localReply.model,
+                ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
+                'GitHub top-k + memória compactada',
+                'Resposta passou pelo gate de assunto'
+              ],
+              status:'done'
+            });
+            return;
+          }
+          setActivity(['Local API respondeu fora do assunto','Retornando ao próximo motor']);
+        }catch(err:any){
+          setActivity(['Local API indisponível: '+String(err?.message||'falha').slice(0,120),'Retornando ao próximo motor']);
+        }
       }
 
       let reply=await answerLocally(augmented,messages,{
