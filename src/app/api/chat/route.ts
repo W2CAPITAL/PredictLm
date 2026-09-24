@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
+import { compactText, optimizePromptPackage } from '@/lib/token-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -89,14 +90,21 @@ export async function POST(req:Request){
       },{status:503});
     }
 
-    const history=(Array.isArray(body?.messages)?body.messages:[])
+    const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
-      .slice(-8)
-      .map((x:any)=>({role:x.role,content:String(x.content).slice(0,5000)})) as Msg[];
+      .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
     const deep=Boolean(body?.deep);
     const gh=githubKnowledgeContext(prompt,3);
     const ghHits=retrieveGitHubKnowledge(prompt,3);
     const stats=githubKnowledgeStats();
+    const packed=optimizePromptPackage({
+      messages:rawHistory,
+      mode:deep?'lite':'full',
+      sections:[
+        {label:'GitHub Knowledge Engine',text:gh,priority:5}
+      ].filter(x=>x.text)
+    });
+    const history=packed.messages as Msg[];
     const cacheKey=crypto.createHash('sha256').update(JSON.stringify({
       prompt:normalize(prompt),
       history:history.slice(-4).map(x=>[x.role,normalize(x.content).slice(0,1200)]),
@@ -113,13 +121,13 @@ export async function POST(req:Request){
       'Use contexto recuperado apenas quando for relevante. Não transforme um chunk em fato externo se ele só descreve um padrão de software.',
       'Se faltarem dados atuais, diga o limite em vez de inventar.',
       deep?'Faça uma revisão interna adicional de aderência, contradições e pontos faltantes antes da resposta final.':'Seja conciso sem perder o essencial.',
-      gh?('Contexto GitHub versionado (playbooks/padrões):\n'+gh):''
+      packed.context
     ].filter(Boolean).join('\n\n');
 
     const messages:Msg[]=[
       {role:'system',content:system},
       ...history,
-      {role:'user',content:prompt.slice(0,16000)}
+      {role:'user',content:compactText(prompt,deep?1800:1200)}
     ];
 
     const errors:string[]=[];
@@ -132,6 +140,7 @@ export async function POST(req:Request){
           model:provider.model,
           cache:'miss',
           knowledgeVersion:stats.version,
+          tokenBudget:packed.stats,
           sources:ghHits.map(x=>({
             title:x.heading,
             source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
