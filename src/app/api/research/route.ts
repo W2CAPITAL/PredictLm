@@ -5,6 +5,25 @@ export const runtime='nodejs';
 function safeHost(url:string){try{return new URL(url).hostname}catch{return ''}}
 function stripHtml(input:string){return String(input||'').replace(/<[^>]+>/g,' ').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&amp;/g,'&').replace(/\s+/g,' ').trim()}
 
+function normalized(input:string){
+  return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+}
+
+function isSoftwareResearchQuery(query:string){
+  return /\b(codigo|code|software|programa|javascript|typescript|python|react|next\.?js|api|github|biblioteca|framework|package|npm|bug|erro|backend|frontend|database|banco de dados)\b/.test(normalized(query));
+}
+
+function isAutomotiveResearchQuery(query:string){
+  return /\b(carro|carros|veiculo|veiculos|automovel|automoveis|automotivo|automotiva)\b/.test(normalized(query));
+}
+
+function expandResearchQuery(query:string){
+  if(isAutomotiveResearchQuery(query)){
+    return query+' automotive engineering vehicle design chassis suspension braking powertrain safety homologation prototype';
+  }
+  return query;
+}
+
 async function wikiIntro(title:string){
   try{
     const url='https://pt.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(title.replace(/ /g,'_'));
@@ -116,14 +135,18 @@ async function freeSearch(query:string,limit:number){
   const web:any[]=[];
   const warnings:string[]=[];
   const sensitive=isSensitiveResearchQuery(query);
+  const automotive=isAutomotiveResearchQuery(query);
+  const expanded=expandResearchQuery(query);
   const authorityQuery=sensitive
     ? query+' (site:gov.br OR site:bcb.gov.br OR site:cert.br OR site:cnj.jus.br OR site:cvm.gov.br)'
-    : query+' official documentation';
+    : automotive
+      ? expanded+' (site:nhtsa.gov OR site:unece.org OR site:sae.org OR site:iso.org)'
+      : query+' official documentation';
   const [wiki,duck,github,duckWeb,duckAuthority]=await Promise.allSettled([
     fetch('https://pt.wikipedia.org/w/api.php?action=query&list=search&format=json&utf8=1&srlimit='+limit+'&srsearch='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
     fetch('https://api.duckduckgo.com/?format=json&no_html=1&skip_disambig=1&q='+encodeURIComponent(query),{headers:{'User-Agent':'PredictLM-Studio/4.0'}}).then(r=>r.json()),
-    fetch('https://api.github.com/search/repositories?per_page='+Math.min(5,limit)+'&q='+encodeURIComponent(query),{headers:{'Accept':'application/vnd.github+json','User-Agent':'PredictLM-Studio'}}).then(async r=>{if(!r.ok)throw new Error('GitHub '+r.status);return r.json()}),
-    duckHtmlSearch(query,Math.min(8,limit)),
+    isSoftwareResearchQuery(query)?fetch('https://api.github.com/search/repositories?per_page='+Math.min(5,limit)+'&q='+encodeURIComponent(query),{headers:{'Accept':'application/vnd.github+json','User-Agent':'PredictLM-Studio'}}).then(async r=>{if(!r.ok)throw new Error('GitHub '+r.status);return r.json()}):Promise.resolve({items:[]}),
+    duckHtmlSearch(expanded,Math.min(10,limit)),
     duckHtmlSearch(authorityQuery,Math.min(6,limit))
   ]);
 
@@ -169,7 +192,7 @@ export async function POST(req:Request){
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
       try{
-        const result=await firecrawlSearch(query,limit,key);
+        const result=await firecrawlSearch(expandResearchQuery(query),limit,key);
         let apify:any[]=[];
         try{apify=await apifyItems(limit)}catch{}
         const web=enrichAndRank([...(result.web||[]),...apify],limit);
