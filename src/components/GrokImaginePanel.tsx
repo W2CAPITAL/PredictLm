@@ -200,6 +200,7 @@ export function GrokImaginePanel(){
     model?:string;
     url?:string|null;
     enhancedPrompt?:string;
+    seed?:number;
     meta?:Record<string,any>;
   }){
     const saved=await fetch('/api/media/library',{
@@ -216,7 +217,7 @@ export function GrokImaginePanel(){
         aspectRatio:ratio.label,
         width:ratio.w,
         height:ratio.h,
-        seed,
+        seed:Number.isFinite(Number(input.seed))?Number(input.seed):seed,
         url:input.url&&String(input.url).startsWith('data:')?null:input.url,
         meta:{surface:'imagine',storageMode:'metadata-only',...(input.meta||{})}
       })
@@ -229,7 +230,7 @@ export function GrokImaginePanel(){
     return saved?.item||null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number){
+  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt){
     setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
@@ -238,7 +239,7 @@ export function GrokImaginePanel(){
         prompt:renderPrompt,
         originalPrompt:prompt,
         style,
-        attempt,
+        attempt:renderAttempt,
         width:ratio.w,
         height:ratio.h,
         seed:renderSeed,
@@ -332,7 +333,7 @@ export function GrokImaginePanel(){
 
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      let data=await createImageUrl(renderPrompt,nextSeed);
+      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt);
       let url=data.url;
       let expandedPrompt=data.expandedPrompt||renderPrompt;
 
@@ -348,6 +349,7 @@ export function GrokImaginePanel(){
           model:data.model||'predict-persistent-identity',
           url,
           enhancedPrompt:expandedPrompt,
+          seed:nextSeed,
           meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity'}
         });
         return url;
@@ -366,7 +368,7 @@ export function GrokImaginePanel(){
           previousPrompt:renderPrompt
         })+'. Correções obrigatórias: '+finalReview.promptHints.join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
         setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed);
+        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1);
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
@@ -390,6 +392,7 @@ export function GrokImaginePanel(){
         model:data.model||'flux',
         url,
         enhancedPrompt:expandedPrompt,
+        seed:nextSeed,
         meta:{
           keyframeForVideo:mode==='video',
           attempt:nextAttempt,
@@ -682,7 +685,8 @@ export function GrokImaginePanel(){
       for(let i=0;i<frames.length;i++){
         setVideoStage('Preparando cena '+(i+1)+'/'+frames.length);
         const frame=frames[i];
-        const result=await createImageUrl(frame.prompt,Math.min(2147483646,seed+frame.seedOffset));
+        const frameSeed=Math.min(2147483646,seed+frame.seedOffset);
+        const result=await createImageUrl(frame.prompt,frameSeed,i);
         urls.push(result.url);
         if(!firstProvider)firstProvider=result.provider;
       }
