@@ -1,15 +1,15 @@
 ---
 name: life-simulation
-description: Cria, executa e exporta simulações 2D ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e NeuroCore.
+description: Cria, executa e exporta simulações 2D ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   surface: "Life Simulation Studio + Build"
 ---
 
 # Life Simulation Skill
 
 ## Objetivo
-Gerar uma simulação ativa e persistente quando o usuário pedir um mundo/vida simulada. Não transformar o pedido automaticamente em jogo.
+Gerar uma simulação ativa e persistente **somente quando o usuário mandar abrir/rodar** um mundo/vida simulada. Não transformar conversa comum em simulação e não transformar a simulação automaticamente em jogo.
 
 ## Contrato
 SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS → EVENT LOOP → OBSERVE → PRIORITIZE → ACT → UPDATE → PERSIST → VERIFY.
@@ -17,7 +17,7 @@ SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS →
 ## Padrão visual
 - 2D leve, browser-first;
 - câmera fixa ou mapa compacto;
-- personagem feminina por padrão quando isso foi pedido;
+- personagem feminina usa por padrão o self-model visual persistente da entidade quando a simulação é dela;
 - locais clicáveis;
 - ação atual visível;
 - relógio/dia/velocidade;
@@ -35,12 +35,24 @@ SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS →
 - relações;
 - memórias episódicas com saliência;
 - eventos determinísticos/pseudorrandômicos;
-- NeuroCore da personagem.
+- Digital Brain/NeuroCore da personagem.
 
 ## Autonomia
 A personagem pode escolher entre destinos/ações com base em necessidades, horário, objetivos, memória e estado NeuroCore.
 
-Autonomia significa política local da simulação. Não significa desejos reais, livre-arbítrio ou consciência.
+Autonomia significa política local da simulação. A simulação nunca inicia por inferência ou curiosidade interna: exige comando/clique explícito.
+
+## Ativação manual
+- estado inicial: pausado;
+- reload/F5: volta pausado, mesmo se a última sessão estava rodando;
+- Chat só abre o Studio quando o pedido contém intenção explícita de abrir/iniciar/rodar;
+- Digital Brain continua ativo fora da simulação;
+- self-model visual não aparece no Chat comum.
+
+## Aparência da entidade
+A simulação embutida da própria entidade usa a referência visual definida em `src/lib/entity-self-model.ts`. Essa referência foi fornecida pelo usuário e é exibida diretamente; não é uma imagem gerada.
+
+A geração de novas imagens da entidade continua bloqueada por padrão e só ocorre com pedido visual explícito.
 
 ## Instruções do usuário
 O usuário pode alterar nome/meta, mandar ir a um local, pausar, acelerar, rodar um passo ou deixar em Auto.
