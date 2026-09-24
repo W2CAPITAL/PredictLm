@@ -164,7 +164,7 @@ export function GrokBuildPanel(){
     const pkg=buildRunnableProject(Object.values(s.files));
     const zip=new JSZip();
     pkg.forEach(f=>zip.file(f.path,f.content));
-    zip.file('predictlm.json',JSON.stringify({project:s.projectName,engine:'PredictLM Unified + TwinCore X10',exportedAt:new Date().toISOString()},null,2));
+    zip.file('predictlm.json',JSON.stringify({project:s.projectName,engine:'PredictLM Master',exportedAt:new Date().toISOString()},null,2));
     const blob=await zip.generateAsync({type:'blob'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
@@ -197,7 +197,7 @@ export function GrokBuildPanel(){
             </div>}
           </div>
         </div>
-        <p>Continuidade real · TwinCore X10 · runnable export</p>
+        <p>Continuidade real · PredictLM Master · runnable export</p>
       </div>
       <div className="gtool-head-actions">
         <button onClick={()=>s.newBuild()}><Plus size={14}/>Nova build</button>
@@ -209,7 +209,7 @@ export function GrokBuildPanel(){
 
     <div className="gbuild-grid">
       <aside className="gbuild-agent">
-        <div className="twincore-badge"><Sparkles size={13}/><div><b>LEXIS TwinCore X10</b><span>FORGE + AEGIS · Council 10</span></div></div>
+        <div className="twincore-badge"><Sparkles size={13}/><div><b>PredictLM Master</b><span>Build · FORGE + AEGIS · Council X10</span></div></div>
         <div className="gbuild-thread">
           {s.messages.slice(-8).map(m=><article className={m.role} key={m.id}><b>{m.role==='user'?'VOCÊ':'IA'}</b><p>{m.content}</p></article>)}
           {busy&&<div className="gbuild-running"><i/><i/><i/> executando sobre o projeto atual</div>}
