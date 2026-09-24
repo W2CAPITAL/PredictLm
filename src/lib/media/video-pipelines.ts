@@ -1,3 +1,5 @@
+import { compactText } from '@/lib/token-budget';
+
 export type MediaPipelinePattern={
   id:string;
   name:string;
@@ -43,7 +45,7 @@ export type StoryboardFrame={
 };
 
 export function buildStoryboardFrames(prompt:string,style:string,aspect:string):StoryboardFrame[]{
-  const subject=prompt.trim()||'cinematic subject';
+  const subject=compactText(prompt.trim()||'cinematic subject',180);
   const continuity='same subject identity, same wardrobe/materials, same environment, same color palette, '+style.toLowerCase()+', '+aspect+', coherent continuity, high detail, no watermark';
   return [
     {
