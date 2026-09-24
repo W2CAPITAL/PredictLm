@@ -14,6 +14,7 @@ export type CoreIntent =
   | 'portfolio'
   | 'landing'
   | 'workspace'
+  | 'simulation'
   | 'generic';
 
 export type DeepThinkLevel = 'fast' | 'deep' | 'max';
@@ -46,6 +47,7 @@ const INTENTS: Array<{id:CoreIntent; words:RegExp; features:string[]}> = [
   {id:'store',words:/loja|store|e-?commerce|produto|checkout|carrinho|shop/i,features:['catálogo','carrinho','quantidade','total']},
   {id:'portfolio',words:/portfolio|portfólio|curr[ií]culo|resume|cases?|projetos pessoais/i,features:['cases','filtros','contato']},
   {id:'workspace',words:/\b(saas|erp|helpdesk|service desk|workspace|multi.?tenant|rbac|jur[ií]dic|datajud|djen|starlink|spacex|sat[eé]lite|quant|qubit|sgs|bacen|bcb|per[ií]cia|observab|netdata|mission control)\b/i,features:['sidebar','módulos de domínio','dados','integrações','estados reais','auditoria']},
+  {id:'simulation',words:/\b(simula[cç][aã]o de vida|life simulator|life simulation|simula[cç][aã]o ativa|mundo vivo|personagem ativa|agente em mundo|simulador de vida|simula[cç][aã]o social)\b/i,features:['mundo 2D','personagem ativa','necessidades','rotina','relações','memória episódica','eventos','persistência local','controle de tempo']},
   {id:'landing',words:/landing|site|p[aá]gina|page|homepage|website/i,features:['CTA','seções','navegação']},
 ];
 
@@ -450,6 +452,34 @@ function workspaceCss(){
   ].join(''));
 }
 
+function simulationApp(title:string){
+  const safeTitle=JSON.stringify(title);
+  return [
+    "const PLACES=[{id:'Casa',x:8,y:58,w:18,h:25},{id:'Parque',x:8,y:10,w:22,h:30},{id:'Clínica',x:38,y:9,w:17,h:23},{id:'Trabalho',x:73,y:10,w:19,h:28},{id:'Café',x:40,y:48,w:17,h:20},{id:'Mercado',x:72,y:58,w:19,h:22},{id:'Biblioteca',x:36,y:79,w:25,h:14}];",
+    "const clamp=(v)=>Math.max(0,Math.min(100,Math.round(v)));",
+    "const initial=()=>({tick:0,day:1,minute:450,running:false,speed:1,person:{name:'Lia',age:27,location:'Casa',x:17,y:70,money:850,occupation:'Analista de projetos',action:'Organizando o dia',goal:'Equilibrar rotina e avançar em um projeto pessoal',mood:'estável'},needs:{energy:78,hunger:72,social:64,fun:60,focus:74,stress:22,health:86},relations:[{name:'Mara',affinity:72,trust:76}],memories:[{id:1,text:'Começou um novo ciclo com uma meta pessoal.',kind:'goal',salience:82}],event:'Novo dia iniciado.'});",
+    "function App(){",
+    " const [state,setState]=useState(()=>{try{return JSON.parse(localStorage.getItem('life-sim-v1'))||initial()}catch{return initial()}});",
+    " const [command,setCommand]=useState('');const [target,setTarget]=useState(null);",
+    " useEffect(()=>{try{localStorage.setItem('life-sim-v1',JSON.stringify(state))}catch{}},[state]);",
+    " useEffect(()=>{if(!state.running)return;const id=setInterval(()=>setState(s=>step(s,target)),650);return()=>clearInterval(id)},[state.running,state.speed,target]);",
+    " const clock=(m)=>String(Math.floor((m%(24*60))/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');",
+    " const choose=(s)=>{const n=s.needs,h=s.minute/60;const rows=[['Casa',(100-n.energy)*1.1+(100-n.hunger)*.9+(h>22?40:0)],['Trabalho',(h>=8&&h<=17?40:3)+n.focus*.35],['Café',(100-n.social)*.7+(100-n.fun)*.3],['Parque',(100-n.fun)*.5+n.stress*.7],['Mercado',(100-n.hunger)*.55],['Clínica',(100-n.health)*1.6],['Biblioteca',(100-n.focus)*.2+18]];return rows.sort((a,b)=>b[1]-a[1])[0][0]};",
+    " const step=(s,forced)=>{let n={...s,tick:s.tick+1,minute:s.minute+10*s.speed,person:{...s.person},needs:{...s.needs},relations:s.relations.map(x=>({...x})),memories:[...s.memories]};if(n.minute>=1440){n.minute-=1440;n.day++}const dest=forced||choose(n);const p=PLACES.find(x=>x.id===dest),cx=p.x+p.w/2,cy=p.y+p.h/2;const dx=cx-n.person.x,dy=cy-n.person.y,dist=Math.max(1,Math.hypot(dx,dy)),st=Math.min(4.5,dist);n.person.x+=dx/dist*st;n.person.y+=dy/dist*st;const reached=dist<5;if(reached)n.person.location=dest;n.person.action=reached?({Casa:'Descansando e cuidando de si',Trabalho:'Trabalhando em uma tarefa importante','Café':'Conversando e observando o ambiente',Parque:'Caminhando e reduzindo tensão',Mercado:'Resolvendo compras',Clínica:'Cuidando da saúde',Biblioteca:'Estudando e organizando ideias'}[dest]):'Indo para '+dest;let a=n.needs;a.energy=clamp(a.energy-1+(reached&&dest==='Casa'?5:0));a.hunger=clamp(a.hunger-1.1+(reached&&['Casa','Café','Mercado'].includes(dest)?3:0));a.social=clamp(a.social-.5+(reached&&dest==='Café'?5:0));a.fun=clamp(a.fun-.4+(reached&&dest==='Parque'?4:0));a.focus=clamp(a.focus-.35+(reached&&['Trabalho','Biblioteca'].includes(dest)?3:0));a.stress=clamp(a.stress+.35-(reached&&['Casa','Parque','Café'].includes(dest)?3:0));a.health=clamp(a.health-.05+(reached&&['Parque','Clínica'].includes(dest)?2:0));if(reached&&dest==='Trabalho')n.person.money+=7;if(reached&&dest==='Mercado'&&n.person.money>=8)n.person.money-=8;const avg=(a.energy+a.hunger+a.social+a.fun+a.focus+a.health+(100-a.stress))/7;n.person.mood=a.stress>72?'sobrecarregada':avg>75?'bem-disposta':avg>58?'estável':avg>42?'cansada':'fragilizada';if(n.tick%7===0){const text=n.person.action+' às '+clock(n.minute);n.memories=[{id:Date.now(),text,kind:'routine',salience:42},...n.memories].slice(0,12);n.event=text}else n.event=n.person.action;return n};",
+    " const runCommand=()=>{const q=command.trim();if(!q)return;const low=q.toLowerCase();let dest=null;if(/trabalh/.test(low))dest='Trabalho';else if(/parque|caminh/.test(low))dest='Parque';else if(/cafe|café|social|amig/.test(low))dest='Café';else if(/mercado|compr/.test(low))dest='Mercado';else if(/clinic|saude|saúde/.test(low))dest='Clínica';else if(/biblioteca|estud|aprend/.test(low))dest='Biblioteca';else if(/casa|descans|dorm/.test(low))dest='Casa';const goal=q.match(/(?:objetivo|meta)\\s*(?:é|e|:)?\\s*(.+)$/i)?.[1];const name=q.match(/(?:nome|personagem)\\s*(?:é|e|:)?\\s*([A-Za-zÀ-ÿ]{2,24})/i)?.[1];setState(s=>{let n={...s,person:{...s.person,name:name||s.person.name,goal:goal||s.person.goal},memories:[{id:Date.now(),text:'Instrução: '+q,kind:'goal',salience:74},...s.memories].slice(0,12)};return step(n,dest)});if(dest)setTarget(dest);setCommand('')};",
+    " const needs=Object.entries(state.needs);",
+    " return <main className='life'><div className='life-shell'><header><div><span>PREDICTLM · ACTIVE LIFE SIM</span><h1>"+safeTitle+"</h1><p>Simulação 2D persistente · personagem ativa · memória local</p></div><div className='clock'><b>Dia {state.day}</b><strong>{clock(state.minute)}</strong><small>{state.person.mood}</small></div></header><section className='life-grid'><div className='world card'><div className='controls'><button className='primary' onClick={()=>setState(s=>({...s,running:!s.running}))}>{state.running?'Pausar':'Rodar'}</button><button onClick={()=>setState(s=>step(s,target))}>Passo</button><button onClick={()=>setTarget(null)} className={!target?'active':''}>Auto</button><select value={state.speed} onChange={e=>setState(s=>({...s,speed:Number(e.target.value)}))}><option value='1'>1×</option><option value='2'>2×</option><option value='4'>4×</option><option value='8'>8×</option></select><button onClick={()=>{setState(initial());setTarget(null)}}>Reset</button></div><div className='map'>{PLACES.map(p=><button key={p.id} className={'place '+(state.person.location===p.id?'here':'')+(target===p.id?' target':'')} style={{left:p.x+'%',top:p.y+'%',width:p.w+'%',height:p.h+'%'}} onClick={()=>setTarget(p.id)}><b>{p.id}</b></button>)}<div className='person' style={{left:state.person.x+'%',top:state.person.y+'%'}}><i/><u/><span>{state.person.action}</span></div></div><div className='command'><input value={command} onChange={e=>setCommand(e.target.value)} onKeyDown={e=>e.key==='Enter'&&runCommand()} placeholder='Ex.: vá ao parque · objetivo: estudar IA · personagem: Luna'/><button onClick={runCommand}>Aplicar</button></div></div><aside className='side'><div className='card panel'><h2>{state.person.name}</h2><p>{state.person.age} anos · {state.person.occupation}</p><b>{state.person.goal}</b><div className='money'>R$ {state.person.money}</div></div><div className='card panel'><h3>Necessidades</h3><div className='needs'>{needs.map(([k,v])=><div key={k}><span>{k}<em>{v}</em></span><i><u style={{width:v+'%'}}/></i></div>)}</div></div><div className='card panel memories'><h3>Memórias</h3>{state.memories.slice(0,5).map(m=><article key={m.id}><b>{m.kind}</b><span>{m.text}</span></article>)}</div></aside></section></div></main>",
+    "}",
+    "return <App/>;"
+  ].join('\\n');
+}
+
+function simulationCss(){
+  return baseCss([
+    '.life{min-height:100vh;background:radial-gradient(circle at 70% -10%,#20193f,transparent 32%),#07090e;padding:24px}.life-shell{max-width:1280px;margin:auto}.life header{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:14px}.life header span{font-size:9px;letter-spacing:.15em;color:#9683ff}.life h1{font-size:40px;letter-spacing:-.05em;margin:5px 0}.life header p{margin:0;color:#7f899b;font-size:11px}.clock{border:1px solid var(--line);border-radius:14px;background:#0d1119;padding:9px 13px;display:grid}.clock strong{font-size:24px}.clock small{color:#8b96a8}.life-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.65fr);gap:13px}.world{padding:12px}.controls{display:flex;gap:7px;margin-bottom:9px}.controls button,.controls select{border:1px solid var(--line);background:#131824;color:#cbd3e1;border-radius:9px;padding:7px 10px}.controls .primary{background:#7158e8;color:white}.controls .active{border-color:#5fd2ae;color:#77dfc0}.map{height:420px;position:relative;border:1px solid #1f2735;border-radius:14px;background:linear-gradient(#0b1017,#090d13);overflow:hidden}.map:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#1a2130 1px,transparent 1px),linear-gradient(90deg,#1a2130 1px,transparent 1px);background-size:32px 32px;opacity:.45}.place{position:absolute;border:1px solid #303a4f;background:#111722;color:#d8e0eb;border-radius:11px}.place.here{border-color:#5ed4af;background:#13251f}.place.target{box-shadow:0 0 0 2px #7962ee inset}.person{position:absolute;width:18px;height:26px;transform:translate(-50%,-50%);z-index:4}.person i{position:absolute;left:5px;top:0;width:9px;height:9px;border-radius:50%;background:#f2c7b5}.person u{position:absolute;left:2px;top:9px;width:15px;height:17px;background:#8c6cff;clip-path:polygon(50% 0,100% 100%,0 100%)}.person span{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);width:max-content;max-width:220px;background:#080b11e8;border:1px solid #354057;color:#cfd8e6;border-radius:8px;padding:6px 8px;font-size:9px;text-decoration:none}.command{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}.command input{border:1px solid var(--line);background:#0b0f16;color:var(--text);border-radius:10px;padding:10px}.command button{border:0;background:#7158e8;color:white;border-radius:9px;padding:0 14px}.side{display:flex;flex-direction:column;gap:10px}.panel{padding:13px}.panel h2,.panel h3{margin:0 0 7px}.panel p{color:var(--muted);font-size:10px}.panel>b{font-size:11px;line-height:1.45}.money{margin-top:10px;font-size:22px;font-weight:800}.needs{display:grid;gap:7px}.needs span{display:flex;justify-content:space-between;font-size:9px;color:#8c98aa}.needs em{font-style:normal}.needs i{height:5px;background:#1a2130;border-radius:99px;overflow:hidden}.needs i u{display:block;height:100%;background:linear-gradient(90deg,#6858dc,#58d0a8)}.memories article{border-top:1px solid var(--line);padding:7px 0;display:grid;grid-template-columns:48px 1fr;gap:7px}.memories article b{font-size:8px;color:#9b86ff;text-transform:uppercase}.memories article span{font-size:9px;color:#b8c2d2}@media(max-width:860px){.life-grid{grid-template-columns:1fr}.map{height:360px}}@media(max-width:600px){.life{padding:12px}.life header{align-items:flex-start;flex-direction:column}.life h1{font-size:32px}.controls{flex-wrap:wrap}.map{height:330px}}'
+  ].join(''));
+}
+
 function genericApp(title:string,prompt:string){
   return landingApp(title,prompt);
 }
@@ -466,6 +496,7 @@ function buildApp(spec:CoreSpec,prompt:string){
   if(spec.intent==='store')return storeApp(spec.title);
   if(spec.intent==='dashboard')return dashboardApp(spec.title);
   if(spec.intent==='workspace')return workspaceApp(spec.title,prompt);
+  if(spec.intent==='simulation')return simulationApp(spec.title);
   return genericApp(spec.title,prompt);
 }
 
@@ -480,6 +511,7 @@ function buildCss(spec:CoreSpec){
   if(spec.intent==='store')return storeCss();
   if(spec.intent==='dashboard')return dashboardCss();
   if(spec.intent==='workspace')return workspaceCss();
+  if(spec.intent==='simulation')return simulationCss();
   return genericCss();
 }
 
@@ -522,7 +554,7 @@ function existingProjectIntent(files:WorkspaceFile[]):CoreIntent|''{
   const spec=files.find(f=>f.path==='predict.spec.json');
   try{
     const value=spec?String(JSON.parse(spec.content)?.spec?.intent||''):'';
-    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','workspace','generic'];
+    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','workspace','simulation','generic'];
     return allowed.includes(value as CoreIntent)?value as CoreIntent:'';
   }catch{return ''}
 }
