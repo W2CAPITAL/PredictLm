@@ -199,6 +199,7 @@ export function GrokImaginePanel(){
     provider?:string;
     model?:string;
     url?:string|null;
+    enhancedPrompt?:string;
     meta?:Record<string,any>;
   }){
     const saved=await fetch('/api/media/library',{
@@ -210,7 +211,7 @@ export function GrokImaginePanel(){
         provider:input.provider||provider||'predict-media',
         model:input.model||'',
         prompt,
-        enhancedPrompt:enhanced,
+        enhancedPrompt:input.enhancedPrompt||enhanced,
         style,
         aspectRatio:ratio.label,
         width:ratio.w,
@@ -233,14 +234,32 @@ export function GrokImaginePanel(){
     const r=await fetch('/api/media/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux',referenceMode:'auto'})
+      body:JSON.stringify({
+        prompt:renderPrompt,
+        originalPrompt:prompt,
+        style,
+        attempt,
+        width:ratio.w,
+        height:ratio.h,
+        seed:renderSeed,
+        model:'flux',
+        referenceMode:'auto'
+      })
     });
     const data=await r.json();
     if(!r.ok||!data?.url)throw new Error(mediaErrorText(data?.error,'A geração não retornou imagem.'));
     const url=String(data.url);
     setImageStage('Finalizando imagem…');
     await preloadGeneratedImage(url);
-    return {url,provider:String(data.provider||''),model:String(data.model||'flux')};
+    return {
+      url,
+      provider:String(data.provider||''),
+      model:String(data.model||'flux'),
+      expandedPrompt:String(data.expandedPrompt||renderPrompt),
+      caption:String(data.caption||''),
+      referencesUsed:Array.isArray(data.referencesUsed)?data.referencesUsed:[],
+      referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[]
+    };
   }
 
   async function upscaleImageUrl(sourceUrl:string){
@@ -315,11 +334,12 @@ export function GrokImaginePanel(){
       setAttempt(nextAttempt);
       let data=await createImageUrl(renderPrompt,nextSeed);
       let url=data.url;
+      let expandedPrompt=data.expandedPrompt||renderPrompt;
 
       if(data.provider==='entity-self-reference'){
         setReview(null);
         setGenerated(url);
-        setGeneratedPrompt(renderPrompt);
+        setGeneratedPrompt(expandedPrompt);
         setGeneratedRequest(prompt);
         setProvider(data.provider);
         await saveLibrary({
@@ -327,7 +347,8 @@ export function GrokImaginePanel(){
           provider:data.provider,
           model:data.model||'predict-persistent-identity',
           url,
-          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self'}
+          enhancedPrompt:expandedPrompt,
+          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity'}
         });
         return url;
       }
@@ -347,6 +368,7 @@ export function GrokImaginePanel(){
         setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
         data=await createImageUrl(repairPrompt,repairSeed);
         url=data.url;
+        expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
         nextAttempt+=1;
         setSeed(nextSeed);
@@ -359,7 +381,7 @@ export function GrokImaginePanel(){
       url=upscaled.url;
 
       setGenerated(url);
-      setGeneratedPrompt(renderPrompt);
+      setGeneratedPrompt(expandedPrompt);
       setGeneratedRequest(prompt);
       setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
       await saveLibrary({
@@ -367,6 +389,7 @@ export function GrokImaginePanel(){
         provider:upscaled.upscaled?upscaled.provider:(data.provider||'pollinations-proxy'),
         model:data.model||'flux',
         url,
+        enhancedPrompt:expandedPrompt,
         meta:{
           keyframeForVideo:mode==='video',
           attempt:nextAttempt,
@@ -378,7 +401,12 @@ export function GrokImaginePanel(){
           deepThink,
           deepResearch,
           researchGrounded:!!prepared.research,
-          directorBrief:prepared.brief||null
+          directorBrief:prepared.brief||null,
+          parityContract:'grok-imagine-parity',
+          promptOriginal:prompt,
+          promptExpanded:expandedPrompt,
+          referenceCount:data.referencesUsed?.length||0,
+          referenceWarnings:data.referenceWarnings||[]
         }
       });
       return url;
