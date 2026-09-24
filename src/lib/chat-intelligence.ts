@@ -147,7 +147,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
 export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean){
   if(kind==='casual'||kind==='context')return false;
   if(kind==='current'||kind==='factual')return true;
-  if(kind==='howto')return webEnabled;
+  if(kind==='howto')return true;
   return webEnabled;
 }
 
