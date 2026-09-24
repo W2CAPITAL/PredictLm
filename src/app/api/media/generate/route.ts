@@ -32,11 +32,11 @@ export async function POST(req:Request){
     const base=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const key=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
 
-    if(base&&key){
+    if(base){
       const url=base.replace(/\/$/,'')+(base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
       const upstream=await fetch(url,{
         method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+        headers:{'Content-Type':'application/json',...(key?{'Authorization':'Bearer '+key}:{})},
         body:JSON.stringify({model,prompt,size:width+'x'+height,n:1})
       });
       const data=await upstream.json().catch(()=>({}));
@@ -45,7 +45,7 @@ export async function POST(req:Request){
       const remoteUrl=first.url||null;
       const dataUrl=first.b64_json?'data:image/png;base64,'+first.b64_json:null;
       if(!remoteUrl&&!dataUrl)throw new Error('Provider não retornou imagem.');
-      return Response.json({url:remoteUrl||dataUrl,provider:'configured',model,width,height,seed});
+      return Response.json({url:remoteUrl||dataUrl,provider:key?'configured-auth':'configured-local',model,width,height,seed});
     }
 
     // O navegador nunca recebe a URL externa diretamente. O proxy same-origin
