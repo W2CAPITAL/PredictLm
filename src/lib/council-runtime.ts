@@ -76,8 +76,8 @@ export async function runExecutableCouncilX10(task:string,files:WorkspaceFile[])
   const chairReply=await answerLocally(chairPrompt,[],{preferNative:true,knowledge:false,decisionAudit:false});
   const chair=chairReply.content.trim();
 
-  const centum=centumDecisionContext(task);
-  const third=parallaxContext(task);
+  const centum=centumDecisionContext(task,true);
+  const third=parallaxContext(task,true);
   const parallaxPrompt=[
     'You are PARALLAX, the third brain after FORGE/AEGIS and Council X10.',
     'Do not merely vote for or against the Chair.',
