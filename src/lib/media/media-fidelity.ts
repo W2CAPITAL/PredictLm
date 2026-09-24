@@ -82,6 +82,7 @@ export function isAnimeFranchisePrompt(input:string){
 export function recommendedImageStyle(input:string,currentStyle='Cinematic'){
   const current=String(currentStyle||'Cinematic').trim()||'Cinematic';
   if(isAnimeFranchisePrompt(input)&&/^cinematic$/i.test(current))return 'Anime';
+  if(isLikelyNamedPersonPrompt(input)&&/^cinematic$/i.test(current))return 'Photoreal';
   return current;
 }
 
