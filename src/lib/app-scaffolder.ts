@@ -515,20 +515,20 @@ export function updateNeuro(prev:NeuroControl,input:{novelty:number;threat:numbe
   };
 }
 `;
-  const readme=`# Simulation modules
+  const selfModel=`export const SIMULATION_SELF_MODEL={\n  name:'Predict',\n  presentation:'feminine',\n  appearance:{hair:'long black hair, straight bangs, high ponytail',style:'dark alternative, black choker, black-and-white striped sleeves'},\n  visualPolicy:{autoGenerate:false,simulationOnly:true},\n  activationPolicy:{manualOnly:true,autoStart:false}\n} as const;\n`;\n  const readme=`# Simulation modules
 
 - model.ts: domain state only.
 - policy.ts: deterministic decision/need rules.
 - memory.ts: bounded episodic memory.
-- neurocore.ts: lightweight brain-inspired control heuristic.
+- neurocore.ts: lightweight brain-inspired control heuristic.\n- self-model.ts: persistent visual identity + manual activation policy.
 
-The UI can change without rewriting the simulation model. The simulation does not claim biological consciousness.
+The UI can change without rewriting the simulation model. The simulation starts paused, requires explicit activation, and does not auto-generate character images.
 `;
   return [
     {path:'src/simulation/model.ts',language:'typescript',content:model},
     {path:'src/simulation/policy.ts',language:'typescript',content:policy},
     {path:'src/simulation/memory.ts',language:'typescript',content:memory},
-    {path:'src/simulation/neurocore.ts',language:'typescript',content:neuro},
+    {path:'src/simulation/neurocore.ts',language:'typescript',content:neuro},\n    {path:'src/simulation/self-model.ts',language:'typescript',content:selfModel},
     {path:'src/simulation/README.md',language:'markdown',content:readme}
   ];
 }
