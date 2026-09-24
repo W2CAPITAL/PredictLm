@@ -13,6 +13,7 @@ import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
 import { isDecisionRequest } from './decision-centum';
 import { webLLMGenerate, webLLMStatus } from './webllm-runtime';
+import { deterministicMathResult } from './deterministic-math-engine';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -46,21 +47,7 @@ let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
 
 function parseMath(input:string){
-  const raw=input.replace(/,/g,'.').replace(/\s+/g,'');
-  if(!/^[0-9+\-*/().%^]+$/.test(raw)||!/\d/.test(raw))return null;
-  const tokens=raw.match(/\d+(?:\.\d+)?|[()+\-*/%^]/g);
-  if(!tokens)return null;
-  let i=0;
-  const primary=():number=>{
-    const t=tokens[i++];
-    if(t==='('){const v=expr();if(tokens[i]===')')i++;return v;}
-    if(t==='-')return -primary();
-    const n=Number(t);if(!Number.isFinite(n))throw new Error('number');return n;
-  };
-  const power=()=>{let v=primary();while(tokens[i]==='^'){i++;v=Math.pow(v,power())}return v};
-  const term=()=>{let v=power();while(['*','/','%'].includes(tokens[i])){const op=tokens[i++];const r=power();v=op==='*'?v*r:op==='/'?v/r:v%r;}return v};
-  const expr=()=>{let v=term();while(['+','-'].includes(tokens[i])){const op=tokens[i++];const r=term();v=op==='+'?v+r:v-r;}return v};
-  try{const v=expr();return i===tokens.length&&Number.isFinite(v)?v:null}catch{return null}
+  return deterministicMathResult(input)?.value??null;
 }
 
 export function browserCapabilities(){
