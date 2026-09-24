@@ -8,6 +8,7 @@ import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
 import { resolveConversationLanguage, languageSystemInstruction, type ConversationLanguage } from '@/lib/language-policy';
 import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
+import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -214,6 +215,7 @@ export async function POST(req:Request){
     const centum=centumDecisionContext(prompt);
     const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
+    const humanLens=humanAdversarialContext(prompt);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
       messages:rawHistory,
@@ -223,6 +225,7 @@ export async function POST(req:Request){
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
         {label:'Centum Decision Gate',text:centum,priority:10},
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
+        {label:'Human Adversarial Lens',text:humanLens,priority:9},
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
