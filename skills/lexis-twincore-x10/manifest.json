@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.9.0",
+  "version": "5.10.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -29,7 +29,9 @@
     "github-knowledge",
     "token-budget",
     "local-runtime",
-    "tutor-mode"
+    "tutor-mode",
+    "deep-research",
+    "books-courses"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -103,7 +105,13 @@
     "mastery-learning",
     "deterministic-quiz-grading",
     "spaced-review-policy",
-    "source-grounded-reading"
+    "source-grounded-reading",
+    "deep-research-tree",
+    "research-query-dedup",
+    "partial-research-fallback",
+    "rights-aware-book-ingest",
+    "course-source-gate",
+    "external-learning-source-policy"
   ],
   "hosts": [
     "PredictLM",
