@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -25,7 +25,8 @@
     "media-repository",
     "dossier-pro",
     "general-assistant",
-    "fraud-defense"
+    "fraud-defense",
+    "github-knowledge"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -78,7 +79,12 @@
     "multi-source-research",
     "transaction-graph-triage",
     "dossier-fraud-section",
-    "threat-reference-gate"
+    "threat-reference-gate",
+    "github-knowledge-engine",
+    "bm25-local-retrieval",
+    "knowledge-versioning",
+    "repo-quarantine",
+    "commit-pinned-provenance"
   ],
   "hosts": [
     "PredictLM",
