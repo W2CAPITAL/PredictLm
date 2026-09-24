@@ -60,7 +60,7 @@ const SOURCES=[
   ['adobe-fonts/source-code-pro','release','OFL-1.1','reference',['fonts','code-ui']],
   ['WestFox-AwA/dsh-prompt-optimizer','main','BSD-3-Clause','reference',['prompt-optimization','context','evidence','token-efficiency']],
   ['drona23/claude-token-efficient','main','MIT','reference',['token-efficiency','output','coding']],
-  ['jnbno1163/LG-token-saver','main','MIT','reference',['token-efficiency','context','tools']],
+  ['jnbno1163/LG-token-saver','master','MIT','reference',['token-efficiency','context','tools']],
   ['atjsh/llmlingua-2-js','main','MIT','reference',['prompt-compression','browser','transformers']],
   ['nadimtuhin/claude-token-optimizer','main','MIT','reference',['context-budget','docs','token-efficiency']],
   ['Mintplex-Labs/anything-llm','master','MIT','reference',['rag','skill-selection','model-router','memory']],
