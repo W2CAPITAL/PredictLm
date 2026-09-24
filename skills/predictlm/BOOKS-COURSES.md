@@ -42,3 +42,10 @@ Do not bulk-copy or redistribute protected videos, transcripts or exercise files
 
 Approved notes/lessons can enter the global-learning proposal flow.
 Raw copyrighted course/video/book content does not become a global lesson automatically.
+
+
+## Quarantine examples
+
+- `Dioque/Livros`: no verified license/rights metadata; 0 chunks, quarantine.
+- `eyeke04/Books`: no verified rights metadata; quarantine.
+- `devxhub/awesome-book-collection`: container license does not relicense embedded commercial PDFs; discovery/quarantine only.
