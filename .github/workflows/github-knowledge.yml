@@ -27,7 +27,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund
+      - name: Restore install-only lock changes
+        run: git restore package-lock.json 2>/dev/null || true
       - run: npm run knowledge:sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
