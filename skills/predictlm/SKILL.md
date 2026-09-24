@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.20.0"
+  version: "1.21.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -627,3 +627,26 @@ Carregar `skills/predictlm/RESEARCH-SOURCE-MATRIX.md` para pesquisa.
 Fluxo: **domínio → fonte primária/oficial → fonte acadêmica/especializada → triangulação → conflito/lacuna → síntese**.
 
 OpenAlex e Semantic Scholar podem complementar a busca web em domínios acadêmicos. GitHub continua limitado a fatos sobre software/repos. Threat references só aparecem em pesquisa defensiva e com conteúdo bruto sensível suprimido.
+
+
+## NeuroCore + Life Simulation
+
+Carregar `skills/neurocore/SKILL.md` para a camada cognitiva e `skills/life-simulation/SKILL.md` para simulações ativas.
+
+### NeuroCore
+O PredictLM mantém circuitos virtuais persistentes de saliência, atenção, memória de trabalho, memória episódica, planejamento, inibição, social, ameaça, curiosidade e ação.
+
+Uso:
+- priorizar o assunto central;
+- reduzir retrieval off-topic;
+- calibrar incerteza;
+- aumentar verificação sob risco;
+- preservar contexto relevante;
+- orientar planejamento sem criar objetivos autônomos concorrentes.
+
+O NeuroCore é inspirado em conectividade neural e modelos dinâmicos; **não é um cérebro humano literal e não prova consciência**.
+
+### Life Simulation Studio
+Pedido explícito para rodar/abrir uma simulação de vida ativa abre o Studio 2D. Pedido para **criar um app** de simulação vai para Build e gera/exporta um projeto de simulação.
+
+A simulação inclui personagem feminina por padrão quando solicitado, tempo, localização, necessidades, relações, memória, dinheiro/ocupação, eventos, meta e NeuroCore próprio. Não adicionar score/vitória/combate se o pedido for simulação e não jogo.
