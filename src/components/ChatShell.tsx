@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, loadNeuralModel, neuralAutoWarmPolicy, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveMemoryStats, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
@@ -75,6 +75,7 @@ export function ChatShell({onOpenLegal}:Props){
 
   useEffect(()=>{
     let cancelled=false;
+    let idleId:any=null;
     const timer=window.setTimeout(async()=>{
       try{
         const restored=await restorePreferredNeuralModel(p=>{
@@ -86,15 +87,51 @@ export function ChatShell({onOpenLegal}:Props){
           setLoadState(null);
           setModelError('');
           setModelTick(x=>x+1);
+          return;
         }
-      }catch(err:any){
+
+        const policy=neuralAutoWarmPolicy();
+        if(!policy.allowed)return;
+        const warm=async()=>{
+          if(cancelled||neuralStatus().loaded||neuralStatus().loadingTier)return;
+          try{
+            setLoadState({tier:'lite',progress:null,status:'Aquecendo Neural Lite em segundo plano…'});
+            await loadNeuralModel('lite',p=>{
+              if(cancelled)return;
+              setLoadState({tier:'lite',progress:p.progress,status:'Aquecendo Neural Lite · '+p.status});
+            },{persistPreference:true});
+            if(cancelled)return;
+            setLoadState(null);
+            setModelError('');
+            setModelTick(x=>x+1);
+          }catch(err:any){
+            if(cancelled)return;
+            setLoadState(null);
+            if(!/carregamento neural em andamento/i.test(String(err?.message||''))){
+              setModelError('Auto-load neural foi adiado; o Chat continua funcional e pode carregar o Lite depois.');
+            }
+          }
+        };
+        const ric=(window as any).requestIdleCallback;
+        idleId=typeof ric==='function'
+          ? ric(()=>void warm(),{timeout:5000})
+          : window.setTimeout(()=>void warm(),2600);
+      }catch{
         if(cancelled)return;
         setLoadState(null);
         setModelError('O modelo salvo não pôde ser restaurado automaticamente. O modo CPU/WASM continua disponível para nova tentativa.');
         setModelTick(x=>x+1);
       }
     },700);
-    return()=>{cancelled=true;window.clearTimeout(timer)};
+    return()=>{
+      cancelled=true;
+      window.clearTimeout(timer);
+      const cic=(window as any).cancelIdleCallback;
+      if(idleId!=null){
+        if(typeof cic==='function')cic(idleId);
+        else window.clearTimeout(idleId);
+      }
+    };
   },[]);
 
   async function webContext(query:string){
