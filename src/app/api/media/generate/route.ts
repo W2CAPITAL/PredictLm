@@ -81,9 +81,9 @@ export async function POST(req:Request){
     // O navegador nunca recebe a URL externa diretamente. O proxy same-origin
     // evita CORS/canvas tainted e permite que a mesma imagem vire vídeo local.
     return Response.json({
-      url:localRenderUrl(prompt,width,height,seed,model),
+      url:localRenderUrl(prompt,width,height,seed,requestedModel),
       provider:'pollinations-proxy',
-      model,
+      model:requestedModel,
       width,
       height,
       seed
