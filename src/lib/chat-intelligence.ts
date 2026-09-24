@@ -469,5 +469,6 @@ export function responseTopicAlignment(prompt:string,content:string){
     if(variants.some(v=>new RegExp('\\b'+v+'\\b').test(c)))hits++;
   }
   const score=hits/subject.length;
-  return {relevant:hits>=1&&(subject.length===1||score>=0.34),score,subject};
+  const hypothetical=isHypotheticalPrompt(prompt);
+  return {relevant:hits>=1&&(hypothetical||subject.length===1||score>=0.34),score,subject};
 }
