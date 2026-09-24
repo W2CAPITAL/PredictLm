@@ -153,6 +153,24 @@ export function GrokImaginePanel(){
     return {url,provider:String(data.provider||''),model:String(data.model||'flux')};
   }
 
+  async function upscaleImageUrl(sourceUrl:string){
+    try{
+      setImageStage('Aplicando super-resolução…');
+      const r=await fetch('/api/media/upscale',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sourceUrl,scale:2,model:'realesrgan-x4plus'})
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data?.upscaled||!data?.url)return {url:sourceUrl,upscaled:false,provider:''};
+      const url=String(data.url);
+      await preloadGeneratedImage(url);
+      return {url,upscaled:true,provider:String(data.provider||'configured-upscaler')};
+    }catch{
+      return {url:sourceUrl,upscaled:false,provider:''};
+    }
+  }
+
   async function requestImage(options?:{regenerate?:boolean}){
     if(!prompt.trim())throw new Error('Descreva a imagem ou vídeo que você quer criar.');
     const regenerate=!!options?.regenerate&&!!generated;
@@ -198,20 +216,50 @@ export function GrokImaginePanel(){
 
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      const data=await createImageUrl(renderPrompt,nextSeed);
-      const url=data.url;
+      let data=await createImageUrl(renderPrompt,nextSeed);
+      let url=data.url;
+
+      setImageStage('Revisando nitidez e exposição…');
+      let finalReview=await reviewImageQuality(url).catch(()=>null);
+
+      // One automatic repair attempt prevents a visibly weak first render
+      // from becoming the final asset. It never loops indefinitely.
+      if(!regenerate&&finalReview&&finalReview.score<72){
+        const repairSeed=autoVariationSeed(nextSeed);
+        const repairPrompt=buildQualityImagePrompt(prompt,{
+          style,
+          attempt:nextAttempt+1,
+          previousPrompt:renderPrompt
+        })+'. Correções obrigatórias: '+finalReview.promptHints.join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
+        setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
+        data=await createImageUrl(repairPrompt,repairSeed);
+        url=data.url;
+        nextSeed=repairSeed;
+        nextAttempt+=1;
+        setSeed(nextSeed);
+        setAttempt(nextAttempt);
+        finalReview=await reviewImageQuality(url).catch(()=>finalReview);
+      }
+
+      setReview(finalReview);
+      const upscaled=await upscaleImageUrl(url);
+      url=upscaled.url;
+
       setGenerated(url);
       setGeneratedPrompt(renderPrompt);
-      setProvider(data.provider||'');
+      setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
       await saveLibrary({
         kind:'image',
-        provider:data.provider||'pollinations-proxy',
+        provider:upscaled.upscaled?upscaled.provider:(data.provider||'pollinations-proxy'),
         model:data.model||'flux',
         url,
         meta:{
           keyframeForVideo:mode==='video',
           attempt:nextAttempt,
           previousQuality:nextReview?.score??null,
+          finalQuality:finalReview?.score??null,
+          autoQualityRepair:!regenerate&&nextAttempt>0,
+          superResolution:upscaled.upscaled,
           autoVariation:true
         }
       });
