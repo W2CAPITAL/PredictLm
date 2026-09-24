@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.20.0"
+  version: "1.21.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -525,3 +525,13 @@ Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity S
 ## Prompt calibration de imagem
 
 A skill `grok-imagine-parity` possui `auto | literal | imagine`. Auto protege personagens/franquias usando Literal quando expansão tende a causar drift; Imagine expande pedidos genéricos. Literal preserva o pedido, referências Firecrawl e negative constraints, sem Deep Think/Research reescreverem o conteúdo.
+
+
+## Biblioteca de mídia e fidelidade de franquia
+
+- cards usam `displayTitle` + `caption` limpos; prompt técnico/expandido não aparece como legenda;
+- itens antigos são normalizados ao carregar, preservando a imagem sem exigir migração manual;
+- Auto força Literal para personagens/franquias reconhecidas, incluindo Freeza/Frieza, Oozaru/Great Ape e Bijuu de Quatro Caudas do Naruto;
+- ambiguidades de franquia são desfeitas no identity lock e na busca Firecrawl;
+- legenda segura nunca começa com “faça/crie/gere” nem vaza `[ESTILO]`, seed, 4k ou instruções internas;
+- prompt original continua sendo a fonte da verdade para reabrir e regenerar um item.
