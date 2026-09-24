@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.4.0"
+  version: "3.5.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.4
+# PredictLM Master v3.5
 
 ## Regra soberana
 
@@ -668,3 +668,24 @@ A superfície final mostra **imagem + legenda curta pt-BR**. Prompt original, pr
 - ambiguidades de franquia são desfeitas no identity lock e na busca Firecrawl;
 - legenda segura nunca começa com “faça/crie/gere” nem vaza `[ESTILO]`, seed, 4k ou instruções internas;
 - prompt original continua sendo a fonte da verdade para reabrir e regenerar um item.
+
+
+## Defaults seguros do Imagine
+
+Para imagem:
+- Deep Think e Deep Research ficam **desligados por padrão**; continuam disponíveis como opt-in para pedidos conceituais;
+- Auto força **Literal** para personagem/franquia específica;
+- prompts de anime/shonen detectados com estilo ainda em Cinematic usam **Anime** automaticamente;
+- o Media Director é proibido de inventar binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs ou fendas dimensionais sem pedido explícito;
+- regeneração em Literal preserva o mesmo pedido/identity lock e troca seed, sem review hints criativos;
+- quando o provider final é `pollinations-proxy`, a UI mostra aviso explícito de fidelidade limitada;
+- provider/upscaler são registrados separadamente para não mascarar que a imagem veio do fallback.
+
+## Persistência de mídia sem Supabase
+
+A Media Library do Imagine é **browser-local**:
+- LocalStorage, até 60 itens;
+- retenção leve de metadados/URLs, sem upload de binários;
+- nenhum `PREDICT_SUPABASE_*` é necessário para mídia;
+- URLs `data:`/blob não são persistidas para evitar encher o navegador;
+- o endpoint server-side antigo de library fica apenas como compatibilidade e não lê/escreve Supabase.
