@@ -399,7 +399,8 @@ function knowledgeReply(prompt:string){
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
-  const github=githubKnowledgeContext(prompt,3);
+  const githubTopK=options?.deep?5:3;
+  const github=githubKnowledgeContext(prompt,githubTopK);
   const learned=adaptiveContext(prompt,4);
   const packed=optimizePromptPackage({
     messages,
@@ -422,7 +423,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const system=compiled.system;
   const neuralMessages=packed.messages;
   const sources=[
-    ...retrieveGitHubKnowledge(prompt,3).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
+    ...retrieveGitHubKnowledge(prompt,githubTopK).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
     ...retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}))
   ].filter((x,i,a)=>a.findIndex(y=>y.source===x.source)===i).slice(0,6);
   let fallbackReason='';
