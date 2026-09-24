@@ -31,6 +31,7 @@ export async function POST(req:Request){
     const model=String(body?.model||process.env.MEDIA_UPSCALE_MODEL||'realesrgan-x4plus').trim();
     const mode=String(process.env.MEDIA_UPSCALE_MODE||'json').trim().toLowerCase();
     const scale=clampScale(Number(body?.scale)||2);
+    const faceEnhance=Boolean(body?.faceEnhance);
 
     if(!base){
       return Response.json({
@@ -51,13 +52,18 @@ export async function POST(req:Request){
       form.append('image',source.blob,'predictlm-input.'+(source.type.includes('jpeg')?'jpg':'png'));
       form.append('scale',String(scale));
       form.append('model',model);
-      upstream=await fetch(base,{method:'POST',headers,body:form});
+      form.append('face_enhance',faceEnhance?'true':'false');
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),55000);
+      try{upstream=await fetch(base,{method:'POST',headers,body:form,signal:controller.signal})}
+      finally{clearTimeout(timer)}
     }else{
       headers['Content-Type']='application/json';
       upstream=await fetch(base,{
         method:'POST',
         headers,
-        body:JSON.stringify({image:sourceUrl,sourceUrl,scale,model})
+        body:JSON.stringify({image:sourceUrl,sourceUrl,scale,model,faceEnhance,face_enhance:faceEnhance}),
+        signal:AbortSignal.timeout(55000)
       });
     }
 
@@ -69,7 +75,8 @@ export async function POST(req:Request){
         upscaled:true,
         provider:'configured-upscaler',
         model,
-        scale
+        scale,
+        faceEnhance
       });
     }
 
@@ -78,7 +85,7 @@ export async function POST(req:Request){
     const first=data?.data?.[0]||{};
     const url=String(data?.url||data?.image||first?.url||(first?.b64_json?'data:image/png;base64,'+first.b64_json:'')).trim();
     if(!url)throw new Error('Upscaler não retornou imagem.');
-    return Response.json({url,upscaled:true,provider:'configured-upscaler',model,scale});
+    return Response.json({url,upscaled:true,provider:'configured-upscaler',model,scale,faceEnhance});
   }catch(error:any){
     return Response.json({error:String(error?.message||'Falha no upscale.')},{status:502});
   }
