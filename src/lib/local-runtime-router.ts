@@ -263,7 +263,8 @@ export async function answerViaLocalRuntime(
     : null;
   const runtime=preferred||available[0];
 
-  const topK=runtime.kind==='lowram'?2:(options?.deep?5:3);
+  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
+  const topK=runtime.kind==='lowram'?2:(deepMode?5:3);
   const githubEnabled=useGithubKnowledge(prompt);
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
   const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
@@ -272,12 +273,11 @@ export async function answerViaLocalRuntime(
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
   const humanLens=humanAdversarialContext(prompt);
-  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
   const humanPresence=humanPresenceContext(prompt);
   const masterContext=predictLMMasterContext(prompt,deepMode);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
-  const deepLoop=options?.deep?deepLoopContext(prompt):'';
+  const deepLoop=deepMode?deepLoopContext(prompt):'';
   const centum=centumDecisionContext(prompt);
   const parallax=parallaxContext(prompt);
   const packed=optimizePromptPackage({
@@ -303,6 +303,7 @@ export async function answerViaLocalRuntime(
   });
   const compiled=compileSystemPrompt({
     userText:prompt,
+    deep:deepMode,
     extra:[languageSystemInstruction(options?.language||'pt-BR'),packed.context].filter(Boolean)
   });
   const messages=[
