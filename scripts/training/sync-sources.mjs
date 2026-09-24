@@ -72,7 +72,8 @@ const SOURCES=[
   ['Minhajul-Mahib/nanomind','main','MIT','reference',['low-ram','openai-api','gguf','local-inference']],
   ['techjarves/Uncensored-Local-AI-Multiplatform','main','unverified','reference',['local-api','gguf','mobile','threat-model']],
   ['DeVenLucaz/llamdrop','main','GPL-3.0','reference',['hardware-detection','ollama','gguf','context-trimming','low-ram']],
-  ['Quincunx33/LowRAM-AI-Compiler','main','unverified','reference',['memory-budget','gguf','mmap','streaming','low-ram']]
+  ['Quincunx33/LowRAM-AI-Compiler','main','unverified','reference',['memory-budget','gguf','mmap','streaming','low-ram']],
+  ['HKUDS/DeepTutor','main','Apache-2.0','reference',['tutoring','mastery-learning','quiz','reading','citations','rag','practice','memory','context-budget']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
