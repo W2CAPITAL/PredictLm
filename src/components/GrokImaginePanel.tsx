@@ -354,21 +354,24 @@ export function GrokImaginePanel(){
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
       const prepared=await prepareMediaPrompt('image');
-      const basePrompt=regenerate
-        ? [
-            buildQualityImagePrompt(prompt,{
-              style,
-              attempt:nextAttempt,
-              previousPrompt:generatedPrompt||undefined
-            }),
-            prepared.brief?('MEDIA DIRECTOR BRIEF: '+prepared.brief):'',
-            prepared.research?('RESEARCH-GROUNDED VISUAL NOTES: '+prepared.research):''
-          ].filter(Boolean).join('\n\n')
-        : prepared.prompt;
-      const reviewHints=nextReview?.promptHints?.length
+      const literalRequest=promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
+      const basePrompt=literalRequest
+        ? prepared.prompt
+        : regenerate
+          ? [
+              buildQualityImagePrompt(prompt,{
+                style,
+                attempt:nextAttempt,
+                previousPrompt:generatedPrompt||undefined
+              }),
+              prepared.brief?('MEDIA DIRECTOR BRIEF: '+prepared.brief):'',
+              prepared.research?('RESEARCH-GROUNDED VISUAL NOTES: '+prepared.research):''
+            ].filter(Boolean).join('\n\n')
+          : prepared.prompt;
+      const reviewHints=!literalRequest&&nextReview?.promptHints?.length
         ? '. Correções objetivas da geração anterior: '+nextReview.promptHints.join('; ')+'.'
         : '';
-      const uniqueness=regenerate
+      const uniqueness=!literalRequest&&regenerate
         ? '. Use a substantially different camera position, framing, subject placement and composition. Do not reproduce the previous image.'
         : '';
       const renderPrompt=basePrompt+reviewHints+uniqueness;
