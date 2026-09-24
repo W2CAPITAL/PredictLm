@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -239,3 +239,26 @@ Deep Think de mídia usa o modo interno `media-director`; falha dos providers de
 - Visão analyzes uploaded animal photos using a pinned quantized MobileNet in a dedicated one-thread CPU worker. Download only on request; support cancellation and model cache. Preserve top-five scores, non-animal classes and inconclusive results. This is whole-image classification, not detection, diagnosis, proof of safety or franchise identity recognition.
 - Three optional inference adapters are in `services/animal-vision/`: HOG/SVM, PyTorch ResNet, Keras ResNet. Show unavailable until real trusted weights load. Do not claim the source README accuracy as app accuracy. Never deserialize HTTP model uploads or infer 150 supported classes from the rt75272 README (its checked-in current mapping has 15).
 - Browser analysis keeps the photo on the device. Server analysis is an explicit user choice. No automatic photo persistence or Supabase upload. See `services/animal-vision/README.md` for model provenance, compatibility and deployment setup.
+
+
+## Clean Chat / Strict Intent
+
+Para mensagens simples, o PredictLM deve responder ao turno atual antes de usar a infraestrutura acumulada.
+
+- Hipóteses do tipo `e se...`, `imagine se...` e `suponha que...` entram em rota **clean-chat**: provider + prompt atual + guard mínimo, sem GitHub RAG, Centum, PARALLAX, Digital Brain, livros ou contexto jurídico lateral.
+- How-tos seguros conhecidos podem terminar em resposta prática interna sem pesquisa/provider.
+- Factual estático conhecido pode terminar em resposta estável interna.
+- Toda candidata clean-chat passa por public gate + aderência temática; resposta fora do assunto é descartada antes da UI.
+- Web, tools, skills, bases e memória são recursos sob demanda; quantidade de contexto nunca é objetivo.
+- Nunca preencher uma lacuna com conteúdo aleatório de outra base. Falhar limpo é preferível a responder outro assunto.
+
+## Canonical battle composition
+
+Para `Naruto + Kurama vs Sasuke + Perfect Susanoo`:
+- Auto → Literal + Anime;
+- se a proporção ainda estiver no default 1:1, usar 16:9 automaticamente; escolha manual continua soberana;
+- Kurama deve ser avatar completo de raposa/chakra dourado com nove caudas distintas, não Naruto humanoide duplicado;
+- Perfect Susanoo deve ser avatar humanoide blindado violeta completo, com asas e espada;
+- explosão central não pode esconder os combatentes;
+- manter divisão visual laranja/dourado versus violeta/roxo e silhuetas legíveis;
+- Vale do Fim/estátuas entram somente quando pedidos.

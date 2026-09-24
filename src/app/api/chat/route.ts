@@ -1,4 +1,4 @@
-import { conversationAnswerIssue } from '@/lib/chat-intelligence';
+import { conversationAnswerIssue, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -345,6 +345,87 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   }finally{clearTimeout(timer)}
 }
 
+async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
+  const language=(body?.language==='en'||body?.language==='pt-BR')
+    ? body.language as ConversationLanguage
+    : resolveConversationLanguage(prompt,[]);
+  const recent=(body?.useHistory&&Array.isArray(body?.messages)?body.messages:[])
+    .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
+    .slice(-4)
+    .map((x:any)=>({role:x.role as 'user'|'assistant',content:compactText(String(x.content),700)}));
+
+  const mode=isHypotheticalPrompt(prompt)
+    ? 'hypothetical'
+    : isGenericHowTo(prompt)
+      ? 'howto'
+      : 'plain';
+
+  const guard=mode==='hypothetical'
+    ? [
+        'Responda diretamente à hipótese imaginária do usuário.',
+        'Trate a premissa como ficção/experimento mental; não troque de assunto.',
+        'Se envolver pessoa real, não invente fatos reais sobre ela: descreva somente consequências da hipótese de forma neutra e, se couber, leve.',
+        'Não introduza direito, perícia, finanças, programação, livros, pesquisas ou contexto externo que o usuário não pediu.'
+      ].join(' ')
+    : mode==='howto'
+      ? [
+          'Responda como procedimento prático.',
+          'Comece pela ação pedida e dê passos concretos.',
+          'Não substitua a resposta por definição enciclopédica, snippet de busca ou assunto homônimo.',
+          'Não diga que falta contexto se a pergunta puder ser respondida de forma geral.'
+        ].join(' ')
+      : [
+          'Responda somente ao pedido atual, de forma natural e direta.',
+          'Não use tópicos, bases, skills ou contexto não solicitado.',
+          'Não acrescente assuntos correlatos só porque compartilham uma palavra com o prompt.'
+        ].join(' ');
+
+  const system=[
+    'Você é o PredictLM em modo conversa limpa.',
+    languageSystemInstruction(language),
+    guard,
+    'Entregue somente a resposta final ao usuário. Nunca exponha cadeia de raciocínio, roteamento, provider, skill, memória interna ou relatório operacional.'
+  ].join('\n\n');
+
+  const messages:Msg[]=[
+    {role:'system',content:system},
+    ...recent,
+    {role:'user',content:compactText(prompt,1200)}
+  ];
+
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const errors:string[]=[];
+  for(const provider of candidates){
+    try{
+      const raw=await callProvider(provider,messages,false,PROVIDER_TIMEOUT_MS);
+      const gate=publicAnswerGate(raw,language,prompt);
+      if(!gate.ok){errors.push(provider.name+': '+gate.reason);continue}
+      const issue=conversationAnswerIssue(prompt,gate.content);
+      const alignment=responseTopicAlignment(prompt,gate.content);
+      if(issue||!alignment.relevant){
+        errors.push(provider.name+': '+(issue||'off-topic'));
+        continue;
+      }
+      return Response.json({
+        content:gate.content,
+        provider:provider.name,
+        model:provider.model,
+        mode:'clean-chat',
+        sources:[]
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch(error:any){
+      errors.push(provider.name+': '+String(error?.message||error).slice(0,160));
+    }
+  }
+  return Response.json({
+    available:false,
+    content:null,
+    code:'NO_CLEAN_ANSWER',
+    mode:'clean-chat',
+    errors:errors.slice(0,3)
+  },{headers:{'Cache-Control':'no-store'}});
+}
+
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
   const messages:Msg[]=[
     {
@@ -412,6 +493,7 @@ export async function POST(req:Request){
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
     if(body?.mode==='media-director')return mediaDirectorResponse(configured,prompt);
+    if(body?.mode==='clean-chat')return cleanChatResponse(configured,body,prompt);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')

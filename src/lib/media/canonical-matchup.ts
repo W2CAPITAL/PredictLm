@@ -14,18 +14,22 @@ export function requestsValleyOfTheEnd(input:string){
 export function canonicalMatchupLock(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return '';
   return [
-    'CANONICAL MATCHUP: Naruto with Kurama versus Sasuke with Perfect Susanoo. Use a wide, readable two-sided anime composition unless the user explicitly requests different framing.',
-    'LEFT: Naruto linked to the complete golden-orange nine-tailed Kurama chakra fox avatar, visible fox head, body, nine distinct tails and canonical black chakra markings. Show the full avatar; do not reduce Kurama to a background fox or abstract aura.',
-    'RIGHT: Sasuke linked to the complete purple/violet Perfect Susanoo, a giant armored winged humanoid chakra avatar with a glowing sword. Show the full body and wings, never generic purple energy, a robot or unrelated demon.',
-    'Separate both silhouettes clearly. Keep Naruto and Sasuke distinct and associated with their respective avatars. A controlled central clash may connect them, but must not hide the bodies, fuse the opponents or dominate the frame.',
-    requestsValleyOfTheEnd(input)?'SETTING: Valley of the End, waterfall canyon and the two monumental cliff statues of Hashirama and Madara visible behind the combatants.':''
+    'CANONICAL MATCHUP MASTER LOCK: Naruto/Kurama versus Sasuke/Perfect Susanoo. Render a premium anime battle key visual with a wide readable left-vs-right composition, strong silhouette separation and one clear central clash.',
+    'LEFT: Naruto Uzumaki is visibly associated with a gigantic complete golden-orange Kurama chakra fox avatar. Kurama must read as a fox/beast with a clear draconic-NOT-allowed fox head, powerful torso, canonical black chakra markings and nine distinct tails, all individually readable and flowing. Keep Naruto recognizable and separate from Kurama rather than turning Kurama into a humanoid Naruto clone.',
+    'RIGHT: Sasuke Uchiha is visibly associated with a gigantic complete violet Perfect Susanoo. Susanoo must be a full armored winged humanoid chakra avatar with recognizable helmet/face structure, broad armor plates, BOTH wings visible when framing permits and a luminous sword. Never reduce it to purple smoke, a generic demon, mecha or cropped torso.',
+    'CENTER: one controlled energy collision between the two sides. The clash is a focal connector, not the subject itself: it must occupy a minority of the frame and may not obscure Kurama, Naruto, Sasuke or Susanoo.',
+    'DEPTH: foreground debris/terrain, full combatants in the midground, environment/background behind them. Avoid thumbnail-like close crops, duplicated characters, random third fighters and unreadable energy clutter.',
+    'COLOR DISCIPLINE: Naruto/Kurama side is gold/orange/fire; Sasuke/Susanoo side is violet/purple/electric blue. Preserve clean color ownership instead of mixing both palettes over every subject.',
+    requestsValleyOfTheEnd(input)?'SETTING LOCK: Valley of the End, waterfall canyon, dramatic sky and the monumental Hashirama and Madara statues clearly readable behind the battle, without replacing the combatants.':''
   ].filter(Boolean).join('\n');
 }
 export const MATCHUP_NEGATIVES=[
   'generic anime explosion poster','two Narutos','duplicate Sasuke','missing Kurama','missing Perfect Susanoo',
   'abstract purple energy instead of Susanoo','fox only in the background','robotic armor unrelated to Susanoo',
   'dragon instead of Kurama','cropped giant avatar','only close-up faces','chaotic unreadable composition',
-  'photorealistic live action','central explosion hiding both avatars'
+  'photorealistic live action','central explosion hiding both avatars','humanoid Kurama','Naruto clone used as Kurama',
+  'Susanoo torso only','missing Susanoo wings','purple smoke instead of Susanoo','third random fighter',
+  'mixed orange and purple palette on both sides','close-up crop hiding full avatars','energy effect larger than both combatants'
 ];
 export function matchupReferenceQueries(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return [];
@@ -45,4 +49,10 @@ export function parseSemanticImageReview(value:unknown,originalPrompt:string):Se
   if(!v||!Array.isArray(v.issues)||v.issues.some(x=>typeof x!=='string'||!(x in ISSUE_REPAIRS)))return {status:'unavailable',issues:[],retryPrompt:''};
   const issues=[...new Set(v.issues as string[])].filter(x=>x!=='missing-statues'||requestsValleyOfTheEnd(originalPrompt));
   return {status:issues.length?'failed':'passed',issues,retryPrompt:issues.map(x=>ISSUE_REPAIRS[x]).join(' ')};
+}
+
+
+export function recommendedMatchupAspect(input:string,current='1:1'){
+  if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return current;
+  return current==='1:1'?'16:9':current;
 }

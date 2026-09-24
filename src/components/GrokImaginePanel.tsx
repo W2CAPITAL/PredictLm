@@ -7,7 +7,7 @@ import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMo
 import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames, formatMediaResearchContext, mediaResearchQuery } from '@/lib/media/video-pipelines';
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
-import { isNarutoKuramaVsSasukeSusanooPrompt } from '@/lib/media/canonical-matchup';
+import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@/lib/media/canonical-matchup';
 import { preloadGeneratedImage, reviewCanonicalImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
@@ -51,6 +51,7 @@ export function GrokImaginePanel(){
   const [style,setStyle]=useState('Cinematic');
   const [styleManuallyChosen,setStyleManuallyChosen]=useState(false);
   const [ratio,setRatio]=useState(ratios[0]);
+  const [ratioManuallyChosen,setRatioManuallyChosen]=useState(false);
   const [seed,setSeed]=useState(()=>autoVariationSeed());
   const [mode,setMode]=useState<'image'|'video'>('image');
   const [generated,setGenerated]=useState('');
@@ -149,6 +150,12 @@ export function GrokImaginePanel(){
     if(mode==='image'&&!styleManuallyChosen){
       const nextStyle=recommendedImageStyle(value,'Cinematic');
       if(nextStyle!==style)setStyle(nextStyle);
+    }
+    if(mode==='image'&&!ratioManuallyChosen){
+      const wanted=recommendedMatchupAspect(value,'1:1');
+      const nextRatio=ratios.find(x=>x.label===wanted);
+      if(nextRatio&&nextRatio.label!==ratio.label)setRatio(nextRatio);
+      if(wanted==='1:1'&&ratio.label!=='1:1')setRatio(ratios[0]);
     }
   }
 
@@ -909,7 +916,7 @@ export function GrokImaginePanel(){
 
         <label><span>Prompt</span><textarea value={prompt} onChange={e=>updatePrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
         <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setStyleManuallyChosen(true);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
-        <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
+        <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>{setRatio(x);setRatioManuallyChosen(true)}}>{x.label}</button>)}</div>
 
         {mode==='image'?<div className="gmedia-prompt-mode">
           <span>Interpretação do prompt</span>
