@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T01:15:27.071Z",
-  "knowledgeVersion": "5bcc951f65dcb6ad",
-  "chunkCount": 925,
+  "generatedAt": "2026-09-24T08:40:19.383Z",
+  "knowledgeVersion": "7467b9d864832444",
+  "chunkCount": 1025,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -43,7 +43,7 @@
       "repo": "EbookFoundation/free-programming-books",
       "mode": "allow",
       "license": "CC-BY-4.0",
-      "commit": "11540c8bf2940d7ee685a2b99c682f9fd58e03e1",
+      "commit": "665877d7d0befc222222c44c3f1e1d9cce403534",
       "files": 2,
       "chunks": 187,
       "error": null
@@ -142,7 +142,7 @@
       "repo": "WestFox-AwA/dsh-prompt-optimizer",
       "mode": "allow",
       "license": "BSD-3-Clause",
-      "commit": "db7f23bba630a5805ebbab5c0e128e1fe9e514fd",
+      "commit": "b4da53590c45e2d11118ab9de1a3cd5448bee1ea",
       "files": 3,
       "chunks": 47,
       "error": null
@@ -271,6 +271,15 @@
       "commit": null,
       "files": 0,
       "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "HKUDS/DeepTutor",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "a053fecf6eeca51ded680de8b8fc41ef63857b11",
+      "files": 1,
+      "chunks": 100,
       "error": null
     }
   ]
