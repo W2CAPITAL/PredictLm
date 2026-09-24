@@ -221,6 +221,11 @@ const SOURCES=[
   ['niksudan/prettylight','master','MIT','distill',['2d-lighting','shaders','surfaces','simulation-ui']],
   ['YoYoGames/GameMaker-HTML5','develop','Apache-2.0','distill',['html5-runtime','canvas','input','audio','render-loop','browser']],
   ['YoYoGames/GameMaker-Manual','develop','copyrighted-docs','reference',['gamemaker','runtime-docs','html5','assets','build']],
+  ['Xiphereal/TheSims','trunk','unverified','reference',['life-simulation','agent-actions','world-state']],
+  ['DewingShen88/sims4-immersive-controls','main','MIT-by-README','reference',['life-simulation','autonomy','interaction-weights','memory','reversible-actions']],
+  ['francot514/FreeSims','master','MPL-2.0','reference',['life-simulation','world-state','work','neighborhood','household']],
+  ['oraksi/Sims-4-Respocket-DLC-Tool','main','unverified','reference',['quarantine','dlc-circumvention']],
+  ['savannah-medina85/sims-4-dlc-unlock','main','unverified','reference',['quarantine','dlc-circumvention']],
   ['protonspy/JusChat','main','CC0-1.0','train',['legal','graphrag','knowledge-graph','documents','rag']],
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
