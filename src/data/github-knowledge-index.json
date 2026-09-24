@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "4d5193e6430ae46b",
-  "generatedAt": "2026-09-24T01:10:17.477Z",
-  "sourceCount": 13,
-  "chunkCount": 2304,
+  "knowledgeVersion": "3fb0440a764b3943",
+  "generatedAt": "2026-09-24T01:13:46.148Z",
+  "sourceCount": 14,
+  "chunkCount": 2329,
   "chunks": [
     {
       "id": "78d6597704929363a09f",
@@ -35734,6 +35734,406 @@
       "heading": "Benchmark: both approaches tested on 3 challenges",
       "text": "| Approach | CSV | SQLite | WebSocket | Total | Pass |\n|----------|-----|--------|-----------|-------|------|\n| Rules in chat | $0.274 | $0.459 | $0.585 | $1.318 | 3/3 |\n| **CLAUDE.md (v8)** | **$0.244** | **$0.406** | **$0.285** | **$0.935** | **3/3** |\n\nBoth work. CLAUDE.md saves money at scale.",
       "weight": 1.18
+    },
+    {
+      "id": "23fa452a208b9ead3813",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "README.md",
+      "text": "<p align=\"center\">\n  <img src=\"https://img.shields.io/badge/savings-87%25-brightgreen\" alt=\"87% Token Savings\">\n  <img src=\"https://img.shields.io/badge/install-zero_dependencies-blue\" alt=\"Zero Dependencies\">\n  <img src=\"https://img.shields.io/badge/license-MIT-green\" alt=\"MIT License\">\n  <img src=\"https://img.shields.io/badge/version-3.0.0-orange\" alt=\"v3.0.0\">\n  <img src=\"https://img.shields.io/badge/verified-6_months_production-success\" alt=\"6 Months Production\">\n</p>\n\n<h1 align=\"center\">LG-token-saver</h1>\n<p align=\"center\"><strong>Save 87% token usage. One file. Zero install.</strong></p>\n<p align=\"center\">by 廖工 (LiaoGong) / CC杰 · 廖工AI设计实战</p>\n<p align=\"center\">Input + Output + Context — three layers of optimization in a single Claude Code Skill</p>\n\n<p align=\"center\">\n  <img src=\"demo.png\" alt=\"Before/After: 198,000 → 15,500 tokens\" width=\"800\">\n</p>\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "98be1f162143a8326c75",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Why Token Saver?",
+      "text": "Claude Code burns tokens on verbose output, redundant searches, unfiltered Bash output, and context bloat. Other tools fix one layer — Token Saver covers all three.\n\n| | Caveman | ECC | codesight | **Token Saver** |\n|---|--------|-----|-----------|----------------|\n| Savings | 65% | 83% | 60% | **87%** |\n| Scope | Output only | Full stack | Input only | **Input+Output+Context** |\n| Install | 1 CLI | npm install | npx init | **Copy 1 file** |\n| Dependencies | 0 | Many | Node.js | **0** |",
+      "weight": 1.22
+    },
+    {
+      "id": "a4b0db60168a82858b5d",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "One command install",
+      "text": "npx skills add jnbno1163/LG-token-saver\n```\n\nAuto-activates. No config. 87% savings from the first message.\n\n**Three modes, toggle anytime:**\n- 🟢 **Lite** (~65%) — Invisible, no behavior change\n- 🟡 **Full** (~80%) — Default, balanced\n- 🔴 **Ultra** (~87%) — Maximum, every trick enabled",
+      "weight": 1.22
+    },
+    {
+      "id": "9eb8fb0bdb5d856be91c",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Real Benchmarks",
+      "text": "Single article build session — 6 steps, cross-directory search, Bash output, parallel agents:\n\n| Optimization | Tokens Used | Savings |\n|-------------|------------|---------|\n| None (raw) | 198,000 | — |\n| Caveman (output only) | 188,000 | 5% |\n| codesight (input only) | 78,800 | 60% |\n| ECC (full stack) | 34,000 | 83% |\n| **Token Saver (Full)** | **15,500** | **92%** |\n| **Token Saver (Ultra)** | **11,300** | **94%** |",
+      "weight": 1.22
+    },
+    {
+      "id": "e9827a9c46fc94cf0aa4",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Scenario: Cross-directory research + Bash build + parallel agents",
+      "text": "```\nTask: \"Build an article about AI automation tools\"\nSteps: Search 15 files across 4 directories → Run build script → 3 parallel agents → Push to draft\n```\n\n**Without optimization (raw Claude Code):**\n\n| Step | What Happens | Tokens |\n|------|-------------|--------|\n| Search for tool docs | Agent reads 15 files in full | 50,000 |\n| Debug broken import | Reads full 2000-line file for 1 error | 8,000 |\n| Run `npm install && python build.py` | Raw output: 155 lines | 30,000 |\n| Agent replies with explanation | \"Let me help you with that! First...\" | 15,000 |\n| 3 agents analyze in parallel | Each loads full context | 90,000 |\n| Search same file again | Already read it, but re-reads | 5,000 |\n| **Total** | | **198,000 tokens** |\n\n**With Token Saver (Full mode):**\n\n| Step | What Changes | Tokens |\n|------|-------------|--------|\n| Search for tool docs | SubAgent returns 3-line summary | 3,000 |\n| Debug broken import | Grep → 2 matches → Read 20 lines | 500 |\n| Run `npm install && python build.py` | `2>&1 | tail -5` → 3 lines | 3,000 |\n| Agent replies | \"Import error in build.py:42. Fix: add `from pathlib import Path`\" | 4,000 |\n| 3 agents in parallel | SubAgents, each returns ≤200 word",
+      "weight": 1.22
+    },
+    {
+      "id": "68b4a1e50f1aecbf7cb3",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Scenario: Cross-directory research + Bash build + parallel agents",
+      "text": "s | 5,000 |\n| Search same file again | Skipped (dedup) | 0 |\n| **Total** | | **15,500 tokens** |\n\n**Result: 198,000 → 15,500 tokens = 92% savings. Same task, same output, zero quality loss.**",
+      "weight": 1.22
+    },
+    {
+      "id": "59bed614102778ee2fca",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Why Token Saver Wins Where Others Fall Short",
+      "text": "| Tool | This Task | Why |\n|------|----------|-----|\n| Caveman | 188,000 tokens | Only compresses AI replies. Does nothing for search/Bash/agents. |\n| codesight | 78,800 tokens | Compresses file reads. Does nothing for Bash output or verbose replies. |\n| ECC | 34,000 tokens | Good but requires installing 64 skills + 27 agents. |\n| **Token Saver** | **15,500 tokens** | Covers all three layers in one file. No install. |\n\n> **The other tools fix 1/3 of the problem. Token Saver fixes all 3.**",
+      "weight": 1.22
+    },
+    {
+      "id": "c059a49f23fc16556687",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Features",
+      "text": "| Layer | Rules | How |\n|-------|-------|-----|\n| **Input** | SubAgent isolation · Grep-first · Batch parallel · Dedup | 60% reduction |\n| **Output** | Bash filter (155→3 lines) · Terse replies (Caveman mode) | 75% reduction |\n| **Context** | Compact after reads · SubAgent output limits | 35% reduction |",
+      "weight": 1.22
+    },
+    {
+      "id": "912a9e12d862ca3e7258",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Multi-Scenario Savings (6 months verified)",
+      "text": "| Scenario | Raw | LG-token-saver | Savings |\n|----------|-----|---------------|---------|\n| Article build | 198,000 | 15,500 | **92%** |\n| Bug fix | 120,000 | 18,000 | **85%** |\n| Refactor | 85,000 | 14,000 | **84%** |\n| Exploration | 45,000 | 9,000 | **80%** |\n| CI analysis | 60,000 | 6,000 | **90%** |\n| Simple Q&A | 12,000 | 4,800 | **60%** |\n\nWeighted average: **87%**. Not cherry-picked. Real sessions, real data.",
+      "weight": 1.22
+    },
+    {
+      "id": "941e5a8f1ffa70d8f1b7",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "About the Author",
+      "text": "**廖工 (LiaoGong) / CC杰** is an AI tool builder based in China.\n\nWhen Claude Code launched, developers outside supported regions couldn't use it. So he built **[cc-switch](https://github.com/farion1231/cc-switch)** (20K+ stars) — a one-click proxy that routes Claude Code through domestic AI APIs, making it accessible to millions of Chinese developers.\n\nThen he automated his own workflow. His **[article pipeline](https://github.com/ccjie)** turns `python build.py` into a complete WeChat article with screenshots, infographics, and layout — 5 minutes from command to draft. 8,000+ words per article, zero manual formatting.\n\n**LG-token-saver** is the third tool in this stack. After burning through millions of tokens building the pipeline, he reverse-engineered the savings into 8 universal rules. Six months of production data. 87% average savings. Packaged as a single 5.3KB file anyone can install.\n\n> *\"I build tools so I can build more tools. Every project teaches me something new about AI — and every lesson becomes a reusable piece for the next one.\"*\n\n---\n\n<p align=\"center\">\n  <sub>by <a href=\"https://github.com/ccjie\">LiaoGong / CC杰</a> · 廖工AI设计实战</sub>\n</p>",
+      "weight": 1.22
+    },
+    {
+      "id": "323b141c1d00afdc4e81",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README_CN.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "LG-token-saver — 节省 87% Token 消耗",
+      "text": "**作者：廖工 (LiaoGong) / CC杰 · 零安装 · 零依赖 · 一个文件**\n\n基于 Anthropic 官方文档 + everything-claude-code（182K⭐）+ 6 个月生产环境验证。\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "6da1ae093dfeb07658ef",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README_CN.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "为什么选它",
+      "text": "| | Caveman | ECC | codesight | **LG-token-saver** |\n|---|--------|-----|-----------|-------------------|\n| 节省率 | 65%（仅输出） | 83%（需装全套） | 60%（仅输入） | **87%（三层全覆盖）** |\n| 安装 | 1 行 | npm 装一堆 | npx | **1 行，零依赖** |\n| 体积 | ~50KB | ~2MB | ~200KB | **5.3KB** |\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "5267d25c3bb0a08a9d8b",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README_CN.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "六场景实测（6 个月生产环境）",
+      "text": "| 场景 | 原始 Token | 优化后 | 节省 |\n|------|-----------|--------|------|\n| 📝 公众号文章构建 | 198,000 | 15,500 | **92%** |\n| 🐛 跨项目 Bug 修复 | 120,000 | 18,000 | **85%** |\n| 🔧 多文件重构 | 85,000 | 14,000 | **84%** |\n| 🔍 新项目探索 | 45,000 | 9,000 | **80%** |\n| ⚙️ CI 日志分析 | 60,000 | 6,000 | **90%** |\n| 💬 简单问答 | 12,000 | 4,800 | **60%** |\n| **加权平均** | | | **87%** |\n\n非模拟，非精选。真实工作场景，真实数据。\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "b95b65352e3fea3c16dc",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README_CN.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "常见问题",
+      "text": "**装完感觉没变化？**\n正常。Lite 模式完全无感运行。用 `/cost` 看数字。\n\n**会影响能力吗？**\n不会。规则只减冗余不降质量。子Agent 照跑完整分析，Grep 照查所有结果——只是不用全量加载。\n\n**能和别的 Skill 一起用吗？**\n可以。纯行为规则，无冲突。\n\n---\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "49f7407b91c388b1d727",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "README_CN.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "关于作者",
+      "text": "**廖工 (LiaoGong) / CC杰**，AI 工具开发者。\n\nClaude Code 发布后，国内开发者因区域限制无法使用。他开发了 **[cc-switch](https://github.com/farion1231/cc-switch)**（20K+ stars）——一键中转工具，让国内开发者直连 Claude Code。\n\n随后他自动化了自己的内容工作流：一套文章生成流水线，`python build.py` 一条命令，从截图到草稿箱全自动，5分钟出一篇完整公众号文章。\n\n**LG-token-saver** 是这个工具栈的第三件。在搭建流水线过程中烧了数百万 token 后，他把省 token 的经验提炼成 8 条通用规则。6 个月生产数据，87% 平均节省，打包成 5.3KB 的单文件 Skill。\n\n> *\"我造工具是为了造更多工具。每个项目都让我更懂 AI——每一条经验都变成下一个项目的基石。\"*\n\n---\n\n**作者：廖工 (LiaoGong) / CC杰 · MIT 协议 · v3.0**",
+      "weight": 1.22
+    },
+    {
+      "id": "f31a0df69e365b47d9f9",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "SKILL.md",
+      "text": "---\nname: LG-token-saver\ndescription: Save 87% token usage. Zero install. Input+Output+Context optimization. 8 rules. 6 months production verified.\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "b19ef0009618d5a2e9e1",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "How It Works",
+      "text": "This skill modifies Claude's behavior. No code executes. Claude reads these rules and follows them on every response.",
+      "weight": 1.22
+    },
+    {
+      "id": "5e5e980a99d4d39c8271",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Switch Modes",
+      "text": "Say any of these in chat to change mode:\n- `token-saver lite` → ~65% savings, invisible\n- `token-saver full` → ~80% savings, default\n- `token-saver ultra` → ~87% savings, maximum\n- `token-saver off` → disable\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "a9461a6bccac24a882a2",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "INPUT: Don't load what you don't need",
+      "text": "**R1 — SubAgent for exploration (>3 files)**\nWhen asked to search, explore, or investigate across multiple files or directories, ALWAYS dispatch an Explore subagent. Never read files into the main session for research tasks. Main session only receives the final summary.\n\n**R2 — Grep before Read**\nBefore reading any file larger than 500 lines, first Grep for the target symbol, function, or pattern. Then Read only the relevant lines (limit ≤30). Exception: files under 500 lines with clear context need.\n\n**R3 — Batch independent calls**\nWhen 2+ tool calls have no dependency on each other, send them in a single message. Never serialize what can be parallelized.\n\n**R4 — Never search the same thing twice**\nMaintain a mental note of what was already searched in this session. If a file or pattern was already Grep'd, reference the result directly — don't search again.",
+      "weight": 1.22
+    },
+    {
+      "id": "70b4556bfb2a46d2d462",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "OUTPUT: Don't say what doesn't matter",
+      "text": "**R5 — Filter Bash output**\nPipe verbose commands through filters before showing results:\n- `npm install` → `2>&1 | tail -20`\n- `cargo build` → `2>&1 | tail -20`\n- `pytest` → `2>&1 | grep -E \"PASSED|FAILED|ERROR\"`\n- `python script.py` → `2>&1 | tail -30`\n\nFailure output gets the last 50 lines. Success gets the last 5.\n\n**R6 — Terse replies (≤200 words)**\nEvery reply defaults to ≤200 words. Be direct. Lead with the answer, not the explanation. No \"Let me help you with that\" or \"Great question!\" or \"Certainly!\". If the user needs more detail they'll ask. Code blocks don't count toward the word limit.",
+      "weight": 1.22
+    },
+    {
+      "id": "bdd599a825ecee4a5b2a",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "CONTEXT: Clean up before it's too late",
+      "text": "**R7 — Compact after large reads**\nIf a single Read or Bash output exceeds 500 lines or 50KB, immediately suggest `/compact` to the user. Don't wait for auto-compaction — it triggers too late.\n\n**R8 — Limit SubAgent output**\nAll subagent prompts must include: \"Report findings in under 200 words. Show only file paths and key conclusions. Omit raw data.\" Subagents are tools, not diarists.\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "77c6d6c6555df6b2e521",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Benchmarks",
+      "text": "Single article build — cross-directory search, Bash output, parallel agents:\n\n| Step | Raw | LG-token-saver | Savings |\n|------|-----|---------------|---------|\n| Search 15 files | 50,000 | 3,000 | 94% |\n| Bug location | 8,000 | 500 | 94% |\n| Bash output | 30,000 | 3,000 | 90% |\n| AI replies | 15,000 | 4,000 | 73% |\n| Parallel agents | 90,000 | 5,000 | 94% |\n| Duplicate search | 5,000 | 0 | 100% |\n| **Total** | **198,000** | **15,500** | **92%** |\n\nvs competitors on the same task:\n\n| | Caveman | ECC | codesight | **LG-token-saver** |\n|---|---------|-----|-----------|-------------------|\n| Savings | 5% | 83% | 60% | **92%** |\n| Layers covered | Output | All | Input | **All 3** |\n| Install | 1 cmd | npm | npx | **1 cmd** |\n| Dependencies | 0 | Many | Node.js | **0** |\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "8a21a29f2ebf796b586d",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Multi-Scenario Validation (6 months production)",
+      "text": "| Scenario | Raw Tokens | LG-token-saver | Savings | Dominant Rules |\n|----------|-----------|---------------|---------|----------------|\n| 📝 Article build (WeChat) | 198,000 | 15,500 | **92%** | R1-R8 all |\n| 🐛 Cross-project bug fix | 120,000 | 18,000 | **85%** | R1,R2,R5,R7,R8 |\n| 🔧 Multi-file refactor | 85,000 | 14,000 | **84%** | R1,R2,R3,R6 |\n| 🔍 New project exploration | 45,000 | 9,000 | **80%** | R1,R2,R3,R4 |\n| ⚙️ CI log analysis | 60,000 | 6,000 | **90%** | R5,R7,R8 |\n| 💬 Simple Q&A / quick edits | 12,000 | 4,800 | **60%** | R2,R5,R6 |\n\n**Not cherry-picked. Not simulated. These are real sessions from real work.** 87% is the weighted average across all scenarios.",
+      "weight": 1.22
+    },
+    {
+      "id": "3cdf3b9b24b1cee87815",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "FAQ",
+      "text": "**Q: Does this actually work on any project?**\nYes. The 8 rules are universal — language-agnostic, framework-agnostic, project-size-agnostic. See table above for real data across 6 different project types.\n\n**Q: Will it make Claude less capable?**\nNo. The rules reduce verbosity and redundancy, not quality. SubAgents still do full analysis — they just return summaries. Grep still finds everything — just without loading entire files. Zero information loss.\n\n**Q: How is this different from Caveman?**\nCaveman only compresses AI replies (output layer). It does nothing for search bloat, Bash spam, or context decay. LG-token-saver covers all three layers.\n\n**Q: Can I use this with other skills?**\nYes. LG-token-saver is purely behavioral — no conflicts with any other skill or tool.\n\n---",
+      "weight": 1.22
+    },
+    {
+      "id": "d382c6ba078061436758",
+      "source": "jnbno1163/LG-token-saver",
+      "ref": "b63351e7d709",
+      "path": "SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "token-efficiency",
+        "context",
+        "tools",
+        "coding"
+      ],
+      "heading": "Changelog",
+      "text": "| Version | Date | Changes |\n|---------|------|---------|\n| v3.0 | 2026-05-29 | Public release: 3 modes, 8 rules, 6 scenarios, vs-competition benchmarks |\n| v2.0 | 2026-05-29 | +R7 Bash filter, +R8 Terse replies (Caveman mode), 80→87% savings |\n| v1.0 | 2026-05-25 | Initial: 6 core rules, 80% average savings |\n\n---\n\n**Author:** LiaoGong / CC杰 · MIT License · v3.0 (2026-05-29)\n**Install:** `npx skills add jnbno1163/LG-token-saver`\n**Verify:** `/cost` before → do task → `/cost` after",
+      "weight": 1.22
     },
     {
       "id": "77f9267d80a78c54ad27",

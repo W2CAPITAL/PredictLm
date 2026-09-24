@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T01:10:17.477Z",
-  "knowledgeVersion": "4d5193e6430ae46b",
-  "chunkCount": 2304,
+  "generatedAt": "2026-09-24T01:13:46.148Z",
+  "knowledgeVersion": "3fb0440a764b3943",
+  "chunkCount": 2329,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -160,10 +160,10 @@
       "repo": "jnbno1163/LG-token-saver",
       "mode": "allow",
       "license": "MIT",
-      "commit": null,
-      "files": 0,
-      "chunks": 0,
-      "error": "422 https://api.github.com/repos/jnbno1163/LG-token-saver/commits/main"
+      "commit": "b63351e7d70968129afa5044ff303775ecd73de0",
+      "files": 3,
+      "chunks": 25,
+      "error": null
     },
     {
       "repo": "atjsh/llmlingua-2-js",
