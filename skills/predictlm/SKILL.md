@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.13.0"
+  version: "1.14.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -464,3 +464,46 @@ As evoluções abaixo fazem parte do contrato atual e não podem desaparecer sil
     - sem fake buttons/integrations/secrets no frontend.
 
 Toda mudança de runtime/arquitetura/fonte de aprendizado exige atualização correspondente das skills no mesmo ciclo de implementação.
+
+
+## Centum 100 + Third Brain PARALLAX
+
+Decisão, certeza, comparação, aprovação, risco, recomendação e prontidão ativam:
+
+RECALL → CLASSIFY → CENTUM 100 → PLAN → FORGE → AEGIS → COUNCIL X10 → CHAIR → PARALLAX → VERIFY → ANSWER/EXECUTE → CAPTURE → IMPROVE.
+
+CENTUM contém exatamente 100 perguntas em 10 grupos:
+objetivo; evidência; hipóteses; alternativas; downside; upside; stakeholders; reversibilidade; execução; certeza/falsificação.
+
+Cada check é revisado internamente como supported / contradicted / unknown / not-applicable.
+Unknown não vira fato.
+
+Depois, Council X10 passa pelas 10 lentes já oficiais.
+Chair sintetiza divergências sem inventar consenso.
+
+PARALLAX é o terceiro cérebro:
+- observa FORGE e AEGIS;
+- procura um terceiro enquadramento;
+- opção C/híbrida;
+- variável escondida;
+- efeito de segunda ordem;
+- horizonte diferente;
+- experimento reversível;
+- condição que inverteria a conclusão;
+- unknown-unknown proxy.
+
+Se não houver terceiro lado útil, não inventar um.
+
+### Strict Intent
+
+Sem fallback de conteúdo:
+- responder somente ao pedido;
+- nunca substituir por resposta genérica;
+- nunca despejar skill/engine/provider/checklist interno;
+- se faltar base, declarar a incerteza específica;
+- fallback técnico entre runtimes pode existir, mas não pode mudar o objetivo nem o assunto da resposta.
+
+Perguntas simples/casuais não carregam Centum.
+Council executável força Centum uma única vez e não repete 100 perguntas dentro de cada lente.
+
+Contrato detalhado: `skills/predictlm/CENTUM-PARALLAX.md`.
