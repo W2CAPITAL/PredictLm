@@ -126,6 +126,12 @@ export function cancelNeuralLoad(){
   return true;
 }
 
+export function cancelNeuralWork(){
+  if(!loadingTier&&!pending.size)return false;
+  resetNeuralWorker('Execução neural local interrompida para preservar a responsividade.',true);
+  return true;
+}
+
 const NEURAL_MODELS:Record<NeuralTier,string>={
   lite:process.env.NEXT_PUBLIC_PREDICT_NEURAL_LITE_MODEL||DEFAULT_BROWSER_MODELS.lite,
   smart:process.env.NEXT_PUBLIC_PREDICT_NEURAL_SMART_MODEL||DEFAULT_BROWSER_MODELS.smart
