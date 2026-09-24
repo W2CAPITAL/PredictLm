@@ -1,6 +1,7 @@
 import type { WorkspaceFile } from './types';
 import { buildSaaSBlueprintFiles, inferSaaSBlueprint } from './saas-product-fabric';
 import { buildDomainAppFiles, inferDomainAppBlueprint } from './domain-engine-fabric';
+import { buildLexisOperationalFiles } from './lexis-operational-fabric';
 
 export interface ProductRequirements {
   intent:string;
@@ -463,6 +464,7 @@ export function buildProjectScaffold(prompt:string,intent:string):WorkspaceFile[
   const files:WorkspaceFile[]=[
     ...buildSaaSBlueprintFiles(prompt,intent),
     ...buildDomainAppFiles(prompt),
+    ...buildLexisOperationalFiles(prompt),
     ...moduleSkeletons(req),
     {path:'src/types/domain.ts',language:'typescript',content:domainTypes(req)},
     {path:'src/domain/validation.ts',language:'typescript',content:validationModule(intent)},
