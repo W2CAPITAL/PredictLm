@@ -510,6 +510,71 @@
         "context-budget"
       ],
       "weight": 1.28
+    },
+    {
+      "repo": "cortextorlab/airLLM",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "weight": 1.15
+    },
+    {
+      "repo": "nguefackuriel/Run-Llama3-70B-with-just-4GB-memory-GPU",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "airllm",
+        "llama3",
+        "low-vram"
+      ],
+      "reason": "Wrapper has no LICENSE; only confirms an AirLLM usage pattern. Do not copy or distribute from it."
+    },
+    {
+      "repo": "xinntao/Real-ESRGAN",
+      "branch": "master",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "weight": 1.15
+    },
+    {
+      "repo": "JingyunLiang/SwinIR",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "weight": 1.08
     }
   ]
 }
