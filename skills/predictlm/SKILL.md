@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.9.0"
+  version: "1.10.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -262,3 +262,51 @@ Ordem server-side:
 5. se todos falharem, o Chat retorna ao Neural/Knowledge local.
 
 Secrets nunca usam NEXT_PUBLIC_. Nenhuma key é obrigatória e nenhuma cota é descrita como ilimitada.
+
+## Token Budget Engine
+
+Objetivo: gastar contexto onde ele muda a resposta, não em repetição.
+
+Runtime padrão:
+- `full`: histórico ~1200 tokens + contexto ~1500;
+- `lite`: Deep preserva mais contexto (~1800 + ~2200);
+- `ultra`: disponível para rotas/cotas muito apertadas, não default.
+
+Regras:
+1. preservar pedido atual e evidência de alta prioridade;
+2. histórico recente entra por orçamento, não por quantidade fixa de mensagens;
+3. deduplicar blocos repetidos;
+4. top-k de GitHub/knowledge/skills antes da inferência;
+5. compactar arquivos/snapshots do Build antes de serializar;
+6. medir `before`, `after`, `savedPct`, mensagens descartadas e blocos deduplicados;
+7. nunca usar benchmark promocional de um repo como garantia de economia no PredictLM.
+
+LLMLingua-2 fica como aceleração semântica opcional futura. O default é determinístico porque um compressor neural extra pode consumir mais RAM/CPU do que economiza em PC fraco.
+
+## Local Runtime Router
+
+O Chat pode ativar um roteador local opcional antes de Cloud/Browser Neural.
+
+Auto-probe somente em loopback:
+- Ollama `127.0.0.1:11434`;
+- OpenAI local `:4891` (padrão de runtime mobile/local);
+- OpenAI local `:8080` (llamafile/NanoMind);
+- GenieX `:18181`;
+- LowRAM `:8766`.
+
+Fluxo:
+TOKEN SAVER → PROBE LOCAL → Skill Forge top-k → runtime local → gate de assunto → fallback.
+
+A página hospedada não presume que Vercel alcança o localhost do usuário. O Local Runtime Router roda no cliente e pode falhar se o runtime não expuser CORS/acesso local.
+
+Ollama também pode entrar no `/api/chat` via `OLLAMA_BASE_URL` + `OLLAMA_MODEL` quando o próprio servidor PredictLM é local/self-hosted.
+
+Runtime local não substitui o Qwen browser: ele é uma opção adicional.
+
+## Media Prompt Compiler
+
+Imagem/vídeo não recebem o histórico inteiro. O pipeline reduz o pedido a:
+sujeito → intenção → estilo → composição → restrições → continuidade/review.
+
+Prompts de imagem e storyboard têm budget próprio; repetições e previousPrompt são compactados antes de chamar o provider.
+O padrão vem de prompt compiler/retrieval/deterministic checks do `image2-ads-studio`, sem copiar galerias inteiras para contexto.
