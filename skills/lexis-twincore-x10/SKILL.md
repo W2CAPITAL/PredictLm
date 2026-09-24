@@ -560,3 +560,7 @@ Media:
 
 ### Gemini Veo 3.1
 Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapter usa operação assíncrona, polling e proxy de download para não expor a chave no navegador. Duração é normalizada para 4/6/8s e o provider fica antes do motion fallback local.
+
+
+### Gemini Nano Banana 2
+Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.
