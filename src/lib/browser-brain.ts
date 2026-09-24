@@ -371,7 +371,7 @@ export function neuralStatus(){
 }
 
 export function unloadNeuralModel(options?:{keepPreference?:boolean}){
-  resetNeuralWorker('Modelo local descarregado.',options?.keepPreference!==false);
+  resetNeuralWorker('Modelo local descarregado.',options?.keepPreference===true);
   lastNeuralError='';
 }
 
