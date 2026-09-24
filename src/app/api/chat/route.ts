@@ -27,6 +27,15 @@ function providers():Provider[]{
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
+  if(process.env.FREELLMAPI_BASE_URL&&process.env.FREELLMAPI_API_KEY){
+    const freeBase=process.env.FREELLMAPI_BASE_URL.replace(/\/$/,'');
+    push({
+      name:'freellmapi',
+      base:freeBase.endsWith('/v1')?freeBase:freeBase+'/v1',
+      key:process.env.FREELLMAPI_API_KEY,
+      model:process.env.FREELLMAPI_MODEL||'auto'
+    });
+  }
   if(process.env.OLLAMA_BASE_URL&&process.env.OLLAMA_MODEL){
     const ollamaBase=process.env.OLLAMA_BASE_URL.replace(/\/$/,'');
     push({
@@ -98,7 +107,7 @@ export async function POST(req:Request){
     const configured=providers();
     if(!configured.length){
       return Response.json({
-        error:'Cloud Cascade não configurado. Defina AI_* ou GROQ_*/OPENROUTER_* no servidor.',
+        error:'Cloud Cascade não configurado. Defina AI_*, FREELLMAPI_*, GROQ_* ou OPENROUTER_* no servidor.',
         code:'NO_PROVIDER'
       },{status:503});
     }
