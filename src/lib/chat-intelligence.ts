@@ -12,7 +12,7 @@ export function classifyConversation(prompt:string,history:AssistantMessage[]=[]
   if(/(voce me ama|gosta de mim|sente algo por mim|obrigad|valeu|kkk|haha|rsrs|boa|legal|bacana)/.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
   if(/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|cotacao|preco|placar|presidente atual|versao atual)\b/.test(p))return 'current';
-  if(/^(como (posso|eu posso|fazer|criar|montar|come[cç]ar)|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return 'howto';
+  if(/^(como\s+[a-z0-9à-ÿ_-]+|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return 'howto';
   if(/^(quem (e|foi)|o que (e|foi)|defina|explique|como funciona|por que|porque|qual a diferenca|qual e|onde fica|quando nasceu|quando foi)\b/.test(p))return 'factual';
   if(/\b(codigo|programa|javascript|typescript|react|next|python|api|banco de dados|database|frontend|backend|git|github|vercel|docker|linux|windows|erro|bug|arquitetura|algoritmo)\b/.test(p))return 'technical';
   return 'general';
@@ -134,8 +134,9 @@ export function answerQuality(prompt:string,content:string){
   if(text.length>=180)score+=2; else if(text.length>=90)score+=1;
   if(/\n|\d+\.|- |\*\*/.test(text))score+=1;
   if(/como|passo|agora|fa[cç]a|primeiro|depois|pr[oó]ximo/.test(clean(text)))score+=1;
-  if(/^(como posso|como criar|como fazer|como montar)/.test(p)&&text.length<220)score-=2;
-  if(/^(como posso|como criar|como fazer|como montar)/.test(p)&&/^(uma |o |a ).{0,80}\b(e|é)\b/.test(clean(text)))score-=1;
+  if(/^como\b/.test(p)&&text.length<140)score-=2;
+  if(/^como\b/.test(p)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
+  if(/^como\b/.test(p)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
   if(/nao tenho contexto|não tenho contexto|ative neural|ative o neural|fallback/i.test(text))score-=3;
   const topical=responseTopicAlignment(prompt,text);
   if(!topical.relevant)score-=5;
@@ -171,14 +172,27 @@ export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolea
   if(kind==='casual'||kind==='context')return false;
   const p=clean(prompt);
   if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
-  if(kind==='current'||kind==='factual')return true;
-  if(kind==='howto'){
-    if(webEnabled)return true;
-    if(/\b(pesquis|fonte|verifique|seguranca|solda|welding|eletric|bateria|veiculo|homologacao|medic|jurid|lei|finance|quimic|pressao|pressão|gas|gás)\b/.test(p))return true;
-    return false;
-  }
-  if(/\b(pesquis|fonte|compare|verifique|atual|hoje|noticia|preco|cotacao|documentacao|manual|norma|lei|jurisprud|seguranca|homologacao)\b/.test(p))return true;
-  return webEnabled;
+
+  // Web is a capability/permission, not a requirement for every turn.
+  // Static common-knowledge questions should not be polluted by unrelated snippets.
+  const explicitResearch=/\b(pesquis|pesquise|fonte|fontes|cite|citacao|citação|verifique|confirme|compare|documentacao|documentação|manual|norma|referencia|referência)\b/.test(p);
+  const volatile=/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|notícias?|preco|preço|cotacao|cotação|placar|resultado|versao atual|versão atual|fortuna hoje|patrimonio hoje|patrimônio hoje)\b/.test(p);
+  const highStakes=/\b(seguranca|segurança|solda|welding|eletric|elétric|bateria|veiculo|veículo|homologacao|homologação|medic|saude|saúde|jurid|lei|finance|quimic|pressao|pressão|gas|gás)\b/.test(p);
+
+  if(kind==='current')return true;
+  if(kind==='factual')return explicitResearch||volatile;
+  if(kind==='howto')return explicitResearch||volatile||highStakes;
+  if(kind==='technical')return explicitResearch||volatile||webEnabled;
+  return explicitResearch||volatile;
+}
+
+export function shouldPreferLocalRuntimeFirst(kind:ConversationKind,prompt:string,deep:boolean,needsWeb:boolean){
+  if(deep||needsWeb)return false;
+  if(kind==='current'||kind==='technical'||kind==='casual'||kind==='context')return false;
+  const p=clean(prompt);
+  if(/\b(pesquis|fonte|cite|verifique|compare|atual|hoje|agora|noticia|notícias?|preco|preço|cotacao|cotação)\b/.test(p))return false;
+  if(prompt.length>520)return false;
+  return kind==='howto'||kind==='factual'||kind==='general';
 }
 
 export interface ResearchItem{
