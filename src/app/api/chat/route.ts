@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
+import { tutorSystemContext } from '@/lib/tutor-mode';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -107,10 +108,12 @@ export async function POST(req:Request){
     const gh=githubKnowledgeContext(prompt,githubTopK);
     const ghHits=retrieveGitHubKnowledge(prompt,githubTopK);
     const stats=githubKnowledgeStats();
+    const tutor=tutorSystemContext(prompt);
     const packed=optimizePromptPackage({
       messages:rawHistory,
       mode:deep?'lite':'full',
       sections:[
+        {label:'Tutor Mode',text:tutor,priority:6},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
     });
