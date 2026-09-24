@@ -80,7 +80,8 @@ export async function POST(req:Request){
     const preparedPrompt=compactText(rawPrompt,1100);
     const sourcePrompt=compactText(originalPrompt,700);
     const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
-    const style=recommendedImageStyle(sourcePrompt,requestedStyle);
+    const styleLocked=!!body?.styleLocked;
+    const style=styleLocked?requestedStyle:recommendedImageStyle(sourcePrompt,requestedStyle);
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
@@ -212,6 +213,7 @@ export async function POST(req:Request){
             promptMode:effectivePromptMode,
             negativePrompt,
             style,
+            styleLocked,
             fidelityLimited:false
           });
         }
@@ -242,6 +244,7 @@ export async function POST(req:Request){
       promptMode:effectivePromptMode,
       negativePrompt,
       style,
+      styleLocked,
       fidelityLimited:true,
       providerWarning:'Fallback público ativo: fidelidade de personagens e franquias pode ser limitada. Configure um provider de imagem forte para melhor identidade.'
     });
