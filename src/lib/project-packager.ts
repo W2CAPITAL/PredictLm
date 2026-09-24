@@ -17,7 +17,7 @@ function backendNeeded(intent:string,spec:any={}){
   const prompt=String(spec?.prompt||'');
   const features=Array.isArray(spec?.spec?.features)?spec.spec.features.join(' '):'';
   return ['crm','store'].includes(intent)||
-    /backend|api|database|banco|postgres|supabase|firebase|auth|login|webhook|integra[cç][aã]o|integration|stripe|datajud|djen/i.test(prompt+' '+features);
+    /backend|api|database|banco|postgres|supabase|firebase|auth|login|webhook|integra[cç][aã]o|integration|stripe|datajud|djen|saas|tenant|workspace|rbac|billing|subscription|audit|erp|helpdesk|ticket/i.test(prompt+' '+features);
 }
 function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
   if(!backendNeeded(intent,spec))return [];
@@ -139,6 +139,7 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
   const css=files.find(f=>/styles?\.css$/.test(f.path));
   const name=projectName(files);
   const backend=backendNeeded(intent,spec);
+  const workspaceEnv=files.find(f=>f.path==='.env.example')?.content?.trim()||'';
   const pkg={
     name,
     version:'1.0.0',
@@ -201,11 +202,11 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     {path:'src/App.test.jsx',content:test,language:'javascript'},
     {path:'vite.config.js',content:"import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({plugins:[react()],test:{environment:'jsdom'}});\n",language:'javascript'},
     {path:'.gitignore',content:'node_modules\ndist\n.env\n.DS_Store\n',language:'text'},
-    {path:'.env.example',content:backend?'VITE_API_URL=http://localhost:8787\nPORT=8787\n':'# No environment variables are required for this app.\n',language:'text'},
+    {path:'.env.example',content:backend?Array.from(new Set((['VITE_API_URL=http://localhost:8787','PORT=8787',...workspaceEnv.split(/\r?\n/)]).filter(Boolean))).join('\n')+'\n':(workspaceEnv?workspaceEnv+'\n':'# No environment variables are required for this app.\n'),language:'text'},
     {path:'RUNME.md',content:runme,language:'markdown'}
   ];
   const preserved=files.filter(f=>
-    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md'].includes(f.path)||
+    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md','SAAS_BLUEPRINT.md'].includes(f.path)||
     f.path.startsWith('src/domain/')||
     f.path.startsWith('src/integrations/')||
     f.path.startsWith('src/types/')||

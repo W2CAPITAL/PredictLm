@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.14.0",
+  "version": "5.17.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -37,7 +37,12 @@
     "runtime-federation",
     "agent-fabric",
     "provider-mesh",
-    "web-reach"
+    "web-reach",
+    "predict-auto",
+    "lexispredict-saas",
+    "office-artifacts",
+    "saas-builder-fabric",
+    "generative-media-auto-router"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -122,7 +127,6 @@
     "structured-build-prompt",
     "blocking-secret-review",
     "review-repair-rerun",
-    "safe-neural-auto-warm",
     "global-learning-proposals",
     "image-quality-ladder",
     "optional-super-resolution",
@@ -146,7 +150,28 @@
     "apify-research-bridge",
     "web-reach",
     "open-lovable-build-patterns",
-    "fastchat-serving-patterns"
+    "fastchat-serving-patterns",
+    "predict-auto-unified-router",
+    "weak-device-runtime-budget",
+    "no-first-visit-model-download",
+    "safe-local-runtime-probe",
+    "lexispredict-saas-skill",
+    "dossier-second-brain",
+    "office-artifact-fabric",
+    "docx-pptx-pdf-xlsx-generation",
+    "saas-multitenant-rbac",
+    "saas-audit-jobs",
+    "nano-banana-first",
+    "generative-video-auto-router",
+    "honest-local-motion-fallback",
+    "saas-blueprint-runtime-files",
+    "saas-env-preserving-export",
+    "tenant-rbac-audit-scaffold",
+    "real-generative-video-priority",
+    "higgsfield-cli-external-bridge",
+    "gemini-veo-3-1-video",
+    "gemini-nano-banana-2-image",
+    "server-proxied-media-secrets"
   ],
   "hosts": [
     "PredictLM",

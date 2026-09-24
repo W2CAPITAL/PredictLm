@@ -64,7 +64,7 @@ function parseMath(input:string){
 }
 
 export function browserCapabilities(){
-  const native=!!(typeof window!=='undefined'&&(window.LanguageModel||window.ai?.languageModel));
+  const native=process.env.NEXT_PUBLIC_PREDICT_NATIVE_LANGUAGE_MODEL==='1'&&!!(typeof window!=='undefined'&&(window.LanguageModel||window.ai?.languageModel));
   const webgpu=typeof navigator!=='undefined'&&!!(navigator as any).gpu;
   const memory=typeof navigator!=='undefined'?navigator.deviceMemory||0:0;
   const cores=typeof navigator!=='undefined'?navigator.hardwareConcurrency||0:0;
@@ -73,6 +73,7 @@ export function browserCapabilities(){
 }
 
 async function nativeGenerate(system:string,prompt:string){
+  if(process.env.NEXT_PUBLIC_PREDICT_NATIVE_LANGUAGE_MODEL!=='1')throw new Error('Browser native model disabled in automatic mode');
   const api=window.LanguageModel||window.ai?.languageModel;
   if(!api)throw new Error('Browser native model unavailable');
   const availability=typeof api.availability==='function'?await api.availability():null;
@@ -218,7 +219,7 @@ export async function loadNeuralModel(
     try{
       const gpu=(navigator as any).gpu;
       const adapter=await Promise.race([
-        gpu.requestAdapter({powerPreference:'high-performance'}),
+        gpu.requestAdapter(),
         new Promise<null>(resolve=>setTimeout(()=>resolve(null),3500))
       ]);
       realWebgpu=!!adapter;
@@ -320,6 +321,8 @@ export async function loadNeuralModel(
 
 export function neuralAutoWarmPolicy(){
   if(typeof navigator==='undefined')return {allowed:false,reason:'server'};
+  const explicit=preferredNeuralTier();
+  if(!explicit)return {allowed:false,reason:'on-demand-only',tier:'lite' as NeuralTier};
   const caps=browserCapabilities();
   const connection=(navigator as any).connection;
   const state=readAutoWarmState();
@@ -525,7 +528,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   if(loadedTier){
     try{
       let content='';
-      if(options?.deep){
+      if(options?.deep&&loadedTier==='smart'&&loadedBackend==='webgpu'){
         options?.onStage?.('plan');
         const forge=await neuralGenerate(
           system+'\n\nDEEP PASS 1 — FORGE: construa a melhor solução plausível para o pedido. Seja concreto, factual e aderente. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso.',
@@ -575,7 +578,10 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         );
       }else{
         options?.onStage?.('forge');
-        content=await neuralGenerate(system,prompt,neuralMessages);
+        const boundedSystem=options?.deep
+          ? system+'\n\nDEEP ECONÔMICO: produza uma única resposta final já revisada. Priorize precisão, completude e aderência; não faça múltiplas passagens locais em CPU/WASM.'
+          : system;
+        content=await neuralGenerate(boundedSystem,prompt,neuralMessages,{maxNewTokens:loadedTier==='smart'?620:360,temperature:options?.deep?0.30:0.42});
       }
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);

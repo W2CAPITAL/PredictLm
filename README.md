@@ -17,14 +17,21 @@ Chat is intentionally separate from the IDE. It includes:
 - optional **Neural Local** inference in the browser
 - Chat ↔ Build switch
 
-### Neural Local
+### Predict Auto
 
-When available, PredictLM first tries a browser-native language model. Users can also select between two independent browser runtimes:
+Chat exposes one model identity: **Predict Auto**. Provider/model selection is internal.
 
-- **ONNX Lite / Smart** — Qwen 0.5B–1.5B through Transformers.js; Lite remains CPU/WASM-first.
-- **WebLLM Lite / Smart** — optional MLC/WebGPU acceleration with a real GPU-adapter self-test.
+For substantive prompts the route is:
 
-A third local path can route through **FreeLLMAPI** on `localhost:3001`. Its unified key stays in browser localStorage and is sent only to the loopback router. Model weights are downloaded on demand and are not bundled into the Vercel deployment. Ollama is not required.
+```
+research/skills/context
+  → server Provider Mesh
+  → previously configured local runtime
+  → browser-local engine already loaded
+  → grounded Predict Core fallback
+```
+
+Browser-local weights are **never downloaded on first visit**. The model menu contains only an optional **Ativar modo offline** action. On weak machines, Lite CPU/WASM uses one bounded pass; WebGPU is used only after a real adapter test. The experimental browser LanguageModel API is disabled by default.
 
 ### Model catalog and weight policy
 
@@ -205,7 +212,7 @@ Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork,
 
 ## Optional Cloud Cascade
 
-Chat remains local-first by default. The model menu can opt into **Cloud Cascade**.
+Chat uses **Predict Auto** by default. Provider Mesh is automatic when server-side credentials are configured; there is no separate cloud-model picker.
 
 When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured:
 
@@ -239,7 +246,7 @@ The default path is deterministic and has no extra model/download. LLMLingua-2-s
 
 ## Local Runtime Router
 
-The model menu can opt into local runtimes already running on the user's device:
+Local runtimes are implementation details of Predict Auto. The app does not scan arbitrary localhost ports automatically:
 
 ```
 Token Saver
@@ -249,7 +256,7 @@ Token Saver
   → Knowledge fallback
 ```
 
-Auto-probing is limited to loopback endpoints and starts only after opt-in. Hosted Vercel cannot reach a user's localhost, so the client performs the local probe.
+Automatic mode probes only a previously configured loopback runtime (currently FreeLLMAPI with a saved local credential). Broader localhost discovery is never run silently. Hosted Vercel cannot reach a user's localhost.
 
 Ollama can also be configured server-side for a local/self-hosted PredictLM instance with `OLLAMA_BASE_URL` and `OLLAMA_MODEL`.
 
@@ -303,3 +310,23 @@ REFERENCE / REQUEST
 ```
 
 Open Lovable's public chat page is treated as a product/reference surface, not as an undocumented API endpoint. Firecrawl-backed analysis and PredictLM's own Build runtime provide the reproducible integration path.
+
+
+## LexisPredict SaaS skill
+
+The PredictLM skill fabric now includes `skills/lexispredict-saas`, distilled from `W1CAPITAL/LexisPredict`:
+
+- SaaS tenant/RBAC patterns;
+- CRM/finance/agenda/tasks/supervision;
+- DataJud/DJEN/process operations;
+- OCR and document extraction;
+- legal documents and templates;
+- KPI/report pipelines;
+- offline/local provider + sync patterns;
+- **Dossier Second Brain** for evidence/timeline/artifacts.
+
+The Dossier Second Brain does not replace the normal Chat answer. It assembles evidence and artifacts, then returns normalized context to Predict Auto.
+
+## Office Artifacts skill
+
+`skills/office-artifacts` adds format-specific gates for real DOCX/PPTX/PDF/XLSX generation and validation, with source/license boundaries for the requested document, presentation, PDF, spreadsheet and UI repositories.

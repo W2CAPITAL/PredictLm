@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.9.0"
+  version: "1.12.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -347,7 +347,7 @@ Neural review nunca substitui smoke/build/test/typecheck.
 ## Runtime invariants v1.8
 
 Preservar em qualquer evolução:
-- Neural Lite auto-warm somente em idle/worker, sem cargas concorrentes;
+- Neural local somente sob demanda; nenhum auto-warm/download no primeiro acesso;
 - Local Runtime Router opcional; Browser Neural permanece independente;
 - Token Budget antes de RAG/modelo;
 - Deep Loop bounded + rollback;
@@ -397,3 +397,44 @@ Build/reference:
 - FastChat reforça serving/eval multi-model;
 - Agent-Reach reforça tool reach/discovery;
 - adapters sociais ficam externos/opt-in e não viram dependência silenciosa.
+
+
+## Predict Auto / LexisPredict v1.10
+
+Public runtime:
+- one visible model identity, Predict Auto;
+- provider/model choice is internal;
+- browser local is opt-in/on-demand;
+- no automatic localhost scan;
+- no first-visit model download.
+
+New federated routes:
+- `lexispredict-saas`: CRM + jurídico + DataJud/DJEN + OCR + KPI + reports + documents + offline/sync;
+- `office-artifacts`: DOCX + PPTX + PDF + XLSX with artifact validation.
+
+Dossier is a second-brain evidence/artifact route and must return its normalized context to the main answer route rather than replacing the Chat response.
+
+
+## SaaS Builder / Media v1.11
+
+Federar `saas-builder-fabric` para Build de negócio: tenant/workspace, RBAC, data model, auth, persistence, billing quando aplicável, audit trail, jobs e integrações reais.
+
+Media: imagem prioriza Nano Banana quando configurado; vídeo Auto roteia somente para provider temporal real configurado. Storyboard/motion local permanece fallback e deve ser rotulado como tal.
+
+
+## SaaS Runtime Wiring v1.12
+
+Build de SaaS agora executa blueprint real no runtime: módulos, entidades, tenant/RBAC, audit, validação e export são materializados como arquivos do projeto, não apenas recomendações textuais.
+
+Media routing:
+- imagem: Nano Banana → provider configurado → fallback público;
+- vídeo: Auto → provider temporal configurado → motion fallback local;
+- motion local é composição de keyframes e deve ser rotulado como fallback, nunca como modelo temporal neural.
+
+
+### Gemini Veo 3.1
+Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapter usa operação assíncrona, polling e proxy de download para não expor a chave no navegador. Duração é normalizada para 4/6/8s e o provider fica antes do motion fallback local.
+
+
+### Gemini Nano Banana 2
+Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.

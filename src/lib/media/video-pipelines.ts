@@ -19,6 +19,7 @@ export const MEDIA_PIPELINE_PATTERNS:MediaPipelinePattern[]=[
   {id:'veo',name:'Veo provider adapter',repo:'mountsea-ai/veo-api',role:'optional hosted video provider',runtime:'adapter'},
   {id:'seedance',name:'Seedance provider adapter',repo:'seedance2-api/seedance2-api',role:'optional hosted video provider',runtime:'adapter'},
   {id:'sora',name:'Sora provider adapter',repo:'mountsea-ai/sora-api',role:'optional hosted video provider',runtime:'adapter'},
+  {id:'higgsfield-cli',name:'Higgsfield CLI bridge',repo:'higgsfield-ai/cli',role:'authenticated external CLI with image/video/3D/audio generation; not a Vercel-native API endpoint',runtime:'adapter'},
   {id:'seedance-prompts',name:'Seedance prompt reference',repo:'HiAPIAI/awesome-seedance-2-0-prompts',role:'prompt examples/reference',runtime:'reference'},
   {id:'forge-film',name:'Film orchestration',repo:'F-R-L/forge-film',role:'film planning and shot continuity',runtime:'reference'},
   {id:'helios',name:'Long-video model reference',repo:'PKU-YuanGroup/Helios',role:'long-video coherence; not a Vercel runtime',runtime:'reference'},
@@ -29,9 +30,9 @@ export const MEDIA_PIPELINE_PATTERNS:MediaPipelinePattern[]=[
 export function buildLocalMotionPlan(prompt:string,aspect:string){
   return [
     'Use a imagem gerada como keyframe principal.',
-    'Movimento local: push-in suave de 6s com pan cinematográfico.',
+    'Motion fallback local: push-in/pan sobre keyframe; isto não sintetiza movimento neural novo.',
     'Formato '+aspect+'; sem nova chamada de API.',
-    'Exportação WebM pelo navegador; arquivo não é enviado ao Supabase por padrão.',
+    'Exportação WebM pelo navegador; usar somente quando nenhum provider generativo real estiver configurado.',
     prompt.trim()?('Direção visual: '+prompt.trim()):'Manter a composição original.'
   ];
 }

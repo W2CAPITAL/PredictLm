@@ -84,7 +84,7 @@ async function importWebLLM(){
 
 async function assertWebGPU(){
   if(typeof navigator==='undefined'||!(navigator as any).gpu)throw new Error('WebGPU não está disponível neste navegador.');
-  const adapter=await (navigator as any).gpu.requestAdapter({powerPreference:'high-performance'});
+  const adapter=await (navigator as any).gpu.requestAdapter();
   if(!adapter)throw new Error('WebGPU existe, mas nenhum adaptador de GPU foi disponibilizado.');
 }
 

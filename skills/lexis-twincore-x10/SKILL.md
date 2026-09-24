@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.14.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.17.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.14.0"
+  version: "5.17.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.14.0
+# LEXIS TwinCore X10 v5.17.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -420,7 +420,7 @@ Não herdar API keys client-side do projeto de referência Vibe-Prompting.
 ## Runtime invariants v5.11
 
 TwinCore deve preservar:
-- Neural auto-warm Lite em idle + single-load guard;
+- Neural local somente sob demanda/restauração explícita + single-load guard;
 - Local Router e AirLLM apenas opcionais;
 - Token Budget e retrieval diversity-first;
 - Deep Loop bounded/rollback;
@@ -507,3 +507,60 @@ Web Reach:
 - bridges sociais requerem opt-in explícito e provenance gate.
 
 Carregar `../predictlm/PROVIDER-MESH.md` e `../predictlm/WEB-REACH.md`.
+
+
+## Predict Auto + SaaS Artifact Fabric v5.15
+
+Public model identity is **Predict Auto**. Runtime/provider selection remains internal.
+
+Weak-device gates:
+- no first-visit local weight download;
+- no automatic localhost port sweep;
+- Lite CPU/WASM uses one bounded generation;
+- WebGPU requires a real adapter;
+- experimental browser-native model stays disabled unless explicitly enabled.
+
+Federated skills:
+- `../lexispredict-saas/SKILL.md` for SaaS/CRM/OCR/KPI/report/document patterns;
+- `../office-artifacts/SKILL.md` for DOCX/PPTX/PDF/XLSX artifact workflows;
+- `../predictlm/AUTO-AI.md` for unified routing.
+
+Dossier Second Brain aggregates facts, timeline, evidence gaps and files, then returns normalized context to Predict Auto. It does not replace the final Chat answer.
+
+
+## SaaS Builder + Generative Media v5.16
+
+Carregar `../saas-builder-fabric/SKILL.md` em SaaS/CRM/ERP/helpdesk.
+
+Build gates: tenant/workspace → RBAC → entities → persistence/auth → integrations → jobs/audit → UI states → test/export.
+
+Media gates:
+- Nano Banana first when configured;
+- provider cascade for images;
+- Auto video chooses a configured temporal provider (Veo/Seedance/Sora);
+- local storyboard/motion is fallback only and must not be sold as neural video synthesis.
+
+
+## SaaS Runtime + Temporal Media v5.17
+
+SaaS Builder Fabric não é mais apenas conhecimento: ele materializa blueprint, módulos, entidades, tenant/RBAC/audit e gates dentro do workspace/export.
+
+Build:
+- blueprint detectado por domínio;
+- env/infrastructure preservados no ZIP;
+- acceptance checks multi-tenant obrigatórios quando aplicável;
+- referências SaaS/CRM com licença restrita permanecem reference-only.
+
+Media:
+- Nano Banana/provider cascade para imagem;
+- Auto video seleciona provider temporal real configurado;
+- local WebM/storyboard é fallback de motion, não vídeo neural;
+- Higgsfield CLI só entra como bridge externa autenticada.
+
+
+### Gemini Veo 3.1
+Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapter usa operação assíncrona, polling e proxy de download para não expor a chave no navegador. Duração é normalizada para 4/6/8s e o provider fica antes do motion fallback local.
+
+
+### Gemini Nano Banana 2
+Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.

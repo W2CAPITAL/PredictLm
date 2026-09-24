@@ -160,6 +160,15 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean){
   }finally{clearTimeout(timer)}
 }
 
+export async function GET(){
+  const configured=providers();
+  return Response.json({
+    available:configured.length>0,
+    providers:configured.map(x=>({name:x.name,model:x.model})),
+    count:configured.length
+  },{headers:{'Cache-Control':'no-store'}});
+}
+
 export async function POST(req:Request){
   try{
     const body=await req.json();
@@ -169,9 +178,11 @@ export async function POST(req:Request){
     const configured=providers();
     if(!configured.length){
       return Response.json({
-        error:'Cloud Cascade não configurado. Configure pelo menos um provider server-side (AI_*, FreeLLMAPI, OpenCode, NVIDIA, DeepSeek, Kimi, Z.AI, MiniMax, Gemini, Anthropic, Groq, OpenRouter ou Ark).',
-        code:'NO_PROVIDER'
-      },{status:503});
+        available:false,
+        content:null,
+        code:'NO_PROVIDER',
+        message:'Nenhum provider server-side configurado; o cliente deve continuar para o próximo runtime local/core.'
+      },{headers:{'Cache-Control':'no-store'}});
     }
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])

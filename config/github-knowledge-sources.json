@@ -1163,6 +1163,581 @@
         "api"
       ],
       "reason": "No usable README/license verified."
+    },
+    {
+      "repo": "W1CAPITAL/LexisPredict",
+      "branch": "main",
+      "license": "proprietary-owned-reference",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "legal",
+        "crm",
+        "ocr",
+        "reports",
+        "kpi",
+        "offline"
+      ],
+      "reason": "User-owned product reference; architecture/behavior only, not generic training corpus."
+    },
+    {
+      "repo": "nolly-studio/cult-ui",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ui",
+        "agents",
+        "accessibility",
+        "saas"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "nolly-studio/cult-directory-template",
+      "branch": "main",
+      "license": "EULA",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "directory",
+        "ui"
+      ],
+      "reason": "Template EULA; architecture/visual reference only."
+    },
+    {
+      "repo": "eigenpal/docx-editor",
+      "branch": "main",
+      "license": "Apache-2.0+Pro",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "docx",
+        "ooxml",
+        "editor"
+      ],
+      "weight": 1.03,
+      "reason": "Only Apache-licensed core/docs; exclude packages/editor-api and packages/pro."
+    },
+    {
+      "repo": "felipemvrin/foliospark",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "portfolio",
+        "ui",
+        "saas"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "siddhesh-desai/SlideAI",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "ai"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "atharva9167j/dom-to-pptx",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "dom",
+        "presentation"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "hugohe3/ppt-master",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "agents"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "pdfforge/PDFCreator",
+      "branch": "master",
+      "license": "external",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pdf",
+        "conversion"
+      ],
+      "reason": "Repository points to external license terms."
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "branch": "main",
+      "license": "mixed-MIT-proprietary",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pdf",
+        "ocr",
+        "conversion",
+        "automation"
+      ],
+      "reason": "Mixed license; use public architecture/docs only unless file scope is verified."
+    },
+    {
+      "repo": "jezlan/xcelform",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "templates",
+        "preview"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "presenton/presenton",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "api"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "iron-software/IronXL-Examples",
+      "branch": "main",
+      "license": "commercial-dependency",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "dotnet"
+      ],
+      "reason": "IronXL production use requires commercial licensing."
+    },
+    {
+      "repo": "ghiscoding/excel-builder-vanilla",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "typescript",
+        "export"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "Kowts/excel-creator",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "openpyxl",
+        "charts",
+        "validation"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "AyushmanGupta21/Bloom",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "app-builder",
+        "website-builder",
+        "streaming",
+        "preview"
+      ],
+      "reason": "License not verified; architecture/reference only."
+    },
+    {
+      "repo": "scosman/CMSaasStarter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "billing",
+        "dashboard",
+        "email"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "wasp-lang/open-saas",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "billing",
+        "fullstack"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "Anil-matcha/awesome-generative-ai-apps",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ai-saas",
+        "auth",
+        "billing",
+        "vercel"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "jatingargiitk/saas-builder",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "app-builder",
+        "saas",
+        "react",
+        "flask",
+        "sqlite"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "ixartz/SaaS-Boilerplate",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "multi-tenant",
+        "rbac",
+        "testing",
+        "monitoring"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "alifarooq9/launchmvpfast",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "starter",
+        "components"
+      ],
+      "weight": 0.96
+    },
+    {
+      "repo": "robbins23/daisyui-admin-dashboard-template",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "admin",
+        "dashboard",
+        "sidebar",
+        "calendar",
+        "charts"
+      ],
+      "weight": 1
+    },
+    {
+      "repo": "wrsrsh/startstack",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "drizzle",
+        "postgres",
+        "analytics"
+      ],
+      "reason": "Project is explicitly paused/unmaintained; patterns only."
+    },
+    {
+      "repo": "LlamaGenAI/awesome-free-saas",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "discovery",
+        "catalog"
+      ],
+      "weight": 0.82
+    },
+    {
+      "repo": "twentyhq/twenty",
+      "branch": "main",
+      "license": "AGPL-3.0+commercial",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "workflow",
+        "custom-fields",
+        "workspace"
+      ],
+      "reason": "AGPL/mixed licensing; architecture reference only."
+    },
+    {
+      "repo": "frappe/erpnext",
+      "branch": "develop",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "erp",
+        "crm",
+        "finance",
+        "inventory",
+        "business-os"
+      ],
+      "reason": "Copyleft code not copied into generated apps; domain architecture only."
+    },
+    {
+      "repo": "hcengineering/platform",
+      "branch": "develop",
+      "license": "EPL-2.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "business-os",
+        "crm",
+        "project-management",
+        "hr",
+        "chat"
+      ],
+      "reason": "EPL-2.0 platform architecture reference; generated apps use independently authored patterns."
+    },
+    {
+      "repo": "jtylek/EpesiCRM",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "contacts",
+        "sales",
+        "activities"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "vladandreevg/salesmancrm",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "sales",
+        "pipeline"
+      ],
+      "weight": 1.01
+    },
+    {
+      "repo": "trycompai/crm",
+      "branch": "release",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "agents",
+        "evidence",
+        "followups",
+        "work-queue"
+      ],
+      "weight": 1.12
+    },
+    {
+      "repo": "MasteraSnackin/CreatorHub",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "creator",
+        "content",
+        "analytics",
+        "video"
+      ],
+      "reason": "License not verified; high-level creator workflow only."
+    },
+    {
+      "repo": "higgsfield-ai/higgsfield",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "gpu",
+        "training",
+        "orchestration",
+        "mlops"
+      ],
+      "reason": "GPU training/orchestration patterns only; this repository is not a generative-video API.",
+      "weight": 0.96
+    },
+    {
+      "repo": "JacobEvelyn/friends",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "relationship-crm",
+        "activities",
+        "reminders",
+        "notes"
+      ],
+      "weight": 0.98
+    },
+    {
+      "repo": "Peppermint-Lab/peppermint",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "helpdesk",
+        "tickets",
+        "sla",
+        "notes",
+        "customers"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "go2ismail/Free-CRM",
+      "branch": "master",
+      "license": "CC-BY-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "campaigns",
+        "leads",
+        "budgets",
+        "sales"
+      ],
+      "reason": "Architecture/reference with attribution requirements; generated code remains independently authored."
     }
   ]
 }

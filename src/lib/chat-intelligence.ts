@@ -130,8 +130,6 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
-  const howto=practicalHowTo(prompt);
-  if(howto)return howto;
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'De nada. Pode continuar.';
   if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'Hahaha. Manda a próxima.';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length){
@@ -149,7 +147,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
 export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean){
   if(kind==='casual'||kind==='context')return false;
   if(kind==='current'||kind==='factual')return true;
-  if(kind==='howto')return webEnabled;
+  if(kind==='howto')return true;
   return webEnabled;
 }
 
@@ -178,6 +176,9 @@ function expandResearchTokens(tokens:string[]){
   const out=new Set(tokens);
   if(tokens.includes('empresa'))['negocio','cnpj','sociedade','empreendimento','empresarial','mei'].forEach(x=>out.add(x));
   if(tokens.includes('programacao')||tokens.includes('codigo'))['software','developer','javascript','typescript','python'].forEach(x=>out.add(x));
+  if(tokens.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x))){
+    ['engenharia','automotiva','automotive','vehicle','design','chassi','estrutura','suspensao','freios','powertrain','seguranca','homologacao','prototipo'].forEach(x=>out.add(x));
+  }
   return [...out];
 }
 
@@ -193,7 +194,10 @@ export function researchItemRelevance(query:string,item:ResearchItem){
     else if(bodyTokens.has(token)){score+=2;matches++;}
   }
   const coreCount=Math.max(1,raw.length);
-  const relevant=coreCount===1 ? (titleMatches>=1||score>=2) : (matches>=2||(titleMatches>=1&&score>=5));
+  const automotive=raw.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x));
+  const relevant=automotive
+    ? matches>=2&&score>=4
+    : coreCount===1 ? (titleMatches>=1||score>=2) : (matches>=2||(titleMatches>=1&&score>=5));
   return {score,matches,titleMatches,relevant};
 }
 
@@ -202,11 +206,12 @@ function researchHost(item:ResearchItem){
 }
 
 export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=8){
+  const automotive=relevanceTokens(query).some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x));
   const ranked=items.map(item=>{
     const rel=researchItemRelevance(query,item);
     const quality=Math.max(0,Math.min(100,Number(item.qualityScore??50)));
-    return {item,...rel,rank:rel.score+Math.floor(quality/15)};
-  }).filter(x=>x.relevant)
+    return {item,...rel,quality,rank:rel.score+Math.floor(quality/15)};
+  }).filter(x=>x.relevant&&(!automotive||x.quality>=70||x.matches>=4))
     .sort((a,b)=>b.rank-a.rank);
 
   const selected:ResearchItem[]=[];
@@ -236,7 +241,7 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
   const kind=classifyConversation(prompt);
   const first=useful[0];
   const primary=trimSentence(first.summary||first.description||'');
-  const sources=useful.slice(0,6).map(x=>({title:x.title,source:x.url}));
+  const sources=useful.slice(0,8).map(x=>({title:x.title,source:x.url}));
 
   if(kind==='factual'){
     const extra=useful.slice(1,3).map(x=>trimSentence(x.summary||x.description||'',360)).filter(Boolean);
@@ -249,20 +254,13 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
     };
   }
   if(kind==='howto'){
-    const local=practicalHowTo(prompt);
-    if(local)return {content:local,sources};
-    const evidence=useful.slice(0,5).map((x,i)=>(i+1)+'. '+trimSentence(x.summary||x.description||'',320)).join('\n');
+    const evidence=useful.slice(0,8).map((x,i)=>(i+1)+'. **'+x.title+'** — '+trimSentence(x.summary||x.description||'',520)).join('\n');
     return {
       content:[
-        '**Caminho prático**',
-        '1. Defina o resultado exato que você quer atingir.',
-        '2. Liste pré-requisitos, restrições e recursos que já possui.',
-        '3. Comece pela menor versão que produz um resultado verificável.',
-        '4. Teste com um caso real antes de ampliar.',
-        '5. Corrija o que falhar e só depois automatize ou escale.',
+        '**Síntese baseada nas fontes recuperadas**',
+        evidence,
         '',
-        '**Contexto encontrado nas fontes**',
-        evidence
+        'Use estes pontos como evidência de apoio. A resposta final deve integrar requisitos, arquitetura, riscos, validação e próximos passos do domínio em vez de repetir um roteiro genérico.'
       ].join('\n'),
       sources
     };

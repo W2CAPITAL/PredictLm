@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralAutoWarmPolicy, neuralStatus, restorePreferredNeuralModel, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
@@ -18,7 +18,7 @@ import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '
 import { isTutorRequest } from '@/lib/tutor-mode';
 import { isGlobalLearningInstruction } from '@/lib/global-learning';
 import { answerViaLocalRuntime, probeLocalRuntimes, setLocalRuntimeCredential } from '@/lib/local-runtime-router';
-import { loadWebLLMModel, restorePreferredWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
+import { loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
@@ -75,83 +75,6 @@ export function ChatShell({onOpenLegal}:Props){
   const learningStats=useMemo(()=>trainingRuntimeStats(),[]);
 
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
-
-  useEffect(()=>{
-    let cancelled=false;
-    let idleId:any=null;
-    const timer=window.setTimeout(async()=>{
-      try{
-        try{
-          const restoredWeb=await restorePreferredWebLLMModel(p=>{
-            if(cancelled)return;
-            setLoadState({tier:'lite',progress:p.progress,status:'Restaurando WebLLM · '+p.status});
-          });
-          if(cancelled)return;
-          if(restoredWeb){
-            setLoadState(null);
-            setModelError('');
-            setModelTick(x=>x+1);
-            return;
-          }
-        }catch{
-          await unloadWebLLMModel({keepPreference:true});
-        }
-
-        const restored=await restorePreferredNeuralModel(p=>{
-          if(cancelled)return;
-          setLoadState({tier:'lite',progress:p.progress,status:'Restaurando modelo local · '+p.status});
-        });
-        if(cancelled)return;
-        if(restored){
-          setLoadState(null);
-          setModelError('');
-          setModelTick(x=>x+1);
-          return;
-        }
-
-        const policy=neuralAutoWarmPolicy();
-        if(!policy.allowed)return;
-        const warm=async()=>{
-          if(cancelled||neuralStatus().loaded||neuralStatus().loadingTier)return;
-          try{
-            setLoadState({tier:'lite',progress:null,status:'Aquecendo Neural Lite em segundo plano…'});
-            await loadNeuralModel('lite',p=>{
-              if(cancelled)return;
-              setLoadState({tier:'lite',progress:p.progress,status:'Aquecendo Neural Lite · '+p.status});
-            },{persistPreference:true});
-            if(cancelled)return;
-            setLoadState(null);
-            setModelError('');
-            setModelTick(x=>x+1);
-          }catch(err:any){
-            if(cancelled)return;
-            setLoadState(null);
-            if(!/carregamento neural em andamento/i.test(String(err?.message||''))){
-              setModelError('Auto-load neural foi adiado; o Chat continua funcional e pode carregar o Lite depois.');
-            }
-          }
-        };
-        const ric=(window as any).requestIdleCallback;
-        idleId=typeof ric==='function'
-          ? ric(()=>void warm(),{timeout:5000})
-          : window.setTimeout(()=>void warm(),2600);
-      }catch{
-        if(cancelled)return;
-        setLoadState(null);
-        setModelError('O modelo salvo não pôde ser restaurado automaticamente. O modo CPU/WASM continua disponível para nova tentativa.');
-        setModelTick(x=>x+1);
-      }
-    },700);
-    return()=>{
-      cancelled=true;
-      window.clearTimeout(timer);
-      const cic=(window as any).cancelIdleCallback;
-      if(idleId!=null){
-        if(typeof cic==='function')cic(idleId);
-        else window.clearTimeout(idleId);
-      }
-    };
-  },[]);
 
   useEffect(()=>{
     const onWarm=(event:Event)=>{
@@ -446,6 +369,48 @@ export function ChatShell({onOpenLegal}:Props){
         : prompt;
       const fallbackText=direct||research?.content||undefined;
 
+      if(kind!=='casual'&&kind!=='context'){
+        setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
+        try{
+          const cloudResponse=await fetch('/api/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
+          });
+          const cloudData=await cloudResponse.json();
+          if(cloudResponse.ok&&cloudData?.content){
+            const cloudText=String(cloudData.content).trim();
+            const relevant=responseTopicAlignment(prompt,cloudText).relevant;
+            const quality=answerQuality(prompt,cloudText);
+            if(!relevant||(kind==='howto'&&quality<3)){
+              setActivity(['Provider respondeu com baixa aderência','Continuando no Predict Auto','VERIFY · procurando resposta melhor']);
+            }else{
+            const cloudSources=[
+              ...web.sources,
+              ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
+            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            s.addMessage({
+              role:'assistant',
+              content:cloudText,
+              engine:'Predict Auto',
+              sources:cloudSources,
+              actions:[
+                cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
+                'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
+                'Provider Mesh automático respondeu',
+                ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
+                'Gate final preserva fallback local se o cascade falhar'
+              ],
+              status:'done'
+            });
+            return;
+            }
+          }
+        }catch{}
+        setActivity(['Provider Mesh não respondeu','Predict Auto usando próximo runtime disponível','VERIFY · preparando resposta']);
+      }
+
+
       if(s.localRuntimeEnabled){
         setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
         try{
@@ -456,14 +421,14 @@ export function ChatShell({onOpenLegal}:Props){
             const localSources=[
               ...web.sources,
               ...localReply.sources
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,8);
+            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
             s.addMessage({
               role:'assistant',
               content:localReply.content,
-              engine:'Local API · '+localReply.label,
+              engine:'Predict Auto',
               sources:localSources,
               actions:[
-                'Runtime: '+localReply.label+' · '+localReply.model,
+                'Runtime local automático respondeu',
                 ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
                 'GitHub top-k + memória compactada',
                 'Resposta passou pelo gate de assunto'
@@ -478,42 +443,8 @@ export function ChatShell({onOpenLegal}:Props){
         }
       }
 
-      if(s.cloudEnabled){
-        setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
-        try{
-          const cloudResponse=await fetch('/api/chat',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
-          });
-          const cloudData=await cloudResponse.json();
-          if(cloudResponse.ok&&cloudData?.content){
-            const cloudSources=[
-              ...web.sources,
-              ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,8);
-            s.addMessage({
-              role:'assistant',
-              content:String(cloudData.content),
-              engine:'Cloud Cascade · '+String(cloudData.provider||'server'),
-              sources:cloudSources,
-              actions:[
-                cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
-                'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
-                'Provider: '+String(cloudData.provider||'server'),
-                ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
-                'Gate final preserva fallback local se o cascade falhar'
-              ],
-              status:'done'
-            });
-            return;
-          }
-        }catch{}
-        setActivity(['Cloud Cascade indisponível','Retornando ao Neural/Knowledge local','VERIFY · preparando resposta']);
-      }
-
       let reply=await answerLocally(augmented,messages,{
-        preferNative:true,
+        preferNative:false,
         knowledge:s.deepThink,
         fallbackText,
         deep:s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded),
@@ -542,18 +473,18 @@ export function ChatShell({onOpenLegal}:Props){
       }else if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
         reply={...reply,content:research.content,sources:research.sources};
       }else if(web.sources.length){
-        reply.sources=[...web.sources,...(reply.sources||[])].slice(0,4);
+        reply.sources=[...web.sources,...(reply.sources||[])].slice(0,10);
       }
 
-      const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine==='webllm'?'WebLLM · GPU':reply.engine;
+      const engineLabel='Predict Auto';
       const actions=[
         'Intenção identificada: '+kind,
         ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
         ...(learningInstruction?['Instrução persistente capturada localmente · proposta global enviada quando GitHub Learning estiver configurado']:[]),
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
-        ...(currentNeural.loaded?['Modelo local ONNX: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
-        ...(currentWebLLM.loaded?['Modelo local WebLLM: '+(currentWebLLM.tier||'local')+' · WebGPU']:[]),
-        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?[reply.engine==='webllm'?'Deep WebLLM: revisão FORGE/AEGIS/PARALLAX aplicada internamente':'Deep executou duas passagens: FORGE → AEGIS']:[]),
+        ...(currentNeural.loaded?['Runtime local econômico ativo']:[]),
+        ...(currentWebLLM.loaded?['Runtime local acelerado ativo']:[]),
+        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?['Deep: revisão interna limitada ao orçamento do dispositivo']:[]),
         ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
         'Gate final verificou relevância ao assunto principal'
       ];
@@ -618,6 +549,33 @@ export function ChatShell({onOpenLegal}:Props){
     }
   }
 
+  async function enableAutoLocal(){
+    setModelMenu(false);
+    setModelError('');
+    setLoadState({tier:'lite',progress:null,status:'Preparando modo offline sob demanda…'});
+    try{
+      if(caps.webgpu){
+        try{
+          await loadWebLLMModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'GPU local · '+p.status}));
+          unloadNeuralModel();
+          setLoadState(null);
+          setModelTick(x=>x+1);
+          return;
+        }catch{
+          await unloadWebLLMModel();
+          setLoadState({tier:'lite',progress:null,status:'GPU indisponível · usando modo econômico CPU/WASM'});
+        }
+      }
+      await loadNeuralModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'Modo offline · '+p.status}),{persistPreference:true});
+      setLoadState(null);
+      setModelTick(x=>x+1);
+    }catch(err:any){
+      setLoadState(null);
+      setModelTick(x=>x+1);
+      setModelError((err?.message||'Falha ao ativar o modo offline')+'. O Predict Auto continua funcionando pelo servidor/pesquisa sem carregar outro modelo local.');
+    }
+  }
+
   async function enableWebLLM(tier:WebLLMTier){
     setModelMenu(false);
     setModelError('');
@@ -673,7 +631,7 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   const hasMessages=!!active?.messages.length;
-  const modeLabel=s.localRuntimeEnabled?'Local API · '+localRuntimeLabel:s.cloudEnabled?'Cloud Cascade':webllm.loaded?'WebLLM '+(webllm.tier==='smart'?'Smart':'Lite')+' GPU':neural.loaded?'Local '+(neural.tier==='smart'?'Smart':'Lite')+(neural.backend==='wasm'?' CPU':' GPU'):(s.deepThink?'Deep':'Fast');
+  const modeLabel='Predict Auto';
 
   return <div className={'grok-shell '+(sidebar?'sidebar-open':'sidebar-closed')}>
     <aside className="grok-sidebar">
@@ -721,13 +679,13 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
       <section className="grok-conversation-wrap">
         <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.actions?.length?<details className={'grok-actions '+(m.status||'done')}><summary>{m.status==='error'?'Execução interrompida':m.status==='partial'?'Execução parcial':'O que foi feito'}</summary>{m.actions.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</details>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
       {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
@@ -737,15 +695,28 @@ export function ChatShell({onOpenLegal}:Props){
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,enableWebLLM,configureFreeLLMAPI,unloadNeural,caps,neural,webllm,memoryStats,learningStats,cloud,setCloud,localRuntime,toggleLocalRuntime,localRuntimeLabel,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const localReady=!!(neural?.loaded||webllm?.loaded);
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
-    <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — ou use Build Mode para criar apps"/>
+    <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — o Predict Auto escolhe o melhor motor disponível"/>
     <div className="grok-composer-actions">
       <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenLegal}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenResearch}><Globe2 size={14}/><span><b>Research</b><small>Pesquisar fontes atuais</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span><small>{learningStats?.sources?.total||0} fontes no learning pack · {learningStats?.lessons||0} lições · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks/{learningStats?.githubKnowledge?.sources||0} repos · v{learningStats?.githubKnowledge?.version||'—'}.</small></div><button onClick={configureFreeLLMAPI}><b>FreeLLMAPI · localhost:3001</b><span>Router OpenAI-compatible · unified key fica somente no navegador · modelo auto.</span></button><button onClick={toggleLocalRuntime}><b>Local API Router</b><span>{localRuntime?'Ativo: '+localRuntimeLabel+' · auto-fallback.':'Detecta FreeLLMAPI, Ollama, llamafile/NanoMind, GenieX, runtime 4891 e LowRAM local.'}</span></button><button onClick={()=>setCloud(!cloud)}><b>Cloud Cascade · opcional</b><span>{cloud?'Ativo: tenta cache + provider server e cai para local em falha.':'Desligado: zero API continua sendo o padrão.'}</span></button>{caps.webgpu&&<><button onClick={()=>enableWebLLM('lite')}><b>WebLLM Lite · 0.5B</b><span>WebGPU acelerado · runtime MLC carregado sob demanda</span></button><button onClick={()=>enableWebLLM('smart')}><b>WebLLM Smart · 1.5B</b><span>WebGPU acelerado · mais qualidade quando houver memória de GPU</span></button></>}<button onClick={()=>enableNeural('lite')}><b>ONNX Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>ONNX Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{webllm.loaded&&<small>Ativo: WebLLM {webllm.tier==='smart'?'Smart':'Lite'} · WebGPU · {webllm.modelId||'modelo MLC'}.</small>}{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · {neural.modelId||'modelo local'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap">
+          <button className="predict-auto-trigger" onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>
+          {modelMenu&&<div className="grok-model-menu grok-auto-menu">
+            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>Um único motor lógico. O roteador escolhe servidor, pesquisa, memória e runtime local sem expor modelos.</span></div></div>
+            <div className="grok-auto-status">
+              <span><i className="online"/> Provider Mesh automático</span>
+              <span><i className={localReady?'online':''}/> {localReady?'Modo offline pronto':'Local sob demanda'}</span>
+              <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
+            </div>
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar modo offline</b><span>Baixa apenas o motor local econômico quando você pedir. Nada é carregado automaticamente.</span></button>}
+            {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
+          </div>}
+        </div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
