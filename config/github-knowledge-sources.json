@@ -18,6 +18,41 @@
   },
   "sources": [
     {
+      "repo": "krusemediallc/arcads-claude-code",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "skills/arcads-external-api/SKILL.md",
+        "skills/arcads-external-api/prompting/guide.md",
+        "skills/arcads-external-api/prompting/prompt-library/character-sheet.md",
+        "skills/arcads-external-api/prompting/prompt-library/character-sheet-gpt-image-2.md",
+        "skills/arcads-external-api/prompting/prompt-library/influencer-recreation.md",
+        "skills/arcads-external-api/prompting/prompt-library/product-showcase.md",
+        "skills/arcads-external-api/prompting/prompt-library/seedance-2.md",
+        "skills/arcads-external-api/prompting/prompt-library/veo-3-1.md",
+        "skills/arcads-external-api/prompting/prompt-library/sora-2.md",
+        "skills/arcads-external-api/prompting/prompt-library/kling-3.md",
+        "skills/arcads-external-api/prompting/analyze-video/SKILL.md",
+        "skills/arcads-external-api/prompting/clone-ad/SKILL.md",
+        "shared/skills/image-ad-prompting/OVERVIEW.md",
+        "shared/skills/image-ad-prompting/prompting/safety-suffixes.md"
+      ],
+      "domains": [
+        "image-generation",
+        "video-generation",
+        "character-consistency",
+        "reference-conditioning",
+        "prompting",
+        "visual-qa",
+        "image-to-video",
+        "model-routing",
+        "creative-workflows"
+      ],
+      "weight": 1.24,
+      "reason": "MIT-licensed Arcads agent skill pack. Learn reference-first identity workflows, model-specific prompt contracts, character-sheet continuity, still-to-video start-frame handoff, visual QA and bounded repair patterns. Do not ingest bundled reference photos/assets; Arcads endpoints, model availability, credits and pricing are volatile external-service details and must be verified before runtime use."
+    },
+    {
       "repo": "realasfngl/Grok-Api",
       "branch": "main",
       "license": "unverified",
