@@ -28,6 +28,17 @@ const PROVIDER_ATTEMPT_LIMIT=3;
 const PROVIDER_TIMEOUT_MS=12000;
 const REQUEST_BUDGET_MS=32000;
 
+function loopbackBase(base:string){
+  try{
+    const host=new URL(base).hostname.toLowerCase();
+    return host==='127.0.0.1'||host==='localhost'||host==='0.0.0.0'||host==='::1';
+  }catch{return false}
+}
+
+function serverCanReach(base:string){
+  return !(process.env.VERCEL&&loopbackBase(base));
+}
+
 function providers():Provider[]{
   const out:Provider[]=[];
   const push=(p:Provider)=>{
@@ -39,18 +50,20 @@ function providers():Provider[]{
   }
   if(process.env.FREELLMAPI_BASE_URL&&process.env.FREELLMAPI_API_KEY){
     const freeBase=process.env.FREELLMAPI_BASE_URL.replace(/\/$/,'');
-    push({
+    const base=freeBase.endsWith('/v1')?freeBase:freeBase+'/v1';
+    if(serverCanReach(base))push({
       name:'freellmapi',
-      base:freeBase.endsWith('/v1')?freeBase:freeBase+'/v1',
+      base,
       key:process.env.FREELLMAPI_API_KEY,
       model:process.env.FREELLMAPI_MODEL||'auto'
     });
   }
   if(process.env.OLLAMA_BASE_URL&&process.env.OLLAMA_MODEL){
     const ollamaBase=process.env.OLLAMA_BASE_URL.replace(/\/$/,'');
-    push({
+    const base=ollamaBase.endsWith('/v1')?ollamaBase:ollamaBase+'/v1';
+    if(serverCanReach(base))push({
       name:'ollama',
-      base:ollamaBase.endsWith('/v1')?ollamaBase:ollamaBase+'/v1',
+      base,
       key:process.env.OLLAMA_API_KEY||'ollama',
       model:process.env.OLLAMA_MODEL
     });
@@ -98,6 +111,53 @@ function providers():Provider[]{
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
+}
+
+type ProviderTask='code'|'legal'|'research'|'creative'|'reasoning'|'quick'|'general';
+
+function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
+  const q=normalize(prompt);
+  if(/\b(codigo|code|program|typescript|javascript|python|react|next|bug|erro|build|deploy|api|backend|frontend|database|sql|github|repo|refactor|arquitetura)\b/.test(q))return 'code';
+  if(/\b(jurid|lei|processo|tribunal|cnj|datajud|djen|peticao|petição|contrato|jurisprud|advog)\b/.test(q))return 'legal';
+  if(/\b(pesquis|research|fontes?|estudo|artigo|evidenc|compare|verifique|confirme|atual|hoje|noticia|notícia)\b/.test(q))return 'research';
+  if(/\b(crie|escreva|roteiro|historia|história|criativo|poema|design|copy|campanha|personagem|brainstorm)\b/.test(q))return 'creative';
+  if(deep||/\b(raciocin|analise|análise|decid|estrateg|planej|problema complexo|prove|demonstre|matemat|fisic|quimic)\b/.test(q))return 'reasoning';
+  if(prompt.length<220&&!/\b(como|por que|porque|explique|detalh|compare)\b/i.test(prompt))return 'quick';
+  return 'general';
+}
+
+const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
+  code:{opencode:55,deepseek:44,anthropic:40,gemini:34,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
+  legal:{anthropic:52,gemini:42,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
+  research:{gemini:48,anthropic:46,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
+  creative:{anthropic:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  reasoning:{anthropic:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  quick:{groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
+  general:{anthropic:46,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
+};
+
+function modelBonus(model:string,task:ProviderTask){
+  const m=model.toLowerCase();
+  let score=0;
+  if(/claude|opus|sonnet/.test(m))score+=task==='creative'||task==='reasoning'||task==='legal'?14:8;
+  if(/gemini/.test(m))score+=task==='research'||task==='general'?12:7;
+  if(/deepseek/.test(m))score+=task==='code'||task==='reasoning'?12:7;
+  if(/nemotron/.test(m))score+=task==='reasoning'||task==='code'?9:5;
+  if(/kimi/.test(m))score+=task==='research'||task==='general'?8:5;
+  if(/glm/.test(m))score+=6;
+  if(/grok/.test(m))score+=task==='general'||task==='research'?11:7;
+  if(/free|lite|mini/.test(m))score-=4;
+  return score;
+}
+
+function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
+  const task=providerTaskClass(prompt,deep);
+  const manual=new Map(configured.map((p,i)=>[p.name,i]));
+  return [...configured].sort((a,b)=>{
+    const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
+    const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
+    return sb-sa;
+  });
 }
 
 function normalize(input:string){
@@ -280,7 +340,7 @@ export async function POST(req:Request){
 
     const errors:string[]=[];
     const startedAt=Date.now();
-    const candidates=configured.slice(0,PROVIDER_ATTEMPT_LIMIT);
+    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
     for(const provider of candidates){
       const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
       if(remaining<1200){errors.push('request-budget-exhausted');break;}
