@@ -1394,6 +1394,349 @@
         "validation"
       ],
       "weight": 1.03
+    },
+    {
+      "repo": "AyushmanGupta21/Bloom",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "app-builder",
+        "website-builder",
+        "streaming",
+        "preview"
+      ],
+      "reason": "License not verified; architecture/reference only."
+    },
+    {
+      "repo": "scosman/CMSaasStarter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "billing",
+        "dashboard",
+        "email"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "wasp-lang/open-saas",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "billing",
+        "fullstack"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "Anil-matcha/awesome-generative-ai-apps",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ai-saas",
+        "auth",
+        "billing",
+        "vercel"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "jatingargiitk/saas-builder",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "app-builder",
+        "saas",
+        "react",
+        "flask",
+        "sqlite"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "ixartz/SaaS-Boilerplate",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "multi-tenant",
+        "rbac",
+        "testing",
+        "monitoring"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "alifarooq9/launchmvpfast",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "starter",
+        "components"
+      ],
+      "weight": 0.96
+    },
+    {
+      "repo": "robbins23/daisyui-admin-dashboard-template",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "admin",
+        "dashboard",
+        "sidebar",
+        "calendar",
+        "charts"
+      ],
+      "weight": 1
+    },
+    {
+      "repo": "wrsrsh/startstack",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "auth",
+        "drizzle",
+        "postgres",
+        "analytics"
+      ],
+      "reason": "Project is explicitly paused/unmaintained; patterns only."
+    },
+    {
+      "repo": "LlamaGenAI/awesome-free-saas",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "discovery",
+        "catalog"
+      ],
+      "weight": 0.82
+    },
+    {
+      "repo": "twentyhq/twenty",
+      "branch": "main",
+      "license": "AGPL-3.0+commercial",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "workflow",
+        "custom-fields",
+        "workspace"
+      ],
+      "reason": "AGPL/mixed licensing; architecture reference only."
+    },
+    {
+      "repo": "frappe/erpnext",
+      "branch": "develop",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "erp",
+        "crm",
+        "finance",
+        "inventory",
+        "business-os"
+      ],
+      "reason": "Copyleft code not copied into generated apps; domain architecture only."
+    },
+    {
+      "repo": "hcengineering/platform",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "business-os",
+        "crm",
+        "project-management",
+        "hr",
+        "chat"
+      ],
+      "reason": "Use platform architecture only until file-level license scope is confirmed."
+    },
+    {
+      "repo": "jtylek/EpesiCRM",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "contacts",
+        "sales",
+        "activities"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "vladandreevg/salesmancrm",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "sales",
+        "pipeline"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "trycompai/crm",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "agents",
+        "evidence",
+        "followups",
+        "work-queue"
+      ],
+      "weight": 1.12
+    },
+    {
+      "repo": "MasteraSnackin/CreatorHub",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "creator",
+        "content",
+        "analytics",
+        "video"
+      ],
+      "reason": "License not verified; high-level creator workflow only."
+    },
+    {
+      "repo": "higgsfield-ai/higgsfield",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "gpu",
+        "training",
+        "orchestration",
+        "mlops"
+      ],
+      "reason": "Repository is a GPU training/orchestration framework, not the Higgsfield generative-video API."
+    },
+    {
+      "repo": "JacobEvelyn/friends",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "relationship-crm",
+        "activities",
+        "reminders",
+        "notes"
+      ],
+      "reason": "License not re-verified in this update; domain model reference only."
+    },
+    {
+      "repo": "Peppermint-Lab/peppermint",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "helpdesk",
+        "tickets",
+        "sla",
+        "notes",
+        "customers"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "go2ismail/Free-CRM",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "crm",
+        "campaigns",
+        "leads",
+        "budgets",
+        "sales"
+      ],
+      "reason": "License not verified."
     }
   ]
 }
