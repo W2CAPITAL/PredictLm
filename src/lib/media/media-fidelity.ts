@@ -140,7 +140,9 @@ function technicalLeak(input:string){
 }
 
 export function buildDisplayTitle(input:string){
-  const raw=stripTechnicalNoise(input);
+  const source=String(input||'');
+  const hadTechnicalPrefix=/^\s*\[(?:ESTILO|STYLE|PROMPT|CINEMATIC|ANIME)\]/i.test(source);
+  const raw=stripTechnicalNoise(source);
   const p=normalize(raw);
 
   if(/naruto/.test(p)&&/sasuke/.test(p)&&/kurama/.test(p)&&/susanoo/.test(p))return 'Naruto Kurama vs Sasuke Susanoo';
@@ -151,8 +153,9 @@ export function buildDisplayTitle(input:string){
   if(/\bnaruto\b/.test(p)&&/\bsasuke\b/.test(p))return 'Naruto vs Sasuke';
   if(/\bnaruto\b/.test(p))return 'Naruto';
   if(/\bsasuke\b/.test(p))return 'Sasuke';
-  if(/\bmacaco|monkey\b/.test(p))return 'Retrato de macaco';
+  if(/\b(?:macaco|monkey)\b/.test(p))return 'Retrato de macaco';
 
+  if(hadTechnicalPrefix||technicalLeak(raw))return 'Geração visual';
   const cleaned=raw
     .replace(/^\s*(?:faça|faca|crie|gere|desenhe|mostre|create|make|generate)\s+(?:um|uma|o|a)?\s*/i,'')
     .replace(/[.!?;:,]+$/g,'')
