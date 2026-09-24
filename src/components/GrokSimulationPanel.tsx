@@ -21,8 +21,11 @@ const STORAGE_KEY='predictlm-life-simulation-v1';
 function loadState():LifeSimulationState{
   if(typeof window==='undefined')return createLifeSimulation();
   try{
+    const explicitStart=sessionStorage.getItem('predictlm:simulation-explicit-start')==='1';
+    if(explicitStart)sessionStorage.removeItem('predictlm:simulation-explicit-start');
     const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    return raw?.version===1?{...raw,running:false}:createLifeSimulation();
+    const base=raw?.version===1?raw:createLifeSimulation();
+    return {...base,running:explicitStart};
   }catch{return createLifeSimulation()}
 }
 
