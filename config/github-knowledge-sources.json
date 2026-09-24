@@ -1163,6 +1163,237 @@
         "api"
       ],
       "reason": "No usable README/license verified."
+    },
+    {
+      "repo": "W1CAPITAL/LexisPredict",
+      "branch": "main",
+      "license": "proprietary-owned-reference",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "legal",
+        "crm",
+        "ocr",
+        "reports",
+        "kpi",
+        "offline"
+      ],
+      "reason": "User-owned product reference; architecture/behavior only, not generic training corpus."
+    },
+    {
+      "repo": "nolly-studio/cult-ui",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ui",
+        "agents",
+        "accessibility",
+        "saas"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "nolly-studio/cult-directory-template",
+      "branch": "main",
+      "license": "EULA",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "saas",
+        "directory",
+        "ui"
+      ],
+      "reason": "Template EULA; architecture/visual reference only."
+    },
+    {
+      "repo": "eigenpal/docx-editor",
+      "branch": "main",
+      "license": "Apache-2.0+Pro",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "docx",
+        "ooxml",
+        "editor"
+      ],
+      "weight": 1.03,
+      "reason": "Only Apache-licensed core/docs; exclude packages/editor-api and packages/pro."
+    },
+    {
+      "repo": "felipemvrin/foliospark",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "portfolio",
+        "ui",
+        "saas"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "siddhesh-desai/SlideAI",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "ai"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "atharva9167j/dom-to-pptx",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "dom",
+        "presentation"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "hugohe3/ppt-master",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "agents"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "pdfforge/PDFCreator",
+      "branch": "master",
+      "license": "external",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pdf",
+        "conversion"
+      ],
+      "reason": "Repository points to external license terms."
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "branch": "main",
+      "license": "mixed-MIT-proprietary",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pdf",
+        "ocr",
+        "conversion",
+        "automation"
+      ],
+      "reason": "Mixed license; use public architecture/docs only unless file scope is verified."
+    },
+    {
+      "repo": "jezlan/xcelform",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "templates",
+        "preview"
+      ],
+      "reason": "License not verified."
+    },
+    {
+      "repo": "presenton/presenton",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pptx",
+        "presentation",
+        "api"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "iron-software/IronXL-Examples",
+      "branch": "main",
+      "license": "commercial-dependency",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "dotnet"
+      ],
+      "reason": "IronXL production use requires commercial licensing."
+    },
+    {
+      "repo": "ghiscoding/excel-builder-vanilla",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "typescript",
+        "export"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "Kowts/excel-creator",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "xlsx",
+        "openpyxl",
+        "charts",
+        "validation"
+      ],
+      "weight": 1.03
     }
   ]
 }
