@@ -126,6 +126,14 @@ const SOURCES=[
   ['Nagi-ovo/voyager','main','unverified','reference',['agents','learning','memory']],
   ['kyegomez/OpenMythos','main','unverified','reference',['agents','orchestration','reasoning']],
   ['awarexone/Agentic-Bug-Hunter','main','MIT','reference',['defensive-security','bug-hunting','review','qa']],
+  ['mendableai/open-lovable','main','unverified','reference',['app-builder','website-cloning','firecrawl','sandbox','react']],
+  ['andregod/APIFirebase','main','unverified','reference',['quarantine','firebase','api']],
+  ['lm-sys/FastChat','main','Apache-2.0','reference',['model-serving','openai-compatible','evaluation','multi-model']],
+  ['Panniantong/Agent-Reach','main','MIT','reference',['agents','web-reach','tools','browser']],
+  ['d60/twikit','main','MIT','reference',['twitter','scraping','external-bridge','social']],
+  ['Xquik-dev/x-twitter-scraper','master','MIT','reference',['twitter','api','mcp','external-bridge']],
+  ['composio-temp/grok-with-twitter','main','unverified','reference',['twitter','composio','tools','external-bridge']],
+  ['CodebuffAI/freebuff','main','Apache-2.0','reference',['coding-agent','build','research','parallel-agents']],
   ['Dioque/Livros','main','unverified','reference',['quarantine','books']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
