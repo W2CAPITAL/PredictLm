@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.6.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.7.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.6.0"
+  version: "5.7.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.6.0
+# LEXIS TwinCore X10 v5.7.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -80,6 +80,7 @@ Ela não transforma isso em retaliação contra pessoas, assédio, doxxing, sabo
 - chat
 - build
 - research
+- github-knowledge
 - fraud-defense
 - processos
 - revisional
@@ -339,3 +340,19 @@ Dossiê Pro inclui seção Fraude / Autenticidade:
 - aviso explícito de que sinal não é prova.
 
 Council e AEGIS não podem transformar suspeita em acusação.
+
+## GitHub Knowledge Engine
+
+A TwinCore usa GitHub como fonte de playbooks/contexto versionado, nunca como substituto de um modelo.
+
+### Ingest
+ALLOWLIST → licença → pin de commit → filtro de paths → Markdown/skill → chunks → dedup → índice.
+
+### Runtime
+RECALL consulta BM25 e injeta somente top-k curto. Council recebe a pergunta/resposta e os fatos necessários; não recebe dezenas de repositórios inteiros.
+
+### Proveniência
+Todo chunk deve manter repo@commit, path e licença. Mudança do índice altera knowledgeVersion para permitir invalidação de cache.
+
+### Quarentena
+Wrappers não oficiais de serviços proprietários, binários sem proveniência, bypass/jailbreak e repositórios com claims não verificáveis ficam fora do RAG operacional.
