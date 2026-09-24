@@ -66,7 +66,27 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
       'Add input validation and safe defaults, then re-run the security gate.'
     ]
   };
-  return [raw,'',...common,...extra[preset]].map((x,i)=>i===0?x:'- '+x).join('\n');
+  const requirements=[...common,...extra[preset]];
+  const acceptance=[
+    'The requested primary workflow works end-to-end.',
+    'Visible controls are functional; no fake integrations or placeholder success states.',
+    'Invalid/loading/empty/error states are handled where relevant.',
+    'Secrets stay server-side and .env.example contains names/placeholders only.',
+    'Build/typecheck/smoke/tests are run when available and blocking findings are repaired before ship.'
+  ];
+  return [
+    '[GOAL]',
+    raw,
+    '',
+    '[CURRENT CONTEXT]',
+    context,
+    '',
+    '[REQUIREMENTS]',
+    ...requirements.map(x=>'- '+x),
+    '',
+    '[ACCEPTANCE CHECKS]',
+    ...acceptance.map(x=>'- '+x)
+  ].join('\n');
 }
 
 export const promptPresets:{id:PromptPreset;label:string;hint:string}[]=[
