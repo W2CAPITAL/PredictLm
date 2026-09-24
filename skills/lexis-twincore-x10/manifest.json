@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.8.2",
+  "version": "5.8.3",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -96,7 +96,8 @@
     "media-prompt-budget",
     "per-repo-chunk-budget",
     "diversity-first-retrieval",
-    "adaptive-source-breadth"
+    "adaptive-source-breadth",
+    "runtime-capability-priority"
   ],
   "hosts": [
     "PredictLM",
