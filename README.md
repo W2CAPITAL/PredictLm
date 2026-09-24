@@ -156,7 +156,7 @@ All are optional. If an optional AI provider fails and automatic fallback is ena
 - runnable package file structure
 - CRM backend packaging
 
-GitHub Actions still runs `npm ci` and `npm run build` against PredictLM itself before changes are merged.
+GitHub Actions runs dependency installation and `npm run build` against PredictLM itself on every relevant change.
 
 
 ## Conversational intelligence
@@ -174,3 +174,59 @@ Neural Local is considered active only after a real inference self-test succeeds
 ## Project continuity
 
 Once a project exists, Build treats it as the source of truth. Normal prompts continue from the current files. Repeating "crie um CRM financeiro", saying only "crie", or giving an ambiguous follow-up does not reset the app. A destructive rebuild requires explicit language such as "novo projeto" or "do zero".
+
+
+## GitHub Knowledge Engine
+
+PredictLM now includes a lightweight **Skill Forge** for repository knowledge:
+
+```
+GitHub allowlist
+  → license/provenance gate
+  → commit-pinned Markdown/skills
+  → chunk + dedup
+  → versioned JSON index
+  → local BM25
+  → top-k context for Chat/Build
+```
+
+The online runtime never clones repositories. The deploy reads `src/data/github-knowledge-index.json`; `npm run knowledge:sync` refreshes it offline and the GitHub Action can refresh it on schedule or after engine configuration changes.
+
+Source policy lives in `config/github-knowledge-sources.json`:
+
+- `allow` — permitted Markdown may enter the index;
+- `reference-only` — only manually distilled architectural lessons;
+- `quarantine` — never enters operational RAG;
+- `asset-only` — fonts/binaries/design assets are excluded from RAG.
+
+Each indexed chunk preserves repository, commit/ref, path and license. Runtime retrieval defaults to top-3 and caps at top-5.
+
+Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork, Baby Whale and selected Free Programming Books material. Unofficial proprietary-service wrappers, bypass/jailbreak repositories and binary-oriented listings are quarantined even when they claim a permissive license.
+
+## Optional Cloud Cascade
+
+Chat remains local-first by default. The model menu can opt into **Cloud Cascade**.
+
+When enabled:
+
+```
+CACHE
+  → GitHub top-k
+  → AI_* provider if configured
+  → Groq if configured
+  → OpenRouter if configured
+  → local Neural/Knowledge fallback
+```
+
+Provider keys are server-only. No cloud key is required and PredictLM does not claim free providers are unlimited.
+
+Optional variables:
+
+```env
+GROQ_API_KEY=
+GROQ_MODEL=
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=
+```
+
+The generic `AI_BASE_URL / AI_API_KEY / AI_MODEL` adapter remains supported.
