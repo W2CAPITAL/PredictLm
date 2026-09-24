@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "policy": {
+    "maxFileBytes": 140000,
+    "maxFilesPerRepo": 120,
+    "maxChunkChars": 1200,
+    "runtimeTopK": 3,
+    "allowedLicenses": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "CC-BY-4.0"
+    ],
+    "note": "Only allow sources are copied into the runtime index. reference-only is distilled manually; quarantine and asset-only are never ingested."
+  },
+  "sources": [
+    {
+      "repo": "mindsdb/mindshub",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "agents",
+        "workspace",
+        "memory",
+        "artifacts",
+        "model-router"
+      ],
+      "weight": 1.15
+    },
+    {
+      "repo": "rowboatlabs/rowboat",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "knowledge-graph",
+        "memory",
+        "browser",
+        "background-agents",
+        "workspace"
+      ],
+      "weight": 1.15
+    },
+    {
+      "repo": "composio-community/open-claude-cowork",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "clawd/README.md",
+        "docs/"
+      ],
+      "domains": [
+        "tools",
+        "integrations",
+        "streaming",
+        "sessions",
+        "skills"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "Haifai-AI/baby-whale",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "AGENTS.md",
+        "docs/",
+        "skills/"
+      ],
+      "domains": [
+        "artifacts",
+        "office",
+        "preview",
+        "local-first",
+        "skills"
+      ],
+      "weight": 1.12
+    },
+    {
+      "repo": "EbookFoundation/free-programming-books",
+      "branch": "main",
+      "license": "CC-BY-4.0",
+      "mode": "allow",
+      "include": [
+        "books/free-programming-books-pt_BR.md",
+        "books/free-programming-books-subjects.md"
+      ],
+      "domains": [
+        "programming",
+        "learning",
+        "books",
+        "resources"
+      ],
+      "weight": 0.95
+    },
+    {
+      "repo": "Carlos-CGS/InteligenciaArtificial-IA",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ai-tools",
+        "prompts",
+        "learning"
+      ],
+      "reason": "No repository license file verified; use high-level ideas only."
+    },
+    {
+      "repo": "danielgines/infra-ai-prompts",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "prompts",
+        "devops",
+        "documentation"
+      ],
+      "reason": "No root license verified."
+    },
+    {
+      "repo": "tiagopgr/skills-ia",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "skills",
+        "legal",
+        "operations",
+        "marketing",
+        "code"
+      ],
+      "reason": "README badge says MIT but no repository LICENSE file was verified."
+    },
+    {
+      "repo": "IntelligenzaArtificiale/Free-personal-AI-Assistant-with-plugin",
+      "branch": "main",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "plugins",
+        "documents",
+        "web",
+        "audio"
+      ],
+      "reason": "Copyleft code is not copied into the product index; architecture reference only."
+    },
+    {
+      "repo": "kimik3moonshotAI/Kimi-K3-Code-Free-Desktop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "desktop-ai"
+      ],
+      "reason": "Unofficial branded desktop wrapper; API/model claims are not trusted as knowledge source."
+    },
+    {
+      "repo": "chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "desktop-ai"
+      ],
+      "reason": "Unofficial OpenAI-branded wrapper; never ingest credentials/model claims or binaries."
+    },
+    {
+      "repo": "RollerManor1/chatgpt-plus-prime",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "desktop-ai"
+      ],
+      "reason": "Binary/download-oriented listing with no verified license/source value."
+    },
+    {
+      "repo": "LynxAnnihilate16/bxvdfsur",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "bypass",
+        "jailbreak"
+      ],
+      "reason": "Explicit bypass/jailbreak access instructions; never execute or ingest operational content."
+    },
+    {
+      "repo": "ryanoasis/nerd-fonts",
+      "branch": "master",
+      "license": "mixed-MIT-OFL",
+      "mode": "asset-only",
+      "include": [],
+      "domains": [
+        "fonts",
+        "design"
+      ],
+      "reason": "Design asset source; never ingest font binaries into RAG."
+    },
+    {
+      "repo": "adobe-fonts/source-code-pro",
+      "branch": "release",
+      "license": "OFL-1.1",
+      "mode": "asset-only",
+      "include": [],
+      "domains": [
+        "fonts",
+        "code-ui"
+      ],
+      "reason": "Typography asset source; never ingest font binaries into RAG."
+    }
+  ]
+}
