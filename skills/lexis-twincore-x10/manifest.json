@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.21.0",
+  "version": "5.22.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -49,7 +49,8 @@
     "life-simulation",
     "digital-brain",
     "entity-self-model",
-    "human-presence"
+    "human-presence",
+    "predictlm-master"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -218,5 +219,6 @@
     "Grok-compatible",
     "Claude-compatible",
     "Gemini-compatible"
-  ]
+  ],
+  "supersededBy": "predictlm-master"
 }
