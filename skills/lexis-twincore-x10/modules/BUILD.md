@@ -31,3 +31,21 @@ Antes de ship:
 Nunca dizer "gerado" se nada mudou.
 Nunca dizer "testado" sem teste executado.
 Nunca marcar Build como pronto enquanto houver finding blocker/high não resolvido.
+
+
+## SaaS Builder Fabric
+
+Quando o pedido for SaaS, CRM, ERP, helpdesk, workspace multiusuário ou admin de negócio, carregar `../../saas-builder-fabric/SKILL.md`.
+
+Antes de implementar:
+- atores/tenant/workspace;
+- papéis e permissões;
+- entidades e estados;
+- persistência/auth;
+- billing somente quando necessário;
+- integrações reais;
+- jobs/notificações quando assíncrono;
+- auditoria/observabilidade;
+- loading/empty/error/success.
+
+Não considerar um SaaS pronto com botões decorativos, números fixos de dashboard, integração fictícia ou CRUD sem persistência coerente.
