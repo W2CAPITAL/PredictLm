@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "7467b9d864832444",
-  "generatedAt": "2026-09-24T08:40:19.383Z",
-  "sourceCount": 15,
-  "chunkCount": 1025,
+  "knowledgeVersion": "bc4f2bad808b4e1a",
+  "generatedAt": "2026-09-24T08:48:01.735Z",
+  "sourceCount": 18,
+  "chunkCount": 1188,
   "chunks": [
     {
       "id": "78d6597704929363a09f",
@@ -17358,6 +17358,2637 @@
       "heading": "🗺️ Roadmap & Contribute",
       "text": "ps://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff\" alt=\"Views\">\n</p>\n\n</div>",
       "weight": 1.28
+    },
+    {
+      "id": "9fc42788192b14a6f39f",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "README.md",
+      "text": "![airllm_logo](https://github.com/lyogavin/airllm/blob/main/assets/airllm_logo_sm.png?v=3&raw=true)\n\n[**Quickstart**](#quickstart) |\n[**Configurations**](#configurations) |\n[**MacOS**](#macos) |\n[**Example notebooks**](#example-python-notebook) |\n[**FAQ**](#faq)\n\n**AirLLM** optimizes inference memory usage, allowing 70B large language models to run inference on a single 4GB GPU card without quantization, distillation and pruning. And you can run **405B Llama3.1** on **8GB vram** now.\n\n<a href=\"https://github.com/lyogavin/airllm/stargazers\">![GitHub Repo stars](https://img.shields.io/github/stars/lyogavin/airllm?style=social)</a>\n[![Downloads](https://static.pepy.tech/personalized-badge/airllm?period=total&units=international_system&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/airllm)\n\n[![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/LianjiaTech/BELLE/blob/main/LICENSE)\n[![Generic badge](https://img.shields.io/badge/wechat-Anima-brightgreen?logo=wechat)](https://static.aicompose.cn/static/wecom_barcode.png?t=1671918938)\n[![Discord](https://img.shields.io/discord/1175437549783760896?logo=discord",
+      "weight": 1.15
+    },
+    {
+      "id": "c5c52c07ca54d2b034ab",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "README.md",
+      "text": "&color=7289da\n)](https://discord.gg/2xffU5sn)\n[![PyPI - AirLLM](https://img.shields.io/pypi/format/airllm?logo=pypi&color=3571a3)\n](https://pypi.org/project/airllm/)\n[![Website](https://img.shields.io/website?up_message=blog&url=https%3A%2F%2Fmedium.com%2F%40lyo.gavin&logo=medium&color=black)](https://medium.com/@lyo.gavin)\n[![Website](https://img.shields.io/badge/Gavin_Li-Blog-blue)](https://gavinliblog.com)\n[![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dgavinli%26type%3Dpatrons&style=flat)](https://patreon.com/gavinli)",
+      "weight": 1.15
+    },
+    {
+      "id": "efa8c3a23b6b178f8690",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "README.md",
+      "text": "[![GitHub Sponsors](https://img.shields.io/github/sponsors/lyogavin?logo=GitHub&color=lightgray)](https://github.com/sponsors/lyogavin)",
+      "weight": 1.15
+    },
+    {
+      "id": "764ea17bd15079549f1d",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Updates",
+      "text": "[2024/08/20] v2.11.0: Support Qwen2.5\n\n[2024/08/18] v2.10.1 Support CPU inference. Support non sharded models. Thanks @NavodPeiris for the great work!\n\n[2024/07/30] Support Llama3.1 **405B** ([example notebook](https://colab.research.google.com/github/lyogavin/airllm/blob/main/air_llm/examples/run_llama3.1_405B.ipynb)). Support **8bit/4bit quantization**.\n\n[2024/04/20] AirLLM supports Llama3 natively already. Run Llama3 70B on 4GB single GPU.\n\n[2023/12/25] v2.8.2: Support MacOS running 70B large language models.\n\n[2023/12/20] v2.7: Support AirLLMMixtral.\n\n[2023/12/20] v2.6: Added AutoModel, automatically detect model type, no need to provide model class to initialize model.\n\n[2023/12/18] v2.5: added prefetching to overlap the model loading and compute. 10% speed improvement.\n\n[2023/12/03] added support of **ChatGLM**, **QWen**, **Baichuan**, **Mistral**, **InternLM**!\n\n[2023/12/02] added support for safetensors. Now support all top 10 models in open llm leaderboard.\n\n[2023/12/01] airllm 2.0. Support compressions: **3x run time speed up!**\n\n[2023/11/20] airllm Initial version!",
+      "weight": 1.15
+    },
+    {
+      "id": "c90d992c602b0de4c326",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Star History",
+      "text": "[![Star History Chart](https://api.star-history.com/svg?repos=lyogavin/airllm&type=Timeline)](https://star-history.com/#lyogavin/airllm&Timeline)",
+      "weight": 1.15
+    },
+    {
+      "id": "d65bfe20bd13dfa9723e",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Table of Contents",
+      "text": "* [Quick start](#quickstart)\n* [Model Compression](#model-compression---3x-inference-speed-up)\n* [Configurations](#configurations)\n* [Run on MacOS](#macos)\n* [Example notebooks](#example-python-notebook)\n* [Supported Models](#supported-models)\n* [Acknowledgement](#acknowledgement)\n* [FAQ](#faq)",
+      "weight": 1.15
+    },
+    {
+      "id": "e6e057cc49320cc8b88e",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "2. Inference",
+      "text": "Then, initialize AirLLMLlama2, pass in the huggingface repo ID of the model being used, or the local path, and inference can be performed similar to a regular transformer model.\n\n(*You can also specify the path to save the splitted layered model through **layer_shards_saving_path** when init AirLLMLlama2.*\n\n```python\nfrom airllm import AutoModel\n\nMAX_LENGTH = 128",
+      "weight": 1.15
+    },
+    {
+      "id": "1945f72b8fb122dea9c2",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "or use model's local path...",
+      "text": "#model = AutoModel.from_pretrained(\"/home/ubuntu/.cache/huggingface/hub/models--garage-bAInd--Platypus2-70B-instruct/snapshots/b585e74bcaae02e52665d9ac6d23f4d0dbc81a0f\")\n\ninput_text = [\n        'What is the capital of United States?',\n        #'I like',\n    ]\n\ninput_tokens = model.tokenizer(input_text,\n    return_tensors=\"pt\",\n    return_attention_mask=False,\n    truncation=True,\n    max_length=MAX_LENGTH,\n    padding=False)\n\ngeneration_output = model.generate(\n    input_tokens['input_ids'].cuda(),\n    max_new_tokens=20,\n    use_cache=True,\n    return_dict_in_generate=True)\n\noutput = model.tokenizer.decode(generation_output.sequences[0])\n\nprint(output)\n\n```\n\n\nNote: During inference, the original model will first be decomposed and saved layer-wise. Please ensure there is sufficient disk space in the huggingface cache directory.",
+      "weight": 1.15
+    },
+    {
+      "id": "136d640184c795f6be8c",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Model Compression - 3x Inference Speed Up!",
+      "text": "We just added model compression based on block-wise quantization-based model compression. Which can further **speed up the inference speed** for up to **3x** , with **almost ignorable accuracy loss!** (see more performance evaluation and why we use block-wise quantization in [this paper](https://arxiv.org/abs/2212.09720))\n\n![speed_improvement](https://github.com/lyogavin/airllm/blob/main/assets/airllm2_time_improvement.png?v=2&raw=true)",
+      "weight": 1.15
+    },
+    {
+      "id": "94e67b5c1f8cb3e0277a",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "How to enable model compression speed up:",
+      "text": "* Step 1. make sure you have [bitsandbytes](https://github.com/TimDettmers/bitsandbytes) installed by `pip install -U bitsandbytes `\n* Step 2. make sure airllm verion later than 2.0.0: `pip install -U airllm`\n* Step 3. when initialize the model, passing the argument compression ('4bit' or '8bit'):\n\n```python\nmodel = AutoModel.from_pretrained(\"garage-bAInd/Platypus2-70B-instruct\",\n                     compression='4bit' # specify '8bit' for 8-bit block-wise quantization\n                    )\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "3ba1d1dc1c4ff0d0e6e8",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "What are the differences between model compression and quantization?",
+      "text": "Quantization normally needs to quantize both weights and activations to really speed things up. Which makes it harder to maintain accuracy and avoid the impact of outliers in all kinds of inputs.\n\nWhile in our case the bottleneck is mainly at the disk loading, we only need to make the model loading size smaller. So, we get to only quantize the weights' part, which is easier to ensure the accuracy.",
+      "weight": 1.15
+    },
+    {
+      "id": "e67e760e9878f1dc05cb",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Configurations",
+      "text": "When initialize the model, we support the following configurations:\n\n* **compression**: supported options: 4bit, 8bit for 4-bit or 8-bit block-wise quantization, or by default None for no compression\n* **profiling_mode**: supported options: True to output time consumptions or by default False\n* **layer_shards_saving_path**: optionally another path to save the splitted model\n* **hf_token**: huggingface token can be provided here if downloading gated models like: *meta-llama/Llama-2-7b-hf*\n* **prefetching**: prefetching to overlap the model loading and compute. By default, turned on. For now, only AirLLMLlama2 supports this.\n* **delete_original**: if you don't have too much disk space, you can set delete_original to true to delete the original downloaded hugging face model, only keep the transformed one to save half of the disk space.",
+      "weight": 1.15
+    },
+    {
+      "id": "a9eb8ce3cfba3ba30dc0",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "MacOS",
+      "text": "Just install airllm and run the code the same as on linux. See more in [Quick Start](#quickstart).\n\n* make sure you installed [mlx](https://github.com/ml-explore/mlx?tab=readme-ov-file#installation) and torch\n* you probably need to install python native see more [here](https://stackoverflow.com/a/65432861/21230266)\n* only [Apple silicon](https://support.apple.com/en-us/HT211814) is supported\n\nExample [python notebook] (https://github.com/lyogavin/airllm/blob/main/air_llm/examples/run_on_macos.ipynb)",
+      "weight": 1.15
+    },
+    {
+      "id": "1f7bb708d2ca4c18dc91",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Example Python Notebook",
+      "text": "Example colabs here:\n\n<a target=\"_blank\" href=\"https://colab.research.google.com/github/lyogavin/airllm/blob/main/air_llm/examples/run_all_types_of_models.ipynb\">\n  <img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/>\n</a>",
+      "weight": 1.15
+    },
+    {
+      "id": "6d83c567bd48a7b709f1",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "example of other models (ChatGLM, QWen, Baichuan, Mistral, etc):",
+      "text": "<details>\n\n\n* ChatGLM:\n\n```python\nfrom airllm import AutoModel\nMAX_LENGTH = 128\nmodel = AutoModel.from_pretrained(\"THUDM/chatglm3-6b-base\")\ninput_text = ['What is the capital of China?',]\ninput_tokens = model.tokenizer(input_text,\n    return_tensors=\"pt\",\n    return_attention_mask=False,\n    truncation=True,\n    max_length=MAX_LENGTH,\n    padding=True)\ngeneration_output = model.generate(\n    input_tokens['input_ids'].cuda(),\n    max_new_tokens=5,\n    use_cache= True,\n    return_dict_in_generate=True)\nmodel.tokenizer.decode(generation_output.sequences[0])\n```\n\n* QWen:\n\n```python\nfrom airllm import AutoModel\nMAX_LENGTH = 128\nmodel = AutoModel.from_pretrained(\"Qwen/Qwen-7B\")\ninput_text = ['What is the capital of China?',]\ninput_tokens = model.tokenizer(input_text,\n    return_tensors=\"pt\",\n    return_attention_mask=False,\n    truncation=True,\n    max_length=MAX_LENGTH)\ngeneration_output = model.generate(\n    input_tokens['input_ids'].cuda(),\n    max_new_tokens=5,\n    use_cache=True,\n    return_dict_in_generate=True)\nmodel.tokenizer.decode(generation_output.sequences[0])\n```\n\n\n* Baichuan, InternLM, Mistral, etc:\n\n```python\nfrom airllm import AutoModel\nMAX_LENGTH = 128\nmodel = AutoModel.",
+      "weight": 1.15
+    },
+    {
+      "id": "68d0f52e36930c6a5b30",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "example of other models (ChatGLM, QWen, Baichuan, Mistral, etc):",
+      "text": "from_pretrained(\"baichuan-inc/Baichuan2-7B-Base\")\n#model = AutoModel.from_pretrained(\"internlm/internlm-20b\")\n#model = AutoModel.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.1\")\ninput_text = ['What is the capital of China?',]\ninput_tokens = model.tokenizer(input_text,\n    return_tensors=\"pt\",\n    return_attention_mask=False,\n    truncation=True,\n    max_length=MAX_LENGTH)\ngeneration_output = model.generate(\n    input_tokens['input_ids'].cuda(),\n    max_new_tokens=5,\n    use_cache=True,\n    return_dict_in_generate=True)\nmodel.tokenizer.decode(generation_output.sequences[0])\n```\n\n\n</details>",
+      "weight": 1.15
+    },
+    {
+      "id": "2886a37e5424060ef9b1",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Acknowledgement",
+      "text": "A lot of the code are based on SimJeg's great work in the Kaggle exam competition. Big shoutout to SimJeg:\n\n[GitHub account @SimJeg](https://github.com/SimJeg),\n[the code on Kaggle](https://www.kaggle.com/code/simjeg/platypus2-70b-with-wikipedia-rag),\n[the associated discussion](https://www.kaggle.com/competitions/kaggle-llm-science-exam/discussion/446414).",
+      "weight": 1.15
+    },
+    {
+      "id": "bf074ffdda15b92964e4",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "1. MetadataIncompleteBuffer",
+      "text": "safetensors_rust.SafetensorError: Error while deserializing header: MetadataIncompleteBuffer\n\nIf you run into this error, most possible cause is you run out of disk space. The process of splitting model is very disk-consuming. See [this](https://huggingface.co/TheBloke/guanaco-65B-GPTQ/discussions/12). You may need to extend your disk space, clear huggingface [.cache](https://huggingface.co/docs/datasets/cache) and rerun.",
+      "weight": 1.15
+    },
+    {
+      "id": "051d205e2acc3ec6810c",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "2. ValueError: max() arg is an empty sequence",
+      "text": "Most likely you are loading QWen or ChatGLM model with Llama2 class. Try the following:\n\nFor QWen model:\n\n```python\nfrom airllm import AutoModel #<----- instead of AirLLMLlama2\nAutoModel.from_pretrained(...)\n```\n\nFor ChatGLM model:\n\n```python\nfrom airllm import AutoModel #<----- instead of AirLLMLlama2\nAutoModel.from_pretrained(...)\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "d30c803733207440166d",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "3. 401 Client Error....Repo model ... is gated.",
+      "text": "Some models are gated models, needs huggingface api token. You can provide hf_token:\n\n```python\nmodel = AutoModel.from_pretrained(\"meta-llama/Llama-2-7b-hf\", #hf_token='HF_API_TOKEN')\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "d0bbf987dcf60b07e3a7",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "4. ValueError: Asking to pad but the tokenizer does not have a padding token.",
+      "text": "Some model's tokenizer doesn't have padding token, so you can set a padding token or simply turn the padding config off:\n\n ```python\ninput_tokens = model.tokenizer(input_text,\n    return_tensors=\"pt\",\n    return_attention_mask=False,\n    truncation=True,\n    max_length=MAX_LENGTH,\n    padding=False  #<-----------   turn off padding\n)\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "c7a19e885cf0cf1194ae",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Citing AirLLM",
+      "text": "If you find\nAirLLM useful in your research and wish to cite it, please use the following\nBibTex entry:\n\n```\n@software{airllm2023,\n  author = {Gavin Li},\n  title = {AirLLM: scaling large language models on low-end commodity computers},\n  url = {https://github.com/lyogavin/airllm/},\n  version = {0.0},\n  year = {2023},\n}\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "533033f22460922ff1d5",
+      "source": "cortextorlab/airLLM",
+      "ref": "587d8ec743aa",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "local-inference",
+        "layerwise-offload",
+        "low-vram",
+        "prefetch",
+        "quantization"
+      ],
+      "heading": "Contribution",
+      "text": "Welcomed contributions, ideas and discussions!\n\nIf you find it useful, please ⭐ or buy me a coffee! 🙏\n\n[![\"Buy Me A Coffee\"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://bmc.link/lyogavinQ)",
+      "weight": 1.15
+    },
+    {
+      "id": "3e7659d102d962651948",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "<div align=\"center\"><b><a href=\"README.md\">English</a> | <a href=\"README_CN.md\">简体中文</a></b></div>",
+      "text": "<div align=\"center\">\n\n👀[**Demos**](#-demos-videos) **|** 🚩[**Updates**](#-updates) **|** ⚡[**Usage**](#-quick-inference) **|** 🏰[**Model Zoo**](docs/model_zoo.md) **|** 🔧[Install](#-dependencies-and-installation)  **|** 💻[Train](docs/Training.md) **|** ❓[FAQ](docs/FAQ.md) **|** 🎨[Contribution](docs/CONTRIBUTING.md)\n\n[![download](https://img.shields.io/github/downloads/xinntao/Real-ESRGAN/total.svg)](https://github.com/xinntao/Real-ESRGAN/releases)\n[![PyPI](https://img.shields.io/pypi/v/realesrgan)](https://pypi.org/project/realesrgan/)\n[![Open issue](https://img.shields.io/github/issues/xinntao/Real-ESRGAN)](https://github.com/xinntao/Real-ESRGAN/issues)\n[![Closed issue](https://img.shields.io/github/issues-closed/xinntao/Real-ESRGAN)](https://github.com/xinntao/Real-ESRGAN/issues)\n[![LICENSE](https://img.shields.io/github/license/xinntao/Real-ESRGAN.svg)](https://github.com/xinntao/Real-ESRGAN/blob/master/LICENSE)\n[![python lint](https://github.com/xinntao/Real-ESRGAN/actions/workflows/pylint.yml/badge.svg)](https://github.com/xinntao/Real-ESRGAN/blob/master/.github/workflows/pylint.yml)\n[![Publish-pip](https://github.com/xinntao/Real-ESRGAN/actions/workflows/publish-pip.yml",
+      "weight": 1.15
+    },
+    {
+      "id": "138738fbccf7b28ee7d3",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "<div align=\"center\"><b><a href=\"README.md\">English</a> | <a href=\"README_CN.md\">简体中文</a></b></div>",
+      "text": "/badge.svg)](https://github.com/xinntao/Real-ESRGAN/blob/master/.github/workflows/publish-pip.yml)\n\n</div>\n\n🔥 **AnimeVideo-v3 model (动漫视频小模型)**. Please see [[*anime video models*](docs/anime_video_model.md)] and [[*comparisons*](docs/anime_comparisons.md)]<br>\n🔥 **RealESRGAN_x4plus_anime_6B** for anime images **(动漫插图模型)**. Please see [[*anime_model*](docs/anime_model.md)]\n\n<!-- 1. You can try in our website: [ARC Demo](https://arc.tencent.com/en/ai-demos/imgRestore) (now only support RealESRGAN_x4plus_anime_6B) -->\n1. :boom: **Update** online Replicate demo: [![Replicate](https://img.shields.io/static/v1?label=Demo&message=Replicate&color=blue)](https://replicate.com/xinntao/realesrgan)",
+      "weight": 1.15
+    },
+    {
+      "id": "ff1e5468684a6542f3a3",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "<div align=\"center\"><b><a href=\"README.md\">English</a> | <a href=\"README_CN.md\">简体中文</a></b></div>",
+      "text": "1. Online Colab demo for Real-ESRGAN: [![Colab](https://img.shields.io/static/v1?label=Demo&message=Colab&color=orange)](https://colab.research.google.com/drive/1k2Zod6kSHEvraybHl50Lys0LerhyTMCo?usp=sharing) **|** Online Colab demo for for Real-ESRGAN (**anime videos**): [![Colab](https://img.shields.io/static/v1?label=Demo&message=Colab&color=orange)](https://colab.research.google.com/drive/1yNl9ORUxxlL4N0keJa2SEPB61imPQd1B?usp=sharing)\n1. Portable [Windows](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip) / [Linux](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip) / [MacOS](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-macos.zip) **executable files for Intel/AMD/Nvidia GPU**. You can find more information [here](#portable-executable-files-ncnn). The ncnn implementation is in [Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan)\n<!-- 1. You can watch enhanced animations in [Tencent Video](https://v.qq.com/s/topic/v_child/render/fC4iyCAM.html). 欢迎观看[腾讯视频动漫修复](https://v.qq.com/s/topic/v_c",
+      "weight": 1.15
+    },
+    {
+      "id": "0d8da9822e5c45ecf80c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "<div align=\"center\"><b><a href=\"README.md\">English</a> | <a href=\"README_CN.md\">简体中文</a></b></div>",
+      "text": "hild/render/fC4iyCAM.html) -->\n\nReal-ESRGAN aims at developing **Practical Algorithms for General Image/Video Restoration**.<br>\nWe extend the powerful ESRGAN to a practical restoration application (namely, Real-ESRGAN), which is trained with pure synthetic data.\n\n🌌 Thanks for your valuable feedbacks/suggestions. All the feedbacks are updated in [feedback.md](docs/feedback.md).\n\n---\n\nIf Real-ESRGAN is helpful, please help to ⭐ this repo or recommend it to your friends 😊 <br>\nOther recommended projects:<br>\n▶️ [GFPGAN](https://github.com/TencentARC/GFPGAN): A practical algorithm for real-world face restoration <br>",
+      "weight": 1.15
+    },
+    {
+      "id": "596047f890db7f136ac7",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "<div align=\"center\"><b><a href=\"README.md\">English</a> | <a href=\"README_CN.md\">简体中文</a></b></div>",
+      "text": "▶️ [BasicSR](https://github.com/xinntao/BasicSR): An open-source image and video restoration toolbox<br>\n▶️ [facexlib](https://github.com/xinntao/facexlib): A collection that provides useful face-relation functions.<br>\n▶️ [HandyView](https://github.com/xinntao/HandyView): A PyQt5-based image viewer that is handy for view and comparison <br>\n▶️ [HandyFigure](https://github.com/xinntao/HandyFigure): Open source of paper figures <br>\n\n---",
+      "weight": 1.15
+    },
+    {
+      "id": "8dcd7937b036619aba66",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "📖 Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure Synthetic Data",
+      "text": "> [[Paper](https://arxiv.org/abs/2107.10833)] &emsp; [[YouTube Video](https://www.youtube.com/watch?v=fxHWoDSSvSc)] &emsp; [[B站讲解](https://www.bilibili.com/video/BV1H34y1m7sS/)] &emsp; [[Poster](https://xinntao.github.io/projects/RealESRGAN_src/RealESRGAN_poster.pdf)] &emsp; [[PPT slides](https://docs.google.com/presentation/d/1QtW6Iy8rm8rGLsJ0Ldti6kP-7Qyzy6XL/edit?usp=sharing&ouid=109799856763657548160&rtpof=true&sd=true)]<br>\n> [Xintao Wang](https://xinntao.github.io/), Liangbin Xie, [Chao Dong](https://scholar.google.com.hk/citations?user=OSDCB0UAAAAJ), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en) <br>\n> [Tencent ARC Lab](https://arc.tencent.com/en/ai-demos/imgRestore); Shenzhen Institutes of Advanced Technology, Chinese Academy of Sciences\n\n<p align=\"center\">\n  <img src=\"assets/teaser.jpg\">\n</p>\n\n---\n\n<!---------------------------------- Updates --------------------------->",
+      "weight": 1.15
+    },
+    {
+      "id": "850909a38a4bb15965a1",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "🚩 Updates",
+      "text": "- ✅ Add the **realesr-general-x4v3** model - a tiny small model for general scenes. It also supports the **-dn** option to balance the noise (avoiding over-smooth results). **-dn** is short for denoising strength.\n- ✅ Update the **RealESRGAN AnimeVideo-v3** model. Please see [anime video models](docs/anime_video_model.md) and [comparisons](docs/anime_comparisons.md) for more details.\n- ✅ Add small models for anime videos. More details are in [anime video models](docs/anime_video_model.md).\n- ✅ Add the ncnn implementation [Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).\n- ✅ Add [*RealESRGAN_x4plus_anime_6B.pth*](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth), which is optimized for **anime** images with much smaller model size. More details and comparisons with [waifu2x](https://github.com/nihui/waifu2x-ncnn-vulkan) are in [**anime_model.md**](docs/anime_model.md)\n- ✅ Support finetuning on your own data or paired data (*i.e.*, finetuning ESRGAN). See [here](docs/Training.md#Finetune-Real-ESRGAN-on-your-own-dataset)\n- ✅ Integrate [GFPGAN](https://github.com/TencentARC/GFPGAN) to support **face enhancemen",
+      "weight": 1.15
+    },
+    {
+      "id": "4fb909ccb07018fae80a",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "🚩 Updates",
+      "text": "t**.\n- ✅ Integrated to [Huggingface Spaces](https://huggingface.co/spaces) with [Gradio](https://github.com/gradio-app/gradio). See [Gradio Web Demo](https://huggingface.co/spaces/akhaliq/Real-ESRGAN). Thanks [@AK391](https://github.com/AK391)\n- ✅ Support arbitrary scale with `--outscale` (It actually further resizes outputs with `LANCZOS4`). Add *RealESRGAN_x2plus.pth* model.\n- ✅ [The inference code](inference_realesrgan.py) supports: 1) **tile** options; 2) images with **alpha channel**; 3) **gray** images; 4) **16-bit** images.\n- ✅ The training codes have been released. A detailed guide can be found in [Training.md](docs/Training.md).",
+      "weight": 1.15
+    },
+    {
+      "id": "66602cc5ba7ada32477c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Bilibili",
+      "text": "- [大闹天宫片段](https://www.bilibili.com/video/BV1ja41117zb)\n- [Anime dance cut 动漫魔性舞蹈](https://www.bilibili.com/video/BV1wY4y1L7hT/)\n- [海贼王片段](https://www.bilibili.com/video/BV1i3411L7Gy/)",
+      "weight": 1.15
+    },
+    {
+      "id": "0795173e876e83815d26",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "🔧 Dependencies and Installation",
+      "text": "- Python >= 3.7 (Recommend to use [Anaconda](https://www.anaconda.com/download/#linux) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html))\n- [PyTorch >= 1.7](https://pytorch.org/)",
+      "weight": 1.15
+    },
+    {
+      "id": "185c222683ae80175f2a",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Installation",
+      "text": "1. Clone repo\n\n    ```bash\n    git clone https://github.com/xinntao/Real-ESRGAN.git\n    cd Real-ESRGAN\n    ```\n\n1. Install dependent packages\n\n    ```bash\n    # Install basicsr - https://github.com/xinntao/BasicSR\n    # We use BasicSR for both training and inference\n    pip install basicsr\n    # facexlib and gfpgan are for face enhancement\n    pip install facexlib\n    pip install gfpgan\n    pip install -r requirements.txt\n    python setup.py develop\n    ```\n\n---",
+      "weight": 1.15
+    },
+    {
+      "id": "1c8b8d481cb83c003ec7",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "⚡ Quick Inference",
+      "text": "There are usually three ways to inference Real-ESRGAN.\n\n1. [Online inference](#online-inference)\n1. [Portable executable files (NCNN)](#portable-executable-files-ncnn)\n1. [Python script](#python-script)",
+      "weight": 1.15
+    },
+    {
+      "id": "174aa24c55837ea3ec4b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Online inference",
+      "text": "1. You can try in our website: [ARC Demo](https://arc.tencent.com/en/ai-demos/imgRestore) (now only support RealESRGAN_x4plus_anime_6B)\n1. [Colab Demo](https://colab.research.google.com/drive/1k2Zod6kSHEvraybHl50Lys0LerhyTMCo?usp=sharing) for Real-ESRGAN **|** [Colab Demo](https://colab.research.google.com/drive/1yNl9ORUxxlL4N0keJa2SEPB61imPQd1B?usp=sharing) for Real-ESRGAN (**anime videos**).",
+      "weight": 1.15
+    },
+    {
+      "id": "a9421c9a15f1d623d5bd",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Portable executable files (NCNN)",
+      "text": "You can download [Windows](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip) / [Linux](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip) / [MacOS](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-macos.zip) **executable files for Intel/AMD/Nvidia GPU**.\n\nThis executable file is **portable** and includes all the binaries and models required. No CUDA or PyTorch environment is needed.<br>\n\nYou can simply run the following command (the Windows example, more information is in the README.md of each executable files):\n\n```bash\n./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png -n model_name\n```\n\nWe have provided five models:\n\n1. realesrgan-x4plus  (default)\n2. realesrnet-x4plus\n3. realesrgan-x4plus-anime (optimized for anime images, small model size)\n4. realesr-animevideov3 (animation video)\n\nYou can use the `-n` argument for other models, for example, `./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png -n realesrnet-x4plus`",
+      "weight": 1.15
+    },
+    {
+      "id": "b1601551af3a7bd4311b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Usage of portable executable files",
+      "text": "1. Please refer to [Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan#computer-usages) for more details.\n1. Note that it does not support all the functions (such as `outscale`) as the python script `inference_realesrgan.py`.\n\n```console\nUsage: realesrgan-ncnn-vulkan.exe -i infile -o outfile [options]...\n\n  -h                   show this help\n  -i input-path        input image path (jpg/png/webp) or directory\n  -o output-path       output image path (jpg/png/webp) or directory\n  -s scale             upscale ratio (can be 2, 3, 4. default=4)\n  -t tile-size         tile size (>=32/0=auto, default=0) can be 0,0,0 for multi-gpu\n  -m model-path        folder path to the pre-trained models. default=models\n  -n model-name        model name (default=realesr-animevideov3, can be realesr-animevideov3 | realesrgan-x4plus | realesrgan-x4plus-anime | realesrnet-x4plus)\n  -g gpu-id            gpu device to use (default=auto) can be 0,1,2 for multi-gpu\n  -j load:proc:save    thread count for load/proc/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu\n  -x                   enable tta mode\"\n  -f format            output image format (jpg/png/webp, default=ext/png)\n  -v",
+      "weight": 1.15
+    },
+    {
+      "id": "599e3c7813e6f42a4d57",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Usage of portable executable files",
+      "text": "verbose output\n```\n\nNote that it may introduce block inconsistency (and also generate slightly different results from the PyTorch implementation), because this executable file first crops the input image into several tiles, and then processes them separately, finally stitches together.",
+      "weight": 1.15
+    },
+    {
+      "id": "d50b22482ca081e39c15",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Usage of python script",
+      "text": "1. You can use X4 model for **arbitrary output size** with the argument `outscale`. The program will further perform cheap resize operation after the Real-ESRGAN output.\n\n```console\nUsage: python inference_realesrgan.py -n RealESRGAN_x4plus -i infile -o outfile [options]...\n\nA common command: python inference_realesrgan.py -n RealESRGAN_x4plus -i infile --outscale 3.5 --face_enhance\n\n  -h                   show this help\n  -i --input           Input image or folder. Default: inputs\n  -o --output          Output folder. Default: results\n  -n --model_name      Model name. Default: RealESRGAN_x4plus\n  -s, --outscale       The final upsampling scale of the image. Default: 4\n  --suffix             Suffix of the restored image. Default: out\n  -t, --tile           Tile size, 0 for no tile during testing. Default: 0\n  --face_enhance       Whether to use GFPGAN to enhance face. Default: False\n  --fp32               Use fp32 precision during inference. Default: fp16 (half precision).\n  --ext                Image extension. Options: auto | jpg | png, auto means using the same extension as inputs. Default: auto\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "d3e11cae1710006c4293",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Inference general images",
+      "text": "Download pre-trained models: [RealESRGAN_x4plus.pth](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth)\n\n```bash\nwget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P weights\n```\n\nInference!\n\n```bash\npython inference_realesrgan.py -n RealESRGAN_x4plus -i inputs --face_enhance\n```\n\nResults are in the `results` folder",
+      "weight": 1.15
+    },
+    {
+      "id": "879a0d2e85b053bccb8f",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Inference anime images",
+      "text": "<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_1.png\">\n</p>\n\nPre-trained models: [RealESRGAN_x4plus_anime_6B](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth)<br>\n More details and comparisons with [waifu2x](https://github.com/nihui/waifu2x-ncnn-vulkan) are in [**anime_model.md**](docs/anime_model.md)\n\n```bash",
+      "weight": 1.15
+    },
+    {
+      "id": "30780f9cef08d04003bd",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "download model",
+      "text": "wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth -P weights",
+      "weight": 1.15
+    },
+    {
+      "id": "9be1184ea17b88b8dfad",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "inference",
+      "text": "python inference_realesrgan.py -n RealESRGAN_x4plus_anime_6B -i inputs\n```\n\nResults are in the `results` folder\n\n---",
+      "weight": 1.15
+    },
+    {
+      "id": "306da8912405c227c01f",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "BibTeX",
+      "text": "@InProceedings{wang2021realesrgan,\n        author    = {Xintao Wang and Liangbin Xie and Chao Dong and Ying Shan},\n        title     = {Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure Synthetic Data},\n        booktitle = {International Conference on Computer Vision Workshops (ICCVW)},\n        date      = {2021}\n    }",
+      "weight": 1.15
+    },
+    {
+      "id": "6d2032c12de12fc0205c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "📧 Contact",
+      "text": "If you have any question, please email `xintao.wang@outlook.com` or `xintaowang@tencent.com`.\n\n<!---------------------------------- Projects that use Real-ESRGAN --------------------------->",
+      "weight": 1.15
+    },
+    {
+      "id": "3dbba2dfbe4f839a2654",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "🧩 Projects that use Real-ESRGAN",
+      "text": "If you develop/use Real-ESRGAN in your projects, welcome to let me know.\n\n- NCNN-Android: [RealSR-NCNN-Android](https://github.com/tumuyan/RealSR-NCNN-Android) by [tumuyan](https://github.com/tumuyan)\n- VapourSynth: [vs-realesrgan](https://github.com/HolyWu/vs-realesrgan) by [HolyWu](https://github.com/HolyWu)\n- NCNN: [Real-ESRGAN-ncnn-vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan)\n\n&nbsp;&nbsp;&nbsp;&nbsp;**GUI**\n\n- [Waifu2x-Extension-GUI](https://github.com/AaronFeng753/Waifu2x-Extension-GUI) by [AaronFeng753](https://github.com/AaronFeng753)\n- [Squirrel-RIFE](https://github.com/Justin62628/Squirrel-RIFE) by [Justin62628](https://github.com/Justin62628)\n- [Real-GUI](https://github.com/scifx/Real-GUI) by [scifx](https://github.com/scifx)\n- [Real-ESRGAN_GUI](https://github.com/net2cn/Real-ESRGAN_GUI) by [net2cn](https://github.com/net2cn)\n- [Real-ESRGAN-EGUI](https://github.com/WGzeyu/Real-ESRGAN-EGUI) by [WGzeyu](https://github.com/WGzeyu)\n- [anime_upscaler](https://github.com/shangar21/anime_upscaler) by [shangar21](https://github.com/shangar21)\n- [Upscayl](https://github.com/upscayl/upscayl) by [Nayam Amarshe](https://github.com/NayamAmarshe) and [TGS963](https://gi",
+      "weight": 1.15
+    },
+    {
+      "id": "44c7d54aa76c817906a4",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "🤗 Acknowledgement",
+      "text": "Thanks for all the contributors.\n\n- [AK391](https://github.com/AK391): Integrate RealESRGAN to [Huggingface Spaces](https://huggingface.co/spaces) with [Gradio](https://github.com/gradio-app/gradio). See [Gradio Web Demo](https://huggingface.co/spaces/akhaliq/Real-ESRGAN).\n- [Asiimoviet](https://github.com/Asiimoviet): Translate the README.md to Chinese (中文).\n- [2ji3150](https://github.com/2ji3150): Thanks for the [detailed and valuable feedbacks/suggestions](https://github.com/xinntao/Real-ESRGAN/issues/131).\n- [Jared-02](https://github.com/Jared-02): Translate the Training.md to Chinese (中文).",
+      "weight": 1.15
+    },
+    {
+      "id": "6e8e4ec34ac3106c578d",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/CONTRIBUTING.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Contributing to Real-ESRGAN",
+      "text": ":art: Real-ESRGAN needs your contributions. Any contributions are welcome, such as new features/models/typo fixes/suggestions/maintenance, *etc*. See [CONTRIBUTING.md](docs/CONTRIBUTING.md). All contributors are list [here](README.md#hugs-acknowledgement).\n\nWe like open-source and want to develop practical algorithms for general image restoration. However, individual strength is limited. So, any kinds of contributions are welcome, such as:\n\n- New features\n- New models (your fine-tuned models)\n- Bug fixes\n- Typo fixes\n- Suggestions\n- Maintenance\n- Documents\n- *etc*",
+      "weight": 1.15
+    },
+    {
+      "id": "ccbde288598abd971a57",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/CONTRIBUTING.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Workflow",
+      "text": "1. Fork and pull the latest Real-ESRGAN repository\n1. Checkout a new branch (do not use master branch for PRs)\n1. Commit your changes\n1. Create a PR\n\n**Note**:\n\n1. Please check the code style and linting\n    1. The style configuration is specified in [setup.cfg](setup.cfg)\n    1. If you use VSCode, the settings are configured in [.vscode/settings.json](.vscode/settings.json)\n1. Strongly recommend using `pre-commit hook`. It will check your code style and linting before your commit.\n    1. In the root path of project folder, run `pre-commit install`\n    1. The pre-commit configuration is listed in [.pre-commit-config.yaml](.pre-commit-config.yaml)\n1. Better to [open a discussion](https://github.com/xinntao/Real-ESRGAN/discussions) before large changes.\n    1. Welcome to discuss :sunglasses:. I will try my best to join the discussion.",
+      "weight": 1.15
+    },
+    {
+      "id": "e13c6ecd5293a2059fda",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/CONTRIBUTING.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "TODO List",
+      "text": ":zero: The most straightforward way of improving model performance is to fine-tune on some specific datasets.\n\nHere are some TODOs:\n\n- [ ] optimize for human faces\n- [ ] optimize for texts\n- [ ] support controllable restoration strength\n\n:one: There are also [several issues](https://github.com/xinntao/Real-ESRGAN/issues) that require helpers to improve. If you can help, please let me know :smile:",
+      "weight": 1.15
+    },
+    {
+      "id": "62e092a4ea3b897bca65",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/FAQ.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "FAQ",
+      "text": "1. **Q: How to select models?**<br>\nA: Please refer to [docs/model_zoo.md](docs/model_zoo.md)\n\n1. **Q: Can `face_enhance` be used for anime images/animation videos?**<br>\nA: No, it can only be used for real faces. It is recommended not to use this option for anime images/animation videos to save GPU memory.\n\n1. **Q: Error \"slow_conv2d_cpu\" not implemented for 'Half'**<br>\nA: In order to save GPU memory consumption and speed up inference, Real-ESRGAN uses half precision (fp16) during inference by default. However, some operators for half inference are not implemented in CPU mode. You need to add **`--fp32` option** for the commands. For example, `python inference_realesrgan.py -n RealESRGAN_x4plus.pth -i inputs --fp32`.",
+      "weight": 1.15
+    },
+    {
+      "id": "e6e370b29800986cfa0c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": ":computer: How to Train/Finetune Real-ESRGAN",
+      "text": "- [Train Real-ESRGAN](#train-real-esrgan)\n  - [Overview](#overview)\n  - [Dataset Preparation](#dataset-preparation)\n  - [Train Real-ESRNet](#Train-Real-ESRNet)\n  - [Train Real-ESRGAN](#Train-Real-ESRGAN)\n- [Finetune Real-ESRGAN on your own dataset](#Finetune-Real-ESRGAN-on-your-own-dataset)\n  - [Generate degraded images on the fly](#Generate-degraded-images-on-the-fly)\n  - [Use paired training data](#use-your-own-paired-data)\n\n[English](Training.md) **|** [简体中文](Training_CN.md)",
+      "weight": 1.15
+    },
+    {
+      "id": "01d3e27a2eb61d1aba02",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Overview",
+      "text": "The training has been divided into two stages. These two stages have the same data synthesis process and training pipeline, except for the loss functions. Specifically,\n\n1. We first train Real-ESRNet with L1 loss from the pre-trained model ESRGAN.\n1. We then use the trained Real-ESRNet model as an initialization of the generator, and train the Real-ESRGAN with a combination of L1 loss, perceptual loss and GAN loss.",
+      "weight": 1.15
+    },
+    {
+      "id": "a21a22934c038d14981c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Dataset Preparation",
+      "text": "We use DF2K (DIV2K and Flickr2K) + OST datasets for our training. Only HR images are required. <br>\nYou can download from :\n\n1. DIV2K: http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip\n2. Flickr2K: https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar\n3. OST: https://openmmlab.oss-cn-hangzhou.aliyuncs.com/datasets/OST_dataset.zip\n\nHere are steps for data preparation.",
+      "weight": 1.15
+    },
+    {
+      "id": "f782611ffe20cdaa8d21",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 1: [Optional] Generate multi-scale images",
+      "text": "For the DF2K dataset, we use a multi-scale strategy, *i.e.*, we downsample HR images to obtain several Ground-Truth images with different scales. <br>\nYou can use the [scripts/generate_multiscale_DF2K.py](scripts/generate_multiscale_DF2K.py) script to generate multi-scale images. <br>\nNote that this step can be omitted if you just want to have a fast try.\n\n```bash\npython scripts/generate_multiscale_DF2K.py --input datasets/DF2K/DF2K_HR --output datasets/DF2K/DF2K_multiscale\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "ee203784941c8edcc1e3",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 2: [Optional] Crop to sub-images",
+      "text": "We then crop DF2K images into sub-images for faster IO and processing.<br>\nThis step is optional if your IO is enough or your disk space is limited.\n\nYou can use the [scripts/extract_subimages.py](scripts/extract_subimages.py) script. Here is the example:\n\n```bash\n python scripts/extract_subimages.py --input datasets/DF2K/DF2K_multiscale --output datasets/DF2K/DF2K_multiscale_sub --crop_size 400 --step 200\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "56791941fe44b5861a3d",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 3: Prepare a txt for meta information",
+      "text": "You need to prepare a txt file containing the image paths. The following are some examples in `meta_info_DF2Kmultiscale+OST_sub.txt` (As different users may have different sub-images partitions, this file is not suitable for your purpose and you need to prepare your own txt file):\n\n```txt\nDF2K_HR_sub/000001_s001.png\nDF2K_HR_sub/000001_s002.png\nDF2K_HR_sub/000001_s003.png\n...\n```\n\nYou can use the [scripts/generate_meta_info.py](scripts/generate_meta_info.py) script to generate the txt file. <br>\nYou can merge several folders into one meta_info txt. Here is the example:\n\n```bash\n python scripts/generate_meta_info.py --input datasets/DF2K/DF2K_HR datasets/DF2K/DF2K_multiscale --root datasets/DF2K datasets/DF2K --meta_info datasets/DF2K/meta_info/meta_info_DF2Kmultiscale.txt\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "41c91a35b6106e37e3c4",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Train Real-ESRNet",
+      "text": "1. Download pre-trained model [ESRGAN](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/ESRGAN_SRx4_DF2KOST_official-ff704c30.pth) into `experiments/pretrained_models`.\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/ESRGAN_SRx4_DF2KOST_official-ff704c30.pth -P experiments/pretrained_models\n    ```\n1. Modify the content in the option file `options/train_realesrnet_x4plus.yml` accordingly:\n    ```yml\n    train:\n        name: DF2K+OST\n        type: RealESRGANDataset\n        dataroot_gt: datasets/DF2K  # modify to the root path of your folder\n        meta_info: realesrgan/meta_info/meta_info_DF2Kmultiscale+OST_sub.txt  # modify to your own generate meta info txt\n        io_backend:\n            type: disk\n    ```\n1. If you want to perform validation during training, uncomment those lines and modify accordingly:\n    ```yml\n      # Uncomment these for validation\n      # val:\n      #   name: validation\n      #   type: PairedImageDataset\n      #   dataroot_gt: path_to_gt\n      #   dataroot_lq: path_to_lq\n      #   io_backend:\n      #     type: disk\n\n    ...\n\n      # Uncomment these for validation\n      # validation settings\n      # val:",
+      "weight": 1.15
+    },
+    {
+      "id": "6d7371d31b785437f359",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Train Real-ESRNet",
+      "text": "#   val_freq: !!float 5e3\n      #   save_img: True\n\n      #   metrics:\n      #     psnr: # metric name, can be arbitrary\n      #       type: calculate_psnr\n      #       crop_border: 4\n      #       test_y_channel: false\n    ```\n1. Before the formal training, you may run in the `--debug` mode to see whether everything is OK. We use four GPUs for training:\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --launcher pytorch --debug\n    ```\n\n    Train with **a single GPU** in the *debug* mode:",
+      "weight": 1.15
+    },
+    {
+      "id": "a122997a9ac576d489b4",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Train Real-ESRNet",
+      "text": "```bash\n    python realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --debug\n    ```\n1. The formal training. We use four GPUs for training. We use the `--auto_resume` argument to automatically resume the training if necessary.\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --launcher pytorch --auto_resume\n    ```\n\n    Train with **a single GPU**:\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --auto_resume\n    ```",
+      "weight": 1.15
+    },
+    {
+      "id": "ad6fcd62f3874b32cb23",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Train Real-ESRGAN",
+      "text": "1. After the training of Real-ESRNet, you now have the file `experiments/train_RealESRNetx4plus_1000k_B12G4_fromESRGAN/model/net_g_1000000.pth`. If you need to specify the pre-trained path to other files, modify the `pretrain_network_g` value in the option file `train_realesrgan_x4plus.yml`.\n1. Modify the option file `train_realesrgan_x4plus.yml` accordingly. Most modifications are similar to those listed above.\n1. Before the formal training, you may run in the `--debug` mode to see whether everything is OK. We use four GPUs for training:\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --launcher pytorch --debug\n    ```\n\n    Train with **a single GPU** in the *debug* mode:\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --debug\n    ```\n1. The formal training. We use four GPUs for training. We use the `--auto_resume` argument to automatically resume the training if necessary.\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/trai",
+      "weight": 1.15
+    },
+    {
+      "id": "d3d2c795ca1abb1830f8",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Train Real-ESRGAN",
+      "text": "n.py -opt options/train_realesrgan_x4plus.yml --launcher pytorch --auto_resume\n    ```\n\n    Train with **a single GPU**:\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --auto_resume\n    ```",
+      "weight": 1.15
+    },
+    {
+      "id": "141d0d261d359048f11c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Finetune Real-ESRGAN on your own dataset",
+      "text": "You can finetune Real-ESRGAN on your own dataset. Typically, the fine-tuning process can be divided into two cases:\n\n1. [Generate degraded images on the fly](#Generate-degraded-images-on-the-fly)\n1. [Use your own **paired** data](#Use-paired-training-data)",
+      "weight": 1.15
+    },
+    {
+      "id": "daa46a98ff63a2a0031c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Generate degraded images on the fly",
+      "text": "Only high-resolution images are required. The low-quality images are generated with the degradation process described in Real-ESRGAN during training.\n\n**1. Prepare dataset**\n\nSee [this section](#dataset-preparation) for more details.\n\n**2. Download pre-trained models**\n\nDownload pre-trained models into `experiments/pretrained_models`.\n\n- *RealESRGAN_x4plus.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P experiments/pretrained_models\n    ```\n\n- *RealESRGAN_x4plus_netD.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x4plus_netD.pth -P experiments/pretrained_models\n    ```\n\n**3. Finetune**\n\nModify [options/finetune_realesrgan_x4plus.yml](options/finetune_realesrgan_x4plus.yml) accordingly, especially the `datasets` part:\n\n```yml\ntrain:\n    name: DF2K+OST\n    type: RealESRGANDataset\n    dataroot_gt: datasets/DF2K  # modify to the root path of your folder\n    meta_info: realesrgan/meta_info/meta_info_DF2Kmultiscale+OST_sub.txt  # modify to your own generate meta info txt\n    io_backend:\n        type: disk\n```\n\nWe use four GPUs for training. We use the `--auto_resum",
+      "weight": 1.15
+    },
+    {
+      "id": "1eab6e2dea0481b1a17a",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Generate degraded images on the fly",
+      "text": "e` argument to automatically resume the training if necessary.\n\n```bash\nCUDA_VISIBLE_DEVICES=0,1,2,3 \\\npython -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/finetune_realesrgan_x4plus.yml --launcher pytorch --auto_resume\n```\n\nFinetune with **a single GPU**:\n```bash\npython realesrgan/train.py -opt options/finetune_realesrgan_x4plus.yml --auto_resume\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "06ef37a988e888f9d1f0",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Use your own paired data",
+      "text": "You can also finetune RealESRGAN with your own paired data. It is more similar to fine-tuning ESRGAN.\n\n**1. Prepare dataset**\n\nAssume that you already have two folders:\n\n- **gt folder** (Ground-truth, high-resolution images): *datasets/DF2K/DIV2K_train_HR_sub*\n- **lq folder** (Low quality, low-resolution images): *datasets/DF2K/DIV2K_train_LR_bicubic_X4_sub*\n\nThen, you can prepare the meta_info txt file using the script [scripts/generate_meta_info_pairdata.py](scripts/generate_meta_info_pairdata.py):\n\n```bash\npython scripts/generate_meta_info_pairdata.py --input datasets/DF2K/DIV2K_train_HR_sub datasets/DF2K/DIV2K_train_LR_bicubic_X4_sub --meta_info datasets/DF2K/meta_info/meta_info_DIV2K_sub_pair.txt\n```\n\n**2. Download pre-trained models**\n\nDownload pre-trained models into `experiments/pretrained_models`.\n\n- *RealESRGAN_x4plus.pth*\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P experiments/pretrained_models\n    ```\n\n- *RealESRGAN_x4plus_netD.pth*\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x4plus_netD.pth -P experiments/pretrained_models\n    ```\n\n**3. Finetune**\n\nMo",
+      "weight": 1.15
+    },
+    {
+      "id": "1d69987690e97ec5295c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Use your own paired data",
+      "text": "dify [options/finetune_realesrgan_x4plus_pairdata.yml](options/finetune_realesrgan_x4plus_pairdata.yml) accordingly, especially the `datasets` part:\n\n```yml\ntrain:\n    name: DIV2K\n    type: RealESRGANPairedDataset\n    dataroot_gt: datasets/DF2K  # modify to the root path of your folder\n    dataroot_lq: datasets/DF2K  # modify to the root path of your folder\n    meta_info: datasets/DF2K/meta_info/meta_info_DIV2K_sub_pair.txt  # modify to your own generate meta info txt\n    io_backend:\n        type: disk\n```\n\nWe use four GPUs for training. We use the `--auto_resume` argument to automatically resume the training if necessary.",
+      "weight": 1.15
+    },
+    {
+      "id": "e31f84b32ad834b72078",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Use your own paired data",
+      "text": "```bash\nCUDA_VISIBLE_DEVICES=0,1,2,3 \\\npython -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/finetune_realesrgan_x4plus_pairdata.yml --launcher pytorch --auto_resume\n```\n\nFinetune with **a single GPU**:\n```bash\npython realesrgan/train.py -opt options/finetune_realesrgan_x4plus_pairdata.yml --auto_resume\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "c3e7e30a92bbc924ac9b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": ":computer: 如何训练/微调 Real-ESRGAN",
+      "text": "- [训练 Real-ESRGAN](#训练-real-esrgan)\n  - [概述](#概述)\n  - [准备数据集](#准备数据集)\n  - [训练 Real-ESRNet 模型](#训练-real-esrnet-模型)\n  - [训练 Real-ESRGAN 模型](#训练-real-esrgan-模型)\n- [用自己的数据集微调 Real-ESRGAN](#用自己的数据集微调-real-esrgan)\n  - [动态生成降级图像](#动态生成降级图像)\n  - [使用已配对的数据](#使用已配对的数据)\n\n[English](Training.md) **|** [简体中文](Training_CN.md)",
+      "weight": 1.15
+    },
+    {
+      "id": "c65c29c88886cbf28490",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "概述",
+      "text": "训练分为两个步骤。除了 loss 函数外，这两个步骤拥有相同数据合成以及训练的一条龙流程。具体点说：\n\n1. 首先使用 L1 loss 训练 Real-ESRNet 模型，其中 L1 loss 来自预先训练的 ESRGAN 模型。\n\n2. 然后我们将 Real-ESRNet 模型作为生成器初始化，结合L1 loss、感知 loss、GAN loss 三者的参数对 Real-ESRGAN 进行训练。",
+      "weight": 1.15
+    },
+    {
+      "id": "ed37d9fe54226fc94d4d",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "准备数据集",
+      "text": "我们使用 DF2K ( DIV2K 和 Flickr2K ) + OST 数据集进行训练。只需要HR图像！<br>\n下面是网站链接:\n1. DIV2K: http://data.vision.ee.ethz.ch/cvl/DIV2K/DIV2K_train_HR.zip\n2. Flickr2K: https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar\n3. OST: https://openmmlab.oss-cn-hangzhou.aliyuncs.com/datasets/OST_dataset.zip\n\n以下是数据的准备步骤。",
+      "weight": 1.15
+    },
+    {
+      "id": "e1cc23f0b9f49c71532e",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "第1步：【可选】生成多尺寸图片",
+      "text": "针对 DF2K 数据集，我们使用多尺寸缩放策略，*换言之*，我们对 HR 图像进行下采样，就能获得多尺寸的标准参考（Ground-Truth）图像。 <br>\n您可以使用这个 [scripts/generate_multiscale_DF2K.py](scripts/generate_multiscale_DF2K.py) 脚本快速生成多尺寸的图像。<br>\n注意：如果您只想简单试试，那么可以跳过此步骤。\n\n```bash\npython scripts/generate_multiscale_DF2K.py --input datasets/DF2K/DF2K_HR --output datasets/DF2K/DF2K_multiscale\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "b7c73d0f992c9ad5a6f2",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "第2步：【可选】裁切为子图像",
+      "text": "我们可以将 DF2K 图像裁切为子图像，以加快 IO 和处理速度。<br>\n如果你的 IO 够好或储存空间有限，那么此步骤是可选的。<br>\n\n您可以使用脚本 [scripts/extract_subimages.py](scripts/extract_subimages.py)。这是使用示例:\n\n```bash\n python scripts/extract_subimages.py --input datasets/DF2K/DF2K_multiscale --output datasets/DF2K/DF2K_multiscale_sub --crop_size 400 --step 200\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "ee9745f26bdc6f0c8808",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "第3步：准备元信息 txt",
+      "text": "您需要准备一个包含图像路径的 txt 文件。下面是 `meta_info_DF2Kmultiscale+OST_sub.txt` 中的部分展示（由于各个用户可能有截然不同的子图像划分，这个文件不适合你的需求，你得准备自己的 txt 文件)：\n\n```txt\nDF2K_HR_sub/000001_s001.png\nDF2K_HR_sub/000001_s002.png\nDF2K_HR_sub/000001_s003.png\n...\n```\n\n你可以使用该脚本 [scripts/generate_meta_info.py](scripts/generate_meta_info.py) 生成包含图像路径的 txt 文件。<br>\n你还可以合并多个文件夹的图像路径到一个元信息（meta_info）txt。这是使用示例:\n\n```bash\n python scripts/generate_meta_info.py --input datasets/DF2K/DF2K_HR, datasets/DF2K/DF2K_multiscale --root datasets/DF2K, datasets/DF2K --meta_info datasets/DF2K/meta_info/meta_info_DF2Kmultiscale.txt\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "8496ee38f9bf773b4a3a",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "训练 Real-ESRNet 模型",
+      "text": "1. 下载预先训练的模型 [ESRGAN](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/ESRGAN_SRx4_DF2KOST_official-ff704c30.pth)，放到 `experiments/pretrained_models`目录下。\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/ESRGAN_SRx4_DF2KOST_official-ff704c30.pth -P experiments/pretrained_models\n    ```\n2. 相应地修改选项文件 `options/train_realesrnet_x4plus.yml` 中的内容：\n    ```yml\n    train:\n        name: DF2K+OST\n        type: RealESRGANDataset\n        dataroot_gt: datasets/DF2K  # 修改为你的数据集文件夹根目录\n        meta_info: realesrgan/meta_info/meta_info_DF2Kmultiscale+OST_sub.txt  # 修改为你自己生成的元信息txt\n        io_backend:\n            type: disk\n    ```\n3. 如果你想在训练过程中执行验证，就取消注释这些内容并进行相应的修改：\n    ```yml\n      # 取消注释这些以进行验证\n      # val:\n      #   name: validation\n      #   type: PairedImageDataset\n      #   dataroot_gt: path_to_gt\n      #   dataroot_lq: path_to_lq\n      #   io_backend:\n      #     type: disk\n\n    ...\n\n      # 取消注释这些以进行验证\n      # 验证设置\n      # val:\n      #   val_freq: !!float 5e3\n      #   save_img: True\n\n      #   metrics:\n      #     psnr: # 指标名称，可以是任意的\n      #       type: calculate_psnr\n      #       crop_border: 4\n      #       test_y_channel: false\n    ```\n4",
+      "weight": 1.15
+    },
+    {
+      "id": "d80da9d3eb0f89d65e4c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "训练 Real-ESRNet 模型",
+      "text": ". 正式训练之前，你可以用 `--debug` 模式检查是否正常运行。我们用了4个GPU进行训练：\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --launcher pytorch --debug\n    ```\n\n    用 **1个GPU** 训练的 debug 模式示例:\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --debug\n    ```\n5. 正式训练开始。我们用了4个GPU进行训练。还可以使用参数 `--auto_resume` 在必要时自动恢复训练。\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --launcher pytorch --auto_resume",
+      "weight": 1.15
+    },
+    {
+      "id": "d4c79f61e5db321999c8",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "训练 Real-ESRNet 模型",
+      "text": "```\n\n    用 **1个GPU** 训练：\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrnet_x4plus.yml --auto_resume\n    ```",
+      "weight": 1.15
+    },
+    {
+      "id": "778f6826f868751dd1f4",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "训练 Real-ESRGAN 模型",
+      "text": "1. 训练 Real-ESRNet 模型后，您得到了这个 `experiments/train_RealESRNetx4plus_1000k_B12G4_fromESRGAN/model/net_g_1000000.pth` 文件。如果需要指定预训练路径到其他文件，请修改选项文件 `train_realesrgan_x4plus.yml` 中 `pretrain_network_g` 的值。\n1. 修改选项文件 `train_realesrgan_x4plus.yml` 的内容。大多数修改与上节提到的类似。\n1. 正式训练之前，你可以以 `--debug` 模式检查是否正常运行。我们使用了4个GPU进行训练：\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --launcher pytorch --debug\n    ```\n\n    用 **1个GPU** 训练的 debug 模式示例:\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --debug\n    ```\n1. 正式训练开始。我们使用4个GPU进行训练。还可以使用参数 `--auto_resume` 在必要时自动恢复训练。\n    ```bash\n    CUDA_VISIBLE_DEVICES=0,1,2,3 \\\n    python -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --launcher pytorch --auto_resume\n    ```\n\n    用 **1个GPU** 训练：\n    ```bash\n    python realesrgan/train.py -opt options/train_realesrgan_x4plus.yml --auto_resume\n    ```",
+      "weight": 1.15
+    },
+    {
+      "id": "a08a7bf67bb46d050806",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "用自己的数据集微调 Real-ESRGAN",
+      "text": "你可以用自己的数据集微调 Real-ESRGAN。一般地，微调（Fine-Tune）程序可以分为两种类型:\n\n1. [动态生成降级图像](#动态生成降级图像)\n2. [使用**已配对**的数据](#使用已配对的数据)",
+      "weight": 1.15
+    },
+    {
+      "id": "6d345d935f4274971069",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "动态生成降级图像",
+      "text": "只需要高分辨率图像。在训练过程中，使用 Real-ESRGAN 描述的降级模型生成低质量图像。\n\n**1. 准备数据集**\n\n完整信息请参见[本节](#准备数据集)。\n\n**2. 下载预训练模型**\n\n下载预先训练的模型到 `experiments/pretrained_models` 目录下。\n\n- *RealESRGAN_x4plus.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P experiments/pretrained_models\n    ```\n\n- *RealESRGAN_x4plus_netD.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x4plus_netD.pth -P experiments/pretrained_models\n    ```\n\n**3. 微调**\n\n修改选项文件 [options/finetune_realesrgan_x4plus.yml](options/finetune_realesrgan_x4plus.yml) ，特别是 `datasets` 部分：\n\n```yml\ntrain:\n    name: DF2K+OST\n    type: RealESRGANDataset\n    dataroot_gt: datasets/DF2K   # 修改为你的数据集文件夹根目录\n    meta_info: realesrgan/meta_info/meta_info_DF2Kmultiscale+OST_sub.txt  # 修改为你自己生成的元信息txt\n    io_backend:\n        type: disk\n```\n\n我们使用4个GPU进行训练。还可以使用参数 `--auto_resume` 在必要时自动恢复训练。\n\n```bash\nCUDA_VISIBLE_DEVICES=0,1,2,3 \\\npython -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/finetune_realesrgan_x4plus.yml --launcher pytorch --auto_resume\n```\n\n用 **1个GPU** 训练：\n```bash\npython realesrgan/train.py -opt op",
+      "weight": 1.15
+    },
+    {
+      "id": "d43008dd26c8d639508f",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "使用已配对的数据",
+      "text": "你还可以用自己已经配对的数据微调 RealESRGAN。这个过程更类似于微调 ESRGAN。\n\n**1. 准备数据集**\n\n假设你已经有两个文件夹（folder）:\n\n- **gt folder**（标准参考，高分辨率图像）：*datasets/DF2K/DIV2K_train_HR_sub*\n- **lq folder**（低质量，低分辨率图像）：*datasets/DF2K/DIV2K_train_LR_bicubic_X4_sub*\n\n然后，您可以使用脚本 [scripts/generate_meta_info_pairdata.py](scripts/generate_meta_info_pairdata.py) 生成元信息（meta_info）txt 文件。\n\n```bash\npython scripts/generate_meta_info_pairdata.py --input datasets/DF2K/DIV2K_train_HR_sub datasets/DF2K/DIV2K_train_LR_bicubic_X4_sub --meta_info datasets/DF2K/meta_info/meta_info_DIV2K_sub_pair.txt\n```\n\n**2. 下载预训练模型**\n\n下载预先训练的模型到 `experiments/pretrained_models` 目录下。\n\n- *RealESRGAN_x4plus.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P experiments/pretrained_models\n    ```\n\n- *RealESRGAN_x4plus_netD.pth*:\n    ```bash\n    wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x4plus_netD.pth -P experiments/pretrained_models\n    ```\n\n**3. 微调**\n\n修改选项文件 [options/finetune_realesrgan_x4plus_pairdata.yml](options/finetune_realesrgan_x4plus_pairdata.yml) ，特别是 `datasets` 部分：\n\n```yml\ntrain:\n    name: DIV2K\n    type: RealESRGANPairedDataset\n    dataroot_gt: dat",
+      "weight": 1.15
+    },
+    {
+      "id": "a2866cd731cf0730c023",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/Training_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "使用已配对的数据",
+      "text": "asets/DF2K  # 修改为你的 gt folder 文件夹根目录\n    dataroot_lq: datasets/DF2K  # 修改为你的 lq folder 文件夹根目录\n    meta_info: datasets/DF2K/meta_info/meta_info_DIV2K_sub_pair.txt  # 修改为你自己生成的元信息txt\n    io_backend:\n        type: disk\n```\n\n我们使用4个GPU进行训练。还可以使用参数 `--auto_resume` 在必要时自动恢复训练。\n\n```bash\nCUDA_VISIBLE_DEVICES=0,1,2,3 \\\npython -m torch.distributed.launch --nproc_per_node=4 --master_port=4321 realesrgan/train.py -opt options/finetune_realesrgan_x4plus_pairdata.yml --launcher pytorch --auto_resume\n```\n\n用 **1个GPU** 训练：\n```bash\npython realesrgan/train.py -opt options/finetune_realesrgan_x4plus_pairdata.yml --auto_resume",
+      "weight": 1.15
+    },
+    {
+      "id": "408fc56c78fcd6db0165",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Update News",
+      "text": "- 2022/04/24: Release **AnimeVideo-v3**. We have made the following improvements:\n  - **better naturalness**\n  - **Fewer artifacts**\n  - **more faithful to the original colors**\n  - **better texture restoration**\n  - **better background restoration**",
+      "weight": 1.15
+    },
+    {
+      "id": "97249e8b2f096e6ecad1",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Comparisons",
+      "text": "We have compared our RealESRGAN-AnimeVideo-v3 with the following methods.\nOur RealESRGAN-AnimeVideo-v3 can achieve better results with faster inference speed.\n\n- [waifu2x](https://github.com/nihui/waifu2x-ncnn-vulkan) with the hyperparameters: `tile=0`, `noiselevel=2`\n- [Real-CUGAN](https://github.com/bilibili/ailab/tree/main/Real-CUGAN): we use the [20220227](https://github.com/bilibili/ailab/releases/tag/Real-CUGAN-add-faster-low-memory-mode) version, the hyperparameters are: `cache_mode=0`, `tile=0`, `alpha=1`.\n- our RealESRGAN-AnimeVideo-v3",
+      "weight": 1.15
+    },
+    {
+      "id": "ae0619f4d59c3e1bee6b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "You may need to **zoom in** for comparing details, or **click the image** to see in the full size. Please note that the images\nin the table below are the resized and cropped patches from the original images, you can download the original inputs and outputs from [Google Drive](https://drive.google.com/drive/folders/1bc_Hje1Nqop9NDkUvci2VACSjL7HZMRp?usp=sharing) .\n\n**More natural results, better background restoration**\n| Input | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |\n|![157083983-bec52c67-9a5e-4eed-afef-01fe6cd2af85_patch](https://user-images.githubusercontent.com/11482921/164452769-5d8cb4f8-1708-42d2-b941-f44a6f136feb.png) | ![](https://user-images.githubusercontent.com/11482921/164452767-c825cdec-f721-4ff1-aef1-fec41f146c4c.png) | ![](https://user-images.githubusercontent.com/11482921/164452755-3be50895-e3d4-432d-a7b9-9085c2a8e771.png) | ![](https://user-images.githubusercontent.com/11482921/164452771-be300656-379a-4323-a755-df8025a8c451.png) |\n|![a0010_patch](https://user-images.githubusercontent.com/11482921/164454047-22eeb493-3fa9-4142-9fc2-6f2a1c074cd5.png) | ![](https://user-images.githubusercontent.com/114",
+      "weight": 1.15
+    },
+    {
+      "id": "a079283faae2a217b04e",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "82921/164454046-d5e79f8f-00a0-4b55-bc39-295d0d69747a.png) | ![](https://user-images.githubusercontent.com/11482921/164454040-87886b11-9d08-48bd-862f-0d4aed72eb19.png) | ![](https://user-images.githubusercontent.com/11482921/164454055-73dc9f02-286e-4d5c-8f70-c13742e08f42.png) |\n|![00000044_patch](https://user-images.githubusercontent.com/11482921/164451232-bacf64fc-e55a-44db-afbb-6b31ab0f8973.png) | ![](https://user-images.githubusercontent.com/11482921/164451318-f309b61a-75b8-4b74-b5f3-595725f1cf0b.png) | ![](https://user-images.githubusercontent.com/11482921/164451348-994f8a35-adbe-4a4b-9c61-feaa294af06a.png) | ![](https://user-images.githubusercontent.com/11482921/164451361-9b7d376e-6f75-4648-b752-542b44845d1c.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "83420934b265e84ac45b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "**Fewer artifacts, better detailed textures**\n| Input | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |\n|![00000053_patch](https://user-images.githubusercontent.com/11482921/164448411-148a7e5c-cfcd-4504-8bc7-e318eb883bb6.png) | ![](https://user-images.githubusercontent.com/11482921/164448633-dfc15224-b6d2-4403-a3c9-4bb819979364.png) | ![](https://user-images.githubusercontent.com/11482921/164448771-0d359509-5293-4d4c-8e3c-86a2a314ea88.png) | ![](https://user-images.githubusercontent.com/11482921/164448848-1a4ff99e-075b-4458-9db7-2c89e8160aa0.png) |\n|![Disney_v4_22_018514_s2_patch](https://user-images.githubusercontent.com/11482921/164451898-83311cdf-bd3e-450f-b9f6-34d7fea3ab79.png) | ![](https://user-images.githubusercontent.com/11482921/164451894-6c56521c-6561-40d6-a3a5-8dde2c167b8a.png) | ![](https://user-images.githubusercontent.com/11482921/164451888-af9b47e3-39dc-4f3e-b0d7-d372d8191e2a.png) | ![](https://user-images.githubusercontent.com/11482921/164451901-31ca4dd4-9847-4baa-8cde-ad50f4053dcf.png) |\n|![Japan_v2_0_007261_s2_patch](https://user-images.githubusercontent.com/11482921/164454578-73c77392-77de-49c5-b03c-c36",
+      "weight": 1.15
+    },
+    {
+      "id": "fab9471834b5e1b0723a",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "631723192.png) | ![](https://user-images.githubusercontent.com/11482921/164454574-b1ede5f0-4520-4eaa-8f59-086751a34e62.png) | ![](https://user-images.githubusercontent.com/11482921/164454567-4cb3fdd8-6a2d-4016-85b2-a305a8ff80e4.png) | ![](https://user-images.githubusercontent.com/11482921/164454583-7f243f20-eca3-4500-ac43-eb058a4a101a.png) |\n|![huluxiongdi_2_patch](https://user-images.githubusercontent.com/11482921/164453482-0726c842-337e-40ec-bf6c-f902ee956a8b.png) | ![](https://user-images.githubusercontent.com/11482921/164453480-71d5e091-5bfa-4c77-9c57-4e37f66ca0a3.png) | ![](https://user-images.githubusercontent.com/11482921/164453468-c295d3c9-3661-45f0-9ecd-406a1877f76e.png) | ![](https://user-images.githubusercontent.com/11482921/164453486-3091887c-587c-450e-b6fe-905cb518d57e.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "f513346bdf01eaa55e12",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "**Other better results**\n| Input | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |\n|![Japan_v2_1_128525_s1_patch](https://user-images.githubusercontent.com/11482921/164454933-67697f7c-b6ef-47dc-bfca-822a78af8acf.png) | ![](https://user-images.githubusercontent.com/11482921/164454931-9450de7c-f0b3-4638-9c1e-0668e0c41ef0.png) | ![](https://user-images.githubusercontent.com/11482921/164454926-ed746976-786d-41c5-8a83-7693cd774c3a.png) | ![](https://user-images.githubusercontent.com/11482921/164454936-8abdf0f0-fb30-40eb-8281-3b46c0bcb9ae.png) |\n|![tianshuqitan_2_patch](https://user-images.githubusercontent.com/11482921/164456948-807c1476-90b6-4507-81da-cb986d01600c.png) | ![](https://user-images.githubusercontent.com/11482921/164456943-25e89de9-d7e5-4f61-a2e1-96786af6ae9e.png) | ![](https://user-images.githubusercontent.com/11482921/164456954-b468c447-59f5-4594-9693-3683e44ba3e6.png) | ![](https://user-images.githubusercontent.com/11482921/164456957-640f910c-3b04-407c-ac20-044d72e19735.png) |\n|![00000051_patch](https://user-images.githubusercontent.com/11482921/164456044-e9a6b3fa-b24e-4eb7-acf9-1f7746551b1e.png) ![00000051_pat",
+      "weight": 1.15
+    },
+    {
+      "id": "a65f74c089bb8a18618b",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "ch](https://user-images.githubusercontent.com/11482921/164456421-b67245b0-767d-4250-9105-80bbe507ecfc.png) | ![](https://user-images.githubusercontent.com/11482921/164456040-85763cf2-cb28-4ba3-abb6-1dbb48c55713.png) ![](https://user-images.githubusercontent.com/11482921/164456419-59cf342e-bc1e-4044-868c-e1090abad313.png) | ![](https://user-images.githubusercontent.com/11482921/164456031-4244bb7b-8649-4e01-86f4-40c2099c5afd.png) ![](https://user-images.githubusercontent.com/11482921/164456411-b6afcbe9-c054-448d-a6df-96d3ba3047f8.png) | ![](https://user-images.githubusercontent.com/11482921/164456035-12e270be-fd52-46d4-b18a-3d3b680731fe.png) ![](https://user-images.githubusercontent.com/11482921/164456417-dcaa8b62-f497-427d-b2d2-f390f1200fb9.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "244b53bc54fcac28abe7",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "|![00000099_patch](https://user-images.githubusercontent.com/11482921/164455312-6411b6e1-5823-4131-a4b0-a6be8a9ae89f.png) | ![](https://user-images.githubusercontent.com/11482921/164455310-f2b99646-3a22-47a4-805b-dc451ac86ddb.png) | ![](https://user-images.githubusercontent.com/11482921/164455294-35471b42-2826-4451-b7ec-6de01344954c.png) | ![](https://user-images.githubusercontent.com/11482921/164455305-fa4c9758-564a-4081-8b4e-f11057a0404d.png) |\n|![00000016_patch](https://user-images.githubusercontent.com/11482921/164455672-447353c9-2da2-4fcb-ba4a-7dd6b94c19c1.png) | ![](https://user-images.githubusercontent.com/11482921/164455669-df384631-baaa-42f8-9150-40f658471558.png) | ![](https://user-images.githubusercontent.com/11482921/164455657-68006bf0-138d-4981-aaca-8aa927d2f78a.png) | ![](https://user-images.githubusercontent.com/11482921/164455664-0342b93e-a62a-4b36-a90e-7118f3f1e45d.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "b6cceeac70b0f47f99d3",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "PyTorch",
+      "text": "Note that we only report the **model** time, and ignore the IO time.\n\n| GPU | Input Resolution | waifu2x | Real-CUGAN | RealESRGAN-AnimeVideo-v3\n| :---: | :---:         |  :---:        |     :---:      |  :---:      |\n| V100 | 1921 x 1080 | - | 3.4 fps | **10.0** fps |\n| V100 | 1280 x 720 | - | 7.2 fps | **22.6** fps |\n| V100 | 640 x 480 | - | 24.4 fps | **65.9** fps |",
+      "weight": 1.15
+    },
+    {
+      "id": "4c77ad076a3bdbb4a799",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "更新",
+      "text": "- 2022/04/24: 发布 **AnimeVideo-v3**. 主要做了以下更新：\n  - **更自然**\n  - **更少瑕疵**\n  - **颜色保持得更好**\n  - **更好的纹理恢复**\n  - **虚化背景处理**",
+      "weight": 1.15
+    },
+    {
+      "id": "27cf12e62e3c1c912f56",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "比较",
+      "text": "我们将 RealESRGAN-AnimeVideo-v3 与以下方法进行了比较。我们的 RealESRGAN-AnimeVideo-v3 可以以更快的推理速度获得更好的结果。\n\n- [waifu2x](https://github.com/nihui/waifu2x-ncnn-vulkan). 超参数: `tile=0`, `noiselevel=2`\n- [Real-CUGAN](https://github.com/bilibili/ailab/tree/main/Real-CUGAN): 我们使用了[20220227](https://github.com/bilibili/ailab/releases/tag/Real-CUGAN-add-faster-low-memory-mode)版本, 超参: `cache_mode=0`, `tile=0`, `alpha=1`.\n- 我们的 RealESRGAN-AnimeVideo-v3",
+      "weight": 1.15
+    },
+    {
+      "id": "8f926eac7dee9763e6e3",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "您可能需要**放大**以比较详细信息, 或者**单击图像**以查看完整尺寸。 请注意下面表格的图片是从原图里裁剪patch并且resize后的结果，您可以从\n[Google Drive](https://drive.google.com/drive/folders/1bc_Hje1Nqop9NDkUvci2VACSjL7HZMRp?usp=sharing) 里下载原始的输入和输出。\n\n**更自然的结果，更好的虚化背景恢复**\n\n| 输入 | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |\n|![157083983-bec52c67-9a5e-4eed-afef-01fe6cd2af85_patch](https://user-images.githubusercontent.com/11482921/164452769-5d8cb4f8-1708-42d2-b941-f44a6f136feb.png) | ![](https://user-images.githubusercontent.com/11482921/164452767-c825cdec-f721-4ff1-aef1-fec41f146c4c.png) | ![](https://user-images.githubusercontent.com/11482921/164452755-3be50895-e3d4-432d-a7b9-9085c2a8e771.png) | ![](https://user-images.githubusercontent.com/11482921/164452771-be300656-379a-4323-a755-df8025a8c451.png) |\n|![a0010_patch](https://user-images.githubusercontent.com/11482921/164454047-22eeb493-3fa9-4142-9fc2-6f2a1c074cd5.png) | ![](https://user-images.githubusercontent.com/11482921/164454046-d5e79f8f-00a0-4b55-bc39-295d0d69747a.png) | ![](https://user-images.githubusercontent.com/11482921/164454040-87886b11-9d08-48bd-862f-0d4aed72eb19.png) | ![](https://user-images.githubuserconten",
+      "weight": 1.15
+    },
+    {
+      "id": "1c73cc31210d8e228224",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "t.com/11482921/164454055-73dc9f02-286e-4d5c-8f70-c13742e08f42.png) |\n|![00000044_patch](https://user-images.githubusercontent.com/11482921/164451232-bacf64fc-e55a-44db-afbb-6b31ab0f8973.png) | ![](https://user-images.githubusercontent.com/11482921/164451318-f309b61a-75b8-4b74-b5f3-595725f1cf0b.png) | ![](https://user-images.githubusercontent.com/11482921/164451348-994f8a35-adbe-4a4b-9c61-feaa294af06a.png) | ![](https://user-images.githubusercontent.com/11482921/164451361-9b7d376e-6f75-4648-b752-542b44845d1c.png) |\n\n**更少瑕疵，更好的细节纹理**\n\n| 输入 | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |",
+      "weight": 1.15
+    },
+    {
+      "id": "479368c2dad092675126",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "|![00000053_patch](https://user-images.githubusercontent.com/11482921/164448411-148a7e5c-cfcd-4504-8bc7-e318eb883bb6.png) | ![](https://user-images.githubusercontent.com/11482921/164448633-dfc15224-b6d2-4403-a3c9-4bb819979364.png) | ![](https://user-images.githubusercontent.com/11482921/164448771-0d359509-5293-4d4c-8e3c-86a2a314ea88.png) | ![](https://user-images.githubusercontent.com/11482921/164448848-1a4ff99e-075b-4458-9db7-2c89e8160aa0.png) |\n|![Disney_v4_22_018514_s2_patch](https://user-images.githubusercontent.com/11482921/164451898-83311cdf-bd3e-450f-b9f6-34d7fea3ab79.png) | ![](https://user-images.githubusercontent.com/11482921/164451894-6c56521c-6561-40d6-a3a5-8dde2c167b8a.png) | ![](https://user-images.githubusercontent.com/11482921/164451888-af9b47e3-39dc-4f3e-b0d7-d372d8191e2a.png) | ![](https://user-images.githubusercontent.com/11482921/164451901-31ca4dd4-9847-4baa-8cde-ad50f4053dcf.png) |\n|![Japan_v2_0_007261_s2_patch](https://user-images.githubusercontent.com/11482921/164454578-73c77392-77de-49c5-b03c-c36631723192.png) | ![](https://user-images.githubusercontent.com/11482921/164454574-b1ede5f0-4520-4eaa-8f59-086751a34e62.png) | ![](https://user-images.githubuserconte",
+      "weight": 1.15
+    },
+    {
+      "id": "9c3d746729709091f56d",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "nt.com/11482921/164454567-4cb3fdd8-6a2d-4016-85b2-a305a8ff80e4.png) | ![](https://user-images.githubusercontent.com/11482921/164454583-7f243f20-eca3-4500-ac43-eb058a4a101a.png) |\n|![huluxiongdi_2_patch](https://user-images.githubusercontent.com/11482921/164453482-0726c842-337e-40ec-bf6c-f902ee956a8b.png) | ![](https://user-images.githubusercontent.com/11482921/164453480-71d5e091-5bfa-4c77-9c57-4e37f66ca0a3.png) | ![](https://user-images.githubusercontent.com/11482921/164453468-c295d3c9-3661-45f0-9ecd-406a1877f76e.png) | ![](https://user-images.githubusercontent.com/11482921/164453486-3091887c-587c-450e-b6fe-905cb518d57e.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "0ac86600c6d6243ce652",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "**其他更好的结果**\n\n| 输入 | waifu2x | Real-CUGAN | RealESRGAN<br>AnimeVideo-v3 |\n| :---: | :---:        |     :---:      |  :---:      |\n|![Japan_v2_1_128525_s1_patch](https://user-images.githubusercontent.com/11482921/164454933-67697f7c-b6ef-47dc-bfca-822a78af8acf.png) | ![](https://user-images.githubusercontent.com/11482921/164454931-9450de7c-f0b3-4638-9c1e-0668e0c41ef0.png) | ![](https://user-images.githubusercontent.com/11482921/164454926-ed746976-786d-41c5-8a83-7693cd774c3a.png) | ![](https://user-images.githubusercontent.com/11482921/164454936-8abdf0f0-fb30-40eb-8281-3b46c0bcb9ae.png) |\n|![tianshuqitan_2_patch](https://user-images.githubusercontent.com/11482921/164456948-807c1476-90b6-4507-81da-cb986d01600c.png) | ![](https://user-images.githubusercontent.com/11482921/164456943-25e89de9-d7e5-4f61-a2e1-96786af6ae9e.png) | ![](https://user-images.githubusercontent.com/11482921/164456954-b468c447-59f5-4594-9693-3683e44ba3e6.png) | ![](https://user-images.githubusercontent.com/11482921/164456957-640f910c-3b04-407c-ac20-044d72e19735.png) |\n|![00000051_patch](https://user-images.githubusercontent.com/11482921/164456044-e9a6b3fa-b24e-4eb7-acf9-1f7746551b1e.png) ![00000051_patch](https://use",
+      "weight": 1.15
+    },
+    {
+      "id": "5d745c2390a8df68c3a0",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "结果",
+      "text": "r-images.githubusercontent.com/11482921/164456421-b67245b0-767d-4250-9105-80bbe507ecfc.png) | ![](https://user-images.githubusercontent.com/11482921/164456040-85763cf2-cb28-4ba3-abb6-1dbb48c55713.png) ![](https://user-images.githubusercontent.com/11482921/164456419-59cf342e-bc1e-4044-868c-e1090abad313.png) | ![](https://user-images.githubusercontent.com/11482921/164456031-4244bb7b-8649-4e01-86f4-40c2099c5afd.png) ![](https://user-images.githubusercontent.com/11482921/164456411-b6afcbe9-c054-448d-a6df-96d3ba3047f8.png) | ![](https://user-images.githubusercontent.com/11482921/164456035-12e270be-fd52-46d4-b18a-3d3b680731fe.png) ![](https://user-images.githubusercontent.com/11482921/164456417-dcaa8b62-f497-427d-b2d2-f390f1200fb9.png) |",
+      "weight": 1.15
+    },
+    {
+      "id": "f37a3f6c7fb99f36390c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_comparisons_CN.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "PyTorch",
+      "text": "请注意，我们只报告了**模型推理**的时间, 而忽略了读写硬盘的时间.\n\n| GPU | 输入尺寸 | waifu2x | Real-CUGAN | RealESRGAN-AnimeVideo-v3\n| :---: | :---:         |  :---:        |     :---:      |  :---:      |\n| V100 | 1921 x 1080 | - | 3.4 fps | **10.0** fps |\n| V100 | 1280 x 720 | - | 7.2 fps | **22.6** fps |\n| V100 | 640 x 480 | - | 24.4 fps | **65.9** fps |",
+      "weight": 1.15
+    },
+    {
+      "id": "88612b2c2eb4c3744a83",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Anime Model",
+      "text": ":white_check_mark: We add [*RealESRGAN_x4plus_anime_6B.pth*](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth), which is optimized for **anime** images with much smaller model size.\n\n- [How to Use](#how-to-use)\n  - [PyTorch Inference](#pytorch-inference)\n  - [ncnn Executable File](#ncnn-executable-file)\n- [Comparisons with waifu2x](#comparisons-with-waifu2x)\n- [Comparisons with Sliding Bars](#comparisons-with-sliding-bars)\n\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_1.png\">\n</p>\n\nThe following is a video comparison with sliding bar. You may need to use the full-screen mode for better visual quality, as the original image is large; otherwise, you may encounter aliasing issue.\n\n<https://user-images.githubusercontent.com/17445847/131535127-613250d4-f754-4e20-9720-2f9608ad0675.mp4>",
+      "weight": 1.15
+    },
+    {
+      "id": "9fa43097f42d4398de1c",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "PyTorch Inference",
+      "text": "Pre-trained models: [RealESRGAN_x4plus_anime_6B](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth)\n\n```bash",
+      "weight": 1.15
+    },
+    {
+      "id": "a988edfd9acb86b2f3bb",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "ncnn Executable File",
+      "text": "Download the latest portable [Windows](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip) / [Linux](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip) / [MacOS](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-macos.zip) **executable files for Intel/AMD/Nvidia GPU**.\n\nTaking the Windows as example, run:\n\n```bash\n./realesrgan-ncnn-vulkan.exe -i input.jpg -o output.png -n realesrgan-x4plus-anime\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "4d931f3b91f824cf57cc",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Comparisons with waifu2x",
+      "text": "We compare Real-ESRGAN-anime with [waifu2x](https://github.com/nihui/waifu2x-ncnn-vulkan). We use the `-n 2 -s 4` for waifu2x.\n\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_1.png\">\n</p>\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_2.png\">\n</p>\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_3.png\">\n</p>\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_4.png\">\n</p>\n<p align=\"center\">\n  <img src=\"https://raw.githubusercontent.com/xinntao/public-figures/master/Real-ESRGAN/cmp_realesrgan_anime_5.png\">\n</p>",
+      "weight": 1.15
+    },
+    {
+      "id": "dfaeaa2a0379394e8b38",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Comparisons with Sliding Bars",
+      "text": "The following are video comparisons with sliding bar. You may need to use the full-screen mode for better visual quality, as the original image is large; otherwise, you may encounter aliasing issue.\n\n<https://user-images.githubusercontent.com/17445847/131536647-a2fbf896-b495-4a9f-b1dd-ca7bbc90101a.mp4>\n\n<https://user-images.githubusercontent.com/17445847/131536742-6d9d82b6-9765-4296-a15f-18f9aeaa5465.mp4>",
+      "weight": 1.15
+    },
+    {
+      "id": "ded573272de15016649e",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Anime Video Models",
+      "text": ":white_check_mark: We add small models that are optimized for anime videos :-)<br>\nMore comparisons can be found in [anime_comparisons.md](anime_comparisons.md)\n\n- [How to Use](#how-to-use)\n- [PyTorch Inference](#pytorch-inference)\n- [ncnn Executable File](#ncnn-executable-file)\n  - [Step 1: Use ffmpeg to extract frames from video](#step-1-use-ffmpeg-to-extract-frames-from-video)\n  - [Step 2: Inference with Real-ESRGAN executable file](#step-2-inference-with-real-esrgan-executable-file)\n  - [Step 3: Merge the enhanced frames back into a video](#step-3-merge-the-enhanced-frames-back-into-a-video)\n- [More Demos](#more-demos)\n\n| Models                                                                                                                             | Scale | Description                    |\n| ---------------------------------------------------------------------------------------------------------------------------------- | :---- | :----------------------------- |\n| [realesr-animevideov3](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth) | X4 <sup>1</sup>   | Anime video model with XS size |\n\nNote: <br>\n<sup>1</sup> This model can also",
+      "weight": 1.15
+    },
+    {
+      "id": "6e0cfc2fbbaae7d4b082",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Anime Video Models",
+      "text": "be used for X1, X2, X3.\n\n---\n\nThe following are some demos (best view in the full screen mode).\n\n<https://user-images.githubusercontent.com/17445847/145706977-98bc64a4-af27-481c-8abe-c475e15db7ff.MP4>\n\n<https://user-images.githubusercontent.com/17445847/145707055-6a4b79cb-3d9d-477f-8610-c6be43797133.MP4>\n\n<https://user-images.githubusercontent.com/17445847/145783523-f4553729-9f03-44a8-a7cc-782aadf67b50.MP4>",
+      "weight": 1.15
+    },
+    {
+      "id": "d63a22a93a5d1aed45ce",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "download model",
+      "text": "wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth -P weights",
+      "weight": 1.15
+    },
+    {
+      "id": "c47f789141ae93f384d5",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "single gpu and single process inference",
+      "text": "CUDA_VISIBLE_DEVICES=0 python inference_realesrgan_video.py -i inputs/video/onepiece_demo.mp4 -n realesr-animevideov3 -s 2 --suffix outx2",
+      "weight": 1.15
+    },
+    {
+      "id": "8fcc2d0159ad2caced24",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "single gpu and multi process inference (you can use multi-processing to improve GPU utilization)",
+      "text": "CUDA_VISIBLE_DEVICES=0 python inference_realesrgan_video.py -i inputs/video/onepiece_demo.mp4 -n realesr-animevideov3 -s 2 --suffix outx2 --num_process_per_gpu 2",
+      "weight": 1.15
+    },
+    {
+      "id": "7e76e763fb62d4cc9d05",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "multi gpu and multi process inference",
+      "text": "CUDA_VISIBLE_DEVICES=0,1,2,3 python inference_realesrgan_video.py -i inputs/video/onepiece_demo.mp4 -n realesr-animevideov3 -s 2 --suffix outx2 --num_process_per_gpu 2\n```\n\n```console\nUsage:\n--num_process_per_gpu    The total number of process is num_gpu * num_process_per_gpu. The bottleneck of\n                         the program lies on the IO, so the GPUs are usually not fully utilized. To alleviate\n                         this issue, you can use multi-processing by setting this parameter. As long as it\n                         does not exceed the CUDA memory\n--extract_frame_first    If you encounter ffmpeg error when using multi-processing, you can turn this option on.\n```",
+      "weight": 1.15
+    },
+    {
+      "id": "ea8f5e206e96881a9e95",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 1: Use ffmpeg to extract frames from video",
+      "text": "```bash\nffmpeg -i onepiece_demo.mp4 -qscale:v 1 -qmin 1 -qmax 1 -vsync 0 tmp_frames/frame%08d.png\n```\n\n- Remember to create the folder `tmp_frames` ahead",
+      "weight": 1.15
+    },
+    {
+      "id": "7fc5e3f9d1766d30fe11",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 2: Inference with Real-ESRGAN executable file",
+      "text": "1. Download the latest portable [Windows](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip) / [Linux](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip) / [MacOS](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-macos.zip) **executable files for Intel/AMD/Nvidia GPU**\n\n1. Taking the Windows as example, run:\n\n    ```bash\n    ./realesrgan-ncnn-vulkan.exe -i tmp_frames -o out_frames -n realesr-animevideov3 -s 2 -f jpg\n    ```\n\n    - Remember to create the folder `out_frames` ahead",
+      "weight": 1.15
+    },
+    {
+      "id": "3b3826e5077cdb512f45",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 3: Merge the enhanced frames back into a video",
+      "text": "1. First obtain fps from input videos by\n\n    ```bash\n    ffmpeg -i onepiece_demo.mp4\n    ```\n\n    ```console\n    Usage:\n    -i                   input video path\n    ```\n\n    You will get the output similar to the following screenshot.\n\n    <p align=\"center\">\n        <img src=\"https://user-images.githubusercontent.com/17445847/145710145-c4f3accf-b82f-4307-9f20-3803a2c73f57.png\">\n    </p>\n\n2. Merge frames\n\n    ```bash\n    ffmpeg -r 23.98 -i out_frames/frame%08d.jpg -c:v libx264 -r 23.98 -pix_fmt yuv420p output.mp4\n    ```\n\n    ```console\n    Usage:\n    -i                   input video path\n    -c:v                 video encoder (usually we use libx264)\n    -r                   fps, remember to modify it to meet your needs\n    -pix_fmt             pixel format in video\n    ```\n\n    If you also want to copy audio from the input videos, run:\n\n     ```bash\n    ffmpeg -r 23.98 -i out_frames/frame%08d.jpg -i onepiece_demo.mp4 -map 0:v:0 -map 1:a:0 -c:a copy -c:v libx264 -r 23.98 -pix_fmt yuv420p output_w_audio.mp4\n    ```\n\n    ```console\n    Usage:\n    -i                   input video path, here we use two input streams\n    -c:v                 video encoder (usually we use libx264)",
+      "weight": 1.15
+    },
+    {
+      "id": "106726c48f02ebf04fee",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Step 3: Merge the enhanced frames back into a video",
+      "text": "-r                   fps, remember to modify it to meet your needs\n    -pix_fmt             pixel format in video\n    ```",
+      "weight": 1.15
+    },
+    {
+      "id": "8d0ac56dc57d4afb4d45",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/anime_video_model.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "More Demos",
+      "text": "- Input video for One Piece:\n\n    <https://user-images.githubusercontent.com/17445847/145706822-0e83d9c4-78ef-40ee-b2a4-d8b8c3692d17.mp4>\n\n- Out video for One Piece\n\n    <https://user-images.githubusercontent.com/17445847/164960481-759658cf-fcb8-480c-b888-cecb606e8744.mp4>\n\n**More comparisons**\n\n<https://user-images.githubusercontent.com/17445847/145707458-04a5e9b9-2edd-4d1f-b400-380a72e5f5e6.MP4>",
+      "weight": 1.15
+    },
+    {
+      "id": "c466288bed6960a6a3f7",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/feedback.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "动漫插画模型",
+      "text": "1. 视频处理不了: 目前的模型，不是针对视频的，所以视频效果很很不好。我们在探究针对视频的模型了\n1. 景深虚化有问题: 现在的模型把一些景深 和 特意的虚化 都复原了，感觉不好。这个后面我们会考虑把这个信息结合进入。一个简单的做法是识别景深和虚化，然后作为条件告诉神经网络，哪些地方复原强一些，哪些地方复原要弱一些\n1. 不可以调节: 像 Waifu2X 可以调节。可以根据自己的喜好，做调整，但是 Real-ESRGAN-anime 并不可以。导致有些恢复效果过了\n1. 把原来的风格改变了: 不同的动漫插画都有自己的风格，现在的 Real-ESRGAN-anime 倾向于恢复成一种风格（这是受到训练数据集影响的）。风格是动漫很重要的一个要素，所以要尽可能保持\n1. 模型太大: 目前的模型处理太慢，能够更快。这个我们有相关的工作在探究，希望能够尽快有结果，并应用到 Real-ESRGAN 这一系列的模型上\n\nThanks for the [detailed and valuable feedbacks/suggestions](https://github.com/xinntao/Real-ESRGAN/issues/131) by [2ji3150](https://github.com/2ji3150).",
+      "weight": 1.15
+    },
+    {
+      "id": "c35cbcaf19961075c3b1",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": ":european_castle: Model Zoo",
+      "text": "- [For General Images](#for-general-images)\n- [For Anime Images](#for-anime-images)\n- [For Anime Videos](#for-anime-videos)\n\n---",
+      "weight": 1.15
+    },
+    {
+      "id": "58ce68fdfbdccc252185",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "For General Images",
+      "text": "| Models                                                                                                                          | Scale | Description                                  |\n| ------------------------------------------------------------------------------------------------------------------------------- | :---- | :------------------------------------------- |\n| [RealESRGAN_x4plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth)                      | X4    | X4 model for general images                  |\n| [RealESRGAN_x2plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth)                      | X2    | X2 model for general images                  |\n| [RealESRNet_x4plus](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth)                      | X4    | X4 model with MSE loss (over-smooth effects) |\n| [official ESRGAN_x4](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/ESRGAN_SRx4_DF2KOST_official-ff704c30.pth) | X4    | official ESRGAN model                        |\n| [realesr-general-x4v3](https://github.com/xinntao/Real-ESRGAN/releases/downl",
+      "weight": 1.15
+    },
+    {
+      "id": "7b00143aa25e9f34eb43",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "For General Images",
+      "text": "oad/v0.2.5.0/realesr-general-x4v3.pth) | X4 (can also be used for X1, X2, X3) | A tiny small model (consume much fewer GPU memory and time); not too strong deblur and denoise capacity |\n\nThe following models are **discriminators**, which are usually used for fine-tuning.\n\n| Models                                                                                                                 | Corresponding model |\n| ---------------------------------------------------------------------------------------------------------------------- | :------------------ |\n| [RealESRGAN_x4plus_netD](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x4plus_netD.pth) | RealESRGAN_x4plus   |",
+      "weight": 1.15
+    },
+    {
+      "id": "af888b16fb7dc9037d01",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "For General Images",
+      "text": "| [RealESRGAN_x2plus_netD](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.3/RealESRGAN_x2plus_netD.pth) | RealESRGAN_x2plus   |",
+      "weight": 1.15
+    },
+    {
+      "id": "bfe8b1f37df0cfdd8792",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "For Anime Images / Illustrations",
+      "text": "| Models                                                                                                                         | Scale | Description                                                 |\n| ------------------------------------------------------------------------------------------------------------------------------ | :---- | :---------------------------------------------------------- |\n| [RealESRGAN_x4plus_anime_6B](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth) | X4    | Optimized for anime images; 6 RRDB blocks (smaller network) |\n\nThe following models are **discriminators**, which are usually used for fine-tuning.\n\n| Models                                                                                                                                   | Corresponding model        |\n| ---------------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |\n| [RealESRGAN_x4plus_anime_6B_netD](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B_netD.pth) | RealESRGAN_x4plus_anime_6B |",
+      "weight": 1.15
+    },
+    {
+      "id": "61f0eb13bab28cac5404",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/model_zoo.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "For Animation Videos",
+      "text": "| Models                                                                                                                             | Scale | Description                    |\n| ---------------------------------------------------------------------------------------------------------------------------------- | :---- | :----------------------------- |\n| [realesr-animevideov3](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth) | X4<sup>1</sup>    | Anime video model with XS size |\n\nNote: <br>\n<sup>1</sup> This model can also be used for X1, X2, X3.\n\nThe following models are **discriminators**, which are usually used for fine-tuning.\n\nTODO",
+      "weight": 1.15
+    },
+    {
+      "id": "639dd1da346aab78d72e",
+      "source": "xinntao/Real-ESRGAN",
+      "ref": "a4abfb2979a7",
+      "path": "docs/ncnn_conversion.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "image-upscaling",
+        "super-resolution",
+        "restoration",
+        "media"
+      ],
+      "heading": "Instructions on converting to NCNN models",
+      "text": "1. Convert to onnx model with `scripts/pytorch2onnx.py`. Remember to modify codes accordingly\n1. Convert onnx model to ncnn model\n    1. `cd ncnn-master\\ncnn\\build\\tools\\onnx`\n    1. `onnx2ncnn.exe realesrgan-x4.onnx realesrgan-x4-raw.param realesrgan-x4-raw.bin`\n1. Optimize ncnn model\n    1. fp16 mode\n        1. `cd ncnn-master\\ncnn\\build\\tools`\n        1. `ncnnoptimize.exe realesrgan-x4-raw.param realesrgan-x4-raw.bin realesrgan-x4.param realesrgan-x4.bin 1`\n1. Modify the blob name in `realesrgan-x4.param`: `data` and `output`",
+      "weight": 1.15
+    },
+    {
+      "id": "29c7232b7edac964c52c",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "[Jingyun Liang](https://jingyunliang.github.io), [Jiezhang Cao](https://www.jiezhangcao.com/), [Guolei Sun](https://vision.ee.ethz.ch/people-details.MjYzMjMw.TGlzdC8zMjg5LC0xOTcxNDY1MTc4.html), [Kai Zhang](https://cszn.github.io/), [Luc Van Gool](https://scholar.google.com/citations?user=TwMib_QAAAAJ&hl=en), [Radu Timofte](http://people.ee.ethz.ch/~timofter/)\n\nComputer Vision Lab, ETH Zurich\n\n---\n\n[![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2108.10257)\n[![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/SwinIR?style=social)](https://github.com/JingyunLiang/SwinIR)\n[![download](https://img.shields.io/github/downloads/JingyunLiang/SwinIR/total.svg)](https://github.com/JingyunLiang/SwinIR/releases)\n![visitors](https://visitor-badge.glitch.me/badge?page_id=jingyunliang/SwinIR)\n[ <a href=\"https://colab.research.google.com/gist/JingyunLiang/a5e3e54bc9ef8d7bf594f6fee8208533/swinir-demo-on-real-world-image-sr.ipynb\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"google colab logo\"></a>](https://colab.research.google.com/gist/JingyunLiang/a5e3e54bc9ef8d7bf594f6fee8208533/swinir-demo-on-real-world-image-sr.ipy",
+      "weight": 1.08
+    },
+    {
+      "id": "09588b4fd23245ba30be",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "nb)\n<a href=\"https://replicate.ai/jingyunliang/swinir\"><img src=\"https://img.shields.io/static/v1?label=Replicate&message=Demo and Docker Image&color=blue\"></a>\n[![PlayTorch Demo](https://github.com/facebookresearch/playtorch/blob/main/website/static/assets/playtorch_badge.svg)](https://playtorch.dev/snack/@playtorch/swinir/)\n[Gradio Web Demo](https://huggingface.co/spaces/akhaliq/SwinIR)\n\nThis repository is the official PyTorch implementation of SwinIR: Image Restoration Using Shifted Window Transformer\n([arxiv](https://arxiv.org/pdf/2108.10257.pdf), [supp](https://github.com/JingyunLiang/SwinIR/releases), [pretrained models](https://github.com/JingyunLiang/SwinIR/releases), [visual results](https://github.com/JingyunLiang/SwinIR/releases)). SwinIR achieves **state-of-the-art performance** in",
+      "weight": 1.08
+    },
+    {
+      "id": "b5bedc66cc7422601278",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "- bicubic/lighweight/real-world image SR\n- grayscale/color image denoising\n- grayscale/color JPEG compression artifact reduction\n\n</br>\n\n:rocket:  :rocket:  :rocket: **News**:\n- **Aug. 16, 2022**: Add PlayTorch Demo on running the real-world image SR model on mobile devices [![PlayTorch Demo](https://github.com/facebookresearch/playtorch/blob/main/website/static/assets/playtorch_badge.svg)](https://playtorch.dev/snack/@playtorch/swinir/).\n- **Aug. 01, 2022**: Add pretrained models and results on JPEG compression artifact reduction for color images.\n- **Jun. 10, 2022**: See our work on video restoration :fire::fire::fire: [VRT: A Video Restoration Transformer](https://github.com/JingyunLiang/VRT)\n[![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/VRT?style=social)](https://github.com/JingyunLiang/VRT)\n[![download](https://img.shields.io/github/downloads/JingyunLiang/VRT/total.svg)](https://github.com/JingyunLiang/VRT/releases)\nand [RVRT: Recurrent Video Restoration Transformer](https://github.com/JingyunLiang/RVRT)\n[![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/RVRT?style=social)](https://github.com/JingyunLiang/RVRT)\n[![download](https://img.shield",
+      "weight": 1.08
+    },
+    {
+      "id": "4657eed6ae078a384ae6",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "s.io/github/downloads/JingyunLiang/RVRT/total.svg)](https://github.com/JingyunLiang/RVRT/releases)\nfor video SR, video deblurring, video denoising, video frame interpolation and space-time video SR.\n- **Sep. 07, 2021**: We provide an interactive online Colab demo for real-world image SR <a href=\"https://colab.research.google.com/gist/JingyunLiang/a5e3e54bc9ef8d7bf594f6fee8208533/swinir-demo-on-real-world-image-sr.ipynb\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"google colab logo\"></a>:fire: for comparison with [the first practical degradation model BSRGAN (ICCV2021) ![GitHub Stars](https://img.shields.io/github/stars/cszn/BSRGAN?style=social)](https://github.com/cszn/BSRGAN) and a recent model RealESRGAN. Try to super-resolve your own images on Colab!",
+      "weight": 1.08
+    },
+    {
+      "id": "d3285433181164d6fda6",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "|Real-World Image (x4)|[BSRGAN, ICCV2021](https://github.com/cszn/BSRGAN)|[Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)|SwinIR (ours)|SwinIR-Large (ours)|\n|       :---       |     :---:        |        :-----:         |        :-----:         |        :-----:         |\n| <img width=\"200\" src=\"figs/ETH_LR.png\">|<img width=\"200\" src=\"figs/ETH_BSRGAN.png\">|<img width=\"200\" src=\"figs/ETH_realESRGAN.jpg\">|<img width=\"200\" src=\"figs/ETH_SwinIR.png\">|<img width=\"200\" src=\"figs/ETH_SwinIR-L.png\">\n|<img width=\"200\" src=\"figs/OST_009_crop_LR.png\">|<img width=\"200\" src=\"figs/OST_009_crop_BSRGAN.png\">|<img width=\"200\" src=\"figs/OST_009_crop_realESRGAN.png\">|<img width=\"200\" src=\"figs/OST_009_crop_SwinIR.png\">|<img width=\"200\" src=\"figs/OST_009_crop_SwinIR-L.png\">|\n\n - ***Aug. 26, 2021**: See our recent work on [real-world image SR: a pratical degrdation model BSRGAN, ICCV2021](https://github.com/cszn/BSRGAN)\n[![GitHub Stars](https://img.shields.io/github/stars/cszn/BSRGAN?style=social)](https://github.com/cszn/BSRGAN)*\n - ***Aug. 26, 2021**: See our recent work on [generative modelling of image SR and image rescaling: normalizing-flow-based HCFlow, ICCV2021](https://github.com/JingyunL",
+      "weight": 1.08
+    },
+    {
+      "id": "6aec80b128c37468b944",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "iang/HCFlow)\n[![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/HCFlow?style=social)](https://github.com/JingyunLiang/HCFlow)[ <a href=\"https://colab.research.google.com/gist/JingyunLiang/cdb3fef89ebd174eaa43794accb6f59d/hcflow-demo-on-x8-face-image-sr.ipynb\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"google colab logo\"></a>](https://colab.research.google.com/gist/JingyunLiang/cdb3fef89ebd174eaa43794accb6f59d/hcflow-demo-on-x8-face-image-sr.ipynb)*\n - ***Aug. 26, 2021**: See our recent work on [blind SR: spatially variant kernel estimation (MANet, ICCV2021)](https://github.com/JingyunLiang/MANet) [![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/MANet?style=social)](https://github.com/JingyunLiang/MANet)",
+      "weight": 1.08
+    },
+    {
+      "id": "cfdb43bf9e89ed2d8b99",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "[ <a href=\"https://colab.research.google.com/gist/JingyunLiang/4ed2524d6e08343710ee408a4d997e1c/manet-demo-on-spatially-variant-kernel-estimation.ipynb\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"google colab logo\"></a>](https://colab.research.google.com/gist/JingyunLiang/4ed2524d6e08343710ee408a4d997e1c/manet-demo-on-spatially-variant-kernel-estimation.ipynb) and [unsupervised kernel estimation (FKP, CVPR2021)](https://github.com/JingyunLiang/FKP)\n[![GitHub Stars](https://img.shields.io/github/stars/JingyunLiang/FKP?style=social)](https://github.com/JingyunLiang/FKP)*\n\n---\n\n> Image restoration is a long-standing low-level vision problem that aims to restore high-quality images from low-quality images (e.g., downscaled, noisy and compressed images). While state-of-the-art image restoration methods are based on convolutional neural networks, few attempts have been made with Transformers which show impressive performance on high-level vision tasks. In this paper, we propose a strong baseline model SwinIR for image restoration based on the Swin Transformer. SwinIR consists of three parts: shallow feature extraction, deep feature extraction and high-qualit",
+      "weight": 1.08
+    },
+    {
+      "id": "b5b8c67c3e4536d42a9b",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "SwinIR: Image Restoration Using Swin Transformer",
+      "text": "y image reconstruction. In particular, the deep feature extraction module is composed of several residual Swin Transformer blocks (RSTB), each of which has several Swin Transformer layers together with a residual connection. We conduct experiments on three representative tasks: image super-resolution (including classical, lightweight and real-world image super-resolution), image denoising (including grayscale and color image denoising) and JPEG compression artifact reduction. Experimental results demonstrate that SwinIR outperforms state-of-the-art methods on different tasks by up to 0.14~0.45dB, while the total number of parameters can be reduced by up to 67%.",
+      "weight": 1.08
+    },
+    {
+      "id": "098eec8a6bbc1cad0f25",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Contents",
+      "text": "1. [Training](#Training)\n1. [Testing](#Testing)\n1. [Results](#Results)\n1. [Citation](#Citation)\n1. [License and Acknowledgement](#License-and-Acknowledgement)",
+      "weight": 1.08
+    },
+    {
+      "id": "05a68fd6255e7cf53cb8",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "Used training and testing sets can be downloaded as follows:\n\n| Task                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Training Set                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Testing Set|    Visual Resul",
+      "weight": 1.08
+    },
+    {
+      "id": "c57cd724894699604133",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "ts |\n|:----------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|     :---:      |   :---:      |",
+      "weight": 1.08
+    },
+    {
+      "id": "5472ea9bfe6ec222d1ee",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "| classical/lightweight image SR                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                               [DIV2K](https://cv.snu.ac.kr/research/EDSR/DIV2K.tar) (800 training images) or DIV2K +[Flickr2K](https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar) (2650 images)                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Set5 + Set14 + BSD100 + Urban100 + Manga109 [download all](https://drive.google.com/drive/",
+      "weight": 1.08
+    },
+    {
+      "id": "bda17245be7bf33076cf",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "folders/1B3DJGQKB6eNdwuQIhdskA64qUuVKLZ9u) | [here](https://github.com/JingyunLiang/SwinIR/releases) |\n| real-world image SR                                 | SwinIR-M (middle size): [DIV2K](https://cv.snu.ac.kr/research/EDSR/DIV2K.tar) (800 training images) +[Flickr2K](https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar) (2650 images) + [OST](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/datasets/OST_dataset.zip) ([alternative link](https://drive.google.com/drive/folders/1iZfzAxAwOpeutz27HC56_y5RNqnsPPKr), 10324 images for sky,water,grass,mountain,building,plant,animal) <br /> SwinIR-L (large size): DIV2K + Flickr2K + OST + [WED](http://ivc.uwaterloo.ca/database/WaterlooExploration/exploration_database_and_code.rar)(4744 images) + [FFHQ](https://drive.google.com/drive/folders/1tZUcXDBeOibC6jcMCtgRRz67pzrAHeHL) (first 2000 images, face) + Manga109 (manga) + [SCUT-CTW1500](https://universityofadelaide.box.com/shared/static/py5uwlfyyytbb2pxzq9czvu6fuqbjdh8.zip) (first 100 training images, texts) <br /><br />  ***We use the pionnerring practical degradation model from [BSRGAN, ICCV2021  ![GitHub Stars](https://img.shields.io/github/stars/cszn/BSRGAN?style=social)](https://github.com/cszn",
+      "weight": 1.08
+    },
+    {
+      "id": "0dcfc7ec11ccc966b926",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "/BSRGAN)** | [RealSRSet+5images](https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/RealSRSet+5images.zip) |  [here](https://github.com/JingyunLiang/SwinIR/releases) |",
+      "weight": 1.08
+    },
+    {
+      "id": "3c7e77a95569266c8c73",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "| color/grayscale image denoising                     |                                                                                                                                                                                                                                                                                                             [DIV2K](https://cv.snu.ac.kr/research/EDSR/DIV2K.tar) (800 training images) + [Flickr2K](https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar) (2650 images) + [BSD500](http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz) (400 training&testing images) + [WED](http://ivc.uwaterloo.ca/database/WaterlooExploration/exploration_database_and_code.rar)(4744 images)  <br /><br />  *BSD68/BSD100 images are not used in training.                                                                                                                                                                                                                                                                                                              |  grayscale: Set12 + BSD68 + Urban100 <br />  color: CBSD68 + Kodak24 + McMaster + Urban100",
+      "weight": 1.08
+    },
+    {
+      "id": "8ed836c68d127eac8956",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "[download all](https://github.com/cszn/FFDNet/tree/master/testsets) |  [here](https://github.com/JingyunLiang/SwinIR/releases) |\n| grayscale/color JPEG compression artifact reduction |                                                                                                                                                                                                                                                                                                                                            [DIV2K](https://cv.snu.ac.kr/research/EDSR/DIV2K.tar) (800 training images) + [Flickr2K](https://cv.snu.ac.kr/research/EDSR/Flickr2K.tar) (2650 images) + [BSD500](http://www.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/BSR_bsds500.tgz) (400 training&testing images) + [WED](http://ivc.uwaterloo.ca/database/WaterlooExploration/exploration_database_and_code.rar)(4744 images)",
+      "weight": 1.08
+    },
+    {
+      "id": "742c99e8b2a2ef2e66aa",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "|  grayscale: Classic5 +LIVE1 [download all](https://github.com/cszn/DnCNN/tree/master/testsets) | [here](https://github.com/JingyunLiang/SwinIR/releases) |",
+      "weight": 1.08
+    },
+    {
+      "id": "19e80aa9aa736e078dcf",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "<!--\n| Task                 | Training Set | Testing Set|        Pretrained Model and Visual Results of SwinIR     |\n| :---                 | :---:        |     :---:      |:---:      |\n| image denoising (real)      | [SIDD-Medium-sRGB](https://www.eecs.yorku.ca/~kamel/sidd/dataset.php) (320 images, [preprocess]()) + [RENOIR](http://ani.stat.fsu.edu/~abarbu/Renoir.html) (221 images, [preprocess](https://github.com/zsyOAOA/DANet/blob/master/datasets/preparedata/Renoir_big2small_all.py)) + [Poly](https://github.com/csjunxu/PolyU-Real-World-Noisy-Images-Dataset) (40 images in ./OriginalImages) |    [SIDD validation set](https://drive.google.com/drive/folders/1S44fHXaVxAYW3KLNxK41NYCnyX9S79su) (1280 patches, identical to official [.mat](https://www.eecs.yorku.ca/~kamel/sidd/benchmark.php) version) +  [DND](https://noise.visinf.tu-darmstadt.de/downloads/) (pre-defined 100 patches of 50 images, [online eval](https://noise.visinf.tu-darmstadt.de/submit/)) + [Nam](https://www.dropbox.com/s/24kds7c436i5i11/real_image_noise_dataset.zip?dl=0) (random 100 patches of 17 images, [preprocess](https://github.com/zsyOAOA/DANet/blob/master/datasets/preparedata/Nam_patch_prepare.py))|[download model]",
+      "weight": 1.08
+    },
+    {
+      "id": "ee80f97ea8c0b6b32069",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "() [download results]() |\n| image deblurring (synthetic)   | [GoPro](https://drive.google.com/drive/folders/1AsgIP9_X0bg0olu2-1N6karm2x15cJWE) (2103 training images)  |  [GoPro](https://drive.google.com/drive/folders/1a2qKfXWpNuTGOm2-Jex8kfNSzYJLbqkf) (1111 images) + [HIDE](https://drive.google.com/drive/folders/1nRsTXj4iTUkTvBhTcGg8cySK8nd3vlhK) (2050 images) + [RealBlur_J](https://drive.google.com/drive/folders/1KYtzeKCiDRX9DSvC-upHrCqvC4sPAiJ1) (real blur, 980 images) + [RealBlur_R](https://drive.google.com/drive/folders/1EwDoajf5nStPIAcU4s9rdc8SPzfm3tW1) (real blur, 980 images) | [download model]() [download results]()|",
+      "weight": 1.08
+    },
+    {
+      "id": "e7059dcee2407ce48cd7",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Training",
+      "text": "| image deraining (synthetic)  | [Multiple datasets](https://drive.google.com/drive/folders/1Hnnlc5kI0v9_BtfMytC2LR5VpLAFZtVe) (13711 training images, see Table 1 of [MPRNet](https://github.com/swz30/MPRNet) for details.)  |  Rain100H (100 images) + Rain100L (100 images) + Test100 (100 images) + Test2800 (2800 images) + Test1200 (1200 images), [download all](https://drive.google.com/drive/folders/1PDWggNh8ylevFmrjo-JEvlmqsDlWWvZs)  | [download model]() [download results]()|\n\nNote: above datasets may come from the official release or some awesome collections ([BasicSR](https://github.com/xinntao/BasicSR), [MPRNet](https://github.com/swz30/MPRNet)).\n\n-->\n\nThe training code is at [KAIR](https://github.com/cszn/KAIR/blob/master/docs/README_SwinIR.md).",
+      "weight": 1.08
+    },
+    {
+      "id": "5a93631cd3f325c1c9e2",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Testing (without preparing datasets)",
+      "text": "For your convience, we provide some example datasets (~20Mb) in `/testsets`.\nIf you just want codes, downloading `models/network_swinir.py`, `utils/util_calculate_psnr_ssim.py` and `main_test_swinir.py` is enough.\nFollowing commands will download [pretrained models](https://github.com/JingyunLiang/SwinIR/releases) **automatically** and put them in `model_zoo/swinir`.\n**[All visual results of SwinIR can be downloaded here](https://github.com/JingyunLiang/SwinIR/releases)**.\n\nWe also provide an [online Colab demo for real-world image SR  <a href=\"https://colab.research.google.com/gist/JingyunLiang/a5e3e54bc9ef8d7bf594f6fee8208533/swinir-demo-on-real-world-image-sr.ipynb\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"google colab logo\"></a>](https://colab.research.google.com/gist/JingyunLiang/a5e3e54bc9ef8d7bf594f6fee8208533/swinir-demo-on-real-world-image-sr.ipynb) for comparison with [the first practical degradation model BSRGAN (ICCV2021)  ![GitHub Stars](https://img.shields.io/github/stars/cszn/BSRGAN?style=social)](https://github.com/cszn/BSRGAN) and a recent model [RealESRGAN](https://github.com/xinntao/Real-ESRGAN). Try to test your own images on Cola",
+      "weight": 1.08
+    },
+    {
+      "id": "3e82ed0b2d6a935507cc",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Testing (without preparing datasets)",
+      "text": "b!\n\nWe provide a PlayTorch demo [![PlayTorch Demo](https://github.com/facebookresearch/playtorch/blob/main/website/static/assets/playtorch_badge.svg)](https://playtorch.dev/snack/@playtorch/swinir/) for real-world image SR to showcase how to run the SwinIR model in mobile application built with React Native.\n\n```bash",
+      "weight": 1.08
+    },
+    {
+      "id": "8e79cff51c2c19fc830c",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "(setting1: when model is trained on DIV2K and with training_patch_size=48)",
+      "text": "python main_test_swinir.py --task classical_sr --scale 2 --training_patch_size 48 --model_path model_zoo/swinir/001_classicalSR_DIV2K_s48w8_SwinIR-M_x2.pth --folder_lq testsets/Set5/LR_bicubic/X2 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 3 --training_patch_size 48 --model_path model_zoo/swinir/001_classicalSR_DIV2K_s48w8_SwinIR-M_x3.pth --folder_lq testsets/Set5/LR_bicubic/X3 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 4 --training_patch_size 48 --model_path model_zoo/swinir/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth --folder_lq testsets/Set5/LR_bicubic/X4 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 8 --training_patch_size 48 --model_path model_zoo/swinir/001_classicalSR_DIV2K_s48w8_SwinIR-M_x8.pth --folder_lq testsets/Set5/LR_bicubic/X8 --folder_gt testsets/Set5/HR",
+      "weight": 1.08
+    },
+    {
+      "id": "71805b4832c76b45d95c",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "(setting2: when model is trained on DIV2K+Flickr2K and with training_patch_size=64)",
+      "text": "python main_test_swinir.py --task classical_sr --scale 2 --training_patch_size 64 --model_path model_zoo/swinir/001_classicalSR_DF2K_s64w8_SwinIR-M_x2.pth --folder_lq testsets/Set5/LR_bicubic/X2 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 3 --training_patch_size 64 --model_path model_zoo/swinir/001_classicalSR_DF2K_s64w8_SwinIR-M_x3.pth --folder_lq testsets/Set5/LR_bicubic/X3 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 4 --training_patch_size 64 --model_path model_zoo/swinir/001_classicalSR_DF2K_s64w8_SwinIR-M_x4.pth --folder_lq testsets/Set5/LR_bicubic/X4 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task classical_sr --scale 8 --training_patch_size 64 --model_path model_zoo/swinir/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth --folder_lq testsets/Set5/LR_bicubic/X8 --folder_gt testsets/Set5/HR",
+      "weight": 1.08
+    },
+    {
+      "id": "1d8c6a01f844a28b2faa",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "002 Lightweight Image Super-Resolution (small size)",
+      "text": "python main_test_swinir.py --task lightweight_sr --scale 2 --model_path model_zoo/swinir/002_lightweightSR_DIV2K_s64w8_SwinIR-S_x2.pth --folder_lq testsets/Set5/LR_bicubic/X2 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task lightweight_sr --scale 3 --model_path model_zoo/swinir/002_lightweightSR_DIV2K_s64w8_SwinIR-S_x3.pth --folder_lq testsets/Set5/LR_bicubic/X3 --folder_gt testsets/Set5/HR\npython main_test_swinir.py --task lightweight_sr --scale 4 --model_path model_zoo/swinir/002_lightweightSR_DIV2K_s64w8_SwinIR-S_x4.pth --folder_lq testsets/Set5/LR_bicubic/X4 --folder_gt testsets/Set5/HR",
+      "weight": 1.08
+    },
+    {
+      "id": "89ad0afbfffe3f6cf574",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "(middle size)",
+      "text": "python main_test_swinir.py --task real_sr --scale 4 --model_path model_zoo/swinir/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x4_GAN.pth --folder_lq testsets/RealSRSet+5images --tile",
+      "weight": 1.08
+    },
+    {
+      "id": "57d9ffd1c45f74c2d4e6",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "(larger size + trained on more datasets)",
+      "text": "python main_test_swinir.py --task real_sr --scale 4 --large_model --model_path model_zoo/swinir/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth --folder_lq testsets/RealSRSet+5images",
+      "weight": 1.08
+    },
+    {
+      "id": "b73af62b42c14dd2d61a",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "004 Grayscale Image Deoising (middle size)",
+      "text": "python main_test_swinir.py --task gray_dn --noise 15 --model_path model_zoo/swinir/004_grayDN_DFWB_s128w8_SwinIR-M_noise15.pth --folder_gt testsets/Set12\npython main_test_swinir.py --task gray_dn --noise 25 --model_path model_zoo/swinir/004_grayDN_DFWB_s128w8_SwinIR-M_noise25.pth --folder_gt testsets/Set12\npython main_test_swinir.py --task gray_dn --noise 50 --model_path model_zoo/swinir/004_grayDN_DFWB_s128w8_SwinIR-M_noise50.pth --folder_gt testsets/Set12",
+      "weight": 1.08
+    },
+    {
+      "id": "b6c9272696ce11c1290c",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "005 Color Image Deoising (middle size)",
+      "text": "python main_test_swinir.py --task color_dn --noise 15 --model_path model_zoo/swinir/005_colorDN_DFWB_s128w8_SwinIR-M_noise15.pth --folder_gt testsets/McMaster\npython main_test_swinir.py --task color_dn --noise 25 --model_path model_zoo/swinir/005_colorDN_DFWB_s128w8_SwinIR-M_noise25.pth --folder_gt testsets/McMaster\npython main_test_swinir.py --task color_dn --noise 50 --model_path model_zoo/swinir/005_colorDN_DFWB_s128w8_SwinIR-M_noise50.pth --folder_gt testsets/McMaster",
+      "weight": 1.08
+    },
+    {
+      "id": "1d79b0823a8790b3795d",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "grayscale",
+      "text": "python main_test_swinir.py --task jpeg_car --jpeg 10 --model_path model_zoo/swinir/006_CAR_DFWB_s126w7_SwinIR-M_jpeg10.pth --folder_gt testsets/classic5\npython main_test_swinir.py --task jpeg_car --jpeg 20 --model_path model_zoo/swinir/006_CAR_DFWB_s126w7_SwinIR-M_jpeg20.pth --folder_gt testsets/classic5\npython main_test_swinir.py --task jpeg_car --jpeg 30 --model_path model_zoo/swinir/006_CAR_DFWB_s126w7_SwinIR-M_jpeg30.pth --folder_gt testsets/classic5\npython main_test_swinir.py --task jpeg_car --jpeg 40 --model_path model_zoo/swinir/006_CAR_DFWB_s126w7_SwinIR-M_jpeg40.pth --folder_gt testsets/classic5",
+      "weight": 1.08
+    },
+    {
+      "id": "42a2350957c761721664",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "color",
+      "text": "python main_test_swinir.py --task color_jpeg_car --jpeg 10 --model_path model_zoo/swinir/006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg10.pth --folder_gt testsets/LIVE1\npython main_test_swinir.py --task color_jpeg_car --jpeg 20 --model_path model_zoo/swinir/006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg20.pth --folder_gt testsets/LIVE1\npython main_test_swinir.py --task color_jpeg_car --jpeg 30 --model_path model_zoo/swinir/006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg30.pth --folder_gt testsets/LIVE1\npython main_test_swinir.py --task color_jpeg_car --jpeg 40 --model_path model_zoo/swinir/006_colorCAR_DFWB_s126w7_SwinIR-M_jpeg40.pth --folder_gt testsets/LIVE1\n\n```\n\n---",
+      "weight": 1.08
+    },
+    {
+      "id": "82f795ea0fae0a6a2767",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "We achieved state-of-the-art performance on classical/lightweight/real-world image SR, grayscale/color image denoising and JPEG compression artifact reduction. Detailed results can be found in the [paper](https://arxiv.org/abs/2108.10257). All visual results of SwinIR can be downloaded [here](https://github.com/JingyunLiang/SwinIR/releases).\n\n<details>\n<summary>Classical Image Super-Resolution (click me)</summary>\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/classic_image_sr.png\">\n  <img width=\"900\" src=\"figs/classic_image_sr_visual.png\">\n</p>\n\n- More detailed comparison between SwinIR and a representative CNN-based model RCAN (classical image SR, X4)\n\n| Method             | Training Set    |  Training time  <br /> (8GeForceRTX2080Ti <br /> batch=32, iter=500k) |Y-PSNR/Y-SSIM <br /> on Manga109 | Run time  <br /> (1GeForceRTX2080Ti,<br /> on 256x256 LR image)* |  #Params   | #FLOPs |  Testing memory |\n| :---      | :---:        |        :-----:         |     :---:      |     :---:      |     :---:      |   :---:      |  :---:      |\n| RCAN | DIV2K | 1.6 days | 31.22/0.9173 | 0.180s | 15.6M | 850.6G | 593.1M |\n| SwinIR | DIV2K | 1.8 days |31.67/0.9226 | 0.539s | 11.9M | 788.6G |",
+      "weight": 1.08
+    },
+    {
+      "id": "20df32659c353418fe95",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "986.8M |\n\n\\* We re-test the runtime when the GPU is idle. We refer to the evluation code [here](https://github.com/cszn/KAIR/blob/master/main_challenge_sr.py).\n\n\n- Results on DIV2K-validation (100 images)\n\n|  Training Set | scale factor | PSNR (RGB) | PSNR (Y) | SSIM (RGB)  | SSIM (Y) |\n| :--- | :---: | :---:        |     :---:      | :---: | :---:        |\n|  DIV2K (800 images) | 2 | 35.25 | 36.77 | 0.9423 | 0.9500 |\n|  DIV2K+Flickr2K (2650 images) | 2 | 35.34 | 36.86 | 0.9430 |0.9507 |\n|  DIV2K (800 images) | 3 | 31.50 | 32.97 | 0.8832 |0.8965 |\n|  DIV2K+Flickr2K (2650 images) | 3 | 31.63 | 33.10 | 0.8854 |0.8985 |",
+      "weight": 1.08
+    },
+    {
+      "id": "5145a06e2f2e732feef2",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Results",
+      "text": "|  DIV2K (800 images) | 4 | 29.48 | 30.94 | 0.8311|0.8492 |\n|  DIV2K+Flickr2K (2650 images) | 4 | 29.63 | 31.08 | 0.8347|0.8523 |\n\n</details>\n\n<details>\n<summary>Lightweight Image Super-Resolution</summary>\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/lightweight_image_sr.png\">\n</p>\n</details>\n\n<details>\n<summary>Real-World Image Super-Resolution</summary>\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/real_world_image_sr.png\">\n</p>\n</details>\n\n<details>\n<summary>Grayscale Image Deoising</summary>\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/gray_image_denoising.png\">\n</p>\n</details>\n\n<details>\n<summary>Color Image Deoising</summary>\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/color_image_denoising.png\">\n</p>\n</details>\n\n<details>\n<summary>JPEG Compression Artifact Reduction</summary>\n\non grayscale images\n<p align=\"center\">\n  <img width=\"900\" src=\"figs/jepg_compress_artfact_reduction.png\">\n</p>\n\non color images\n\n| Training Set | quality factor | PSNR (RGB) | PSNR-B (RGB) | SSIM (RGB) |\n|:-------------|:--------------:|:----------:|:------------:|:----------:|\n| LIVE1        |       10       |   28.06    |    27.76     |   0.8089   |\n| LIVE1        |       20       |   30",
+      "weight": 1.08
+    },
+    {
+      "id": "6da87fc6c6bf7340c608",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Results",
+      "text": ".45    |    29.97     |   0.8741   |\n| LIVE1        |       30       |   31.82    |    31.24     |   0.9018   |\n| LIVE1        |       40       |   32.75    |    32.12     |   0.9174   |\n</details>",
+      "weight": 1.08
+    },
+    {
+      "id": "ae2d4bdb64515522f0bc",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "Citation",
+      "text": "@article{liang2021swinir,\n      title={SwinIR: Image Restoration Using Swin Transformer},\n      author={Liang, Jingyun and Cao, Jiezhang and Sun, Guolei and Zhang, Kai and Van Gool, Luc and Timofte, Radu},\n      journal={arXiv preprint arXiv:2108.10257},\n      year={2021}\n    }",
+      "weight": 1.08
+    },
+    {
+      "id": "b210a91d5f9166110f6d",
+      "source": "JingyunLiang/SwinIR",
+      "ref": "6545850fbf8d",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "image-restoration",
+        "super-resolution",
+        "denoise",
+        "media"
+      ],
+      "heading": "License and Acknowledgement",
+      "text": "This project is released under the Apache 2.0 license. The codes are based on [Swin Transformer](https://github.com/microsoft/Swin-Transformer) and [KAIR](https://github.com/cszn/KAIR). Please also follow their licenses. Thanks for their awesome works.",
+      "weight": 1.08
     }
   ]
 }

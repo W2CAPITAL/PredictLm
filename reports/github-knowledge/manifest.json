@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T08:40:19.383Z",
-  "knowledgeVersion": "7467b9d864832444",
-  "chunkCount": 1025,
+  "generatedAt": "2026-09-24T08:48:01.735Z",
+  "knowledgeVersion": "bc4f2bad808b4e1a",
+  "chunkCount": 1188,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -280,6 +280,42 @@
       "commit": "a053fecf6eeca51ded680de8b8fc41ef63857b11",
       "files": 1,
       "chunks": 100,
+      "error": null
+    },
+    {
+      "repo": "cortextorlab/airLLM",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "587d8ec743aad0ef420440e91d2b0deeec62ea6a",
+      "files": 1,
+      "chunks": 23,
+      "error": null
+    },
+    {
+      "repo": "nguefackuriel/Run-Llama3-70B-with-just-4GB-memory-GPU",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "xinntao/Real-ESRGAN",
+      "mode": "allow",
+      "license": "BSD-3-Clause",
+      "commit": "a4abfb2979a7bbff3f69f58f58ae324608821e27",
+      "files": 12,
+      "chunks": 105,
+      "error": null
+    },
+    {
+      "repo": "JingyunLiang/SwinIR",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "6545850fbf8df298df73d81f3e8cba638787c8bd",
+      "files": 1,
+      "chunks": 37,
       "error": null
     }
   ]
