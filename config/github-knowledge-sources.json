@@ -1593,8 +1593,8 @@
     },
     {
       "repo": "hcengineering/platform",
-      "branch": "main",
-      "license": "unverified",
+      "branch": "develop",
+      "license": "EPL-2.0",
       "mode": "reference-only",
       "include": [
         "README.md"
@@ -1606,11 +1606,11 @@
         "hr",
         "chat"
       ],
-      "reason": "Use platform architecture only until file-level license scope is confirmed."
+      "reason": "EPL-2.0 platform architecture reference; generated apps use independently authored patterns."
     },
     {
       "repo": "jtylek/EpesiCRM",
-      "branch": "master",
+      "branch": "main",
       "license": "unverified",
       "mode": "reference-only",
       "include": [
@@ -1626,9 +1626,9 @@
     },
     {
       "repo": "vladandreevg/salesmancrm",
-      "branch": "main",
-      "license": "unverified",
-      "mode": "reference-only",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
       "include": [
         "README.md"
       ],
@@ -1637,11 +1637,11 @@
         "sales",
         "pipeline"
       ],
-      "reason": "License not verified."
+      "weight": 1.01
     },
     {
       "repo": "trycompai/crm",
-      "branch": "main",
+      "branch": "release",
       "license": "MIT",
       "mode": "allow",
       "include": [
@@ -1658,7 +1658,7 @@
     },
     {
       "repo": "MasteraSnackin/CreatorHub",
-      "branch": "main",
+      "branch": "master",
       "license": "unverified",
       "mode": "reference-only",
       "include": [
@@ -1675,8 +1675,8 @@
     {
       "repo": "higgsfield-ai/higgsfield",
       "branch": "main",
-      "license": "unverified",
-      "mode": "reference-only",
+      "license": "Apache-2.0",
+      "mode": "allow",
       "include": [
         "README.md"
       ],
@@ -1686,13 +1686,14 @@
         "orchestration",
         "mlops"
       ],
-      "reason": "Repository is a GPU training/orchestration framework, not the Higgsfield generative-video API."
+      "reason": "GPU training/orchestration patterns only; this repository is not a generative-video API.",
+      "weight": 0.96
     },
     {
       "repo": "JacobEvelyn/friends",
       "branch": "main",
-      "license": "unverified",
-      "mode": "reference-only",
+      "license": "MIT",
+      "mode": "allow",
       "include": [
         "README.md"
       ],
@@ -1702,11 +1703,11 @@
         "reminders",
         "notes"
       ],
-      "reason": "License not re-verified in this update; domain model reference only."
+      "weight": 0.98
     },
     {
       "repo": "Peppermint-Lab/peppermint",
-      "branch": "master",
+      "branch": "main",
       "license": "unverified",
       "mode": "reference-only",
       "include": [
@@ -1723,8 +1724,8 @@
     },
     {
       "repo": "go2ismail/Free-CRM",
-      "branch": "main",
-      "license": "unverified",
+      "branch": "master",
+      "license": "CC-BY-4.0",
       "mode": "reference-only",
       "include": [
         "README.md"
@@ -1736,7 +1737,7 @@
         "budgets",
         "sales"
       ],
-      "reason": "License not verified."
+      "reason": "Architecture/reference with attribution requirements; generated code remains independently authored."
     }
   ]
 }
