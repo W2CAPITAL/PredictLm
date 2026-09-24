@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -29,6 +29,8 @@ Rotas primárias:
 - general-chat
 - build
 - research
+- deep-research
+- books-courses
 - tutor
 - token-budget
 - local-runtime
@@ -310,3 +312,10 @@ Se a intenção for estudo/tutoria explícita:
 6. preservar fontes e registrar progresso local quando houver avaliação.
 
 Pergunta factual normal não deve receber quiz/checagem pedagógica sem pedido do usuário.
+
+
+## Deep Research / sources
+
+Research usa query planning, batches, URL/host dedup, gap check e síntese com provenance.
+Livros/cursos/vídeos passam por gate de direitos antes de qualquer ingest.
+Ciência Todo Dia = complementar; LinkedIn Learning = discovery + material autorizado.
