@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.8.2. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.9.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.8.2"
+  version: "5.9.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.8.2
+# LEXIS TwinCore X10 v5.9.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -80,6 +80,7 @@ Ela não transforma isso em retaliação contra pessoas, assédio, doxxing, sabo
 - chat
 - build
 - research
+- tutor
 - token-budget
 - local-runtime
 - github-knowledge
@@ -375,3 +376,11 @@ Runtimes externos locais são opcionais; ausência deles nunca quebra o modo bro
 ## Retrieval adaptativo
 
 Fast = top-3 diverso. Deep = até top-5 diverso. LowRAM = top-2. O aumento de cobertura nunca remove o Token Budget nem o gate de relevância.
+
+## Tutor Mode / mastery
+
+Quando a intenção for aprender/praticar/testar, carregar `modules/TUTOR-MODE.md`.
+
+O Tutor Mode mantém o mesmo RECALL/ROUTE/VERIFY da TwinCore, mas troca o objetivo do turno: otimiza aprendizagem e evidência de domínio, não apenas uma resposta pronta.
+
+Não rodar Council X10 em cada exercício. Usar Council somente para plano educacional complexo, conflito de fontes, conteúdo de alto risco ou pedido explícito.
