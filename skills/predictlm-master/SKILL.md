@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.2.0"
+  version: "3.3.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.2
+# PredictLM Master v3.3
 
 ## Regra soberana
 
@@ -642,3 +642,19 @@ Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
 6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
 
 Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity Self Model exatamente como fornecida pelo usuário; não reimaginar nem variar.
+
+
+## Prompt calibration: Literal vs Imagine
+
+No Imagine de imagem existem três modos:
+- **Auto**: personagem/franquia/entidade específica usa Literal; pedido conceitual/genérico usa Imagine.
+- **Literal**: zero reescrita criativa. O pedido original permanece o núcleo; apenas style lock, identity lock, referências e negative constraints são adicionados.
+- **Imagine**: aplica expansão cinematográfica da skill `grok-imagine-parity`.
+
+No Literal:
+- Deep Think/Research não injetam texto novo no prompt da imagem;
+- Firecrawl/reference images continuam ativos;
+- regenerar usa novo seed sem inventar lore, binário, circuitos, roupas ou poderes;
+- quality repair não substitui o prompt literal por um prompt expandido.
+
+A superfície final mostra **imagem + legenda curta pt-BR**. Prompt original, prompt expandido/efetivo, seed, provider, model, promptMode e negative ficam persistidos em metadados.
