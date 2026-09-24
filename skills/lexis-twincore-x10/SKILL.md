@@ -1,19 +1,23 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.21.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.22.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.21.0"
+  version: "5.22.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
+  superseded_by: predictlm-master
 ---
 
-# LEXIS TwinCore X10 v5.21.0
+# LEXIS TwinCore X10 v5.22.0
+
+## Relação com PredictLM Master
+TwinCore X10 agora é um subsistema interno da **PredictLM Master**. FORGE, AEGIS, Council X10, Chair, Centum e PARALLAX não competem por controle da resposta pública; todos obedecem ao contrato soberano de `skills/predictlm-master/SKILL.md`.
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
