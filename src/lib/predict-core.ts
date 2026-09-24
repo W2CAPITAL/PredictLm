@@ -459,7 +459,7 @@ function simulationApp(title:string){
   return [
     "const PLACES=[{id:'Casa',x:8,y:58,w:18,h:25},{id:'Parque',x:8,y:10,w:22,h:30},{id:'Clínica',x:38,y:9,w:17,h:23},{id:'Trabalho',x:73,y:10,w:19,h:28},{id:'Café',x:40,y:48,w:17,h:20},{id:'Mercado',x:72,y:58,w:19,h:22},{id:'Biblioteca',x:36,y:79,w:25,h:14}];",
     "const clamp=(v)=>Math.max(0,Math.min(100,Math.round(v)));",
-    "const initial=()=>({tick:0,day:1,minute:450,running:false,speed:1,person:{name:'Lia',age:27,location:'Casa',x:17,y:70,money:850,occupation:'Analista de projetos',action:'Organizando o dia',goal:'Equilibrar rotina e avançar em um projeto pessoal',mood:'estável'},needs:{energy:78,hunger:72,social:64,fun:60,focus:74,stress:22,health:86},relations:[{name:'Mara',affinity:72,trust:76}],memories:[{id:1,text:'Começou um novo ciclo com uma meta pessoal.',kind:'goal',salience:82}],event:'Novo dia iniciado.'});",
+    "const initial=()=>({tick:0,day:1,minute:450,running:false,speed:1,person:{name:'Predict',age:27,location:'Casa',x:17,y:70,money:850,occupation:'Analista de projetos',action:'Organizando o dia',goal:'Equilibrar rotina e avançar em um projeto pessoal',mood:'estável'},needs:{energy:78,hunger:72,social:64,fun:60,focus:74,stress:22,health:86},relations:[{name:'Mara',affinity:72,trust:76}],memories:[{id:1,text:'Começou um novo ciclo com uma meta pessoal.',kind:'goal',salience:82}],event:'Novo dia iniciado.'});",
     "export default function App(){",
     " const selfAvatar="+selfAvatar+";",
     " const [state,setState]=useState(()=>{try{return JSON.parse(localStorage.getItem('life-sim-v1'))||initial()}catch{return initial()}});",
