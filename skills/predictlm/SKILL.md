@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.15.0"
+  version: "1.16.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -530,3 +530,22 @@ Novos gates:
 - Tool Orchestrator com permissões explícitas;
 - Media Director para adapters Higgsfield/geração configurada;
 - fontes red-team permanecem quarantine/reference-only.
+
+
+## Provider Mesh v1.16
+Carregar `PROVIDER-MESH.md` para chat/model routing.
+
+- providers cloud ficam server-side;
+- ordem de fallback é configurável;
+- OpenAI-compatible e Anthropic-native são tratados por adapters distintos;
+- configuração não equivale a conexão: provider só é considerado operacional após resposta real;
+- falha de provider nunca autoriza resposta fora do pedido.
+
+## Web Reach v1.16
+Carregar `WEB-REACH.md` para pesquisa e referência web.
+
+- Firecrawl é pesquisa estruturada quando configurado;
+- Apify é fonte suplementar via dataset/run;
+- fallback livre continua disponível;
+- Agent-Reach/FastChat/Open Lovable/Freebuff alimentam arquitetura e skills;
+- bridges sociais permanecem opt-in e source-grounded.
