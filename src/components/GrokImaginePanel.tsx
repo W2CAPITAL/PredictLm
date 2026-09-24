@@ -12,7 +12,7 @@ const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Produc
 const ratios:{label:string;w:number;h:number}[]=[
   {label:'1:1',w:1024,h:1024},{label:'16:9',w:1344,h:768},{label:'9:16',w:768,h:1344},{label:'4:3',w:1152,h:864}
 ];
-const durations=[6000,10000,12000];
+const durations=[4000,6000,8000];
 const motions:{id:LocalMotionStyle;label:string}[]=[
   {id:'push-in',label:'Push-in'},
   {id:'pan-right',label:'Pan →'},
@@ -59,7 +59,7 @@ export function GrokImaginePanel(){
   const [duration,setDuration]=useState(6000);
   const [motion,setMotion]=useState<LocalMotionStyle>('push-in');
   const [videoVariant,setVideoVariant]=useState<'storyboard'|'single'>('storyboard');
-  const [videoProvider,setVideoProvider]=useState<'auto'|'local'|'veo'|'sora'|'seedance'>('auto');
+  const [videoProvider,setVideoProvider]=useState<'auto'|'local'|'gemini'|'veo'|'sora'|'seedance'>('auto');
   const [videoProviders,setVideoProviders]=useState<Record<string,{enabled:boolean;label:string;requiresExternalCredits?:boolean}>>({});
   const [recommendedVideoProvider,setRecommendedVideoProvider]=useState<string>('');
   const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
@@ -421,7 +421,8 @@ export function GrokImaginePanel(){
           provider:videoProvider,
           prompt:enhanced,
           duration:Math.max(3,Math.round(duration/1000)),
-          imageUrl:currentImage
+          imageUrl:currentImage,
+          aspectRatio:ratio.label
         })
       });
       const initial=await create.json();
@@ -604,6 +605,7 @@ export function GrokImaginePanel(){
           <div className="gmedia-provider-row">
             {([
               ['auto','Auto · IA generativa'],
+              ['gemini','Gemini Veo 3.1'],
               ['veo','Veo 3'],
               ['seedance','Seedance 2'],
               ['sora','Sora 2'],
