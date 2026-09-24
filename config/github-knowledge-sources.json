@@ -2100,6 +2100,71 @@
         "rag"
       ],
       "weight": 1.1
+    },
+    {
+      "repo": "ergonzamarian/Analisador-de-Sentimentos",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "sentiment-analysis",
+        "human-signals",
+        "classification",
+        "evaluation"
+      ],
+      "reason": "No root LICENSE verified. Distill only the high-level lesson that sentiment is a probabilistic signal evaluated with precision/recall/F1, never a moral or intent classifier."
+    },
+    {
+      "repo": "msfidelis/gmud-for-the-win",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "change-management",
+        "git",
+        "ci",
+        "release-ops"
+      ],
+      "reason": "No root LICENSE verified. Architecture reference for deriving change documentation from Git/CI evidence."
+    },
+    {
+      "repo": "sheepzh/make-zero",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "privacy",
+        "browser-extension",
+        "local-encryption",
+        "security-ux"
+      ],
+      "reason": "MIT verified, but the project is an older client-side encryption utility. Use only privacy/UX patterns; never inherit weak/default-password assumptions as security guidance."
+    },
+    {
+      "repo": "leonardosegfault/humilhador-de-github",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "tone",
+        "sarcasm",
+        "consent",
+        "github-profile",
+        "rate-limit"
+      ],
+      "reason": "Use only for consent-aware tone/sarcasm patterns and server-side key/rate-limit boundaries; never train humiliation as a default interaction style."
     }
   ]
 }
