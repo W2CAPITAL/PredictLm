@@ -328,6 +328,40 @@ export function ChatShell({onOpenLegal}:Props){
         ? prompt+'\n\nFontes recuperadas. Responda à pergunta diretamente e use apenas o que for relevante; não liste links sem necessidade:\n'+web.text
         : prompt;
       const fallbackText=direct||research?.content||undefined;
+
+      if(s.cloudEnabled){
+        setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
+        try{
+          const cloudResponse=await fetch('/api/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink})
+          });
+          const cloudData=await cloudResponse.json();
+          if(cloudResponse.ok&&cloudData?.content){
+            const cloudSources=[
+              ...web.sources,
+              ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
+            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,8);
+            s.addMessage({
+              role:'assistant',
+              content:String(cloudData.content),
+              engine:'Cloud Cascade · '+String(cloudData.provider||'server'),
+              sources:cloudSources,
+              actions:[
+                cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
+                'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
+                'Provider: '+String(cloudData.provider||'server'),
+                'Gate final preserva fallback local se o cascade falhar'
+              ],
+              status:'done'
+            });
+            return;
+          }
+        }catch{}
+        setActivity(['Cloud Cascade indisponível','Retornando ao Neural/Knowledge local','VERIFY · preparando resposta']);
+      }
+
       let reply=await answerLocally(augmented,messages,{
         preferNative:true,
         knowledge:s.deepThink,
@@ -423,7 +457,7 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   const hasMessages=!!active?.messages.length;
-  const modeLabel=neural.loaded?'Local '+(neural.tier==='smart'?'Smart':'Lite')+(neural.backend==='wasm'?' CPU':' GPU'):(s.deepThink?'Deep':'Fast');
+  const modeLabel=s.cloudEnabled?'Cloud Cascade':neural.loaded?'Local '+(neural.tier==='smart'?'Smart':'Lite')+(neural.backend==='wasm'?' CPU':' GPU'):(s.deepThink?'Deep':'Fast');
 
   return <div className={'grok-shell '+(sidebar?'sidebar-open':'sidebar-closed')}>
     <aside className="grok-sidebar">
@@ -471,7 +505,7 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
+        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
         <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
       </section>:
@@ -487,7 +521,7 @@ export function ChatShell({onOpenLegal}:Props){
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,unloadNeural,caps,neural,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableNeural,unloadNeural,caps,neural,memoryStats,learningStats,cloud,setCloud,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — ou use Build Mode para criar apps"/>
     <div className="grok-composer-actions">
@@ -495,7 +529,7 @@ function Composer(props:any){
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
-        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span><small>{learningStats?.sources?.total||0} fontes no learning pack · {learningStats?.lessons||0} lições · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks/{learningStats?.githubKnowledge?.sources||0} repos · v{learningStats?.githubKnowledge?.version||'—'}.</small></div><button onClick={()=>enableNeural('lite')}><b>Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · {neural.modelId||'modelo local'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
+        <div className="grok-model-wrap"><button onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>{modelMenu&&<div className="grok-model-menu"><div><b>Neural Local</b><span>{caps.webgpu?'Smart tenta WebGPU e cai para CPU/WASM automaticamente.':'CPU/WASM é o caminho principal nesta máquina; nenhuma flag do Chrome é necessária.'}</span><small>{learningStats?.sources?.total||0} fontes no learning pack · {learningStats?.lessons||0} lições · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks/{learningStats?.githubKnowledge?.sources||0} repos · v{learningStats?.githubKnowledge?.version||'—'}.</small></div><button onClick={()=>setCloud(!cloud)}><b>Cloud Cascade · opcional</b><span>{cloud?'Ativo: tenta cache + provider server e cai para local em falha.':'Desligado: zero API continua sendo o padrão.'}</span></button><button onClick={()=>enableNeural('lite')}><b>Lite · 0.5B</b><span>Compatibilidade máxima em CPU/WASM · cache do modelo no navegador</span></button><button onClick={()=>enableNeural('smart')}><b>Smart · 1.5B</b><span>Tenta maior qualidade e usa modo compatível se WebGPU não existir</span></button>{neural.loaded&&<><small>Ativo: {neural.tier==='smart'?'Smart':'Lite'} · {neural.backend==='webgpu'?'WebGPU':'CPU/WASM'} · {neural.modelId||'modelo local'} · memória adaptativa {memoryStats.trusted}/{memoryStats.count}.</small><button onClick={unloadNeural}><b>Liberar memória</b><span>Descarrega o runtime e desativa a restauração automática</span></button></>}{neural.lastError&&<small>Último erro local: {neural.lastError}</small>}</div>}</div>
         <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
       </div>
     </div>
