@@ -91,7 +91,18 @@ const SOURCES=[
   ['clearml/clearml','master','Apache-2.0','reference',['mlops','experiments','observability','artifacts']],
   ['ikaijua/Awesome-AITools','main','unverified','reference',['ai-tools','discovery','providers']],
   ['EwingYangs/awesome-open-gpt','main','unverified','reference',['open-gpt','agents','tools']],
-  ['ashishpatel26/Tools-to-Design-or-Visualize-Architecture-of-Neural-Network','master','unverified','reference',['model-visualization','neural-network','architecture']]
+  ['ashishpatel26/Tools-to-Design-or-Visualize-Architecture-of-Neural-Network','master','unverified','reference',['model-visualization','neural-network','architecture']],
+  ['preangelleo/gemini_deep_research','main','unverified','reference',['deep-research','search','crawl','citations','token-budget']],
+  ['eRuaro/open-gemini-deep-research','main','unverified','reference',['deep-research','research-tree','citations','concurrency','query-dedup']],
+  ['MaxiDonkey/DelphiGemini','main','MIT','reference',['gemini','streaming','agents','deep-research','files','grounding']],
+  ['MaxiDonkey/file2knowledge','main','readme-MIT-unverified','reference',['file-search','vector-search','deep-research','documents']],
+  ['ddd-by-examples/library-php','master','MIT','reference',['ddd','domain-modeling','event-storming','testing','library']],
+  ['daryllxd/lifelong-learning','master','Unlicense','reference',['learning-notes','books','courses','lifelong-learning']],
+  ['GITenberg/The-Prince_1232','master','Project-Gutenberg','reference',['public-domain-books','history','reading']],
+  ['w4rlock999/ThePrinceGPT','main','unverified','reference',['book-rag','interactive-reading']],
+  ['devxhub/awesome-book-collection','main','mixed-content-risk','reference',['books','software-engineering']],
+  ['eyeke04/Books','master','unverified','reference',['quarantine','books']],
+  ['Dioque/Livros','main','unverified','reference',['quarantine','books']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
