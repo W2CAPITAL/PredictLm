@@ -129,7 +129,7 @@ async function generateOllama(
       model,
       messages,
       stream:false,
-      options:{temperature:deep?.28:.45,num_predict:deep?1000:700}
+      options:{temperature:deep?0.28:0.45,num_predict:deep?1000:700}
     })
   },90000);
   const data=await response.json().catch(()=>({}));
@@ -175,7 +175,7 @@ async function generateLowRam(
     body:JSON.stringify({
       prompt:flat,
       max_new_tokens:deep?700:420,
-      temperature:deep?.25:.4,
+      temperature:deep?0.25:0.4,
       top_k:40,
       top_p:.9,
       repetition_penalty:1.05
