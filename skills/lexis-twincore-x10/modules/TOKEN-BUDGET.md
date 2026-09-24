@@ -20,7 +20,8 @@ Reduzir custo/contexto sem apagar intenção, evidência ou continuidade.
 - dedup por normalização;
 - histórico por orçamento, não por N fixo;
 - compactação por sentença/head-tail somente depois de dedup;
-- top-k adaptativo;
+- top-k adaptativo e diversity-first entre repositórios;
+- máximo de 260 chunks por repositório no índice offline;
 - snapshot de Build compactado;
 - contexto de Council sem repetir RAG inteiro;
 - image/video brief separado do chat.
