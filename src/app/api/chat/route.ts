@@ -548,7 +548,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
       provider:finalizer.name,
       model:finalizer.model,
       mode:'media-director',
-      agentic:{roles:briefs.map(x=>x.role).concat('verifier'),reviewed:true,contributors:briefs.map(x=>x.provider.name)}
+      agentic:{roles:[...briefs.map(x=>x.role),'verifier'],reviewed:true,contributors:briefs.map(x=>x.provider.name)}
     },{headers:{'Cache-Control':'no-store'}});
   }catch{}
 
