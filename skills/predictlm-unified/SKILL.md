@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.12.0"
+  version: "1.13.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -17,7 +17,7 @@ A infraestrutura existe para melhorar a resposta. Ela não deve aparecer no text
 
 ## Loop obrigatório
 
-RECALL → CLASSIFY → CENTUM(when decision) → PLAN → FORGE → AEGIS → COUNCIL X10 → CHAIR → PARALLAX → EXECUTE/ANSWER → VERIFY → CAPTURE → IMPROVE.
+RECALL → CLASSIFY → SOURCE/HUMAN LENS when relevant → CENTUM(when decision) → PLAN → FORGE → AEGIS → COUNCIL X10 → CHAIR → PARALLAX → EXECUTE/ANSWER → VERIFY → CAPTURE → IMPROVE.
 
 ### RECALL
 - recuperar build, conversa, processo, decisões e experiências relevantes;
@@ -30,6 +30,8 @@ Rotas primárias:
 - build
 - build-review
 - research
+- human-adversarial
+- research-source-matrix
 - deep-research
 - books-courses
 - tutor
@@ -89,6 +91,16 @@ Não faz média entre os lados. Procura:
 - unknown-unknown proxy.
 
 Se nenhum terceiro frame agrega evidência/robustez, não inventar novidade.
+
+### HUMAN / ADVERSARIAL LENS
+Para confiança, conflito, persuasão, abuso, fraude, relacionamento, incentivos ou emoção:
+- considerar cooperação e ameaça ao mesmo tempo;
+- comportamento observado ≠ intenção provada;
+- separar sinal, hipótese e evidência;
+- usar medidas defensivas proporcionais e reversíveis;
+- não transformar material extremo, fóruns ou leaks em fonte factual.
+
+Pesquisa usa `skills/predictlm/RESEARCH-SOURCE-MATRIX.md`: fonte oficial/primária e acadêmica recebem prioridade por domínio; threat intelligence é lead; threat-reference exige corroboração.
 
 ### VERIFY
 Nunca dizer:
