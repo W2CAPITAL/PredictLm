@@ -16,6 +16,7 @@ import { webLLMGenerate, webLLMStatus } from './webllm-runtime';
 import { deterministicMathResult } from './deterministic-math-engine';
 import { languageSystemInstruction, type ConversationLanguage } from './language-policy';
 import { publicAnswerGate } from './public-answer-gate';
+import { classifyDomainEngines } from './domain-engine-fabric';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -47,6 +48,11 @@ let loadingPromise:Promise<void>|null=null;
 let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
+
+function useGithubKnowledge(input:string){
+  const q=String(input||'').toLowerCase();
+  return /\b(github|repo|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|docker|mcp|bug|erro|arquitetura|datajud|djen|lexis|graphrag|sgs|bacen|starlink|spacex|quant|qubit|netdata)\b/.test(q)||classifyDomainEngines(input).length>0;
+}
 
 function parseMath(input:string){
   return deterministicMathResult(input)?.value??null;
@@ -464,7 +470,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
   const githubTopK=options?.deep?5:3;
-  const github=githubKnowledgeContext(prompt,githubTopK);
+  const githubEnabled=useGithubKnowledge(prompt);
+  const github=githubEnabled?githubKnowledgeContext(prompt,githubTopK):'';
   const learned=adaptiveContext(prompt,4);
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
@@ -498,7 +505,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const system=compiled.system;
   const neuralMessages=packed.messages;
   const sources=[
-    ...retrieveGitHubKnowledge(prompt,githubTopK).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
+    ...(githubEnabled?retrieveGitHubKnowledge(prompt,githubTopK):[]).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
     ...retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}))
   ].filter((x,i,a)=>a.findIndex(y=>y.source===x.source)===i).slice(0,6);
   let fallbackReason='';
