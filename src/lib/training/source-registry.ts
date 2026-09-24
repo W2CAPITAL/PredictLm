@@ -133,6 +133,10 @@ export const TRAINING_SOURCES:TrainingSource[]=[
   {repo:'francot514/FreeSims',license:'MPL-2.0',use:'reference',domains:['life-simulation','world-state','work','neighborhood','household'],lessons:['life simulation should model home, work and community locations as explicit world state','engine architecture stays independent from proprietary assets and original game data']},
   {repo:'oraksi/Sims-4-Respocket-DLC-Tool',license:'unverified',use:'reference',domains:['quarantine','dlc-circumvention'],lessons:['DLC unlocking and circumvention logic is excluded from PredictLM simulation work']},
   {repo:'savannah-medina85/sims-4-dlc-unlock',license:'unverified',use:'reference',domains:['quarantine','dlc-circumvention'],lessons:['DLC unlocking and circumvention logic is excluded from PredictLM simulation work']},
+  {repo:'Ankit-exe/Anime-Character-Generator',license:'unverified',use:'reference',domains:['anime','image-generation','gan','visual-identity'],lessons:['anime generators need identity-aware data and evaluation rather than treating style as subject identity','no source-code or asset ingestion until repository licensing is verified']},
+  {repo:'seregazhuk/php-pinterest-bot',license:'MIT',use:'reference',domains:['pinterest','visual-reference','search','pagination'],lessons:['reference discovery needs bounded pagination, deduplication and retry','do not inherit unofficial login automation or credential handling as a runtime default']},
+  {repo:'DynamiteBob17/Pinterest-Clone-Client',license:'unverified',use:'reference',domains:['pinterest','image-library','reference-ui'],lessons:['visual-reference UX benefits from a browsable image library and explicit source links','unlicensed client code remains architecture reference only']},
+  {repo:'SocQAPI/pinterest-pins-api',license:'MIT',use:'reference',domains:['pinterest','public-pins','visual-reference','api','pagination'],lessons:['public pin collection should keep source provenance, async task state, retries and cursor pagination','service/API terms remain separate from repository license and keys stay server-side']},
 ];
 
 export function trainingSourceStats(){

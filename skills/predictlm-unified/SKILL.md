@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.17.0"
+  version: "1.18.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -497,3 +497,16 @@ Life Simulation não é texto decorativo. Ordens são convertidas em JSON de aç
 - fallback determinístico local do mesmo pedido;
 - autonomia opt-in com replanejamento por necessidades/objetivo;
 - nenhuma ação externa fora da simulação.
+
+
+## Visual fidelity / referência antes de gerar
+
+Em pedidos de imagem com entidade/personagem específico, a rota de mídia deve:
+1. extrair a identidade solicitada;
+2. aplicar **identity lock** canônico;
+3. buscar referência visual quando a infraestrutura estiver configurada (Google Images + consulta Pinterest; Firecrawl complementar);
+4. entregar referências visuais ao provider multimodal compatível;
+5. manter o mesmo lock no provider local/textual;
+6. revisar sem trocar o sujeito pedido por um arquétipo genérico.
+
+Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity Self Model exatamente como fornecida pelo usuário; não reimaginar nem variar.

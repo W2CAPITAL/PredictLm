@@ -144,10 +144,11 @@ export function GrokImaginePanel(){
   }
 
   async function createImageUrl(renderPrompt:string,renderSeed:number){
+    setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux'})
+      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux',referenceMode:'auto'})
     });
     const data=await r.json();
     if(!r.ok||!data?.url)throw new Error(data?.error||'A geração não retornou imagem.');
@@ -222,6 +223,21 @@ export function GrokImaginePanel(){
       setAttempt(nextAttempt);
       let data=await createImageUrl(renderPrompt,nextSeed);
       let url=data.url;
+
+      if(data.provider==='entity-self-reference'){
+        setReview(null);
+        setGenerated(url);
+        setGeneratedPrompt(renderPrompt);
+        setProvider(data.provider);
+        await saveLibrary({
+          kind:'image',
+          provider:data.provider,
+          model:data.model||'predict-persistent-identity',
+          url,
+          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self'}
+        });
+        return url;
+      }
 
       setImageStage('Revisando nitidez e exposição…');
       let finalReview=await reviewImageQuality(url).catch(()=>null);
@@ -582,7 +598,7 @@ export function GrokImaginePanel(){
       <div>
         <span>Imagine</span>
         <h1>Imagem e vídeo</h1>
-        <p>Imagem em alta qualidade e vídeo generativo quando um provider está configurado. Motion local existe apenas como fallback explícito; o Supabase mantém metadados leves.</p>
+        <p>Imagem em alta qualidade com identidade visual bloqueada para personagens específicos e referências automáticas quando disponíveis. Vídeo generativo usa providers configurados; o Supabase mantém metadados leves.</p>
       </div>
       <div className="gmedia-repo-status"><i className={persisted?'online':''}/><span>{persisted?'Media repository conectado':'Media repository iniciando'}</span></div>
     </header>

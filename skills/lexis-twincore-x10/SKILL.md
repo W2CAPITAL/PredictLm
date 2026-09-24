@@ -653,3 +653,8 @@ Quando a superfície ativa for Life Simulation, TwinCore atua como decisão/vali
 O executor recebe observação do mundo, produz um plano tipado, corrige pré-condições e só então executa. Cada ação precisa produzir mudança verificável de estado. Falha de provider não autoriza resposta genérica: o planner determinístico local continua o mesmo objetivo.
 
 Autonomia só existe após opt-in explícito dentro da simulação e pode ser interrompida a qualquer momento.
+
+
+## Visual fidelity / reference grounding
+
+Em mídia com personagem ou entidade específica, MEDIA deve preservar identidade antes de estilo: identity lock → referência visual → geração → review. Google Images/Pinterest podem alimentar referências quando configurados; fontes sem licença clara permanecem reference-only. Autoimagem explícita da entidade usa a referência persistente exata do Entity Self Model.
