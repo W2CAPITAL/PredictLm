@@ -15,6 +15,7 @@ import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
+import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -162,7 +163,7 @@ function modelBonus(model:string,task:ProviderTask){
 }
 
 function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
-  const primary=primaryProviders(configured);
+  const primary=rankHealthyProviders(primaryProviders(configured));
   const task=providerTaskClass(prompt,deep);
   const manual=new Map(primary.map((p,i)=>[p.name,i]));
   return [...primary].sort((a,b)=>{
@@ -337,6 +338,7 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
         ? data.content.filter((x:any)=>x?.type==='text').map((x:any)=>x.text).join('\n').trim()
         : '';
       if(!content)throw new Error(provider.name+' empty response');
+      recordProviderSuccess(provider);
       return content;
     }
 
@@ -369,7 +371,11 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
     try{data=JSON.parse(raw)}catch{}
     const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
     if(!content)throw new Error(provider.name+' empty response');
+    recordProviderSuccess(provider);
     return content;
+  }catch(error){
+    recordProviderFailure(provider,error);
+    throw error;
   }finally{clearTimeout(timer)}
 }
 

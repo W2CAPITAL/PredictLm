@@ -18,6 +18,129 @@
   },
   "sources": [
     {
+      "repo": "realasfngl/Grok-Api",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "grok",
+        "unofficial-api",
+        "auth-bypass",
+        "proxy",
+        "discontinued"
+      ],
+      "reason": "Repository has no verified license, states that it bypassed official Grok API/account authentication, documents proxy/IP evasion, and is explicitly discontinued. Do not ingest, execute, depend on, or use it to bypass xAI authentication. PredictLM uses official xAI-compatible provider paths only."
+    },
+    {
+      "repo": "NousResearch/hermes-agent",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "AGENTS.md",
+        "agent/iteration_budget.py",
+        "agent/provider_registry.py",
+        "agent/subagent_lifecycle.py",
+        "agent/tool_guardrails.py",
+        "agent/session_persistence.py",
+        "agent/context_engine.py",
+        "agent/learning_graph.py",
+        "agent/review_engine.py",
+        "agent/verification_evidence.py",
+        "agent/interrupt_control.py",
+        "agent/secret_scope.py"
+      ],
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "weight": 1.3,
+      "reason": "MIT-licensed Nous Research agent. Ingest bounded learning, memory, subagent, verification and provider lifecycle patterns. Never auto-promote unverified model output into durable memory or autonomous production changes."
+    },
+    {
+      "repo": "deepseek-ai/awesome-deepseek-agent",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "deepseek",
+        "agent-integrations",
+        "coding-agents",
+        "provider-compatibility",
+        "discovery"
+      ],
+      "reason": "Official curated integration catalog, but no root license was verified. Use it to discover agent/provider patterns and upstream projects, not as a code source or proof that a third-party integration remains current."
+    },
+    {
+      "repo": "deepseek-ai/deepseek-harness",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "AGENTS.md",
+        "docs/architecture.md",
+        "docs/development.md",
+        ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
+        ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
+        ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
+        ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
+        ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md"
+      ],
+      "domains": [
+        "agents",
+        "plugins",
+        "lifecycle",
+        "tool-schemas",
+        "sessions",
+        "errors",
+        "prompt-assembly",
+        "architecture"
+      ],
+      "weight": 1.28,
+      "reason": "Official DeepSeek MIT-licensed agent harness. Prefer stable architecture/contracts and safety patterns; the project is developer preview and compatibility may change."
+    },
+    {
+      "repo": "Alishahryar1/free-claude-code",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/free_claude_code/config/provider_catalog.py",
+        "src/free_claude_code/providers/failure_policy.py",
+        "src/free_claude_code/providers/request_recovery.py",
+        "src/free_claude_code/providers/runtime/model_cache.py",
+        "src/free_claude_code/application/code_sessions/service.py",
+        "src/free_claude_code/core/tool_schema_patterns.py",
+        "tests/api/test_model_fallback.py"
+      ],
+      "domains": [
+        "provider-router",
+        "fallback",
+        "model-catalog",
+        "sessions",
+        "tool-schemas",
+        "token-efficiency",
+        "coding-agents"
+      ],
+      "weight": 1.16,
+      "reason": "MIT-licensed provider/harness router. Ingest architecture and reliability patterns only; provider quotas, model availability and ToS claims are volatile and must be verified independently before being presented as current facts."
+    },
+    {
       "repo": "tanbiralam/claude-code",
       "branch": "main",
       "license": "unlicensed-leaked-proprietary-source",

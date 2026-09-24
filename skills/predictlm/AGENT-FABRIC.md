@@ -117,3 +117,38 @@ Technical pixel quality and semantic fidelity remain separate checks.
 ## Provenance boundary
 
 The official `anthropics/claude-code` repository is used only as a public architecture/documentation reference. Its license is all-rights-reserved under Anthropic's Commercial Terms. The `tanbiralam/claude-code` mirror explicitly describes itself as leaked source and is quarantined: its source is not copied, ingested, redistributed, trained on or made a runtime dependency. PredictLM independently implements general agentic patterns from lawful public descriptions.
+
+
+## Plugin ownership and bounded loops
+
+Patterns adopted from permissively licensed DeepSeek Harness and Hermes Agent sources are implemented as PredictLM-native contracts, not as a wholesale framework transplant.
+
+- capabilities own their own settings, state, errors and side effects;
+- tool/plugin boundaries expose explicit input/output contracts;
+- runtime errors distinguish configuration, invalid arguments, transient provider failures and permanent capability absence;
+- every complex agent run has an iteration/pass budget;
+- interruption and stop gates must preserve already completed work;
+- parallel subagents receive narrow objectives and scoped context, then merge through one parent/finalizer;
+- durable learning happens only after verified outcomes and never from raw model confidence alone;
+- session history remains searchable separately from the live prompt so long conversations do not have to be replayed in full.
+
+## Provider resilience
+
+The Provider Mesh keeps a bounded health record per provider/model.
+
+- rate limits and transient 5xx/network failures enter a short cooldown;
+- authentication failures cool down longer instead of being hammered on every turn;
+- a successful call clears the failure streak;
+- if another healthy remote API exists, recently failing providers are skipped for that turn;
+- provider health is ephemeral operational state, not user memory;
+- no cooldown path is allowed to promote Ollama/WebLLM/other local runtimes into the final-answer role.
+
+This is based on general multi-provider reliability patterns visible in Free Claude Code and Hermes Agent, implemented independently in TypeScript for PredictLM.
+
+## Source governance additions
+
+- `Alishahryar1/free-claude-code` — MIT allowlist for provider catalog/fallback/session/tool-schema patterns. Free-tier and quota claims are volatile and are not treated as durable facts.
+- `deepseek-ai/deepseek-harness` — MIT allowlist for plugin ownership, lifecycle, structured errors, tool-schema assembly and sparse prompt sections. Developer-preview compatibility changes are expected.
+- `NousResearch/hermes-agent` — MIT allowlist for bounded loops, provider lifecycle, memory/session search, subagent isolation, learning and verification patterns.
+- `deepseek-ai/awesome-deepseek-agent` — reference-only discovery catalog until a root license is verified.
+- `realasfngl/Grok-Api` — quarantine: unlicensed, discontinued and explicitly designed around unauthenticated access/proxy evasion. It is not a provider dependency or knowledge source.
