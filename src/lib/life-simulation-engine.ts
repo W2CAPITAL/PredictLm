@@ -332,3 +332,136 @@ export function simulationSummary(state:LifeSimulationState){
     'Evento: '+state.lastEvent
   ].join('\n');
 }
+
+
+export interface LifeScenarioResult{
+  id:'baseline'|'upside'|'downside'|'adversarial'|'third-path'|'second-order'|'reversal';
+  label:string;
+  premise:string;
+  horizonMinutes:number;
+  finalState:LifeSimulationState;
+  summary:string;
+  signals:string[];
+}
+
+function cloneScenarioState(input:LifeSimulationState,seedOffset:number){
+  return {
+    ...input,
+    seed:input.seed+seedOffset,
+    running:false,
+    person:{...input.person},
+    needs:{...input.needs},
+    relationships:input.relationships.map(x=>({...x})),
+    memories:[...input.memories],
+    places:[...input.places],
+    neuro:{...input.neuro,circuits:{...input.neuro.circuits}}
+  };
+}
+
+function runScenarioTrajectory(
+  input:LifeSimulationState,
+  instruction:string,
+  config:{
+    id:LifeScenarioResult['id'];
+    label:string;
+    premise:string;
+    seedOffset:number;
+    steps:number;
+    modifier?:(state:LifeSimulationState)=>void;
+    ignoreForcedDestination?:boolean;
+  }
+):LifeScenarioResult{
+  let current=cloneScenarioState(input,config.seedOffset);
+  config.modifier?.(current);
+  const parsed=applySimulationInstruction(current,instruction);
+  current=parsed.state;
+  const forced=config.ignoreForcedDestination?null:parsed.forcedDestination;
+  for(let i=0;i<config.steps;i++)current=stepLifeSimulation(current,10,forced);
+  const signals=[
+    'humor '+current.person.mood,
+    'estresse '+current.needs.stress,
+    'energia '+current.needs.energy,
+    'saúde '+current.needs.health,
+    'dinheiro R$ '+current.person.money.toFixed(0),
+    'local '+current.person.location
+  ];
+  return {
+    id:config.id,
+    label:config.label,
+    premise:config.premise,
+    horizonMinutes:config.steps*10,
+    finalState:current,
+    summary:current.person.currentAction+' · '+current.lastEvent,
+    signals
+  };
+}
+
+export function simulateLifeScenarios(
+  state:LifeSimulationState,
+  instruction:string,
+  options?:{deep?:boolean}
+):LifeScenarioResult[]{
+  const deep=options?.deep!==false;
+  const scenarios:LifeScenarioResult[]=[
+    runScenarioTrajectory(state,instruction,{
+      id:'baseline',label:'Baseline',
+      premise:'Trajetória mais direta sem vantagem ou choque extra.',
+      seedOffset:11,steps:6
+    }),
+    runScenarioTrajectory(state,instruction,{
+      id:'upside',label:'Favorável',
+      premise:'A atividade começa com mais energia/foco e menos estresse.',
+      seedOffset:101,steps:6,
+      modifier:s=>{s.needs.energy=n(s.needs.energy+12);s.needs.focus=n(s.needs.focus+10);s.needs.stress=n(s.needs.stress-14);}
+    }),
+    runScenarioTrajectory(state,instruction,{
+      id:'downside',label:'Adverso',
+      premise:'A atividade encontra desgaste, menor energia e pressão financeira.',
+      seedOffset:202,steps:6,
+      modifier:s=>{s.needs.energy=n(s.needs.energy-16);s.needs.stress=n(s.needs.stress+18);s.person.money=Math.max(0,s.person.money-35);}
+    }),
+    runScenarioTrajectory(state,instruction,{
+      id:'adversarial',label:'Reação externa',
+      premise:'O ambiente social/operacional reage pior e aumenta a pressão.',
+      seedOffset:303,steps:6,
+      modifier:s=>{s.needs.social=n(s.needs.social-14);s.needs.stress=n(s.needs.stress+12);s.relationships=s.relationships.map(r=>({...r,affinity:n(r.affinity-4),trust:n(r.trust-3)}));}
+    }),
+    runScenarioTrajectory(state,instruction,{
+      id:'third-path',label:'Terceira via',
+      premise:'A instrução vira objetivo, mas a autonomia pode escolher outro caminho para satisfazê-lo.',
+      seedOffset:404,steps:6,ignoreForcedDestination:true
+    })
+  ];
+
+  if(deep){
+    scenarios.push(
+      runScenarioTrajectory(state,instruction,{
+        id:'second-order',label:'Segunda ordem',
+        premise:'Mesmo plano observado por mais tempo para revelar consequências atrasadas.',
+        seedOffset:505,steps:18
+      }),
+      runScenarioTrajectory(state,instruction,{
+        id:'reversal',label:'Mundo de reversão',
+        premise:'Uma condição material muda e testa se a conclusão inicial continua robusta.',
+        seedOffset:606,steps:8,
+        modifier:s=>{
+          s.needs.health=n(s.needs.health-24);
+          s.needs.stress=n(s.needs.stress+22);
+          s.person.money=Math.max(0,s.person.money-90);
+        },
+        ignoreForcedDestination:true
+      })
+    );
+  }
+
+  return scenarios;
+}
+
+export function summarizeLifeScenarios(results:LifeScenarioResult[]){
+  if(!results.length)return 'Nenhum cenário calculado.';
+  const rows=results.map(x=>x.label+': '+x.summary+' | '+x.signals.join(' · '));
+  return [
+    'Simulações contrafactuais — não são previsões certas.',
+    ...rows
+  ].join('\n');
+}

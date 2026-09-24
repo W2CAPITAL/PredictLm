@@ -7,8 +7,10 @@ import {
   createLifeSimulation,
   simulationClock,
   simulationSummary,
+  simulateLifeScenarios,
   stepLifeSimulation,
   type LifeLocation,
+  type LifeScenarioResult,
   type LifeSimulationState
 } from '@/lib/life-simulation-engine';
 import { dominantCircuits } from '@/lib/neurocore';
@@ -31,6 +33,7 @@ export function GrokSimulationPanel(){
   const [hydrated,setHydrated]=useState(false);
   const [command,setCommand]=useState('');
   const [manualTarget,setManualTarget]=useState<LifeLocation|null>(null);
+  const [scenarios,setScenarios]=useState<LifeScenarioResult[]>([]);
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
@@ -117,12 +120,13 @@ export function GrokSimulationPanel(){
 
   function reset(){
     const next=createLifeSimulation();
-    setState(next);setManualTarget(null);setCommand('');
+    setState(next);setManualTarget(null);setCommand('');setScenarios([]);
   }
 
   function applyCommand(){
     const value=command.trim();
     if(!value)return;
+    setScenarios(simulateLifeScenarios(state,value,{deep:true}));
     setState(prev=>{
       const result=applySimulationInstruction(prev,value);
       if(result.forcedDestination)setManualTarget(result.forcedDestination);
@@ -195,6 +199,16 @@ export function GrokSimulationPanel(){
           <input value={command} onChange={e=>setCommand(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')applyCommand()}} placeholder="Ex.: objetivo: aprender programação · vá ao parque · personagem: Luna"/>
           <button onClick={applyCommand} disabled={!command.trim()}><Send size={14}/></button>
         </div>
+        {scenarios.length>0?<section className="sim-scenarios">
+          <div className="sim-scenario-head"><Brain size={13}/><b>Scenario Lab</b><span>{scenarios.length} trajetórias · contrafactuais, não previsões</span></div>
+          <div className="sim-scenario-grid">{scenarios.map(item=><article key={item.id}>
+            <header><b>{item.label}</b><span>{item.horizonMinutes} min</span></header>
+            <p>{item.premise}</p>
+            <strong>{item.summary}</strong>
+            <small>{item.signals.join(' · ')}</small>
+          </article>)}</div>
+        </section>:null}
+
       </main>
 
       <aside className="sim-side">
@@ -236,7 +250,7 @@ export function GrokSimulationPanel(){
       .circuit-list{display:flex;flex-direction:column;gap:7px}.circuit-list>div{display:grid;grid-template-columns:92px 1fr 30px;gap:7px;align-items:center;font-size:9px}.circuit-list span{color:#9aa5b7}.circuit-list b{text-align:right;font-size:9px}.circuit-list i{margin:0}.sim-note{display:block;color:#69768a;line-height:1.45;margin-top:10px}
       .memories{max-height:245px;overflow:auto}.memories article{display:grid;grid-template-columns:55px 1fr;gap:4px 7px;padding:8px 0;border-bottom:1px solid #171d27}.memories article b{font-size:8px;text-transform:uppercase;color:#927ff1}.memories article span{font-size:9px;color:#c4cddd}.memories article small{grid-column:2;color:#667286;font-size:8px}
       .sim-debug{max-width:1320px;margin:12px auto 0;border:1px solid #202735;border-radius:12px;background:#0a0e15;padding:8px 11px;color:#8390a4;font-size:10px}.sim-debug pre{white-space:pre-wrap;color:#c7d0df}
-      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-shell{padding:14px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:34px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr}.sim-world-foot b{text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{flex-wrap:wrap}.sim-canvas-wrap,.sim-canvas{height:330px}.sim-entity-avatar{width:42px;height:42px}}
+      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:14px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:34px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr}.sim-world-foot b{text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{flex-wrap:wrap}.sim-canvas-wrap,.sim-canvas{height:330px}.sim-entity-avatar{width:42px;height:42px}}
     `}</style>
   </section>;
 }

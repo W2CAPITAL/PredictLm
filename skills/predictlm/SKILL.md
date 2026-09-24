@@ -2,12 +2,16 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.23.0"
+  version: "1.24.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
+  superseded_by: "predictlm-master"
 ---
 
 # PredictLM Skill
+
+## Compatibilidade com a skill mestre
+Esta skill permanece como módulo interno/compatibilidade. Para instalação externa e contrato público, use **`skills/predictlm-master/SKILL.md`**. Em qualquer conflito, `predictlm-master` prevalece.
 
 ## Objetivo
 Fazer outro agente operar o PredictLM como uma segunda IA especializada, sem transformar a resposta final em log do runtime.

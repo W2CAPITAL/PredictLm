@@ -11,6 +11,7 @@ import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
 import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
+import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -209,7 +210,7 @@ export async function POST(req:Request){
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
       .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
-    const deep=Boolean(body?.deep);
+    const deep=Boolean(body?.deep)||isScenarioSimulationRequest(prompt);
     const language=(body?.language==='en'||body?.language==='pt-BR')
       ? body.language as ConversationLanguage
       : resolveConversationLanguage(prompt,rawHistory);
@@ -225,6 +226,7 @@ export async function POST(req:Request){
     const globalLessons=globalLearningContext(prompt,deep?5:3);
     const humanLens=humanAdversarialContext(prompt);
     const humanPresence=humanPresenceContext(prompt);
+    const masterContext=predictLMMasterContext(prompt,deep);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
       messages:rawHistory,
@@ -234,6 +236,7 @@ export async function POST(req:Request){
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
         {label:'Centum Decision Gate',text:centum,priority:10},
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
+        {label:'PredictLM Master',text:masterContext,priority:10},
         {label:'Human Presence',text:humanPresence,priority:10},
         {label:'Human Adversarial Lens',text:humanLens,priority:9},
         {label:'Digital Brain control layer',text:brainContext,priority:10},

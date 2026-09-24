@@ -2,12 +2,16 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.16.0"
+  version: "1.17.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
+  superseded_by: "predictlm-master"
 ---
 
 # PredictLM Unified
+
+## Compatibilidade com PredictLM Master
+Este arquivo é mantido para hosts legados. O contrato soberano atual é **`../predictlm-master/SKILL.md`**; agentes e módulos daqui funcionam apenas como capacidades internas da skill mestre.
 
 ## Missão
 

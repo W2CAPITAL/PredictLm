@@ -2,7 +2,7 @@
 name: life-simulation
 description: Cria, executa e exporta simulações 2D ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -79,3 +79,25 @@ Se o usuário pedir simulação, não inventar score, vitória, derrota, loot ou
 
 ## Fontes
 Ver `skills/neurocore/SOURCE-MAP.md` para ciência e padrões de simulação.
+
+
+## Scenario Lab dentro da simulação
+
+A simulação visual continua manual-only. Porém, quando o usuário fizer uma pergunta contrafactual ou mandar executar uma atividade de impacto, a mesma skill pode rodar **simulações analíticas paralelas** antes de escolher/explicar o resultado.
+
+Cenários mínimos:
+1. baseline;
+2. favorável;
+3. adverso;
+4. reação de outra pessoa/sistema;
+5. terceira via/híbrida.
+
+Em Deep:
+6. efeitos de segunda ordem;
+7. mundo de reversão — o fato que faria a conclusão mudar.
+
+A análise compara premissas, gatilhos, resultado imediato, consequências atrasadas, beneficiados, riscos, reversibilidade e sinais observáveis.
+
+Não inventar probabilidades numéricas sem dados. Não apresentar futuro simulado como fato.
+
+Pergunta de cenário no Chat **não abre o Studio visual**. O Studio visual só abre com comando explícito para abrir/iniciar/rodar a simulação.
