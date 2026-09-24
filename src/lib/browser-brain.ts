@@ -20,6 +20,7 @@ import { classifyDomainEngines } from './domain-engine-fabric';
 import { humanAdversarialContext } from './human-adversarial-lens';
 import { digitalBrainContext, readBrowserDigitalBrain } from './digital-brain';
 import { humanPresenceContext } from './human-presence';
+import { isScenarioSimulationRequest, predictLMMasterContext } from './predictlm-master';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -556,14 +557,16 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
   const humanLens=humanAdversarialContext(prompt);
+  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
   const humanPresence=humanPresenceContext(prompt);
+  const masterContext=predictLMMasterContext(prompt,deepMode);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
   const decisionAudit=options?.decisionAudit!==false;
   const packed=optimizePromptPackage({
     messages,
-    mode:options?.deep?'lite':'full',
+    mode:deepMode?'lite':'full',
     sections:[
       {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'Contexto recuperado',text:context,priority:5},
@@ -571,6 +574,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'PredictLM Master',text:masterContext,priority:10},
       {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
       {label:'Digital Brain control layer',text:brainContext,priority:10},
@@ -614,7 +618,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   if(loadedTier){
     try{
       let content='';
-      if(options?.deep&&loadedTier==='smart'&&loadedBackend==='webgpu'){
+      if(deepMode&&loadedTier==='smart'&&loadedBackend==='webgpu'){
         options?.onStage?.('plan');
         const forge=await neuralGenerate(
           system+'\n\nDEEP PASS 1 — FORGE: construa a melhor solução plausível para o pedido. Seja concreto, factual e aderente. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso.',
@@ -664,10 +668,10 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         );
       }else{
         options?.onStage?.('forge');
-        const boundedSystem=options?.deep
+        const boundedSystem=deepMode
           ? system+'\n\nDEEP ECONÔMICO: produza uma única resposta final já revisada. Priorize precisão, completude e aderência; não faça múltiplas passagens locais em CPU/WASM.'
           : system;
-        content=await neuralGenerate(boundedSystem,prompt,neuralMessages,{maxNewTokens:loadedTier==='smart'?620:360,temperature:options?.deep?0.30:0.42});
+        content=await neuralGenerate(boundedSystem,prompt,neuralMessages,{maxNewTokens:loadedTier==='smart'?620:360,temperature:deepMode?0.30:0.42});
       }
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
@@ -703,13 +707,13 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       const webMessages:{role:'system'|'user'|'assistant';content:string}[]=[
         {role:'system',content:system},
         ...neuralMessages.map(m=>({role:m.role==='assistant'?'assistant' as const:'user' as const,content:m.content})),
-        {role:'user',content:options?.deep
+        {role:'user',content:deepMode
           ? prompt+'\\n\\nFaça internamente FORGE → AEGIS → PARALLAX/Centum quando aplicável e entregue somente a resposta final aderente ao pedido.'
           : prompt}
       ];
       const content=await webLLMGenerate(webMessages,{
-        maxTokens:options?.deep?(webllm.tier==='smart'?1000:700):(webllm.tier==='smart'?760:520),
-        temperature:options?.deep?0.28:0.38
+        maxTokens:deepMode?(webllm.tier==='smart'?1000:700):(webllm.tier==='smart'?760:520),
+        temperature:deepMode?0.28:0.38
       });
       const cleaned=cleanUserFacingAnswer(content);
       const gate=publicAnswerGate(cleaned,options?.language||'pt-BR',prompt);
