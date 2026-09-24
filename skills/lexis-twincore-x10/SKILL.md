@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.11.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.12.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.11.0"
+  version: "5.12.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.11.0
+# LEXIS TwinCore X10 v5.12.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -431,3 +431,38 @@ TwinCore deve preservar:
 - Image Quality Ladder + optional super-resolution;
 - Build diff review + deterministic verify/repair;
 - sincronização obrigatória das skills quando arquitetura/runtime/fonte mudar.
+
+
+## CENTUM 100 / PARALLAX
+
+TwinCore mantém FORGE + AEGIS como os dois núcleos de construção/ataque.
+PARALLAX é um terceiro cérebro de síntese, não um substituto dos dois cores.
+
+Quando houver decisão, certeza, comparação, aprovação, risco, prontidão ou recomendação:
+
+RECALL → CLASSIFY → CENTUM100 → FORGE → AEGIS → COUNCIL X10 → CHAIR → PARALLAX → VERIFY → DELIVER.
+
+CENTUM:
+- exatamente 100 perguntas;
+- 10 grupos × 10;
+- revisar cada uma contra o pedido/evidência;
+- unknown não vira fato;
+- contradição chega ao Chair.
+
+PARALLAX:
+- terceiro lado da moeda;
+- opção C/híbrida;
+- variável oculta;
+- segunda ordem;
+- reversibilidade;
+- horizonte/stakeholder ignorado;
+- reversal condition;
+- unknown-unknown signal.
+
+Strict Intent:
+- só entregar o que foi pedido;
+- sem fallback genérico;
+- sem expor raciocínio privado/checklist salvo pedido explícito;
+- falha técnica pode mudar runtime, nunca mudar o conteúdo solicitado.
+
+Carregar `modules/CENTUM-PARALLAX.md`.
