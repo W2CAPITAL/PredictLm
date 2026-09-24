@@ -11,7 +11,7 @@ import { compactText, optimizePromptPackage, packContext, type TokenBudgetStats 
 import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
-import { centumDecisionContext, parallaxContext } from './decision-centum';
+import { centumDecisionContext, isDecisionRequest, parallaxContext } from './decision-centum';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -467,7 +467,7 @@ function knowledgeReply(prompt:string){
   return 'Não tenho evidência suficiente para responder isso com segurança nesta execução.';
 }
 
-export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
+export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;decisionAudit?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
   const githubTopK=options?.deep?5:3;
@@ -477,8 +477,9 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const globalLessons=globalLearningContext(prompt,3);
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
-  const centum=centumDecisionContext(prompt);
-  const parallax=parallaxContext(prompt);
+  const decisionAudit=options?.decisionAudit!==false;
+  const centum=decisionAudit?centumDecisionContext(prompt):'';
+  const parallax=decisionAudit?parallaxContext(prompt):'';
   const packed=optimizePromptPackage({
     messages,
     mode:options?.deep?'lite':'full',
@@ -529,29 +530,51 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       let content='';
       if(options?.deep){
         options?.onStage?.('plan');
-        const draft=await neuralGenerate(
-          system+'\n\nDEEP PASS 1 — FORGE: identifique o assunto central, restrições e uma resposta útil. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso. Produza um rascunho curto e factual.',
+        const forge=await neuralGenerate(
+          system+'\n\nDEEP PASS 1 — FORGE: construa a melhor solução plausível para o pedido. Seja concreto, factual e aderente. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso.',
           prompt,
           neuralMessages,
-          {maxNewTokens:loadedTier==='smart'?320:220,temperature:0.28}
+          {maxNewTokens:loadedTier==='smart'?340:240,temperature:0.26}
         );
         options?.onStage?.('aegis');
+        const aegisPrompt=[
+          'PEDIDO ORIGINAL:',
+          prompt,
+          '',
+          'FORGE:',
+          forge.slice(0,5000),
+          '',
+          'DEEP PASS 2 — AEGIS:',
+          'Ataque o rascunho: encontre erro factual, hipótese fraca, risco, contra-caso, evidência faltante e qualquer trecho fora do pedido.',
+          'Produza uma crítica curta e uma versão corrigida candidata. Não trate a crítica como resposta final.'
+        ].join('\n');
+        const aegis=await neuralGenerate(
+          system,
+          aegisPrompt,
+          neuralMessages,
+          {maxNewTokens:loadedTier==='smart'?440:300,temperature:0.24}
+        );
+        options?.onStage?.('forge');
         const finalPrompt=[
           'PEDIDO ORIGINAL:',
           prompt,
           '',
-          'RASCUNHO FORGE:',
-          draft.slice(0,5000),
+          'LADO FORGE:',
+          forge.slice(0,4200),
           '',
-          'DEEP PASS 2 — AEGIS + FINAL:',
-          'Revise o rascunho. Elimine conteúdo fora do assunto, genericidade e afirmações não sustentadas.',
-          'Responda diretamente ao pedido original. Não mencione o processo de revisão, FORGE, AEGIS, skill ou fallback.'
+          'LADO AEGIS:',
+          aegis.slice(0,5200),
+          '',
+          'DEEP PASS 3 — THIRD BRAIN PARALLAX + FINAL:',
+          'Olhe os dois lados e procure o terceiro frame: opção C, variável escondida, horizonte diferente, efeito de segunda ordem, teste reversível ou condição que mudaria a conclusão.',
+          'Use o Centum/Council X10 do system prompt quando o pedido for uma decisão.',
+          'Depois responda SOMENTE ao pedido original. Não mencione FORGE, AEGIS, PARALLAX, Centum, Council, skill, engine, provider, fallback ou cadeia de raciocínio.'
         ].join('\n');
         content=await neuralGenerate(
-          system+'\n\nA resposta final deve cobrir explicitamente o substantivo/assunto principal do pedido e ser autocontida.',
+          system+'\n\nFINAL STRICT INTENT: nenhuma resposta genérica substituta é permitida. Se faltar evidência, diga apenas a incerteza específica necessária para responder corretamente.',
           finalPrompt,
           neuralMessages,
-          {maxNewTokens:loadedTier==='smart'?720:500,temperature:0.34}
+          {maxNewTokens:loadedTier==='smart'?760:520,temperature:0.30}
         );
       }else{
         options?.onStage?.('forge');
@@ -579,6 +602,14 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     }
   }
 
+  if(decisionAudit&&isDecisionRequest(prompt)&&!options?.fallbackText){
+    return {
+      content:'Não há base suficiente neste turno para concluir exatamente o que foi pedido com segurança. Falta uma resposta de modelo/evidência relevante; não vou substituir por um texto genérico fora do assunto.',
+      engine:'knowledge',
+      sources,
+      fallbackReason:fallbackReason||lastNeuralError||'Strict decision gate blocked generic fallback'
+    };
+  }
   const content=options?.fallbackText||knowledgeReply(prompt);
   return {
     content,
