@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.11.0"
+  version: "1.12.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -335,3 +335,36 @@ Regras:
 - estado pedagógico local não é fine-tune.
 
 A implementação leve está em `src/lib/tutor-mode.ts`. O padrão foi adaptado de `HKUDS/DeepTutor` (Apache-2.0), sem importar seu backend Python pesado.
+
+
+## Deep Research Tree
+
+Pesquisa usa modos Rápida, Balanceada e Profunda.
+
+Pipeline:
+PLAN QUERIES → SEARCH BATCHES → DEDUP URL/HOST → SCORE → GAP CHECK → OPTIONAL DEEPEN → SYNTHESIZE → CITE.
+
+Regras:
+- não repetir consultas semanticamente iguais;
+- preservar resultados parciais quando uma busca falhar;
+- aprofundar somente se surgir lacuna/contradição real;
+- usar diversidade de domínios;
+- fonte primária/oficial/ acadêmica prevalece em tema de alto risco;
+- Ciência Todo Dia entra como fonte complementar para ciência;
+- LinkedIn Learning entra para descoberta de cursos e material autorizado;
+- listas/awesome repos servem para descoberta, não como autoridade.
+
+Implementação: `src/lib/research-policy.ts` + Research panel.
+
+## Books / Courses / Video sources
+
+Usar `config/external-learning-sources.json` e `modules/BOOKS-COURSES.md` como gate.
+
+Não assumir que licença do repositório cobre PDFs/livros embutidos.
+Open/public-domain pode ser indexado após checagem do trabalho/edição.
+Conteúdo protegido entra somente como metadado, nota própria ou material fornecido/autorizado pelo usuário.
+
+Pergunta sobre livro:
+EDITION → PASSAGE → RETRIEVE → ANSWER → PROVENANCE.
+
+Aprendizado aprovado pode virar lição global; conteúdo bruto protegido nunca é promovido automaticamente.
