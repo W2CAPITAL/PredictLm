@@ -7,6 +7,9 @@ import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMo
 import { buildLocalMotionPlan, buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { preloadGeneratedImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
+import { localBrainAdvisory } from '@/lib/browser-brain';
+import { ENTITY_REFERENCE_IMAGE, ENTITY_SELF_MODEL } from '@/lib/entity-self-model';
+import { buildReferenceAwareVisualPrompt, isCanonicalSelfVisualRequest, mentionsEntityVisual, needsExternalVisualReferences, visualReferenceContext, visualReferenceQuery, type VisualReference } from '@/lib/media/visual-reference';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -67,6 +70,9 @@ export function GrokImaginePanel(){
   const [attempt,setAttempt]=useState(0);
   const [review,setReview]=useState<ImageQualityReview|null>(null);
   const [imageStage,setImageStage]=useState('');
+  const [visualRefs,setVisualRefs]=useState<VisualReference[]>([]);
+  const [visualBrief,setVisualBrief]=useState('');
+  const [referenceProviders,setReferenceProviders]=useState<string[]>([]);
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -143,11 +149,100 @@ export function GrokImaginePanel(){
     return saved?.item||null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number){
+  async function prepareVisualDossier(targetPrompt:string){
+    if(isCanonicalSelfVisualRequest(targetPrompt)){
+      const canonical:VisualReference={
+        id:'canonical-self',
+        title:'Auto-representação visual canônica de '+ENTITY_SELF_MODEL.displayName,
+        imageUrl:ENTITY_REFERENCE_IMAGE,
+        thumbnailUrl:ENTITY_REFERENCE_IMAGE,
+        source:'canonical-self',
+        snippet:'Referência enviada pelo usuário e preservada como identidade visual principal.'
+      };
+      setVisualRefs([canonical]);
+      setVisualBrief('Usar exatamente a referência canônica enviada pelo usuário, sem reinterpretar rosto, cabelo, roupa ou identidade.');
+      setReferenceProviders(['canonical-self']);
+      return {canonical:true,refs:[canonical],visualBrief:'',localAdvisory:''};
+    }
+
+    const refs:VisualReference[]=[];
+    if(mentionsEntityVisual(targetPrompt)){
+      refs.push({
+        id:'canonical-self',
+        title:'Auto-representação visual canônica de '+ENTITY_SELF_MODEL.displayName,
+        imageUrl:ENTITY_REFERENCE_IMAGE,
+        thumbnailUrl:ENTITY_REFERENCE_IMAGE,
+        source:'canonical-self',
+        snippet:'Preservar a identidade visual desta referência acima de referências externas.'
+      });
+    }
+
+    if(needsExternalVisualReferences(targetPrompt)){
+      setImageStage('Buscando referências visuais…');
+      try{
+        const response=await fetch('/api/media/references',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({query:visualReferenceQuery(targetPrompt),limit:8})
+        });
+        const data=await response.json().catch(()=>({}));
+        if(Array.isArray(data?.items)){
+          for(const item of data.items){
+            if(!item?.imageUrl)continue;
+            if(refs.some(x=>x.imageUrl===item.imageUrl))continue;
+            refs.push(item as VisualReference);
+          }
+        }
+      }catch{}
+    }
+
+    const referenceContext=visualReferenceContext(refs);
+    setImageStage(refs.length?'Montando dossiê visual…':'Interpretando detalhes visuais…');
+
+    const local=await localBrainAdvisory(
+      'Analise este pedido de imagem como diretor de arte. Preserve identidade, materiais, roupas, proporções, cenário e detalhes específicos. Aponte apenas lacunas/ambiguidades que podem fazer a imagem sair errada. Pedido: '+targetPrompt,
+      [],
+      {language:'pt-BR',researchContext:referenceContext}
+    ).catch(()=>null);
+
+    let brief='';
+    try{
+      const response=await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          prompt:[
+            'Crie um briefing visual extremamente fiel para um gerador de imagens.',
+            'Não explique o processo. Não liste URLs. Responda em um único bloco curto.',
+            'Preserve literalmente todos os traços do pedido, sem trocar personagem, objeto, roupa, época, material ou identidade por algo parecido.',
+            'Pedido: '+targetPrompt,
+            referenceContext?'Referências: '+referenceContext:'',
+            local?.content?'Parecer local: '+local.content:''
+          ].filter(Boolean).join('\n'),
+          researchContext:referenceContext,
+          localAdvisory:local?.content||'',
+          answerAnchor:targetPrompt,
+          language:'pt-BR',
+          messages:[],
+          deep:false
+        })
+      });
+      const data=await response.json().catch(()=>({}));
+      if(response.ok&&typeof data?.content==='string')brief=String(data.content).trim().slice(0,2400);
+    }catch{}
+
+    if(!brief)brief=String(local?.content||'').trim().slice(0,1800);
+    setVisualRefs(refs.slice(0,8));
+    setVisualBrief(brief);
+    setReferenceProviders([...new Set(refs.map(x=>x.source))]);
+    return {canonical:false,refs:refs.slice(0,8),visualBrief:brief,localAdvisory:local?.content||''};
+  }
+
+  async function createImageUrl(renderPrompt:string,renderSeed:number,references:VisualReference[]=[]){
     const r=await fetch('/api/media/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux'})
+      body:JSON.stringify({prompt:renderPrompt,width:ratio.w,height:ratio.h,seed:renderSeed,model:'flux',referenceImages:references.map(ref=>ref.thumbnailUrl||ref.imageUrl).slice(0,4)})
     });
     const data=await r.json();
     if(!r.ok||!data?.url)throw new Error(data?.error||'A geração não retornou imagem.');
@@ -193,6 +288,24 @@ export function GrokImaginePanel(){
     let nextSeed=regenerate?autoVariationSeed(seed):autoVariationSeed(seed);
 
     try{
+      const dossier=await prepareVisualDossier(prompt);
+      if(dossier.canonical){
+        setGenerated(ENTITY_REFERENCE_IMAGE);
+        setGeneratedPrompt(prompt);
+        setProvider('canonical-self-reference');
+        setSeed(nextSeed);
+        setAttempt(nextAttempt);
+        setReview(null);
+        await saveLibrary({
+          kind:'image',
+          provider:'canonical-self-reference',
+          model:'user-reference',
+          url:null,
+          meta:{canonicalSelf:true,referenceCount:1,referenceProviders:['canonical-self'],generated:false}
+        });
+        return ENTITY_REFERENCE_IMAGE;
+      }
+
       if(regenerate){
         try{
           nextReview=await reviewImageQuality(generated);
@@ -205,7 +318,14 @@ export function GrokImaginePanel(){
       }
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
-      const basePrompt=buildQualityImagePrompt(prompt,{
+      const referenceAware=buildReferenceAwareVisualPrompt({
+        prompt,
+        style,
+        visualBrief:dossier.visualBrief,
+        localAdvisory:dossier.localAdvisory,
+        references:dossier.refs
+      });
+      const basePrompt=buildQualityImagePrompt(referenceAware,{
         style,
         attempt:nextAttempt,
         previousPrompt:regenerate?generatedPrompt||undefined:undefined
@@ -220,7 +340,7 @@ export function GrokImaginePanel(){
 
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      let data=await createImageUrl(renderPrompt,nextSeed);
+      let data=await createImageUrl(renderPrompt,nextSeed,dossier.refs);
       let url=data.url;
 
       setImageStage('Revisando nitidez e exposição…');
@@ -236,7 +356,7 @@ export function GrokImaginePanel(){
           previousPrompt:renderPrompt
         })+'. Correções obrigatórias: '+finalReview.promptHints.join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
         setImageStage('Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed);
+        data=await createImageUrl(repairPrompt,repairSeed,dossier.refs);
         url=data.url;
         nextSeed=repairSeed;
         nextAttempt+=1;
@@ -264,7 +384,12 @@ export function GrokImaginePanel(){
           finalQuality:finalReview?.score??null,
           autoQualityRepair:!regenerate&&nextAttempt>0,
           superResolution:upscaled.upscaled,
-          autoVariation:true
+          autoVariation:true,
+          referenceCount:dossier.refs.length,
+          referenceProviders:[...new Set(dossier.refs.map(x=>x.source))],
+          visualBrief:dossier.visualBrief||null,
+          localVisualReview:!!dossier.localAdvisory,
+          canonicalSelfReference:dossier.refs.some(x=>x.source==='canonical-self')
         }
       });
       return url;
@@ -639,6 +764,12 @@ export function GrokImaginePanel(){
         </div>:null}
 
         <div className="gmedia-auto-variation"><RefreshCw size={12}/><span>Variação automática</span><small>Cada geração usa uma composição nova; não precisa configurar seed.</small></div>
+
+        {visualRefs.length||visualBrief?<div className="gmedia-reference-card">
+          <div className="gmedia-reference-head"><Sparkles size={13}/><span><b>Dossiê visual</b><small>{referenceProviders.length?referenceProviders.join(' · '):'skills + modelos'}</small></span></div>
+          {visualRefs.length?<div className="gmedia-reference-strip">{visualRefs.slice(0,6).map(ref=><a key={ref.id} href={ref.pageUrl||ref.imageUrl} target="_blank" rel="noreferrer" title={ref.title}><img src={ref.thumbnailUrl||ref.imageUrl} alt={ref.title}/><span>{ref.source==='canonical-self'?'Identidade':ref.source.includes('pinterest')?'Pinterest':'Google'}</span></a>)}</div>:null}
+          {visualBrief?<p>{visualBrief}</p>:null}
+        </div>:null}
 
         {mode==='image'
           ?<div className="gmedia-image-actions">
