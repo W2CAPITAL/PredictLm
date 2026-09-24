@@ -14,14 +14,14 @@
 | LlamaGenAI/awesome-free-saas | discovery/catalog only | MIT |
 | twentyhq/twenty | CRM architecture | AGPL/mixed, reference-only |
 | frappe/erpnext | ERP/domain modules | copyleft, reference-only |
-| hcengineering/platform | CRM/project/HR platform architecture | reference-only |
+| hcengineering/platform | CRM/project/HR platform architecture | EPL-2.0 · reference-first |
 | jtylek/EpesiCRM | CRM flows | reference-only até licença verificada |
-| vladandreevg/salesmancrm | sales CRM patterns | reference-only até licença verificada |
-| trycompai/crm | agent-first CRM/evidence ledger | MIT |
+| vladandreevg/salesmancrm | sales CRM patterns | Apache-2.0 |
+| trycompai/crm | agent-first CRM/evidence ledger | MIT · branch release |
 | MasteraSnackin/CreatorHub | creator workflows | reference-only até licença verificada |
-| higgsfield-ai/higgsfield | GPU workload orchestration/training | reference-only; não é API de vídeo |
-| JacobEvelyn/friends | relationship/activity/reminder model | reference-only até licença verificada |
+| higgsfield-ai/higgsfield | GPU workload orchestration/training | Apache-2.0; não é API de vídeo |
+| JacobEvelyn/friends | relationship/activity/reminder model | MIT |
 | Peppermint-Lab/peppermint | ticket/helpdesk workflows | reference-only até licença verificada |
-| go2ismail/Free-CRM | campaigns/leads/budgets/sales teams | reference-only até licença verificada |
+| go2ismail/Free-CRM | campaigns/leads/budgets/sales teams | CC-BY-4.0 · attribution/reference |
 
 Regra: repos permissivos podem contribuir documentação aprovada para knowledge sync. Repos reference-only são destilados manualmente; código-fonte não é copiado para apps gerados.
