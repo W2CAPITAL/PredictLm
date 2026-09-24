@@ -6,6 +6,10 @@ export interface ProductRequirements {
   needsValidation:boolean;
   needsAuth:boolean;
   needsDatabase:boolean;
+  needsMultiTenant:boolean;
+  needsBilling:boolean;
+  needsAudit:boolean;
+  needsBackgroundJobs:boolean;
   integrations:string[];
   entities:string[];
 }
@@ -14,7 +18,7 @@ function has(text:string,re:RegExp){return re.test(text)}
 
 export function inferProductRequirements(prompt:string,intent:string):ProductRequirements{
   const p=String(prompt||'').toLowerCase();
-  const business=['crm','store','dashboard'].includes(intent);
+  const business=['crm','store','dashboard'].includes(intent)||/\b(saas|crm|erp|helpdesk|ticket|admin|workspace|painel|dashboard|gest[aã]o|financeiro|vendas)\b/.test(p);
   const integrations:string[]=[];
   if(business)integrations.push('rest-api');
   const known:[string,RegExp][]=[
@@ -29,10 +33,14 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
   ];
   for(const [name,re] of known)if(re.test(p))integrations.push(name);
 
-  const needsAuth=has(p,/login|auth|usu[aá]rio|perfil|permiss[aã]o|rbac|multi.?user|equipe/)||business;
+  const needsAuth=has(p,/login|auth|usu[aá]rio|perfil|permiss[aã]o|rbac|multi.?user|equipe|convite|invite/)||business;
   const needsDatabase=has(p,/banco|database|postgres|supabase|firebase|persist|salvar|dados|registros/)||business;
   const needsValidation=has(p,/valid|formul[aá]rio|cadastro|cpf|cnpj|email|telefone|valor|finance|cliente/)||business;
-  const needsBackend=needsDatabase||needsAuth||integrations.length>0||has(p,/backend|server|segredo|secret|cron|job|fila/);
+  const needsMultiTenant=has(p,/multi.?tenant|multi.?empresa|workspace|organiza[cç][aã]o|empresa|tenant|equipe|team/)||/\bsaas\b/.test(p);
+  const needsBilling=has(p,/billing|assinatura|subscription|plano|pricing|stripe|pagamento recorrente|mensalidade/);
+  const needsAudit=has(p,/audit|auditoria|log|compliance|hist[oó]rico|rastre|supervis[aã]o/)||needsMultiTenant;
+  const needsBackgroundJobs=has(p,/cron|job|fila|queue|agend|notifica[cç][aã]o|webhook|sync|sincron/);
+  const needsBackend=needsDatabase||needsAuth||needsMultiTenant||needsBilling||needsAudit||needsBackgroundJobs||integrations.length>0||has(p,/backend|server|segredo|secret/);
 
   const entities=intent==='crm'
     ? ['Lead','Customer','Opportunity','Invoice','Activity','Integration']
@@ -42,7 +50,7 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
         ? ['Metric','Event','Report','Filter']
         : ['Record'];
 
-  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,integrations:Array.from(new Set(integrations)),entities};
+  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities};
 }
 
 function envExample(req:ProductRequirements){
@@ -57,7 +65,10 @@ function envExample(req:ProductRequirements){
   if(req.integrations.includes('vercel'))lines.push('VERCEL_TOKEN=');
   if(req.integrations.includes('stripe'))lines.push('STRIPE_SECRET_KEY=','VITE_STRIPE_PUBLISHABLE_KEY=');
   if(req.integrations.includes('rest-api'))lines.push('EXTERNAL_API_BASE_URL=','EXTERNAL_API_KEY=');
-  return lines.join('\n')+'\n';
+  if(req.needsDatabase)lines.push('DATABASE_URL=');
+  if(req.needsAuth)lines.push('SESSION_SECRET=');
+  if(req.needsBilling&&!req.integrations.includes('stripe'))lines.push('STRIPE_SECRET_KEY=','VITE_STRIPE_PUBLISHABLE_KEY=');
+  return Array.from(new Set(lines)).join('\n')+'\n';
 }
 
 function validationModule(intent:string){
@@ -285,6 +296,8 @@ function docs(req:ProductRequirements,prompt:string){
     '- Integration screen reflects backend configuration; no fake toggle may claim a provider is connected.',
     '- Server-only secrets never embedded in browser code.',
     '- Persistent/shared business data requires a backend/database.',
+    '- SaaS multi-tenant must scope every record/query by workspace/tenant and enforce RBAC.',
+    '- Billing, audit and background work must have explicit server boundaries when required.',
     '- Export must contain runnable setup and environment documentation.',
     '',
     '## Detected',
@@ -292,6 +305,10 @@ function docs(req:ProductRequirements,prompt:string){
     '- Validation: '+(req.needsValidation?'required':'basic'),
     '- Authentication boundary: '+(req.needsAuth?'required/planned':'not requested'),
     '- Database: '+(req.needsDatabase?'required/planned':'not requested'),
+    '- Multi-tenant isolation: '+(req.needsMultiTenant?'required':'not requested'),
+    '- Billing/plans: '+(req.needsBilling?'required':'not requested'),
+    '- Audit trail: '+(req.needsAudit?'required':'basic'),
+    '- Background jobs/notifications: '+(req.needsBackgroundJobs?'required':'not requested'),
     '- Integrations: '+(req.integrations.join(', ')||'none explicitly requested'),
     '- Entities: '+req.entities.join(', '),
     '',
@@ -339,6 +356,10 @@ export function createShellState(active:string,subbar:string[]=[]):AppShellState
   needsAuth:${JSON.stringify(req.needsAuth)},
   needsDatabase:${JSON.stringify(req.needsDatabase)},
   needsValidation:${JSON.stringify(req.needsValidation)},
+  needsMultiTenant:${JSON.stringify(req.needsMultiTenant)},
+  needsBilling:${JSON.stringify(req.needsBilling)},
+  needsAudit:${JSON.stringify(req.needsAudit)},
+  needsBackgroundJobs:${JSON.stringify(req.needsBackgroundJobs)},
   integrations:${JSON.stringify(req.integrations)}
 } as const;
 `;
@@ -361,11 +382,40 @@ describe('domain validation',()=>{
 });
 `;
 
+  const tenantRbac=`export type Role='owner'|'admin'|'member'|'viewer';
+export interface WorkspaceContext{workspaceId:string;userId:string;role:Role}
+export function assertWorkspace(record:{workspaceId?:string},ctx:WorkspaceContext){
+  if(!record?.workspaceId||record.workspaceId!==ctx.workspaceId)throw new Error('Cross-workspace access denied');
+}
+export function can(role:Role,action:'read'|'write'|'admin'){
+  if(role==='owner'||role==='admin')return true;
+  if(action==='read')return true;
+  return role==='member'&&action==='write';
+}
+`;
+
+  const audit=`export interface AuditEvent{
+  id:string;
+  workspaceId?:string;
+  actorId?:string;
+  action:string;
+  entity:string;
+  entityId?:string|number;
+  at:string;
+  metadata?:Record<string,unknown>;
+}
+export function auditEvent(input:Omit<AuditEvent,'id'|'at'>):AuditEvent{
+  return {...input,id:String(Date.now())+'-'+Math.random().toString(36).slice(2,8),at:new Date().toISOString()};
+}
+`;
+
   return [
     {path:'src/components/navigation/sidebar-model.ts',language:'typescript',content:sidebar},
     {path:'src/layout/app-shell.ts',language:'typescript',content:shell},
     {path:'src/domain/schema.ts',language:'typescript',content:schema},
     {path:'src/state/async-state.ts',language:'typescript',content:state},
+    ...(req.needsMultiTenant?[{path:'src/security/tenant-rbac.ts',language:'typescript',content:tenantRbac}]:[]),
+    ...(req.needsAudit?[{path:'src/domain/audit.ts',language:'typescript',content:audit}]:[]),
     {path:'src/domain/validation.test.ts',language:'typescript',content:tests},
     {path:'src/pages/README.md',language:'markdown',content:'# Pages\n\nThe live preview is kept in App.tsx for instant sandbox execution. Production modules are split by navigation/domain responsibility for export and continued editing.\n'}
   ];
