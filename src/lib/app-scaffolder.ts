@@ -1,4 +1,5 @@
 import type { WorkspaceFile } from './types';
+import { buildSaaSBlueprintFiles, inferSaaSBlueprint } from './saas-product-fabric';
 
 export interface ProductRequirements {
   intent:string;
@@ -34,7 +35,7 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
   for(const [name,re] of known)if(re.test(p))integrations.push(name);
 
   const needsAuth=has(p,/login|auth|usu[aá]rio|perfil|permiss[aã]o|rbac|multi.?user|equipe|convite|invite/)||business;
-  const needsDatabase=has(p,/banco|database|postgres|supabase|firebase|persist|salvar|dados|registros/)||business;
+  const needsDatabase=has(p,/banco|database|postgres|supabase|firebase|persist|salvar|dados|registros|tenant|workspace|audit|billing|subscription/)||business;
   const needsValidation=has(p,/valid|formul[aá]rio|cadastro|cpf|cnpj|email|telefone|valor|finance|cliente/)||business;
   const needsMultiTenant=has(p,/multi.?tenant|multi.?empresa|workspace|organiza[cç][aã]o|empresa|tenant|equipe|team/)||/\bsaas\b/.test(p);
   const needsBilling=has(p,/billing|assinatura|subscription|plano|pricing|stripe|pagamento recorrente|mensalidade/);
@@ -42,13 +43,15 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
   const needsBackgroundJobs=has(p,/cron|job|fila|queue|agend|notifica[cç][aã]o|webhook|sync|sincron/);
   const needsBackend=needsDatabase||needsAuth||needsMultiTenant||needsBilling||needsAudit||needsBackgroundJobs||integrations.length>0||has(p,/backend|server|segredo|secret/);
 
-  const entities=intent==='crm'
-    ? ['Lead','Customer','Opportunity','Invoice','Activity','Integration']
-    : intent==='store'
-      ? ['Product','Cart','Order','Customer','Payment']
-      : intent==='dashboard'
-        ? ['Metric','Event','Report','Filter']
-        : ['Record'];
+  const entities=blueprint?.entities?.length
+    ? blueprint.entities
+    : intent==='crm'
+      ? ['Lead','Customer','Opportunity','Invoice','Activity','Integration']
+      : intent==='store'
+        ? ['Product','Cart','Order','Customer','Payment']
+        : intent==='dashboard'
+          ? ['Metric','Event','Report','Filter']
+          : ['Record'];
 
   return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities};
 }
@@ -296,6 +299,8 @@ function docs(req:ProductRequirements,prompt:string){
     '- Integration screen reflects backend configuration; no fake toggle may claim a provider is connected.',
     '- Server-only secrets never embedded in browser code.',
     '- Persistent/shared business data requires a backend/database.',
+    '- Multi-tenant SaaS requires tenant isolation, RBAC and audit events before production use.',
+    '- Record-heavy screens need search/filter/sort/pagination instead of static demo cards.',
     '- SaaS multi-tenant must scope every record/query by workspace/tenant and enforce RBAC.',
     '- Billing, audit and background work must have explicit server boundaries when required.',
     '- Export must contain runnable setup and environment documentation.',
@@ -318,7 +323,10 @@ function docs(req:ProductRequirements,prompt:string){
 }
 
 function moduleSkeletons(req:ProductRequirements):WorkspaceFile[]{
-  const nav=req.intent==='crm'
+  const blueprint=inferSaaSBlueprint('',req.intent);
+  const nav=blueprint?.modules?.length
+    ? blueprint.modules
+    : req.intent==='crm'
     ? ['Dashboard','Pipeline','Clientes','Financeiro','Integrações','Configurações']
     : req.intent==='store'
       ? ['Dashboard','Produtos','Pedidos','Clientes','Pagamentos','Configurações']
@@ -424,6 +432,7 @@ export function auditEvent(input:Omit<AuditEvent,'id'|'at'>):AuditEvent{
 export function buildProjectScaffold(prompt:string,intent:string):WorkspaceFile[]{
   const req=inferProductRequirements(prompt,intent);
   const files:WorkspaceFile[]=[
+    ...buildSaaSBlueprintFiles(prompt,intent),
     ...moduleSkeletons(req),
     {path:'src/types/domain.ts',language:'typescript',content:domainTypes(req)},
     {path:'src/domain/validation.ts',language:'typescript',content:validationModule(intent)},
