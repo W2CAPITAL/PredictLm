@@ -363,3 +363,17 @@ button,input,textarea{font:inherit}
 @media(max-width:620px){
   .grok-model-menu.grok-auto-menu{position:fixed!important;left:12px!important;right:12px!important;bottom:78px!important;top:auto!important;width:auto!important}
 }
+
+
+/* Imagine — Deep Think / Deep Research */
+.gmedia-reasoning{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gmedia-reasoning>button{min-width:0;border:1px solid #2d2d31;background:#131315;color:#85858d;border-radius:11px;padding:9px;text-align:left;display:grid;grid-template-columns:22px minmax(0,1fr);gap:7px;align-items:start}
+.gmedia-reasoning>button>svg{margin-top:2px;color:#6d6d76}
+.gmedia-reasoning>button>span{min-width:0;display:flex;flex-direction:column;gap:3px}
+.gmedia-reasoning>button b{font-size:8px;color:#b5b5bb}
+.gmedia-reasoning>button small{font-size:7px;line-height:1.35;color:#64646c}
+.gmedia-reasoning>button.active{border-color:#5c527f;background:linear-gradient(145deg,#1d1927,#141417)}
+.gmedia-reasoning>button.active>svg{color:#a28dff}
+.gmedia-reasoning>button.active b{color:#ece8ff}
+.gmedia-reasoning>button:hover{border-color:#414149;background:#19191c}
+@media(max-width:620px){.gmedia-reasoning{grid-template-columns:1fr}}
