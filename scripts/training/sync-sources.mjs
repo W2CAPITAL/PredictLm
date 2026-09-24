@@ -42,7 +42,22 @@ const SOURCES=[
   ['junhongmit/FraudGT','main','unverified','reference',['fraud','aml','graph','transactions']],
   ['hunters-sec/opencode','main','MIT','reference',['threat-model','agents','tools','sandbox']],
   ['gaur-avvv/wormxgpt','main','license-conflict','reference',['threat-model','mcp','agents','providers']],
-  ['tagore1344/CrimeGPT-AI','main','MIT','distill',['fraud','phishing','url-risk','legal']]
+  ['tagore1344/CrimeGPT-AI','main','MIT','distill',['fraud','phishing','url-risk','legal']],
+  ['mindsdb/mindshub','main','MIT','reference',['agents','workspace','memory','artifacts','model-router']],
+  ['rowboatlabs/rowboat','main','Apache-2.0','reference',['knowledge-graph','memory','browser','background-agents']],
+  ['composio-community/open-claude-cowork','master','MIT','reference',['tools','integrations','streaming','sessions','skills']],
+  ['Haifai-AI/baby-whale','main','MIT','reference',['artifacts','office','preview','local-first','skills']],
+  ['EbookFoundation/free-programming-books','main','CC-BY-4.0','reference',['programming','learning','resources']],
+  ['Carlos-CGS/InteligenciaArtificial-IA','main','unverified','reference',['ai-tools','prompts','learning']],
+  ['danielgines/infra-ai-prompts','master','unverified','reference',['prompts','devops','documentation']],
+  ['tiagopgr/skills-ia','main','unverified','reference',['skills','legal','operations','marketing','code']],
+  ['IntelligenzaArtificiale/Free-personal-AI-Assistant-with-plugin','main','GPL-3.0','reference',['plugins','documents','web','audio']],
+  ['kimik3moonshotAI/Kimi-K3-Code-Free-Desktop','main','MIT','reference',['quarantine','desktop-ai']],
+  ['chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop','main','MIT','reference',['quarantine','desktop-ai']],
+  ['RollerManor1/chatgpt-plus-prime','main','unverified','reference',['quarantine','desktop-ai']],
+  ['LynxAnnihilate16/bxvdfsur','main','unverified','reference',['quarantine','bypass']],
+  ['ryanoasis/nerd-fonts','master','mixed-MIT-OFL','reference',['fonts','design']],
+  ['adobe-fonts/source-code-pro','release','OFL-1.1','reference',['fonts','code-ui']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
