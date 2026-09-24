@@ -9,6 +9,7 @@ import { responseTopicAlignment } from './chat-intelligence';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 import { compactText, optimizePromptPackage, packContext, type TokenBudgetStats } from './token-budget';
 import { tutorSystemContext } from './tutor-mode';
+import { globalLearningContext } from './global-learning';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -480,6 +481,8 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'GitHub Knowledge Engine',text:github,priority:5},
       {label:'Instruções persistentes do usuário',text:instructions,priority:7},
       {label:'Memória adaptativa local',text:learned,priority:4},
+      {label:'Instruções persistentes do usuário',text:instructions,priority:8},
+      {label:'Lições globais aprovadas',text:globalLessons,priority:7},
       {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
     ].filter(x=>x.text)
