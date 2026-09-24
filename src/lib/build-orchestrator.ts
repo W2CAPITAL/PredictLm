@@ -5,6 +5,7 @@ import { runLocalCouncil } from './council';
 import { runLocalSmokeTest } from './local-tools';
 import { buildRunnableProject, packagingSummary } from './project-packager';
 import { buildProjectScaffold, inferProductRequirements } from './app-scaffolder';
+import { inferSaaSBlueprint } from './saas-product-fabric';
 
 export type BuildPhaseStatus='done'|'skip'|'warn';
 export interface BuildPhase {
@@ -125,9 +126,10 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   merged=Array.from(mergedMap.values());
 
   const requirements=inferProductRequirements(prompt,String(effectiveIntent));
+  const saasBlueprint=inferSaaSBlueprint(prompt,String(effectiveIntent));
   const tentativePack=buildRunnableProject(merged);
   const packageSummary=packagingSummary(merged);
-  phases.push({id:'architecture',label:'Architecture',status:'done',detail:packageSummary.backend?packageSummary.backendReason:'Frontend-only decision: '+packageSummary.backendReason});
+  phases.push({id:'architecture',label:'Architecture',status:'done',detail:(saasBlueprint?'SaaS '+saasBlueprint.kind+' · '+saasBlueprint.modules.length+' módulos · ':'')+(packageSummary.backend?packageSummary.backendReason:'Frontend-only decision: '+packageSummary.backendReason)});
   phases.push({id:'frontend',label:'Frontend',status:'done',detail:'Interactive React surface preserved/generated with navigation, responsive states and domain flows.'});
   phases.push({id:'validation',label:'Validation & domain rules',status:requirements.needsValidation?'done':'skip',detail:requirements.needsValidation?'Validation module added for user/business data before mutation.':'Only basic validation is required for this product.'});
   phases.push({id:'integrations',label:'Integrations',status:requirements.integrations.length?'done':'skip',detail:requirements.integrations.length?'Adapters/config planned for: '+requirements.integrations.join(', ')+'. Secrets stay server-side.':'No external integration was explicitly required.'});
@@ -180,6 +182,7 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
     appChanged?'A interface/comportamento do app foi alterado.':'O app principal foi preservado; não houve regeneração destrutiva.',
     changedFiles.length?'Arquivos realmente alterados: '+changedFiles.join(', ')+'.':'Nenhum arquivo precisou ser alterado nesta execução.',
     packageSummary.backend?'Backend mantido/incluído porque o domínio pede registros persistentes/compartilhados.':'Backend foi conscientemente omitido porque não agrega valor a este app.',
+    saasBlueprint?'SaaS blueprint preservado com tenant/RBAC/audit e módulos de domínio.':'Arquitetura genérica preservada.',
     'Exportação continua preparada como projeto Vite/React executável.'
   ].join(' ');
 
