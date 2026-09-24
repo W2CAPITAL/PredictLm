@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.7.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.8.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.7.0"
+  version: "5.8.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.7.0
+# LEXIS TwinCore X10 v5.8.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -80,6 +80,8 @@ Ela não transforma isso em retaliação contra pessoas, assédio, doxxing, sabo
 - chat
 - build
 - research
+- token-budget
+- local-runtime
 - github-knowledge
 - fraud-defense
 - processos
@@ -356,3 +358,16 @@ Todo chunk deve manter repo@commit, path e licença. Mudança do índice altera 
 
 ### Quarentena
 Wrappers não oficiais de serviços proprietários, binários sem proveniência, bypass/jailbreak e repositórios com claims não verificáveis ficam fora do RAG operacional.
+
+## Token Budget + runtimes locais
+
+RECALL deve selecionar evidência e skill antes de construir prompt.
+Não serializar histórico, Council, tools e GitHub corpus inteiros em cada rodada.
+
+Prioridade quando habilitada:
+LOCAL API ROUTER → CLOUD CASCADE → BROWSER NEURAL → KNOWLEDGE FALLBACK.
+
+Cada motor recebe contexto já orçado. Council recebe fatos/resposta necessários, não repete todo o RAG.
+Para dossiê, compressão nunca pode remover fonte, data, classe de evidência ou lacuna crítica.
+
+Runtimes externos locais são opcionais; ausência deles nunca quebra o modo browser/local-first.
