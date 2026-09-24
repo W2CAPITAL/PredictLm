@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T12:45:45.110Z",
-  "knowledgeVersion": "a41c759d1b2389ac",
-  "chunkCount": 2320,
+  "generatedAt": "2026-09-24T13:56:04.935Z",
+  "knowledgeVersion": "9257e3078acd78a4",
+  "chunkCount": 2755,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -322,7 +322,7 @@
       "repo": "AIGeniusInstitute/deepthink",
       "mode": "allow",
       "license": "MIT",
-      "commit": "b606829f3ee73b262f80deace1e326099fd029b2",
+      "commit": "8dedad46b58428b3c598d673c20f9c41fdc56414",
       "files": 1,
       "chunks": 117,
       "error": null
@@ -556,7 +556,7 @@
       "repo": "tashfeenahmed/freellmapi",
       "mode": "allow",
       "license": "MIT",
-      "commit": "40d3b18d4e5fd42832a74df2f11192c0fc275304",
+      "commit": "e4a47f203dba3b610dc180f628d3e821abbaf564",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -574,7 +574,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "e0698082a6bd624713bd1848383349a41bc37aea",
+      "commit": "45e4e91ed377aeb1b06df99a7cfc90160aa65e9b",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -655,6 +655,330 @@
       "repo": "andregod/APIFirebase",
       "mode": "quarantine",
       "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "W1CAPITAL/LexisPredict",
+      "mode": "reference-only",
+      "license": "proprietary-owned-reference",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "nolly-studio/cult-ui",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "ee98a5dd2e319b63cc2e707dd968d6af04209b7e",
+      "files": 1,
+      "chunks": 13,
+      "error": null
+    },
+    {
+      "repo": "nolly-studio/cult-directory-template",
+      "mode": "reference-only",
+      "license": "EULA",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "eigenpal/docx-editor",
+      "mode": "allow",
+      "license": "Apache-2.0+Pro",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": "license-not-allowed"
+    },
+    {
+      "repo": "felipemvrin/foliospark",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "siddhesh-desai/SlideAI",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "atharva9167j/dom-to-pptx",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "939ef79f00db8f9f5f4f75b590e83e380abce197",
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "hugohe3/ppt-master",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "481e057ecd9f5ff094c9c789b17b2d1331e278e8",
+      "files": 1,
+      "chunks": 39,
+      "error": null
+    },
+    {
+      "repo": "pdfforge/PDFCreator",
+      "mode": "reference-only",
+      "license": "external",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "mode": "reference-only",
+      "license": "mixed-MIT-proprietary",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "jezlan/xcelform",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "presenton/presenton",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "768894c4655c6c6fd6ed4cf69501cc502a2c0b41",
+      "files": 1,
+      "chunks": 61,
+      "error": null
+    },
+    {
+      "repo": "iron-software/IronXL-Examples",
+      "mode": "reference-only",
+      "license": "commercial-dependency",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "ghiscoding/excel-builder-vanilla",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "6ce5a7537b6ef2bf17997d36bab2eeeaebbc8f67",
+      "files": 1,
+      "chunks": 19,
+      "error": null
+    },
+    {
+      "repo": "Kowts/excel-creator",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "d5cf176ced612af62a548af4a1c0b801475356cd",
+      "files": 1,
+      "chunks": 10,
+      "error": null
+    },
+    {
+      "repo": "AyushmanGupta21/Bloom",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "scosman/CMSaasStarter",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "2e61406c0764585031b40e657ebebf50187c8429",
+      "files": 1,
+      "chunks": 35,
+      "error": null
+    },
+    {
+      "repo": "wasp-lang/open-saas",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "cbd30162b05d798b3a3f955ab5781940b67bec89",
+      "files": 1,
+      "chunks": 12,
+      "error": null
+    },
+    {
+      "repo": "Anil-matcha/awesome-generative-ai-apps",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "8fcaa253fbb81771412f195b215e5b30ae710ee4",
+      "files": 1,
+      "chunks": 40,
+      "error": null
+    },
+    {
+      "repo": "jatingargiitk/saas-builder",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "a2a0c4ac88daec672a5f6ee50f148488e0fbc9a4",
+      "files": 1,
+      "chunks": 11,
+      "error": null
+    },
+    {
+      "repo": "ixartz/SaaS-Boilerplate",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "e3952a7ed5b0ef172ac4363c4644b8c334d1094b",
+      "files": 1,
+      "chunks": 45,
+      "error": null
+    },
+    {
+      "repo": "alifarooq9/launchmvpfast",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "af5684527804826186c6eb463df673bd703dad64",
+      "files": 1,
+      "chunks": 3,
+      "error": null
+    },
+    {
+      "repo": "robbins23/daisyui-admin-dashboard-template",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "0d119454b92b3a5210970b2c0b7d3d8e22e3e71a",
+      "files": 1,
+      "chunks": 9,
+      "error": null
+    },
+    {
+      "repo": "wrsrsh/startstack",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "LlamaGenAI/awesome-free-saas",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "f1ba59e9b4494cb527b11b08f6a44d3529f9dc54",
+      "files": 1,
+      "chunks": 40,
+      "error": null
+    },
+    {
+      "repo": "twentyhq/twenty",
+      "mode": "reference-only",
+      "license": "AGPL-3.0+commercial",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "frappe/erpnext",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "hcengineering/platform",
+      "mode": "reference-only",
+      "license": "EPL-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "jtylek/EpesiCRM",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "vladandreevg/salesmancrm",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "7789684e27b48400e3194af5fad2b1dea7a456c4",
+      "files": 1,
+      "chunks": 17,
+      "error": null
+    },
+    {
+      "repo": "trycompai/crm",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "6d4793dd6d7aeea91aa6a034e00b17d7408a2d08",
+      "files": 1,
+      "chunks": 24,
+      "error": null
+    },
+    {
+      "repo": "MasteraSnackin/CreatorHub",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "higgsfield-ai/higgsfield",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "d12a36e66024a93d33ec61826a77d5a346c16869",
+      "files": 1,
+      "chunks": 8,
+      "error": null
+    },
+    {
+      "repo": "JacobEvelyn/friends",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "3915987aceadd2bce3a32d2519f9d8f2d644100e",
+      "files": 1,
+      "chunks": 53,
+      "error": null
+    },
+    {
+      "repo": "Peppermint-Lab/peppermint",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "go2ismail/Free-CRM",
+      "mode": "reference-only",
+      "license": "CC-BY-4.0",
       "commit": null,
       "files": 0,
       "chunks": 0,
