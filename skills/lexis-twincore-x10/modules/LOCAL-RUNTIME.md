@@ -30,3 +30,7 @@ Local API → Cloud Cascade opcional → Browser Neural Qwen → Knowledge.
 - llamdrop: hardware probing/context trimming/Ollama (GPL reference-only);
 - LowRAM AI Compiler: memory/context budgeting (license file not verified; reference-only);
 - Uncensored Local AI: local API/model lifecycle (license file not verified; quarantine/reference-only).
+
+## Prioridade automática
+
+Auto escolhe por capacidade declarada, não pelo menor tempo de health-check: Ollama → OpenAI local 4891 → OpenAI local 8080 → GenieX → LowRAM. Latência continua registrada para diagnóstico. O usuário pode manter outros runtimes desligados simplesmente não os executando.
