@@ -13,6 +13,7 @@ import { deepLoopContext } from './deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from './decision-centum';
 import { humanAdversarialContext } from './human-adversarial-lens';
 import { digitalBrainContext, readBrowserDigitalBrain } from './digital-brain';
+import { humanPresenceContext } from './human-presence';
 
 function useGithubKnowledge(input:string){
   const q=String(input||'').toLowerCase();
@@ -270,6 +271,7 @@ export async function answerViaLocalRuntime(
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
   const humanLens=humanAdversarialContext(prompt);
+  const humanPresence=humanPresenceContext(prompt);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
@@ -285,6 +287,7 @@ export async function answerViaLocalRuntime(
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
       {label:'Digital Brain control layer',text:brainContext,priority:10},
       {label:'Centum Decision Gate',text:centum,priority:10},
@@ -309,7 +312,7 @@ export async function answerViaLocalRuntime(
   else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep,options?.signal);
   else generated=await generateOpenAI(runtime,messages,!!options?.deep,options?.signal);
 
-  const gate=publicAnswerGate(generated.content,options?.language||'pt-BR');
+  const gate=publicAnswerGate(generated.content,options?.language||'pt-BR',prompt);
   if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
 
   const sources=(githubEnabled?retrieveGitHubKnowledge(prompt,topK):[]).map(x=>({
