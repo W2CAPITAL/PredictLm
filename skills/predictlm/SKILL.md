@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.18.0"
+  version: "1.19.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -583,3 +583,18 @@ Media:
 - vídeo usa Auto generativo (Veo/Seedance/Sora) quando qualquer API estiver configurada;
 - motion por keyframes/imagens é fallback explícito e nunca é apresentado como vídeo generativo neural;
 - o repo `higgsfield-ai/higgsfield` é referência de GPU/training orchestration, não API de vídeo.
+
+
+## SaaS Runtime Wiring v1.19
+
+O SaaS Builder Fabric está ligado ao código do Build:
+- `src/lib/saas-product-fabric.ts` detecta tipo de produto e gera blueprint/módulos/entidades/gates;
+- `app-scaffolder.ts` injeta tenant/RBAC/audit/validation/integrations;
+- `build-orchestrator.ts` inclui o blueprint nas fases reais;
+- `project-packager.ts` preserva `SAAS_BLUEPRINT.md`, env e infraestrutura no ZIP;
+- `prompt-enhancer.ts` adiciona acceptance checks de SaaS.
+
+Vídeo:
+- Auto tenta provider temporal real antes do fallback local;
+- local motion/storyboard não pode ser descrito como síntese neural de vídeo;
+- Higgsfield CLI é bridge externa autenticada, não endpoint inventado de Vercel.
