@@ -81,6 +81,7 @@ export async function POST(req:Request){
 
     const preparedPrompt=compactText(rawPrompt,1100);
     const sourcePrompt=compactText(originalPrompt,700);
+    const directorBrief=compactText(String(body?.directorBrief||'').trim(),620);
     const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
     const styleLocked=!!body?.styleLocked;
     const style=styleLocked?requestedStyle:recommendedImageStyle(sourcePrompt,requestedStyle);
@@ -103,7 +104,7 @@ export async function POST(req:Request){
           originalPrompt:sourcePrompt,
           style,
           identityLock,
-          referenceEvidence:evidencePrompt,
+          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR LOCK: '+directorBrief):''].filter(Boolean).join('\n'),
           negativePrompt
         })
       : expandImagePromptForParity({
@@ -114,11 +115,15 @@ export async function POST(req:Request){
           height,
           attempt,
           identityLock,
-          referenceEvidence:evidencePrompt
+          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR NOTES: '+directorBrief):''].filter(Boolean).join('\n')
         })+'\n\nNEGATIVE CONSTRAINTS: '+negativePrompt+'.';
 
-    const correction=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.':'';
-    const groundedPrompt=compiledPrompt+(correction?'\n\nREPAIR: '+correction:'');
+    const genericRepair=compactText(String(body?.semanticRepairHints||'').trim(),520);
+    const canonicalRepair=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)
+      ? 'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.'
+      : '';
+    const correction=genericRepair||canonicalRepair;
+    const groundedPrompt=compiledPrompt+(correction?'\n\nSEMANTIC REPAIR — correct the visible mismatch without changing the requested subject: '+correction:'');
 
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)

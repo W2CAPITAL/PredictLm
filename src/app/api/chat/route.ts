@@ -13,8 +13,8 @@ import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
-import { skills } from '@/lib/skills';
-import { planTask } from '@/lib/agent-runtime/routing';
+import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
+import { parseJsonObject } from '@/lib/server/provider-mesh';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -234,28 +234,19 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
 }
 
 function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
-  const plan=planTask(prompt);
   const q=normalize(prompt);
-  const ids=new Set<string>(['human-presence','prompt-os','provider-mesh']);
-  if(plan.route==='research'||hasResearch){ids.add('research-source-matrix');ids.add('deep-research');ids.add('web-reach')}
-  if(plan.route==='codebase-investigator'||/\b(codigo|code|app|site|sistema|bug|github|vercel|react|next|typescript|python)\b/.test(q)){
-    ids.add('agent-fabric');ids.add('build-review');ids.add('testing');
-  }
-  if(plan.route==='media'||/\b(imagem|image|video|vídeo|anime|render|foto)\b/.test(q)){
-    ids.add('grok-imagine-parity');ids.add('visual-reference-grounding');ids.add('media-director-deep');
-  }
-  if(plan.route==='legal-review'||plan.route==='scanner-processual'){
-    ids.add('lexis-twincore-x10');ids.add('datajud');
-  }
-  if(/\b(aprend|estud|ensine|quiz|curso|explica)\b/.test(q))ids.add('tutor-mode');
-  if(deep){ids.add('centum-parallax');ids.add('agent-fabric')}
-
-  const selected=skills.filter(s=>ids.has(s.id)).slice(0,7);
+  const surface=/(imagem|image|video|vídeo|anime|render|foto|storyboard)/i.test(q)
+    ? 'media'
+    : hasResearch||/(pesquis|research|fonte|source|web|documenta[cç][aã]o)/i.test(q)
+      ? 'research'
+      : 'chat';
+  const plan=planAgenticRun(prompt,surface,deep);
   return [
-    'API AGENT ROUTE: '+plan.route+' — '+plan.reason+'.',
-    'The remote provider is the primary answering engine. Execute only the relevant agent/skill contracts below; do not recite their names to the user.',
+    'API AGENTIC PLAN: '+plan.roles.join(' → ')+'.',
+    'The remote provider is the primary answering engine. Execute relevant contracts silently; do not recite agents, skills or routing to the user.',
+    'Use deferred skill discovery: load only task-relevant contracts instead of the entire catalog.',
     'Local runtimes, when present, are advisory evidence only and never outrank the remote provider.',
-    ...selected.map(s=>'SKILL '+s.id+': '+compactText(s.description,340))
+    skillContractContext(prompt,surface,surface==='chat'?7:9)
   ].join('\n');
 }
 
@@ -461,42 +452,128 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
-  const messages:Msg[]=[
+  const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
+  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
+  if(!candidates.length)return Response.json({
+    content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
+  },{headers:{'Cache-Control':'no-store'}});
+
+  const roles=[
     {
-      role:'system',
-      content:[
-        'Você é o Media Director interno do PredictLM.',
-        apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false),
-        'A API/provider remoto executa esta direção de mídia; runtime local não define o brief final.',
-        'Retorne somente um brief operacional compacto, sem chain-of-thought.',
-        'Preserve literalmente sujeito, identidade, criatura, roupa, cor, poder, ação e relações pedidos pelo usuário.',
-        'Não invente binário, redes neurais, circuitos, drones, hologramas, cyberpunk, robôs, armaduras ou fendas dimensionais sem pedido explícito.',
-        'Se o pedido já for específico, refine câmera/continuidade sem trocar o conteúdo.'
-      ].join('\n')
+      name:'identity-reference',
+      instruction:[
+        'Act as the identity/reference specialist.',
+        'Lock every named subject, form, count, costume, color, anatomy, franchise-specific visual attribute and explicit exclusion.',
+        'Separate subject identity from setting/style. Produce positive identity anchors and useful negative constraints.',
+        'Do not redesign a known subject into a generic lookalike.'
+      ].join(' ')
     },
-    {role:'user',content:compactText(prompt,2600)}
-  ];
-  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,false).slice(0,Math.min(2,PROVIDER_ATTEMPT_LIMIT));
-  for(const provider of candidates){
-    try{
-      const content=String(await callProvider(provider,messages,false,Math.min(8000,PROVIDER_TIMEOUT_MS))||'').trim();
-      if(content)return Response.json({
-        content:compactText(content,2600),
-        provider:provider.name,
-        model:provider.model,
-        mode:'media-director'
-      },{headers:{'Cache-Control':'no-store'}});
-    }catch{}
+    {
+      name:'composition-action',
+      instruction:[
+        'Act as the composition/action specialist.',
+        'Optimize camera, framing, spatial separation, action readability, scale, lighting, depth and environment without changing the requested subjects.',
+        'For battles or multiple subjects keep each silhouette readable and prevent explosions/effects from hiding key identities.'
+      ].join(' ')
+    }
+  ] as const;
+
+  const runs=await Promise.allSettled(roles.map((role,index)=>{
+    const provider=candidates[index%candidates.length];
+    const messages:Msg[]=[
+      {
+        role:'system',
+        content:[
+          'Você é um especialista visual interno do PredictLM.',
+          skillContext,
+          'A API/provider remoto executa esta tarefa; runtime local não define o brief final.',
+          role.instruction,
+          'Retorne somente um brief operacional compacto. Não exponha chain-of-thought.',
+          'Preserve literalmente o pedido. Não invente cyberpunk, robôs, armaduras, hologramas ou elementos não pedidos.'
+        ].join('\n')
+      },
+      {role:'user',content:compactText(prompt,2600)}
+    ];
+    return callProvider(provider,messages,true,Math.min(9000,PROVIDER_TIMEOUT_MS)).then(text=>({
+      role:role.name,
+      provider,
+      text:compactText(text,2200)
+    }));
+  }));
+
+  const briefs=runs
+    .flatMap(x=>x.status==='fulfilled'?[x.value]:[])
+    .filter(x=>x.text);
+
+  if(!briefs.length)return Response.json({
+    content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
+  },{headers:{'Cache-Control':'no-store'}});
+
+  if(briefs.length===1){
+    return Response.json({
+      content:briefs[0].text,
+      provider:briefs[0].provider.name,
+      model:briefs[0].provider.model,
+      mode:'media-director',
+      agentic:{roles:[briefs[0].role],reviewed:false}
+    },{headers:{'Cache-Control':'no-store'}});
   }
-  // Media planning is optional enhancement. A provider outage must not create
-  // a noisy 502 loop or block image/video generation.
+
+  const finalizer=candidates[0];
+  try{
+    const final=await callProvider(finalizer,[
+      {
+        role:'system',
+        content:[
+          'Você é o finalizador visual do PredictLM.',
+          skillContext,
+          buildReviewContract('media'),
+          'Combine os briefs especialistas em UMA instrução final de geração.',
+          'Resolva contradições a favor do pedido literal do usuário e da fidelidade de identidade.',
+          'Inclua sujeito, identidade, composição, câmera, ação, luz, ambiente e negativas necessárias.',
+          'Não mencione agents, providers, revisão ou processo. Não exponha chain-of-thought.'
+        ].join('\n')
+      },
+      {
+        role:'user',
+        content:[
+          'PEDIDO ORIGINAL:\n'+compactText(prompt,2200),
+          'BRIEFS ESPECIALISTAS:\n'+briefs.map(x=>'['+x.role+'] '+x.text).join('\n\n')
+        ].join('\n\n')
+      }
+    ],true,Math.min(9000,PROVIDER_TIMEOUT_MS));
+    const content=compactText(final,3000);
+    if(content)return Response.json({
+      content,
+      provider:finalizer.name,
+      model:finalizer.model,
+      mode:'media-director',
+      agentic:{roles:[...briefs.map(x=>x.role),'verifier'],reviewed:true,contributors:briefs.map(x=>x.provider.name)}
+    },{headers:{'Cache-Control':'no-store'}});
+  }catch{}
+
   return Response.json({
-    content:null,
-    available:false,
-    code:'MEDIA_DIRECTOR_UNAVAILABLE',
-    mode:'media-director'
+    content:briefs.map(x=>x.text).join('\n\n'),
+    provider:briefs[0].provider.name,
+    model:briefs[0].provider.model,
+    mode:'media-director',
+    agentic:{roles:briefs.map(x=>x.role),reviewed:false}
   },{headers:{'Cache-Control':'no-store'}});
 }
+
+type ChatDraftReview={
+  approved?:boolean;
+  confidence?:number;
+  issues?:Array<{severity?:string;issue?:string;fix?:string}>;
+  missing?:string[];
+};
+
+function draftNeedsRepair(review:ChatDraftReview|null){
+  if(!review)return false;
+  if(review.approved===false)return true;
+  return (review.issues||[]).some(x=>/^(critical|blocker|high)$/i.test(String(x.severity||'')));
+}
+
 
 export async function GET(){
   const configured=providers();
@@ -616,16 +693,101 @@ export async function POST(req:Request){
     const errors:string[]=[];
     const startedAt=Date.now();
     const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
-    for(const provider of candidates){
+    const reviewSurface=researchContext?'research':'chat';
+    const agenticPlan=planAgenticRun(prompt,reviewSurface,deep);
+
+    for(let candidateIndex=0;candidateIndex<candidates.length;candidateIndex++){
+      const provider=candidates[candidateIndex];
       const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
       if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
         const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
-        const content=gate.content;
+        let content=gate.content;
         const simpleIssue=conversationAnswerIssue(prompt,content)||(simpleTurn?simpleAnswerIssue(prompt,content):'');
         if(simpleIssue){errors.push(provider.name+' rejected: '+simpleIssue);continue;}
+
+        let reviewMeta:any={performed:false};
+        const reviewBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+        const shouldReview=agenticPlan.staged&&!simpleTurn&&reviewBudget>=6500;
+        if(shouldReview){
+          const reviewer=candidates.length>1
+            ? candidates[(candidateIndex+1)%candidates.length]
+            : provider;
+          try{
+            const reviewRaw=await callProvider(reviewer,[
+              {
+                role:'system',
+                content:[
+                  'You are an independent answer reviewer.',
+                  buildReviewContract(reviewSurface),
+                  'Return JSON only: {"approved":true,"confidence":0,"issues":[{"severity":"high|medium|low","issue":"...","fix":"..."}],"missing":["..."]}.',
+                  'Validate issues before reporting them. Do not add unrelated preferences. Never expose chain-of-thought.'
+                ].join('\n')
+              },
+              {
+                role:'user',
+                content:[
+                  'USER REQUEST:\n'+compactText(prompt,1300),
+                  'DRAFT ANSWER:\n'+compactText(content,2400),
+                  researchContext?'EVIDENCE CONTEXT:\n'+compactText(researchContext,1800):''
+                ].filter(Boolean).join('\n\n')
+              }
+            ],false,Math.min(6500,Math.max(2000,reviewBudget-1000)));
+
+            const review=parseJsonObject<ChatDraftReview>(reviewRaw);
+            reviewMeta={
+              performed:true,
+              provider:reviewer.name,
+              approved:review?.approved??null,
+              confidence:Number(review?.confidence||0),
+              issues:(review?.issues||[]).slice(0,6),
+              missing:(review?.missing||[]).slice(0,6)
+            };
+
+            if(draftNeedsRepair(review)){
+              const repairBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+              if(repairBudget<4500){
+                errors.push(provider.name+' draft review requested repair but request budget was exhausted');
+                continue;
+              }
+              const finalizer=candidates[Math.min(candidateIndex,candidates.length-1)]||provider;
+              const repairedRaw=await callProvider(finalizer,[
+                {
+                  role:'system',
+                  content:[
+                    system,
+                    'You are now the final answer editor.',
+                    'Use the independent review below only to fix validated defects or missing requirements.',
+                    'Preserve correct parts of the draft and stay tightly aligned to the user request.',
+                    'Return only the corrected final answer. Never mention the review, agents, skills, providers or chain-of-thought.',
+                    'INDEPENDENT REVIEW:\n'+compactText(JSON.stringify(review),1600)
+                  ].join('\n\n')
+                },
+                ...history.slice(-4),
+                {role:'user',content:compactText(prompt,1400)},
+                {role:'assistant',content:compactText(content,2400)},
+                {role:'user',content:'Produce the corrected final answer now.'}
+              ],deep,Math.min(8000,Math.max(3000,repairBudget-700)));
+
+              const repairedGate=publicAnswerGate(repairedRaw,language,prompt);
+              const repairedIssue=repairedGate.ok
+                ? conversationAnswerIssue(prompt,repairedGate.content)||(simpleTurn?simpleAnswerIssue(prompt,repairedGate.content):'')
+                : repairedGate.reason;
+              if(!repairedGate.ok||repairedIssue){
+                errors.push(finalizer.name+' repaired draft rejected: '+String(repairedIssue||'gate'));
+                continue;
+              }
+              content=repairedGate.content;
+              reviewMeta.repaired=true;
+              reviewMeta.finalizer=finalizer.name;
+            }
+          }catch(reviewError:any){
+            reviewMeta={performed:false,error:String(reviewError?.message||reviewError).slice(0,180)};
+          }
+        }
+
         const value={
           content,
           provider:provider.name,
@@ -633,6 +795,11 @@ export async function POST(req:Request){
           cache:'miss',
           knowledgeVersion:stats.version,
           tokenBudget:packed.stats,
+          agentic:{
+            mode:agenticPlan.staged?'staged':'direct',
+            roles:agenticPlan.roles,
+            review:reviewMeta
+          },
           sources:ghHits.map(x=>({
             title:x.heading,
             source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path

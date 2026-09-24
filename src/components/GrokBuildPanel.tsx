@@ -13,11 +13,9 @@ import { orchestrateBuild, type BuildPhase } from '@/lib/build-orchestrator';
 import { buildPreview } from '@/lib/preview';
 import { buildRunnableProject } from '@/lib/project-packager';
 import { promptPresets, enhanceBuildPrompt, type PromptPreset } from '@/lib/prompt-enhancer';
-import { answerLocally, generateNeuralBuildPatch, neuralStatus } from '@/lib/browser-brain';
-import { runExecutableCouncilX10 } from '@/lib/council-runtime';
 import { runLocalSmokeTest } from '@/lib/local-tools';
 import { runLocalCouncil } from '@/lib/council';
-import { formatBuildReview, runBuildDiffReview } from '@/lib/build-diff-review';
+import { runBuildDiffReview } from '@/lib/build-diff-review';
 import { repairWorkspaceFiles } from '@/lib/workspace-repair';
 
 export function GrokBuildPanel(){
@@ -40,6 +38,36 @@ export function GrokBuildPanel(){
     return()=>window.removeEventListener('message',onMessage);
   },[]);
 
+  async function callChatApi(task:string){
+    const response=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        mode:'clean-chat',
+        prompt:task,
+        language:'pt-BR',
+        messages:s.messages.slice(-8).map(m=>({role:m.role,content:m.content})),
+        useHistory:true
+      })
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data?.content)throw new Error(data?.error||'A API de Chat não produziu uma resposta.');
+    return String(data.content);
+  }
+
+  async function callBuildApi(task:string,currentFiles:any[],mode:string){
+    const response=await fetch('/api/agent',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:task,files:currentFiles,mode})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!Array.isArray(data?.files)||!data.files.length){
+      throw new Error(data?.error||'A API de Build não produziu alterações estruturadas.');
+    }
+    return data;
+  }
+
   async function run(){
     const task=prompt.trim(); if(!task||busy)return;
     setPrompt('');setBusy(true);setPreviewError('');
@@ -47,40 +75,58 @@ export function GrokBuildPanel(){
     const turn=resolveBuildTurn(task,files,s.messages);
     try{
       if(turn.kind==='conversation'){
-        const reply=await answerLocally(task,s.messages.slice(-10).map(m=>({role:m.role,content:m.content})),{knowledge:true});
-        s.addMessage({role:'assistant',content:reply.content});
+        const reply=await callChatApi(task);
+        s.addMessage({role:'assistant',content:reply});
         return;
       }
-      const result=orchestrateBuild(turn.effectivePrompt,files,s.deepThinkLevel);
-      let finalFiles=repairWorkspaceFiles(result.files);
-      const finalPhases=[...result.phases];
-      const finalPlan=[...result.plan];
-      let refinement='';
 
-      const local=neuralStatus();
-      if(local.loaded&&s.deepThinkLevel!=='fast'){
-        finalPhases.push({id:'neural-refine',label:'Refinamento local',status:'warn',detail:'Reviewing the generated architecture against the current project.'});
-        const patch=await generateNeuralBuildPatch(turn.effectivePrompt,finalFiles);
-        if(patch?.files?.length){
-          const map=new Map(finalFiles.map(file=>[file.path,file]));
-          for(const file of patch.files)map.set(file.path,file);
-          finalFiles=repairWorkspaceFiles(Array.from(map.values()));
-          const phase=finalPhases.find(x=>x.id==='neural-refine');
-          if(phase){phase.status='done';phase.detail=patch.files.length+' focused file patch(es) applied without resetting the project.'}
-          finalPlan.push('DONE · Local refinement — '+patch.files.map(x=>x.path).join(', '));
-          refinement=' '+patch.explanation;
-        }else{
-          const phase=finalPhases.find(x=>x.id==='neural-refine');
-          if(phase){phase.status='skip';phase.detail='No valid structured patch was produced; deterministic production scaffold was preserved.'}
-        }
+      setPhases([
+        {id:'api-explore',label:'API · exploração do codebase',status:'warn',detail:'Mapeando arquivos, regras e padrões relevantes.'},
+        {id:'api-architect',label:'API · arquitetura',status:'warn',detail:'Planejando alterações antes de escrever código.'},
+        {id:'api-implement',label:'API · implementação + review',status:'warn',detail:'Agents/skills server-side estão gerando e revisando o patch.'}
+      ]);
+
+      let apiResult:any=null;
+      let usedFallback=false;
+      try{
+        apiResult=await callBuildApi(turn.effectivePrompt,files,s.deepThinkLevel);
+      }catch(apiError:any){
+        usedFallback=true;
+        const fallback=orchestrateBuild(turn.effectivePrompt,files,s.deepThinkLevel);
+        apiResult={
+          explanation:fallback.explanation+' API indisponível nesta execução: '+String(apiError?.message||apiError)+'.',
+          plan:fallback.plan,
+          files:fallback.files,
+          fallbackPhases:fallback.phases
+        };
       }
+
+      const mergedMap=new Map(files.map(file=>[file.path,file]));
+      for(const file of repairWorkspaceFiles(apiResult.files||[]))mergedMap.set(file.path,file);
+      let finalFiles=repairWorkspaceFiles(Array.from(mergedMap.values()));
+      const agentic=apiResult.agentic||{};
+      const finalPhases:BuildPhase[]=usedFallback
+        ? [
+            {id:'api-unavailable',label:'API-first',status:'warn',detail:'Provider/API indisponível; scaffold determinístico usado como contingência.'},
+            ...((apiResult.fallbackPhases||[]) as BuildPhase[])
+          ]
+        : [
+            {id:'api-explore',label:'API · exploração do codebase',status:'done',detail:(agentic.providers?.explorers||[]).length+' explorer(s) · instruções de projeto e manifest analisados.'},
+            {id:'api-architect',label:'API · arquitetura',status:'done',detail:'Plano gerado por '+String(agentic.providers?.architect||'provider')+'.'},
+            {id:'api-implement',label:'API · implementação',status:'done',detail:'Código gerado por '+String(agentic.providers?.implementer||'provider')+'.'},
+            {id:'api-review',label:'API · review independente',status:agentic.review?.approved===false?'warn':'done',detail:
+              String(agentic.providers?.reviewer||'provider')+' · '+String(agentic.review?.issues?.length||0)+' finding(s)'+
+              (agentic.providers?.repair?' · reparado por '+String(agentic.providers.repair):'')
+            }
+          ];
+      const finalPlan=[...(Array.isArray(apiResult.plan)?apiResult.plan:[])];
 
       let finalSmoke=runLocalSmokeTest(finalFiles);
       let finalCouncil=runLocalCouncil(finalFiles);
       let finalReview=runBuildDiffReview(files,finalFiles);
       const reviewPhase:BuildPhase={
         id:'diff-review',
-        label:'Revisão dos arquivos alterados',
+        label:'Validação determinística dos arquivos alterados',
         status:finalReview.ok?'done':'warn',
         detail:finalReview.score+'/100 review · '+finalReview.changedPaths.length+' changed · '+finalReview.findings.length+' finding(s)'
       };
@@ -89,69 +135,61 @@ export function GrokBuildPanel(){
         id:'final-verify',
         label:'Verificação final',
         status:finalSmoke.ok&&finalCouncil.score>=75&&finalReview.ok?'done':'warn',
-        detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council · '+finalReview.score+'/100 review'
+        detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 static council · '+finalReview.score+'/100 review'
       };
       finalPhases.push(verifyPhase);
 
-      if(s.deepThinkLevel==='max'&&local.loaded&&(!finalSmoke.ok||finalCouncil.score<75||!finalReview.ok)){
-        const smokeFailures=finalSmoke.checks.filter(x=>!x.ok).map(x=>x.name+': '+x.detail).join('; ');
-        const reviewFindings=formatBuildReview(finalReview);
+      const needsApiRepair=!usedFallback&&(
+        finalReview.blocking||
+        !finalSmoke.ok||
+        finalCouncil.score<75||
+        (agentic.review?.approved===false)
+      );
+      if(needsApiRepair&&s.deepThinkLevel!=='fast'){
         const repairTask=[
-          'Repair the current project after final verification.',
-          'Original task: '+turn.effectivePrompt,
-          'Smoke failures: '+(smokeFailures||'none'),
-          'Council findings: '+finalCouncil.consensus.join(' '),
-          'Changed-file review: '+reviewFindings,
-          'Fix blocker/high review findings first, then medium findings that affect real behavior.',
-          'Apply only focused code changes that fix real behavior. Do not replace the project or add decorative docs instead of fixes.'
+          'Repair the existing project after independent verification.',
+          'Original request: '+turn.effectivePrompt,
+          'Smoke failures: '+finalSmoke.checks.filter(x=>!x.ok).map(x=>x.name+': '+x.detail).join('; '),
+          'Static review findings: '+finalReview.findings.slice(0,8).map(x=>x.severity.toUpperCase()+' '+x.path+': '+x.title).join('; '),
+          'Static council: '+finalCouncil.consensus.join(' '),
+          'Fix validated behavior problems only. Preserve working code and return focused file changes.'
         ].join('\n');
-        const repair=await generateNeuralBuildPatch(repairTask,finalFiles);
-        if(repair?.files?.length){
+        try{
+          finalPhases.push({id:'api-repair',label:'API · repair pass',status:'warn',detail:'Enviando falhas verificadas de volta aos agents/skills da API.'});
+          const repair=await callBuildApi(repairTask,finalFiles,s.deepThinkLevel);
           const map=new Map(finalFiles.map(file=>[file.path,file]));
-          for(const file of repair.files)map.set(file.path,file);
+          for(const file of repairWorkspaceFiles(repair.files||[]))map.set(file.path,file);
           finalFiles=repairWorkspaceFiles(Array.from(map.values()));
           finalSmoke=runLocalSmokeTest(finalFiles);
           finalCouncil=runLocalCouncil(finalFiles);
           finalReview=runBuildDiffReview(files,finalFiles);
+          const phase=finalPhases.find(x=>x.id==='api-repair');
+          if(phase){phase.status='done';phase.detail='Repair produzido pela API e revalidado localmente.'}
           reviewPhase.status=finalReview.ok?'done':'warn';
           reviewPhase.detail=finalReview.score+'/100 review · '+finalReview.changedPaths.length+' changed · '+finalReview.findings.length+' finding(s)';
           verifyPhase.status=finalSmoke.ok&&finalCouncil.score>=75&&finalReview.ok?'done':'warn';
-          verifyPhase.detail='Repair applied to '+repair.files.length+' file(s) · '+finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council · '+finalReview.score+'/100 review';
-          finalPlan.push('DONE · Verification repair — '+repair.files.map(x=>x.path).join(', '));
-        }else{
-          verifyPhase.detail+=' · repair pass produced no safe structured patch';
-          finalPlan.push('CHECK · Final verification — repair pass produced no safe patch');
+          verifyPhase.detail='Após API repair · '+finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 static council · '+finalReview.score+'/100 review';
+          finalPlan.push('DONE · API repair pass executado e revalidado.');
+        }catch(repairError:any){
+          const phase=finalPhases.find(x=>x.id==='api-repair');
+          if(phase){phase.status='warn';phase.detail='Repair API indisponível: '+String(repairError?.message||repairError)}
+          finalPlan.push('CHECK · API repair indisponível; alterações anteriores foram preservadas.');
         }
+      }
+
+      if(finalReview.findings.length){
+        finalPlan.push((finalReview.blocking?'BLOCK':'CHECK')+' · Changed-file review — '+finalReview.findings.slice(0,4).map(x=>x.severity.toUpperCase()+' '+x.path+': '+x.title).join(' · '));
       }else{
-        if(finalReview.findings.length){
-          finalPlan.push((finalReview.blocking?'BLOCK':'CHECK')+' · Changed-file review — '+finalReview.findings.slice(0,4).map(x=>x.severity.toUpperCase()+' '+x.path+': '+x.title).join(' · '));
-        }else{
-          finalPlan.push('DONE · Changed-file review — no deterministic findings');
-        }
-        finalPlan.push((verifyPhase.status==='done'?'DONE':'CHECK')+' · Final verification — '+verifyPhase.detail);
+        finalPlan.push('DONE · Changed-file review — no deterministic findings');
       }
+      finalPlan.push((verifyPhase.status==='done'?'DONE':'CHECK')+' · Final verification — '+verifyPhase.detail);
 
-      const wantsCouncil=s.deepThinkLevel==='max'||/council\s*x?10|war\s*room|pressure.?test|red.?team/i.test(task);
-      if(wantsCouncil){
-        finalPhases.push({id:'council-x10-runtime',label:'Council X10 executável',status:'warn',detail:'Running independent review lenses and Chair.'});
-        const council=await runExecutableCouncilX10(task,finalFiles);
-        const phase=finalPhases.find(x=>x.id==='council-x10-runtime');
-        if(council.executed){
-          const report={path:'COUNCIL_X10.md',language:'markdown',content:council.markdown};
-          const map=new Map(finalFiles.map(file=>[file.path,file]));
-          map.set(report.path,report);
-          finalFiles=Array.from(map.values());
-          if(phase){phase.status='done';phase.detail='10 review lenses + Chair completed; report saved to COUNCIL_X10.md.'}
-          finalPlan.push('DONE · Council X10 — executable review saved to COUNCIL_X10.md');
-        }else{
-          if(phase){phase.status='skip';phase.detail=council.reason||'Executable Council unavailable; static quality gate remains active.'}
-          finalPlan.push('SKIP · Council X10 executable — '+(council.reason||'local model unavailable'));
-        }
-      }
-
-      if(finalFiles?.length)s.mergeFiles(repairWorkspaceFiles(finalFiles));
+      if(finalFiles.length)s.mergeFiles(finalFiles);
       setPhases(finalPhases);
-      s.addMessage({role:'assistant',content:result.explanation+refinement+'\n\n'+finalPlan.join('\n')});
+      s.addMessage({
+        role:'assistant',
+        content:String(apiResult.explanation||'Build concluído.')+'\n\n'+finalPlan.join('\n')
+      });
       s.addRun({title:task,status:'done',steps:finalPlan});
     }catch(e:any){
       const message='Erro no Build: '+(e?.message||'falha desconhecida');

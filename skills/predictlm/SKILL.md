@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.33.0"
+  version: "1.34.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -866,3 +866,30 @@ Em telas até 760 px:
 - ações principais têm alvo de toque próximo de 40–44 px;
 - Build, Imagine e Research empilham em uma coluna; listas secundárias viram faixas horizontais roláveis;
 - nenhum painel desktop de largura fixa pode causar overflow horizontal.
+
+
+## Staged API Agent Fabric
+
+Complex tasks now use a staged API workflow inspired by publicly documented agentic coding patterns:
+
+**explore → architect → implement → independent review → repair → deterministic verify**
+
+- explorers inspect the current code/evidence before mutation;
+- architect compiles an executable plan with target files, tests, risks and acceptance criteria;
+- implementer receives only relevant files and deferred skill contracts;
+- reviewer should be independent when another configured provider is available;
+- high-confidence blocking findings trigger one focused API repair pass;
+- deterministic smoke/build/diff/security checks decide whether output is actually usable;
+- simple Chat remains direct and avoids unnecessary agent overhead.
+
+Skills are discovered before prompt construction. The runtime selects a small task-relevant subset instead of loading the entire catalog.
+
+Workspace `AGENTS.md` / `CLAUDE.md`-style instructions are supported as scoped project context: root instructions are broad; nested instructions apply only to their subtree.
+
+Imagine uses independent identity/reference and composition/action API directors, then a semantic pixel verifier. Specific/literal prompts keep the original subject as the source of truth. A failed semantic review can trigger one correction pass with concrete visible discrepancies.
+
+### Provenance
+
+`anthropics/claude-code` is reference-only because its official repository is proprietary/all-rights-reserved under Anthropic Commercial Terms. PredictLM independently implements general architecture patterns visible in its public documentation and plugin examples.
+
+`tanbiralam/claude-code` is quarantined because its own README describes it as leaked proprietary source and no valid license was verified. Its source is not copied, indexed, trained on, redistributed or used as a dependency.
