@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T09:29:42.854Z",
-  "knowledgeVersion": "81c033b88b21c299",
-  "chunkCount": 1662,
+  "generatedAt": "2026-09-24T09:40:08.220Z",
+  "knowledgeVersion": "a4c092a7c7bf373f",
+  "chunkCount": 1721,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -487,6 +487,24 @@
       "commit": null,
       "files": 0,
       "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "truongnh1992/gemini-ai-code-reviewer",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "7c4b01afa073e48a44c72cdc1d010f9e3b95686f",
+      "files": 1,
+      "chunks": 7,
+      "error": null
+    },
+    {
+      "repo": "Addy-shetty/Vibe-Prompting",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "b488d240e9907f0cf1dc8fe8868dd4eaff4a7f99",
+      "files": 2,
+      "chunks": 52,
       "error": null
     }
   ]

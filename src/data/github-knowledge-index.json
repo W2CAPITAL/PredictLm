@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "81c033b88b21c299",
-  "generatedAt": "2026-09-24T09:29:42.854Z",
-  "sourceCount": 26,
-  "chunkCount": 1662,
+  "knowledgeVersion": "a4c092a7c7bf373f",
+  "generatedAt": "2026-09-24T09:40:08.220Z",
+  "sourceCount": 28,
+  "chunkCount": 1721,
   "chunks": [
     {
       "id": "78d6597704929363a09f",
@@ -28235,6 +28235,1061 @@
       "heading": "Quick selection guide",
       "text": "- Blocking call, simplest usage → `Create`\n- UI-friendly, non-blocking → `AsyncAwaitCreate`\n- Chained async workflows → `AsyncAwaitCreate` + `&Then`\n\n<br>",
       "weight": 0.9
+    },
+    {
+      "id": "2a8fc4c75643a647d8ad",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "Features",
+      "text": "- Review your PRs using Gemini API\n- Give use comments and suggestions to improve the source codes\n\n![Demo](assets/img/Demo.png)\n![Demo2](assets/img/Demo2.png)\n[Video Demo](https://www.youtube.com/watch?v=pc1ffEFMIQo)",
+      "weight": 1.1
+    },
+    {
+      "id": "4a649aa28d6903d32370",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "Setup",
+      "text": "1. To use this GitHub Action, you need an Gemini API key. If you don't have one, sign up for an API key\n   at [Google AI Studio](https://makersuite.google.com/app/apikey).\n\n2. Add the Gemini API key as a GitHub Secret in your repository with the name `GEMINI_API_KEY`. You can find more\n   information about GitHub Secrets [here](https://docs.github.com/en/actions/reference/encrypted-secrets).\n\n3. Create a `.github/workflows/code-review.yml` file in your repository and add the following content:\n\n```yaml\nname: Gemini AI Code Reviewer\n\non:\n  issue_comment:\n    types: [created]\n\npermissions: write-all\n\njobs:\n  gemini-code-review:\n    runs-on: ubuntu-latest\n    if: |\n      github.event.issue.pull_request &&\n      contains(github.event.comment.body, '/gemini-review')\n    steps:\n      - name: PR Info\n        run: |\n          echo \"Comment: ${{ github.event.comment.body }}\"\n          echo \"Issue Number: ${{ github.event.issue.number }}\"\n          echo \"Repository: ${{ github.repository }}\"\n\n      - name: Checkout Repo\n        uses: actions/checkout@v3\n        with:\n          fetch-depth: 0\n\n      - name: Get PR Details\n        id: pr\n        run: |\n          PR_JSON=$(gh api repos/${{ gith",
+      "weight": 1.1
+    },
+    {
+      "id": "d26a934f4413cfcc20ab",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "Setup",
+      "text": "ub.repository }}/pulls/${{ github.event.issue.number }})\n          echo \"head_sha=$(echo $PR_JSON | jq -r .head.sha)\" >> $GITHUB_OUTPUT\n          echo \"base_sha=$(echo $PR_JSON | jq -r .base.sha)\" >> $GITHUB_OUTPUT\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n\n      - uses: truongnh1992/gemini-ai-code-reviewer@main\n        with:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}\n          GEMINI_MODEL: gemini-2.5-pro # Optional, default is `gemini-2.5-flash`\n          EXCLUDE: \"*.md,*.txt,package-lock.json,*.yml,*.yaml\"",
+      "weight": 1.1
+    },
+    {
+      "id": "781b7e07a3bae06d4ede",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "Setup",
+      "text": "```\n> if you don't set `GEMINI_MODEL`, the default model is `gemini-2.5-flash`. `gemini-2.5-flash` is a next-generation model offering speed and multimodal generation capabilities.  It's suitable for a wide variety of tasks, including code generation, data extraction, and text editing.. For the detailed information about the models, please refer to [Gemini models](https://ai.google.dev/gemini-api/docs/models/gemini).\n4. Commit codes to your repository, and working on your pull requests.\n5. When you're ready to review the PR, you can trigger the workflow by commenting `/gemini-review` in the PR.",
+      "weight": 1.1
+    },
+    {
+      "id": "53e17a1d76153e21b8c4",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "How It Works",
+      "text": "This GitHub Action uses the Gemini AI API to provide code review feedback. It works by:\n\n1. **Analyzing the changes**: It grabs the code modifications from your pull request and filters out any files you don't want reviewed.\n2. **Consulting the Gemini model**: It sends chunks of the modified code to the Gemini for analysis.\n3. **Providing feedback**: Gemini AI examines the code and generates review comments.\n4. **Delivering the review**: The Action adds the comments directly to your pull request on GitHub.",
+      "weight": 1.1
+    },
+    {
+      "id": "3e0984bfe56cb09a4314",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "License",
+      "text": "This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.",
+      "weight": 1.1
+    },
+    {
+      "id": "72d69a9ec5f5c885e7e7",
+      "source": "truongnh1992/gemini-ai-code-reviewer",
+      "ref": "7c4b01afa073",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "code-review",
+        "github",
+        "pull-request",
+        "quality",
+        "diff"
+      ],
+      "heading": "Star History ⭐️",
+      "text": "[![Star History Chart](https://api.star-history.com/svg?repos=truongnh1992/gemini-ai-code-reviewer&type=Date)](https://star-history.com/#truongnh1992/gemini-ai-code-reviewer&Date)",
+      "weight": 1.1
+    },
+    {
+      "id": "51c98bf6ae773082119c",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🎨 Vibe Prompting",
+      "text": "<div align=\"center\">\n\n**AI-Powered Prompt Generator with Smart Credit System**\n\nTransform your ideas into powerful AI prompts instantly. Built with React, TypeScript, and Supabase.\n\n[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel)](vibe-prompting-mod5hmq3z-harshithms1922-8008s-projects.vercel.app)\n[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)\n\n[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)\n[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)\n[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)\n[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)\n[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)\n[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&",
+      "weight": 1.03
+    },
+    {
+      "id": "8747878db3f4302c65f4",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🎨 Vibe Prompting",
+      "text": "logo=supabase&logoColor=white)](https://supabase.com/)\n[![Framer Motion](https://img.shields.io/badge/Framer-Motion-0055FF?style=flat-square&logo=framer&logoColor=white)](https://www.framer.com/motion/)\n\n[🚀 Live Demo](https://vibe-prompting.vercel.app/) • [📖 Documentation](#-documentation) • [🤝 Contributing](./CONTRIBUTING.md) • [🔒 Security](./SECURITY.md)\n\n</div>\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "8cf0e6b0e58272713544",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📑 Table of Contents",
+      "text": "- [✨ Features](#-features)\n- [🛠️ Tech Stack](#️-tech-stack)\n- [🚀 Quick Start](#-quick-start)\n- [📁 Project Structure](#-project-structure)\n- [📖 Documentation](#-documentation)\n- [🎮 Usage Guide](#-usage-guide)\n- [🤝 Contributing](#-contributing)\n- [📝 License](#-license)\n- [📧 Contact](#-contact)\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "34bb954a03fea6956e10",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🚀 Core Capabilities",
+      "text": "- ✅ **AI Prompt Generation** - Powered by Google Gemini 2.0 Flash & OpenRouter\n- ✅ **14 Specialized Categories** - Frontend, Backend, DevOps, Security & more\n- ✅ **Smart Tag System** - Organize with up to 5 tags per prompt\n- ✅ **Real-time Streaming** - Watch prompts generate live\n- ✅ **Public Gallery** - Discover community creations\n\n</td>\n<td width=\"50%\">",
+      "weight": 1.03
+    },
+    {
+      "id": "2860ad95b5420e358b04",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🎯 User Experience",
+      "text": "- ✅ **Anonymous Preview** - 3 free generations, no signup needed\n- ✅ **50 Free Credits** - For registered users\n- ✅ **Dark/Light Theme** - Beautiful adaptive UI\n- ✅ **One-Click Copy** - Instant clipboard functionality\n- ✅ **Fully Responsive** - Desktop, tablet & mobile ready\n\n</td>\n</tr>\n</table>",
+      "weight": 1.03
+    },
+    {
+      "id": "447cdeeed6b3925a7bc0",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🔒 Enterprise-Grade Security",
+      "text": "Built with security at its core. [Learn more →](./SECURITY.md)\n\n- ✅ **Row Level Security (RLS)** - Database-level access control\n- ✅ **IDOR Protection** - Users can only access their own data\n- ✅ **Input Validation** - Zod schemas + XSS prevention\n- ✅ **Rate Limiting** - Protection against abuse\n- ✅ **Password Strength** - Enforced requirements with visual feedback",
+      "weight": 1.03
+    },
+    {
+      "id": "e340a8de104e4343108d",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📊 Fair Usage Credit System",
+      "text": "[View detailed credit system documentation →](./docs/CREDITS_SYSTEM.md)\n\n| User Type | Generations | Prompt Views | Storage | Cost |\n|-----------|-------------|--------------|---------|------|\n| 🎭 Anonymous | 3 free | 3 free views | localStorage | Free |\n| ✨ Registered | 7 credits | Unlimited | Database | Free |\n| Price          | Comming soon |\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "40b25a5844961e0c6b9f",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Frontend",
+      "text": "- ⚛️ **React 18.3** - UI library\n- 📘 **TypeScript 5.5** - Type safety\n- ⚡ **Vite 5.4** - Build tool\n- 🎨 **Tailwind CSS** - Styling\n- 🎬 **Framer Motion** - Animations\n- 🛣️ **React Router** - Routing\n\n</td>\n<td width=\"33%\">",
+      "weight": 1.03
+    },
+    {
+      "id": "6d3bbf35582350562765",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Backend",
+      "text": "- 🗄️ **Supabase** - BaaS platform\n- 🐘 **PostgreSQL** - Database with RLS\n- ⚡ **Edge Functions** - Serverless\n\n</td>\n<td width=\"33%\">",
+      "weight": 1.03
+    },
+    {
+      "id": "609f1637e19b2427b17c",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "AI Integration",
+      "text": "- 🤖 **Gemini 2.0 Flash** - Primary model\n- 🦙 **Llama 3.2** - Fallback via OpenRouter\n\n</td>\n</tr>\n</table>\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "00027b8b092a49a4adf8",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "3️⃣ Set Up Environment Variables",
+      "text": "Copy `.env.example` to `.env` and fill in your credentials:\n\n```bash\ncp .env.example .env\n```\n\n**Required variables:**\n```env",
+      "weight": 1.03
+    },
+    {
+      "id": "947fb096dc75f03180ca",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "AI API Keys (choose at least one)",
+      "text": "VITE_GEMINI_API_KEY=your_gemini_api_key        # https://aistudio.google.com/apikey\nVITE_OPENROUTER_API_KEY=your_openrouter_key    # https://openrouter.ai/keys\n```\n\n> 💡 **Tip:** See [.env.example](./.env.example) for detailed setup instructions",
+      "weight": 1.03
+    },
+    {
+      "id": "ae1441715635e1351d95",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📁 Project Structure",
+      "text": "```\nvibe-prompting/\n├── src/\n│   ├── components/        # React components\n│   ├── pages/             # Page components\n│   ├── context/           # React context\n│   ├── hooks/             # Custom hooks\n│   ├── lib/               # Utilities\n│   └── styles/            # Global styles\n├── supabase/\n│   └── migrations/        # Database migrations\n├── docs/                  # Documentation\n└── public/                # Static assets\n```\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "082d54ff66cd607251f4",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📚 Core Documentation",
+      "text": "| Document | Description |\n|----------|-------------|\n| [🔒 Security Policy](./SECURITY.md) | Vulnerability reporting & security measures |\n| [🤝 Contributing Guide](./CONTRIBUTING.md) | How to contribute to this project |\n| [📜 MIT License](./LICENSE) | Open source license details |",
+      "weight": 1.03
+    },
+    {
+      "id": "0a39c14be0d9820694e0",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🔧 Technical Guides",
+      "text": "| Guide | Description |\n|-------|-------------|\n| [🔐 Authentication](./docs/AUTH_GUIDE.md) | Auth implementation & user flows |\n| [💳 Credits System](./docs/CREDITS_SYSTEM.md) | How credits work & limitations |\n| [🗄️ Database Setup](./docs/SUPABASE_SETUP.md) | Supabase configuration & migrations |\n| [🛡️ Security Details](./docs/SECURITY_IMPLEMENTATION_FULL.md) | Complete security implementation |",
+      "weight": 1.03
+    },
+    {
+      "id": "756d8372ae0b93b95a3d",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🔗 Quick Links",
+      "text": "- 📋 [.env.example](./.env.example) - Environment variables template\n- 🗂️ [supabase/migrations](./supabase/migrations/) - Database migration files\n- 🧩 [src/components](./src/components/) - React components\n- 🎣 [src/hooks](./src/hooks/) - Custom React hooks\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "af89d470dd5023b4b504",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🎭 For Anonymous Users",
+      "text": "1. 🏠 **Visit Homepage** - Explore example prompts\n2. 🎯 **Click a Category** - Choose your prompt type\n3. ✨ **Generate** - Create up to 3 free prompts\n4. 📋 **Copy** - One-click clipboard copy\n5. 💾 **Sign Up** - To save prompts permanently\n\n> ⚠️ **Note:** Anonymous prompts are stored in localStorage and may be lost",
+      "weight": 1.03
+    },
+    {
+      "id": "6e93c48259299171ff4e",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "✨ For Registered Users",
+      "text": "1. 📝 **Sign Up** - Get 50 free credits instantly\n2. 🎨 **Generate Prompts** - Use your credits wisely\n3. 🏷️ **Add Tags** - Organize with up to 5 tags\n4. 🌍 **Make Public** - Share with the community\n5. 📚 **Browse Gallery** - Discover & save others' prompts\n6. ⚙️ **Manage** - Edit or delete your creations",
+      "weight": 1.03
+    },
+    {
+      "id": "9c6154e404c33e4c5f12",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "💡 Pro Tips",
+      "text": "- 🎯 **Be Specific** - More detailed inputs = better prompts\n- 🏷️ **Use Tags** - Makes finding prompts easier later\n- 🌍 **Go Public** - Help the community & get discovered\n- 💳 **Track Credits** - Visible in navbar when logged in\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "1a91161c7553167e4d68",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🤝 Contributing",
+      "text": "We ❤️ contributions! Whether it's bug reports, feature requests, or code contributions - all are welcome!",
+      "weight": 1.03
+    },
+    {
+      "id": "3708093d4139c5cc0ac7",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🚀 Quick Contribution Steps",
+      "text": "1. 🍴 **Fork** the repository\n2. 🌿 **Create** a feature branch\n   ```bash\n   git checkout -b feature/AmazingFeature\n   ```\n3. 💻 **Code** your changes\n4. ✅ **Commit** with clear messages\n   ```bash\n   git commit -m 'feat: Add AmazingFeature'\n   ```\n5. 📤 **Push** to your branch\n   ```bash\n   git push origin feature/AmazingFeature\n   ```\n6. 🎯 **Open** a Pull Request",
+      "weight": 1.03
+    },
+    {
+      "id": "79f2f2efa0c7aab8b40e",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📋 Contribution Guidelines",
+      "text": "Please read our [**Contributing Guide**](./CONTRIBUTING.md) for:\n- 📜 Code of Conduct\n- 🛠️ Development setup\n- 💻 Coding standards\n- ✉️ Commit message conventions\n- 🧪 Testing requirements",
+      "weight": 1.03
+    },
+    {
+      "id": "f33e07dca0b6a16801b8",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🐛 Found a Bug?",
+      "text": "[Open an issue](https://github.com/Addy-shetty/Vibe-Prompting/issues) with:\n- Clear description\n- Steps to reproduce\n- Expected vs actual behavior\n- Screenshots (if applicable)",
+      "weight": 1.03
+    },
+    {
+      "id": "b9a3116174a702af8342",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "💡 Feature Request?",
+      "text": "We'd love to hear your ideas! [Create a feature request](https://github.com/Addy-shetty/Vibe-Prompting/issues) and describe:\n- The problem it solves\n- Proposed solution\n- Alternative approaches\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "1c368d2641d30cb29a37",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📝 License",
+      "text": "This project is licensed under the **MIT License** - see the [**LICENSE**](./LICENSE) file for details.",
+      "weight": 1.03
+    },
+    {
+      "id": "e62a9bb7fdbb215ab17f",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📜 What This Means",
+      "text": "✅ **Commercial use** - Use it in your business\n✅ **Modification** - Change and customize freely\n✅ **Distribution** - Share with anyone\n✅ **Private use** - Use for personal projects\n\n⚠️ **Conditions:**\n- Include copyright notice\n- Include license copy\n\n📖 [Read the full MIT License →](./LICENSE)\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "ff6a1dec1fa0a178045f",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🙏 Acknowledgments",
+      "text": "This project wouldn't be possible without these amazing tools and services:\n\n| Technology | Purpose | License |\n|------------|---------|---------|\n| [Google Gemini](https://ai.google.dev/) | AI prompt generation | Google AI |\n| [Supabase](https://supabase.com/) | Backend infrastructure | Apache 2.0 |\n| [React](https://reactjs.org/) | UI framework | MIT |\n| [TypeScript](https://www.typescriptlang.org/) | Type safety | Apache 2.0 |\n| [Tailwind CSS](https://tailwindcss.com/) | Styling | MIT |\n| [Framer Motion](https://www.framer.com/motion/) | Animations | MIT |\n| [Vite](https://vitejs.dev/) | Build tool | MIT |\n\nSpecial thanks to:\n- 🌟 All [contributors](https://github.com/Addy-shetty/Vibe-Prompting/graphs/contributors)\n- 🐛 Bug reporters and testers\n- 💡 Feature requesters\n- ⭐ Everyone who starred this repo\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "f045a57d5dc98f97a438",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Harshith M S (Addy Shetty)",
+      "text": "[![GitHub](https://img.shields.io/badge/GitHub-@Addy--shetty-181717?style=for-the-badge&logo=github)](https://github.com/Addy-shetty)\n[![Email](https://img.shields.io/badge/Email-Harshithms@gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:Harshithms@gmail.com)\n\n</div>",
+      "weight": 1.03
+    },
+    {
+      "id": "371500c1ca9786cf99f3",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "💬 Get in Touch",
+      "text": "- 💼 **GitHub:** [@Addy-shetty](https://github.com/Addy-shetty)\n- 📧 **Email:** Harshithms@gmail.com\n- 🐛 **Issues:** [Report bugs](https://github.com/Addy-shetty/Vibe-Prompting/issues)\n- 💡 **Discussions:** [Join conversations](https://github.com/Addy-shetty/Vibe-Prompting/discussions)\n\n---\n\n<div align=\"center\">",
+      "weight": 1.03
+    },
+    {
+      "id": "d1139e406aaa40ad7a54",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🌟 Show Your Support",
+      "text": "If you find this project useful, please consider:\n\n⭐ **Starring this repository**\n🍴 **Forking and contributing**\n🐛 **Reporting bugs**\n💡 **Suggesting features**\n📢 **Sharing with others**\n\n---\n\n**Made with ❤️ by [Addy Shetty](https://github.com/Addy-shetty)**\n\n[![Star History](https://img.shields.io/github/stars/Addy-shetty/Vibe-Prompting?style=social)](https://github.com/Addy-shetty/Vibe-Prompting/stargazers)\n[![Forks](https://img.shields.io/github/forks/Addy-shetty/Vibe-Prompting?style=social)](https://github.com/Addy-shetty/Vibe-Prompting/network/members)\n[![Issues](https://img.shields.io/github/issues/Addy-shetty/Vibe-Prompting)](https://github.com/Addy-shetty/Vibe-Prompting/issues)\n\n**Thank you for visiting! Happy Prompting! 🎨✨**\n\n[⬆ Back to Top](#-vibe-prompting)\n\n</div>",
+      "weight": 1.03
+    },
+    {
+      "id": "194451f01e9b2d830e1c",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Frontend Validation (Zod)",
+      "text": "- **Email**: Max 320 characters (RFC 5321), valid email format, sanitized\n- **Username**: 3-20 characters, alphanumeric + hyphens/underscores only\n- **Password**: 8-128 characters, requires:\n  - At least 1 uppercase letter\n  - At least 1 lowercase letter\n  - At least 1 number\n  - At least 1 special character (@$!%*?&#^()_+=\\-)\n  - Not a common password",
+      "weight": 1.03
+    },
+    {
+      "id": "52bea08f72440d5a7956",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Sanitization (`src/lib/security.ts`)",
+      "text": "- XSS prevention (removes `<script>`, `javascript:`, event handlers)\n- SQL injection detection\n- Input trimming and normalization",
+      "weight": 1.03
+    },
+    {
+      "id": "4fdaca991d6ce48ff93f",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Supabase Auth",
+      "text": "- **Password Encryption**: Bcrypt hashing (handled by Supabase)\n- **JWT Tokens**: Secure session management\n- **OAuth Integration**: Google & GitHub (trusted providers)\n- **Email Verification**: Can be enabled in Supabase dashboard",
+      "weight": 1.03
+    },
+    {
+      "id": "da27dade4fa21d445ab8",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Rate Limiting",
+      "text": "- **Login**: 5 attempts per minute per user\n- **Signup**: 3 attempts per minute per user\n- **Client-side implementation** with future server-side recommendation",
+      "weight": 1.03
+    },
+    {
+      "id": "0757b3043b52aa822f0b",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "3. **Username & Email Uniqueness**",
+      "text": "- **Real-time username availability check** with debouncing (500ms)\n- **Visual feedback**: ✅ Available / ❌ Taken / ⏳ Checking\n- **Database-level unique constraints** on profiles table",
+      "weight": 1.03
+    },
+    {
+      "id": "1e89a831653d7979864b",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Password Strength Indicator",
+      "text": "- **5-level strength meter**: Very Weak → Weak → Fair → Good → Strong\n- **Real-time feedback**: Shows missing requirements\n- **Visual indicators**: Color-coded strength bars\n- **Character counter**: Shows 0/128 limit",
+      "weight": 1.03
+    },
+    {
+      "id": "4d30e0100588fe4a8bfc",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Best Practices",
+      "text": "- Minimum 8 characters (recommended 12+)\n- Blocks common passwords\n- No password storage in frontend state\n- Passwords never logged or exposed",
+      "weight": 1.03
+    },
+    {
+      "id": "dbaec0a2dc7bed995c57",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "SQL Injection",
+      "text": "- **Supabase RLS**: All queries go through Row Level Security\n- **Parameterized queries**: Supabase client handles escaping\n- **Pattern detection**: Blocks SQL keywords (SELECT, DROP, UNION, etc.)",
+      "weight": 1.03
+    },
+    {
+      "id": "40c0995238326a459584",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "XSS (Cross-Site Scripting)",
+      "text": "- **Input sanitization**: Removes dangerous HTML/JS\n- **Content Security Policy** (recommended to add)\n- **React auto-escaping**: JSX prevents most XSS by default",
+      "weight": 1.03
+    },
+    {
+      "id": "148092360791ad7674c4",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "CSRF (Cross-Site Request Forgery)",
+      "text": "- **SameSite cookies**: Supabase sets secure cookies\n- **Token-based auth**: JWT tokens in headers\n- **CORS configuration**: Restrict allowed origins in Supabase",
+      "weight": 1.03
+    },
+    {
+      "id": "de7d3f9dd113b4e09940",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Row Level Security (RLS)",
+      "text": "```sql\n-- Profiles: Users can only edit their own profile\nCREATE POLICY \"profiles_update_policy\"\n  ON public.profiles\n  FOR UPDATE\n  USING (auth.uid() = id)\n  WITH CHECK (auth.uid() = id);\n\n-- Prompts: Users can only access public prompts OR their own\nCREATE POLICY \"prompts_select_policy\"\n  ON public.prompts\n  FOR SELECT\n  USING (is_public = true OR auth.uid() = user_id);\n```",
+      "weight": 1.03
+    },
+    {
+      "id": "f336a0db5589bc119882",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Trigger Security",
+      "text": "- **SECURITY DEFINER**: Triggers run with elevated privileges\n- **Service role policy**: Allows profile auto-creation\n- **Exception handling**: Graceful failure without exposing details",
+      "weight": 1.03
+    },
+    {
+      "id": "5de529121dab79d21401",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "7. **Character Limits**",
+      "text": "| Field | Min | Max | Reason |\n|-------|-----|-----|--------|\n| Username | 3 | 20 | Usability + DB efficiency |\n| Email | 1 | 320 | RFC 5321 standard |\n| Password | 8 | 128 | Security + prevent DoS |\n| Prompt Title | 3 | 100 | Readability |\n| Prompt Content | 10 | 5000 | Prevent spam/abuse |\n| Category | 1 | 50 | Standard categories |",
+      "weight": 1.03
+    },
+    {
+      "id": "e446371a4127e9ef58fe",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "8. **Frontend Security Measures**",
+      "text": "- **No sensitive data in localStorage**: Only session tokens (httpOnly)\n- **Environment variables**: API keys in `.env` (never committed)\n- **HTTPS enforcement**: Production must use HTTPS\n- **Secure headers**: Recommend adding helmet.js for production\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "5ae3893e965336462707",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Server-Side Security",
+      "text": "1. **Rate limiting**: Use Supabase Edge Functions with Upstash Redis\n2. **IP blocking**: Block repeated failed login attempts\n3. **CAPTCHA**: Add reCAPTCHA v3 for signup/login\n4. **Email verification**: Enable in Supabase (Authentication → Providers → Email)",
+      "weight": 1.03
+    },
+    {
+      "id": "e12596e945e2a56882c9",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Content Security Policy (CSP)",
+      "text": "Add to `index.html`:\n```html\n<meta http-equiv=\"Content-Security-Policy\" content=\"\n  default-src 'self';\n  script-src 'self' 'unsafe-inline' 'unsafe-eval';\n  style-src 'self' 'unsafe-inline';\n  img-src 'self' data: https:;\n  connect-src 'self' https://*.supabase.co;\n\">\n```",
+      "weight": 1.03
+    },
+    {
+      "id": "a9489225d4ef0ec3b85c",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "HTTPS & SSL",
+      "text": "- Use Vercel/Netlify for automatic HTTPS\n- Enable HSTS (HTTP Strict Transport Security)\n- Set secure cookie flags in Supabase",
+      "weight": 1.03
+    },
+    {
+      "id": "7aaaefeba06e9cd04c2b",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "Monitoring & Logging",
+      "text": "- **Supabase Logs**: Monitor auth failures\n- **Error tracking**: Sentry or LogRocket\n- **Analytics**: Privacy-focused (Plausible, Fathom)",
+      "weight": 1.03
+    },
+    {
+      "id": "40b7942f69eede69052c",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🔍 Security Audit Checklist",
+      "text": "- [x] Input validation (Zod schemas)\n- [x] Password strength requirements\n- [x] Username uniqueness check\n- [x] SQL injection prevention\n- [x] XSS prevention\n- [x] CSRF protection (JWT tokens)\n- [x] Rate limiting (client-side)\n- [x] Character limits\n- [x] Sanitization utilities\n- [x] Row Level Security (RLS)\n- [x] Secure password hashing\n- [ ] CAPTCHA (recommended for production)\n- [ ] Email verification (can enable in Supabase)\n- [ ] Server-side rate limiting (production)\n- [ ] Content Security Policy (production)\n- [ ] Security headers (production)\n- [ ] Penetration testing (before launch)\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "ec8288a083ab2d58de26",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📚 Security Resources",
+      "text": "- [OWASP Top 10](https://owasp.org/www-project-top-ten/)\n- [Supabase Security Best Practices](https://supabase.com/docs/guides/auth/security-best-practices)\n- [Web Security by MDN](https://developer.mozilla.org/en-US/docs/Web/Security)\n- [JWT Security](https://jwt.io/introduction)\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "23daf8136d57d006a06d",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "🚨 Reporting Security Issues",
+      "text": "If you discover a security vulnerability:\n1. **Do NOT** create a public issue\n2. Email: security@yourdomain.com\n3. Provide details and steps to reproduce\n4. Allow 48 hours for response\n\n---",
+      "weight": 1.03
+    },
+    {
+      "id": "0184b230385bdebc0886",
+      "source": "Addy-shetty/Vibe-Prompting",
+      "ref": "b488d240e990",
+      "path": "docs/SECURITY_IMPLEMENTATION_FULL.md",
+      "license": "MIT",
+      "domains": [
+        "prompting",
+        "prompt-structure",
+        "streaming",
+        "validation",
+        "security",
+        "ux"
+      ],
+      "heading": "📝 Compliance Notes",
+      "text": "- **GDPR**: Users can delete their account (deletes all data)\n- **CCPA**: Privacy policy required\n- **Data encryption**: At rest (Supabase) and in transit (HTTPS)\n- **Password storage**: Never stored in plaintext (bcrypt hashed)\n\n---\n\n**Last Updated**: November 13, 2025\n**Security Level**: Production-Ready with Additional Recommendations",
+      "weight": 1.03
     }
   ]
 }
