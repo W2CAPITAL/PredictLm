@@ -72,6 +72,7 @@ export function GrokImaginePanel(){
   const [recommendedVideoProvider,setRecommendedVideoProvider]=useState<string>('');
   const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
   const [videoStage,setVideoStage]=useState('');
+  const [videoProviderWarning,setVideoProviderWarning]=useState('');
   const [attempt,setAttempt]=useState(0);
   const [review,setReview]=useState<ImageQualityReview|null>(null);
   const [imageStage,setImageStage]=useState('');
@@ -198,6 +199,7 @@ export function GrokImaginePanel(){
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
+            mode:'media-director',
             prompt:directorPrompt,
             deep:true,
             researchContext:research,
@@ -659,6 +661,7 @@ export function GrokImaginePanel(){
     setMotionProgress(0);
     setVideoStage('Preparando geração neural…');
     setError('');
+    setVideoProviderWarning('');
     setRemoteVideoUrl('');
     try{
       const prepared=await prepareMediaPrompt('video');
@@ -699,6 +702,7 @@ export function GrokImaginePanel(){
       });
       const initial=await create.json().catch(()=>({}));
       if(!create.ok)throw new Error(mediaErrorText(initial?.error,'Falha ao iniciar vídeo IA.'));
+      if(initial?.compatibilityWarning)setVideoProviderWarning(String(initial.compatibilityWarning));
 
       let videoUrl=String(initial?.videoUrl||'');
       const taskId=String(initial?.taskId||'');
@@ -741,7 +745,9 @@ export function GrokImaginePanel(){
           deepThink,
           deepResearch,
           researchGrounded:!!prepared.research,
-          directorBrief:prepared.brief||null
+          directorBrief:prepared.brief||null,
+          visualInputDowngraded:!!initial?.visualInputDowngraded,
+          compatibilityWarning:String(initial?.compatibilityWarning||'')
         }
       });
       return videoUrl;
@@ -1000,6 +1006,7 @@ export function GrokImaginePanel(){
           {generatedCaption?<div className="gmedia-result-caption"><b>Cena gerada</b><p>{generatedCaption}</p></div>:null}
         </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Auto usa um motor temporal real configurado (Veo/ComfyUI/Veo 3/Seedance/Sora); motion local é somente fallback explícito.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
+        {videoProviderWarning?<div className="gmedia-provider-warning"><b>Compatibilidade do vídeo</b><span>{videoProviderWarning}</span></div>:null}
         {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
       </div>
     </div>
