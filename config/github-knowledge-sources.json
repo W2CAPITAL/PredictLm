@@ -2502,6 +2502,94 @@
         "simulation-ui"
       ],
       "reason": "License not verified; rendering architecture concepts only."
+    },
+    {
+      "repo": "HelloFangaming/HelloMarioEngine",
+      "branch": "master",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-engine",
+        "objects",
+        "rooms",
+        "event-loop",
+        "simulation-ui"
+      ],
+      "weight": 0.96,
+      "reason": "README explicitly states New BSD; use reusable engine/object/event architecture only, not Mario assets/IP."
+    },
+    {
+      "repo": "EasyRPG/Player",
+      "branch": "master",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/BUILDING.md"
+      ],
+      "domains": [
+        "2d-runtime",
+        "interpreter",
+        "event-loop",
+        "platform-abstraction",
+        "emscripten"
+      ],
+      "reason": "GPL-3.0 implementation remains architecture reference only."
+    },
+    {
+      "repo": "niksudan/prettylight",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-lighting",
+        "shaders",
+        "surfaces",
+        "simulation-ui"
+      ],
+      "weight": 0.94
+    },
+    {
+      "repo": "YoYoGames/GameMaker-HTML5",
+      "branch": "develop",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "scripts/"
+      ],
+      "domains": [
+        "html5-runtime",
+        "canvas",
+        "input",
+        "audio",
+        "render-loop",
+        "browser"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "YoYoGames/GameMaker-Manual",
+      "branch": "develop",
+      "license": "copyrighted-docs",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "gamemaker",
+        "runtime-docs",
+        "html5",
+        "assets",
+        "build"
+      ],
+      "reason": "Manual content is copyright YoYo Games; use navigation/documentation concepts only, no corpus copying."
     }
   ]
 }
