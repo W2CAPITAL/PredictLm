@@ -276,7 +276,7 @@
     },
     {
       "repo": "jnbno1163/LG-token-saver",
-      "branch": "main",
+      "branch": "master",
       "license": "MIT",
       "mode": "allow",
       "include": [
