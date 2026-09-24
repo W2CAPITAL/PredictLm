@@ -10,7 +10,7 @@ import { deepLoopContext } from './deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from './decision-centum';
 
 export type LocalRuntimeKind='ollama'|'openai'|'lowram';
-export type LocalRuntimeId='ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
+export type LocalRuntimeId='freellmapi'|'ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
 
 export interface LocalRuntimeCandidate{
   id:LocalRuntimeId;
@@ -37,7 +37,29 @@ export interface LocalRuntimeReply{
   sources:{title:string;source:string}[];
 }
 
+const CREDENTIAL_KEY='predictlm-local-runtime-credentials-v1';
+
+function readCredentials():Partial<Record<LocalRuntimeId,string>>{
+  if(typeof window==='undefined')return {};
+  try{return JSON.parse(localStorage.getItem(CREDENTIAL_KEY)||'{}')||{}}catch{return {}}
+}
+
+export function setLocalRuntimeCredential(id:LocalRuntimeId,key:string){
+  if(typeof window==='undefined')return;
+  const next={...readCredentials()};
+  const clean=String(key||'').trim();
+  if(clean)next[id]=clean; else delete next[id];
+  localStorage.setItem(CREDENTIAL_KEY,JSON.stringify(next));
+}
+
+export function hasLocalRuntimeCredential(id:LocalRuntimeId){return !!readCredentials()[id]}
+
+function runtimeAuth(candidate:LocalRuntimeCandidate){
+  return readCredentials()[candidate.id]||'local';
+}
+
 export const LOCAL_RUNTIME_CANDIDATES:LocalRuntimeCandidate[]=[
+  {id:'freellmapi',label:'FreeLLMAPI · 3001',baseUrl:'http://127.0.0.1:3001',kind:'openai',source:'tashfeenahmed/freellmapi',priority:110},
   {id:'ollama',label:'Ollama',baseUrl:'http://127.0.0.1:11434',kind:'ollama',source:'Ollama / llamdrop patterns',priority:100},
   {id:'local-4891',label:'Local OpenAI · 4891',baseUrl:'http://127.0.0.1:4891',kind:'openai',source:'Local OpenAI-compatible runtime pattern',priority:92},
   {id:'local-8080',label:'Local OpenAI · 8080',baseUrl:'http://127.0.0.1:8080',kind:'openai',source:'llamafile / NanoMind runtime pattern',priority:90},
@@ -77,7 +99,12 @@ async function probeOllama(candidate:LocalRuntimeCandidate):Promise<LocalRuntime
 
 async function probeOpenAI(candidate:LocalRuntimeCandidate):Promise<LocalRuntimeStatus>{
   try{
-    const {response,latencyMs}=await timedFetch(candidate.baseUrl+'/v1/models',{},1600);
+    if(candidate.id==='freellmapi'&&!hasLocalRuntimeCredential('freellmapi')){
+      return {...candidate,available:false,detail:'unified key required'};
+    }
+    const {response,latencyMs}=await timedFetch(candidate.baseUrl+'/v1/models',{
+      headers:{'Authorization':'Bearer '+runtimeAuth(candidate)}
+    },1600);
     if(!response.ok)throw new Error('HTTP '+response.status);
     const data=await response.json().catch(()=>({}));
     const model=String(data?.data?.[0]?.id||data?.models?.[0]?.id||data?.models?.[0]?.name||'local').trim();
@@ -141,7 +168,7 @@ async function generateOllama(
   if(!response.ok)throw new Error(String(data?.error||'Ollama '+response.status));
   const content=String(data?.message?.content||data?.response||'').trim();
   if(!content)throw new Error('Ollama retornou resposta vazia.');
-  return {content,model};
+  return {content,model:String(data?.model||response.headers.get('x-routed-model')||model)};
 }
 
 async function generateOpenAI(
@@ -149,10 +176,10 @@ async function generateOpenAI(
   messages:{role:string;content:string}[],
   deep:boolean
 ){
-  const model=runtime.model||'local';
+  const model=runtime.id==='freellmapi'?(deep?'auto:smart':'auto:fast'):(runtime.model||'local');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/chat/completions',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer local'},
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+runtimeAuth(runtime)},
     body:JSON.stringify({
       model,
       messages,
@@ -202,7 +229,7 @@ export async function answerViaLocalRuntime(
   const statuses=await probeLocalRuntimes();
   const available=statuses.filter(x=>x.available);
   if(!available.length){
-    throw new Error('Nenhum runtime local acessível. Inicie Ollama, llamafile/NanoMind, GenieX ou LowRAM e verifique CORS/porta local.');
+    throw new Error('Nenhum runtime local acessível. Configure FreeLLMAPI ou inicie Ollama, llamafile/NanoMind, GenieX ou LowRAM e verifique CORS/porta local.');
   }
   const preferred=options?.preferred&&options.preferred!=='auto'
     ? available.find(x=>x.id===options.preferred)
