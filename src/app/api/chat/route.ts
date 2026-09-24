@@ -231,7 +231,55 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
 }
 
 function volatileQuery(prompt:string){
-  return /\b(hoje|agora|atual|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather)\b/i.test(prompt);
+  return /\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather|fortuna hoje|patrimonio hoje|patrimônio hoje)\b/i.test(prompt);
+}
+
+function isSimpleStableFactual(prompt:string){
+  const q=normalize(prompt);
+  return !volatileQuery(prompt)
+    && /^(quem (e|foi)|o que (e|foi)|defina|explique|qual e|onde fica|quando nasceu)\b/.test(q)
+    && prompt.length<420;
+}
+
+function isSimpleProcedural(prompt:string){
+  const q=normalize(prompt);
+  return !volatileQuery(prompt)
+    && /^(como\s+\S+|passo a passo|me ensine a|quero aprender a)\b/.test(q)
+    && prompt.length<520;
+}
+
+function simpleAnswerIssue(prompt:string,content:string){
+  const q=normalize(prompt);
+  const out=normalize(content);
+  if(isSimpleStableFactual(prompt)){
+    const volatile=(out.match(/\b(atualmente|mais rico|fortuna|patrimonio|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes|em 20\d{2})\b/g)||[]).length;
+    if(volatile>=2&&!/\b(fortuna|patrimonio|patrimonio liquido|mais rico|ranking)\b/.test(q))return 'unsolicited-volatile-claims';
+  }
+  if(isSimpleProcedural(prompt)){
+    if(!/\b(primeiro|depois|passo|use|coloque|prepare|mantenha|plante|regue|deixe|retire|corte|adicione|espere|faça|faca)\b/.test(out))return 'missing-procedure';
+  }
+  return '';
+}
+
+function simpleTurnGuard(prompt:string,researchContext:string){
+  if(isSimpleStableFactual(prompt)){
+    return [
+      'MODO FACTUAL ESTÁVEL: responda primeiro quem/o que é, de forma curta e correta.',
+      'Não acrescente fortuna atual, ranking de riqueza, cargo político atual, números de mercado, datas futuras ou outros fatos voláteis se o usuário não pediu isso explicitamente.',
+      researchContext
+        ? 'Use contexto recuperado somente quando ele responder diretamente à pergunta; descarte snippets laterais ou contraditórios.'
+        : 'Sem fonte atual anexada, prefira fatos estáveis e omita números/estado atual incertos em vez de inventar.'
+    ].join(' ');
+  }
+  if(isSimpleProcedural(prompt)){
+    return [
+      'MODO PROCEDURAL: responda a ação pedida com passos práticos primeiro.',
+      'Não substitua o procedimento por uma definição enciclopédica do objeto.',
+      'Não misture personagens, obras, páginas homônimas ou snippets laterais só porque compartilham uma palavra com o pedido.',
+      researchContext?'Use fonte recuperada apenas se ela melhorar diretamente os passos.':''
+    ].filter(Boolean).join(' ');
+  }
+  return '';
 }
 
 async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS){
@@ -385,22 +433,25 @@ export async function POST(req:Request){
     const humanPresence=humanPresenceContext(prompt);
     const masterContext=predictLMMasterContext(prompt,deep);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
+    const simpleTurn=!deep&&(isSimpleStableFactual(prompt)||isSimpleProcedural(prompt));
+    const responseGuard=simpleTurnGuard(prompt,researchContext);
     const packed=optimizePromptPackage({
       messages:rawHistory,
-      mode:deep?'lite':'full',
+      mode:simpleTurn?'ultra':(deep?'lite':'full'),
       sections:[
         {label:'Instruções persistentes do usuário',text:localInstructions,priority:8},
-        {label:'Lições globais aprovadas',text:globalLessons,priority:7},
-        {label:'Centum Decision Gate',text:centum,priority:10},
-        {label:'Third Brain PARALLAX',text:parallax,priority:10},
+        {label:'Lições globais aprovadas',text:simpleTurn?'':globalLessons,priority:7},
+        {label:'Centum Decision Gate',text:simpleTurn?'':centum,priority:10},
+        {label:'Third Brain PARALLAX',text:simpleTurn?'':parallax,priority:10},
         {label:'PredictLM Master',text:masterContext,priority:10},
         {label:'Human Presence',text:humanPresence,priority:10},
-        {label:'Human Adversarial Lens',text:humanLens,priority:9},
-        {label:'Digital Brain control layer',text:brainContext,priority:10},
-        {label:'Deep Loop',text:deepLoop,priority:9},
-        {label:'Tutor Mode',text:tutor,priority:6},
+        {label:'Human Adversarial Lens',text:simpleTurn?'':humanLens,priority:9},
+        {label:'Digital Brain control layer',text:simpleTurn?'':brainContext,priority:10},
+        {label:'Deep Loop',text:simpleTurn?'':deepLoop,priority:9},
+        {label:'Tutor Mode',text:simpleTurn?'':tutor,priority:6},
+        {label:'Modo de resposta',text:responseGuard,priority:10},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
-        {label:'Parecer do cérebro local',text:localAdvisory,priority:8},
+        {label:'Parecer do cérebro local',text:simpleTurn?'':localAdvisory,priority:8},
         {label:'Piso prático de resposta',text:answerAnchor,priority:9},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
@@ -446,6 +497,8 @@ export async function POST(req:Request){
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         const content=gate.content;
+        const simpleIssue=simpleTurn?simpleAnswerIssue(prompt,content):'';
+        if(simpleIssue){errors.push(provider.name+' rejected: '+simpleIssue);continue;}
         const value={
           content,
           provider:provider.name,

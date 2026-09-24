@@ -5,7 +5,7 @@ import { Activity, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as Image
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldPreferLocalRuntimeFirst, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -208,6 +208,7 @@ export function ChatShell({onOpenLegal}:Props){
     const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
+    const preferLocalFirst=s.localRuntimeEnabled&&shouldPreferLocalRuntimeFirst(kind,prompt,s.deepThink,needsWeb);
 
     setInput('');
     setScreen('chat');
@@ -476,6 +477,50 @@ export function ChatShell({onOpenLegal}:Props){
       const answerAnchor=kind==='howto'?(direct||practicalHowToReply(prompt)||''):'';
       const directScore=direct?answerQuality(prompt,direct):-99;
       const anchorScore=answerAnchor?answerQuality(prompt,answerAnchor):-99;
+
+      // Predict Auto should not automatically prefer a remote API just because one
+      // exists. For short static factual/procedural questions, a loaded local model
+      // often has a cleaner signal because it is not contaminated by retrieval
+      // snippets or the large cloud orchestration package.
+      if(preferLocalFirst){
+        setActivity(['LOCAL FIRST · usando o runtime já ativo','VERIFY · checando aderência e utilidade','FALLBACK · nuvem só se necessário']);
+        try{
+          const localReply=await answerViaLocalRuntime(prompt,messages,{
+            deep:false,
+            preferred:'auto',
+            language,
+            researchContext:'',
+            signal:turnController.signal
+          });
+          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
+          const quality=answerQuality(prompt,localReply.content);
+          const weak=/não tenho contexto|nao tenho contexto|evidência suficiente|evidencia suficiente|ative neural|fallback/i.test(localReply.content);
+          const threshold=kind==='howto'?2:1;
+          if(relevant&&!weak&&quality>=threshold){
+            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
+            s.addMessage({
+              role:'assistant',
+              content:localReply.content,
+              engine:'Predict Auto',
+              sources:filterDisplayedSources(prompt,localReply.sources,6),
+              reasoningSummary:buildReasoningSummary({
+                kind,
+                localRuntime:true,
+                anchor:!!answerAnchor,
+                deep:false
+              }),
+              actions:[
+                'Runtime local priorizado para pergunta estática/prática',
+                'Resposta validada antes de exibir'
+              ],
+              status:'done'
+            });
+            return;
+          }
+        }catch{}
+        setActivity(['LOCAL FIRST não atingiu o piso de qualidade','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
+      }
+
       const advisory=(currentNeural.loaded||currentWebLLM.loaded)
         ? await localBrainAdvisory(prompt,messages,{language,researchContext})
         : null;
@@ -494,7 +539,8 @@ export function ChatShell({onOpenLegal}:Props){
             const cloudText=gatedCloud.ok?gatedCloud.content:'';
             const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
             const quality=cloudText?answerQuality(prompt,cloudText):-99;
-            if(!relevant||(kind==='howto'&&quality<3)){
+            const minCloudQuality=kind==='howto'?3:kind==='factual'?1:-99;
+            if(!relevant||quality<minCloudQuality){
               setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor','Validando a resposta final']);
             }else{
             const cloudSources=filterDisplayedSources(prompt,[

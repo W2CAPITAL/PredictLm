@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.6.0"
+  version: "3.7.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.6
+# PredictLM Master v3.7
 
 ## Regra soberana
 
@@ -711,3 +711,23 @@ Veo usa geração assíncrona real. Quando imagens inline/reference são rejeita
 5. nunca entrar em loop de retry.
 
 Deep Think de mídia usa o modo interno `media-director`; falha dos providers de chat é uma melhoria opcional indisponível e retorna resposta vazia/200, não uma cascata de 502 que bloqueia vídeo.
+
+## Predict Auto: local-first para perguntas simples
+
+Quando um runtime local já está ativo, **modelo maior/remoto não vence automaticamente**.
+
+Para perguntas curtas, estáticas e comuns (`quem é…`, `o que é…`, `como plantar…`, `como chocar…`):
+- se não houver necessidade de dado atual/pesquisa, Predict Auto tenta o runtime local primeiro;
+- a resposta local só é aceita se passar relevância, gate público e piso mínimo de qualidade;
+- cloud continua fallback para baixa qualidade, falha local, Deep Think, pesquisa atual, técnico complexo ou contexto sensível;
+- Web habilitada significa permissão/capacidade, não obrigação de pesquisar cada mensagem.
+
+Busca automática é reservada a:
+- informação atual/volátil;
+- pedido explícito de fonte, pesquisa, verificação ou comparação;
+- how-to de alto risco/fortemente dependente de norma atual;
+- técnico/documentação quando Web está habilitada.
+
+Perguntas factuais estáticas não devem receber riqueza atual, ranking, cargo atual, números de mercado ou datas voláteis não pedidos. Perguntas `como ...` devem responder com procedimento, não com definição enciclopédica nem snippets homônimos.
+
+Para turnos simples, o pacote de prompt cloud deve ser compacto: remover Centum/PARALLAX/Human Adversarial/Digital Brain/Deep Loop quando não agregam valor. Uma IA forte com prompt excessivamente carregado pode responder pior do que um modelo pequeno com instrução limpa.
