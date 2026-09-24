@@ -1,0 +1,36 @@
+name: GitHub Knowledge Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: npm run knowledge:sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run build
+      - name: Commit index update
+        run: |
+          if git diff --quiet -- src/data/github-knowledge-index.json reports/github-knowledge/manifest.json; then
+            echo "No knowledge changes"
+            exit 0
+          fi
+          git config user.name "predictlm-knowledge-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/data/github-knowledge-index.json reports/github-knowledge/manifest.json
+          git commit -m "chore(knowledge): refresh GitHub index"
+          git push
