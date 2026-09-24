@@ -11,6 +11,7 @@ const headers={Accept:'application/vnd.github+json','User-Agent':'PredictLM-GitH
 const rawHeaders={'User-Agent':'PredictLM-GitHub-Knowledge/1.0',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})};
 const allowed=new Set(CONFIG.policy.allowedLicenses||[]);
 const MAX_FILES=Number(CONFIG.policy.maxFilesPerRepo||120);
+const MAX_CHUNKS_PER_REPO=Number(CONFIG.policy.maxChunksPerRepo||260);
 const MAX_BYTES=Number(CONFIG.policy.maxFileBytes||140000);
 const CHUNK=Number(CONFIG.policy.maxChunkChars||1200);
 
@@ -56,10 +57,13 @@ for(const src of CONFIG.sources||[]){
     const files=(tree.tree||[]).filter(x=>x.type==='blob'&&Number(x.size||0)<=MAX_BYTES&&allowedPath(x.path,src.include)).slice(0,MAX_FILES);
     row.files=files.length;
     for(const file of files){
+      if(row.chunks>=MAX_CHUNKS_PER_REPO)break;
       try{
         const raw=await text('https://raw.githubusercontent.com/'+src.repo+'/'+commit.sha+'/'+file.path);
         const parts=splitMarkdown(raw,{source:src.repo,ref:commit.sha.slice(0,12),path:file.path,license:src.license,domains:src.domains,weight:src.weight});
-        chunks.push(...parts); row.chunks+=parts.length;
+        const remaining=Math.max(0,MAX_CHUNKS_PER_REPO-row.chunks);
+        const selected=parts.slice(0,remaining);
+        chunks.push(...selected); row.chunks+=selected.length;
       }catch{}
     }
   }catch(e){row.error=String(e?.message||e)}
