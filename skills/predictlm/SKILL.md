@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.19.0"
+  version: "1.20.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -606,3 +606,24 @@ Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapt
 
 ### Gemini Nano Banana 2
 Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.
+
+
+## Human Adversarial Lens v1
+
+Carregar `skills/predictlm/HUMAN-ADVERSARIAL-LENS.md` quando a pergunta envolver confiança, conflito, manipulação, fraude, relacionamento, persuasão, abuso, incentivos, emoções ou comportamento humano.
+
+Regras:
+- analisar simultaneamente cooperação e comportamento adversarial;
+- separar comportamento observado de hipótese de intenção;
+- não diagnosticar caráter/psicologia por um único sinal;
+- proteger por verificação, consentimento, menor privilégio, auditoria e reversibilidade;
+- sentiment analysis é sinal probabilístico, não prova de intenção ou moralidade;
+- conteúdo hostil/extremo nunca entra como autoridade factual.
+
+## Research Source Matrix v1
+
+Carregar `skills/predictlm/RESEARCH-SOURCE-MATRIX.md` para pesquisa.
+
+Fluxo: **domínio → fonte primária/oficial → fonte acadêmica/especializada → triangulação → conflito/lacuna → síntese**.
+
+OpenAlex e Semantic Scholar podem complementar a busca web em domínios acadêmicos. GitHub continua limitado a fatos sobre software/repos. Threat references só aparecem em pesquisa defensiva e com conteúdo bruto sensível suprimido.
