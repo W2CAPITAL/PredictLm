@@ -206,11 +206,12 @@ function researchHost(item:ResearchItem){
 }
 
 export function filterRelevantResearchItems(query:string,items:ResearchItem[],limit=8){
+  const automotive=relevanceTokens(query).some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x));
   const ranked=items.map(item=>{
     const rel=researchItemRelevance(query,item);
     const quality=Math.max(0,Math.min(100,Number(item.qualityScore??50)));
-    return {item,...rel,rank:rel.score+Math.floor(quality/15)};
-  }).filter(x=>x.relevant)
+    return {item,...rel,quality,rank:rel.score+Math.floor(quality/15)};
+  }).filter(x=>x.relevant&&(!automotive||x.quality>=70||x.matches>=4))
     .sort((a,b)=>b.rank-a.rank);
 
   const selected:ResearchItem[]=[];
