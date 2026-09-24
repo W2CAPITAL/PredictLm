@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -28,6 +28,7 @@ RECALL → CLASSIFY → PLAN → FORGE → AEGIS → EXECUTE → VERIFY → CAPT
 Rotas primárias:
 - general-chat
 - build
+- build-review
 - research
 - deep-research
 - books-courses
@@ -319,3 +320,27 @@ Pergunta factual normal não deve receber quiz/checagem pedagógica sem pedido d
 Research usa query planning, batches, URL/host dedup, gap check e síntese com provenance.
 Livros/cursos/vídeos passam por gate de direitos antes de qualquer ingest.
 Ciência Todo Dia = complementar; LinkedIn Learning = discovery + material autorizado.
+
+
+## Build Review
+
+GOAL → CONTEXT → REQUIREMENTS → ACCEPTANCE → IMPLEMENT → DIFF REVIEW → VERIFY → REPAIR → RE-REVIEW.
+
+Diff review prioriza arquivos alterados e findings acionáveis.
+Provider secret em VITE_ ou credencial hard-coded é blocking.
+Neural review nunca substitui smoke/build/test/typecheck.
+
+## Runtime invariants v1.6
+
+Preservar em qualquer evolução:
+- Neural Lite auto-warm somente em idle/worker, sem cargas concorrentes;
+- Local Runtime Router opcional; Browser Neural permanece independente;
+- Token Budget antes de RAG/modelo;
+- Deep Loop bounded + rollback;
+- Tutor/Reading source-grounded;
+- Deep Research com query dedup/diversidade/partial fallback;
+- books/courses/videos com rights gate;
+- global learning local imediato + promoção GitHub aprovada, sem DB obrigatório;
+- image generate→review→repair→optional super-resolution;
+- Build changed-file review + smoke/Council + focused repair;
+- skill files atualizados sempre que runtime, arquitetura ou fontes mudarem.
