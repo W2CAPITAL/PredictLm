@@ -1,6 +1,6 @@
 import { compactText } from '@/lib/token-budget';
 
-export type VisualReferenceProvider='google-images'|'pinterest-via-google'|'firecrawl';
+export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google';
 
 export interface VisualReference{
   provider:VisualReferenceProvider;
@@ -124,13 +124,13 @@ async function googleImageSearch(query:string,limit:number,pinterest=false):Prom
     .filter(Boolean) as VisualReference[];
 }
 
-async function firecrawlImageSearch(query:string,limit:number):Promise<VisualReference[]>{
+async function firecrawlImageSearch(query:string,limit:number,pinterest=false):Promise<VisualReference[]>{
   const key=String(process.env.FIRECRAWL_API_KEY||'').trim();
   if(!key)return [];
   const r=await fetch('https://api.firecrawl.dev/v2/search',{
     method:'POST',
     headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},
-    body:JSON.stringify({query:query.slice(0,480),sources:['images'],limit:Math.max(2,Math.min(10,limit))}),
+    body:JSON.stringify({query:(pinterest?(query+' site:pinterest.com/pin/'):query).slice(0,480),sources:['images'],limit:Math.max(2,Math.min(10,limit))}),
     cache:'no-store',
     signal:AbortSignal.timeout(12000)
   });
@@ -142,7 +142,7 @@ async function firecrawlImageSearch(query:string,limit:number):Promise<VisualRef
     const sourceUrl=String(typeof item==='string'?item:(item?.url||item?.sourceUrl||item?.imageUrl||'')).trim();
     if(!isSafePublicUrl(imageUrl)||!isSafePublicUrl(sourceUrl))return null;
     return {
-      provider:'firecrawl',
+      provider:pinterest?'pinterest-via-firecrawl':'firecrawl',
       title:String(typeof item==='string'?query:(item?.title||query)).replace(/\s+/g,' ').trim().slice(0,180),
       imageUrl,
       sourceUrl,
@@ -158,23 +158,28 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   if(!isSpecificVisualPrompt(input))return {query,references:[],warnings:[]};
 
   const warnings:string[]=[];
-  const tasks=await Promise.allSettled([
-    googleImageSearch(query,max,false),
-    googleImageSearch(query,Math.min(3,max),true),
-    firecrawlImageSearch(query,max)
-  ]);
-  const labels=['Google Images','Pinterest via Google Images','Firecrawl Images'];
+  const hasFirecrawl=!!String(process.env.FIRECRAWL_API_KEY||'').trim();
+  const hasGoogle=!!String(process.env.GOOGLE_IMAGE_SEARCH_API_KEY||'').trim()&&!!String(process.env.GOOGLE_IMAGE_SEARCH_CX||'').trim();
+  const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'firecrawl,pinterest-firecrawl,google,pinterest-google')
+    .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+
+  const tasks:{label:string;run:Promise<VisualReference[]>}[]=[];
+  for(const id of order){
+    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',run:firecrawlImageSearch(query,max,false)});
+    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',run:firecrawlImageSearch(query,Math.min(3,max),true)});
+    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',run:googleImageSearch(query,max,false)});
+    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',run:googleImageSearch(query,Math.min(3,max),true)});
+  }
+
+  const settled=await Promise.allSettled(tasks.map(x=>x.run));
   const merged:VisualReference[]=[];
-  tasks.forEach((task,index)=>{
+  settled.forEach((task,index)=>{
     if(task.status==='fulfilled')merged.push(...task.value);
-    else warnings.push(labels[index]+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
+    else warnings.push(tasks[index].label+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
   });
 
-  if(!String(process.env.GOOGLE_IMAGE_SEARCH_API_KEY||'').trim()||!String(process.env.GOOGLE_IMAGE_SEARCH_CX||'').trim()){
-    warnings.push('Google Images/Pinterest grounding não configurado: defina GOOGLE_IMAGE_SEARCH_API_KEY e GOOGLE_IMAGE_SEARCH_CX.');
-  }
-  if(!String(process.env.FIRECRAWL_API_KEY||'').trim()){
-    warnings.push('Firecrawl Images não configurado.');
+  if(!hasFirecrawl&&!hasGoogle){
+    warnings.push('Nenhuma fonte externa de referência visual está configurada; usando identity lock textual.');
   }
 
   const seen=new Set<string>();

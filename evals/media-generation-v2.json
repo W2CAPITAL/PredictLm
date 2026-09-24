@@ -1,0 +1,135 @@
+{
+  "version": 2,
+  "suite": "media-generation-v2",
+  "cases": [
+    {
+      "id": "real-video-auto-prefers-temporal-provider",
+      "input": {
+        "mode": "video",
+        "provider": "auto",
+        "prompt": "Naruto Kurama lutando com Sasuke Perfect Susanoo",
+        "deepThink": true,
+        "deepResearch": true
+      },
+      "expect": {
+        "notFinalProviders": [
+          "browser-mediarecorder",
+          "predict-storyboard"
+        ],
+        "requiresTaskOrVideoUrl": true,
+        "temporalGeneration": true,
+        "referenceGrounding": true
+      }
+    },
+    {
+      "id": "veo-reference-images-use-real-assets",
+      "input": {
+        "provider": "gemini",
+        "duration": 4,
+        "resolution": "720p",
+        "referenceImages": [
+          "data:image/png;base64,<fixture>"
+        ]
+      },
+      "expect": {
+        "effectiveDuration": 8,
+        "referenceImagesMax": 3,
+        "usesInlineImageBytes": true
+      }
+    },
+    {
+      "id": "structured-provider-error-never-leaks-object-object",
+      "input": {
+        "error": {
+          "error": {
+            "message": "quota exceeded"
+          }
+        }
+      },
+      "expect": {
+        "visibleTextContains": "quota exceeded",
+        "visibleTextExcludes": "[object Object]"
+      }
+    },
+    {
+      "id": "deep-media-planning",
+      "input": {
+        "deepThink": true,
+        "deepResearch": true,
+        "prompt": "produto futurista em chuva noturna"
+      },
+      "expect": {
+        "researchDepth": "comprehensive",
+        "directorBrief": true,
+        "finalPromptContainsTemporalDirectionsForVideo": true
+      }
+    },
+    {
+      "id": "no-real-provider-honest-fallback",
+      "input": {
+        "configuredTemporalProviders": []
+      },
+      "expect": {
+        "autoAvailable": false,
+        "localFallbackLabeledNonGenerative": true,
+        "noClaimOfNeuralVideo": true
+      }
+    },
+    {
+      "id": "comfyui-real-video-bridge",
+      "input": {
+        "provider": "comfyui",
+        "workflowConfigured": true
+      },
+      "expect": {
+        "submitEndpoint": "/prompt",
+        "pollEndpoint": "/history",
+        "assetEndpoint": "/view",
+        "requiresRealOutputFile": true
+      }
+    },
+    {
+      "id": "firecrawl-only-visual-grounding",
+      "input": {
+        "firecrawlConfigured": true,
+        "googleConfigured": false,
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "referencesAttempted": [
+          "firecrawl",
+          "pinterest-via-firecrawl"
+        ],
+        "googleRequired": false,
+        "missingGoogleWarning": false
+      }
+    },
+    {
+      "id": "grok-imagine-parity-persists-expanded-prompt",
+      "input": {
+        "mode": "image",
+        "style": "Anime",
+        "prompt": "Naruto Kurama lutando com Sasuke Susanoo perfeito"
+      },
+      "expect": {
+        "realMediaRoute": true,
+        "promptExpanded": true,
+        "styleInPrompt": true,
+        "promptOriginalPersisted": true,
+        "seedPersisted": true,
+        "modelPersisted": true
+      }
+    },
+    {
+      "id": "technical-review-never-fakes-perfect-semantic-score",
+      "input": {
+        "reviewType": "pixel-heuristic"
+      },
+      "expect": {
+        "maxScore": 94,
+        "label": "Qualidade técnica",
+        "semanticApprovalImplied": false
+      }
+    }
+  ]
+}
