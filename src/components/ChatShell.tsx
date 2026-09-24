@@ -84,6 +84,18 @@ function buildReasoningSummary(input:{
   return parts.join(' ');
 }
 
+function filterDisplayedSources(prompt:string,sources:{title:string;source:string}[],limit=8){
+  const seen=new Set<string>();
+  const rows=sources.filter(src=>{
+    const key=src.source||src.title;
+    if(!key||seen.has(key))return false;
+    seen.add(key);
+    const subject=(src.title+' '+src.source).replace(/https?:\/\/\S+/g,' ');
+    return responseTopicAlignment(prompt,subject).relevant;
+  });
+  return rows.slice(0,limit);
+}
+
 function safeHistoricalContent(content:string){
   const sanitized=sanitizePublicAnswer(content);
   if(sanitized&&!looksLikeOperationalMonologue(sanitized))return sanitized;
@@ -467,10 +479,10 @@ export function ChatShell({onOpenLegal}:Props){
             if(!relevant||(kind==='howto'&&quality<3)){
               setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor','Validando a resposta final']);
             }else{
-            const cloudSources=[
+            const cloudSources=filterDisplayedSources(prompt,[
               ...web.sources,
               ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            ],8);
             const finalText=kind==='howto'&&answerAnchor&&anchorScore>=quality?answerAnchor:cloudText;
             s.addMessage({
               role:'assistant',
@@ -507,10 +519,10 @@ export function ChatShell({onOpenLegal}:Props){
           const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
           if(relevant){
             setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
-            const localSources=[
+            const localSources=filterDisplayedSources(prompt,[
               ...web.sources,
               ...localReply.sources
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            ],8);
             s.addMessage({
               role:'assistant',
               content:localReply.content,
