@@ -297,7 +297,6 @@ export function GrokImaginePanel(){
       provider:String(data.provider||''),
       model:String(data.model||'flux'),
       expandedPrompt:String(data.expandedPrompt||renderPrompt),
-      caption:String(data.caption||''),
       referencesUsed:Array.isArray(data.referencesUsed)?data.referencesUsed:[],
       referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[],
       promptMode:String(data.promptMode||promptMode),
