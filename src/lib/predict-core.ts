@@ -70,7 +70,12 @@ function analyzePrompt(prompt:string):CoreSpec{
     return {item:x,score:matches.length*4+(x.words.test(normalized)?5:0)};
   }).sort((a,b)=>b.score-a.score);
   const best=scores[0];
-  const intent:CoreIntent=best&&best.score>0?best.item.id:'generic';
+  const domainBlueprint=inferDomainAppBlueprint(normalized);
+  const complexWorkspace=/\b(saas|erp|helpdesk|service desk|workspace|multi.?tenant|rbac)\b/i.test(normalized);
+  const explicitCrm=/\bcrm\b/i.test(normalized);
+  const intent:CoreIntent=(domainBlueprint&&!explicitCrm)||complexWorkspace
+    ? 'workspace'
+    : best&&best.score>0?best.item.id:'generic';
   const premium=/premium|profissional|pro\b|sofisticad|luxo|executiv|incr[ií]vel/i.test(normalized);
   const dark=!/claro|light|branco|clean white/i.test(normalized);
   const featureWords:string[]=[];
