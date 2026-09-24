@@ -23,6 +23,15 @@ function providers():Provider[]{
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
+  if(process.env.OLLAMA_BASE_URL&&process.env.OLLAMA_MODEL){
+    const ollamaBase=process.env.OLLAMA_BASE_URL.replace(/\/$/,'');
+    push({
+      name:'ollama',
+      base:ollamaBase.endsWith('/v1')?ollamaBase:ollamaBase+'/v1',
+      key:process.env.OLLAMA_API_KEY||'ollama',
+      model:process.env.OLLAMA_MODEL
+    });
+  }
   if(process.env.GROQ_API_KEY&&process.env.GROQ_MODEL){
     push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL});
   }
