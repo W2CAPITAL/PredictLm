@@ -515,7 +515,8 @@ export function updateNeuro(prev:NeuroControl,input:{novelty:number;threat:numbe
   };
 }
 `;
-  const selfModel=`export const SIMULATION_SELF_MODEL={\n  name:'Predict',\n  presentation:'feminine',\n  appearance:{hair:'long black hair, straight bangs, high ponytail',style:'dark alternative, black choker, black-and-white striped sleeves'},\n  visualPolicy:{autoGenerate:false,simulationOnly:true},\n  activationPolicy:{manualOnly:true,autoStart:false}\n} as const;\n`;\n  const readme=`# Simulation modules
+  const selfModel=`export const SIMULATION_SELF_MODEL={\n  name:'Predict',\n  presentation:'feminine',\n  appearance:{hair:'long black hair, straight bangs, high ponytail',style:'dark alternative, black choker, black-and-white striped sleeves'},\n  visualPolicy:{autoGenerate:false,simulationOnly:true},\n  activationPolicy:{manualOnly:true,autoStart:false}\n} as const;\n`;
+  const readme=`# Simulation modules
 
 - model.ts: domain state only.
 - policy.ts: deterministic decision/need rules.
