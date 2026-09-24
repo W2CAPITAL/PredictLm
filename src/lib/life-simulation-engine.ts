@@ -1,4 +1,5 @@
 import { advanceNeuroState, createNeuroState, type NeuroState } from './neurocore';
+import { ENTITY_SELF_MODEL } from './entity-self-model';
 
 export type LifeLocation='Casa'|'Trabalho'|'Café'|'Parque'|'Mercado'|'Clínica'|'Biblioteca';
 
@@ -93,7 +94,7 @@ function hash(seed:number,tick:number){
 }
 function place(id:LifeLocation){return places.find(x=>x.id===id)||places[0]}
 
-export function createLifeSimulation(name='Lia',seed=173){
+export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173){
   const home=place('Casa');
   const state:LifeSimulationState={
     version:1,
