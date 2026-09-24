@@ -1,6 +1,6 @@
 'use client';
 
-import React,{useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import JSZip from 'jszip';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -18,6 +18,7 @@ import { runExecutableCouncilX10 } from '@/lib/council-runtime';
 import { runLocalSmokeTest } from '@/lib/local-tools';
 import { runLocalCouncil } from '@/lib/council';
 import { formatBuildReview, runBuildDiffReview } from '@/lib/build-diff-review';
+import { repairWorkspaceFiles } from '@/lib/workspace-repair';
 
 export function GrokBuildPanel(){
   const s=useStudio();
@@ -29,10 +30,19 @@ export function GrokBuildPanel(){
   const [view,setView]=useState<'preview'|'code'>('preview');
   const [busy,setBusy]=useState(false);
   const [buildMenu,setBuildMenu]=useState(false);
+  const [previewError,setPreviewError]=useState('');
+
+  useEffect(()=>{
+    const onMessage=(event:MessageEvent)=>{
+      if(event.data?.type==='predictlm:preview-error')setPreviewError(String(event.data?.payload?.message||'Erro de preview'));
+    };
+    window.addEventListener('message',onMessage);
+    return()=>window.removeEventListener('message',onMessage);
+  },[]);
 
   async function run(){
     const task=prompt.trim(); if(!task||busy)return;
-    setPrompt('');setBusy(true);
+    setPrompt('');setBusy(true);setPreviewError('');
     s.addMessage({role:'user',content:task});
     const turn=resolveBuildTurn(task,files,s.messages);
     try{
@@ -42,19 +52,19 @@ export function GrokBuildPanel(){
         return;
       }
       const result=orchestrateBuild(turn.effectivePrompt,files,s.deepThinkLevel);
-      let finalFiles=result.files;
+      let finalFiles=repairWorkspaceFiles(result.files);
       const finalPhases=[...result.phases];
       const finalPlan=[...result.plan];
       let refinement='';
 
       const local=neuralStatus();
       if(local.loaded&&s.deepThinkLevel!=='fast'){
-        finalPhases.push({id:'neural-refine',label:'Local intelligence refinement',status:'warn',detail:'Reviewing the generated architecture against the current project.'});
+        finalPhases.push({id:'neural-refine',label:'Refinamento local',status:'warn',detail:'Reviewing the generated architecture against the current project.'});
         const patch=await generateNeuralBuildPatch(turn.effectivePrompt,finalFiles);
         if(patch?.files?.length){
           const map=new Map(finalFiles.map(file=>[file.path,file]));
           for(const file of patch.files)map.set(file.path,file);
-          finalFiles=Array.from(map.values());
+          finalFiles=repairWorkspaceFiles(Array.from(map.values()));
           const phase=finalPhases.find(x=>x.id==='neural-refine');
           if(phase){phase.status='done';phase.detail=patch.files.length+' focused file patch(es) applied without resetting the project.'}
           finalPlan.push('DONE · Local refinement — '+patch.files.map(x=>x.path).join(', '));
@@ -70,14 +80,14 @@ export function GrokBuildPanel(){
       let finalReview=runBuildDiffReview(files,finalFiles);
       const reviewPhase:BuildPhase={
         id:'diff-review',
-        label:'Changed-file review',
+        label:'Revisão dos arquivos alterados',
         status:finalReview.ok?'done':'warn',
         detail:finalReview.score+'/100 review · '+finalReview.changedPaths.length+' changed · '+finalReview.findings.length+' finding(s)'
       };
       finalPhases.push(reviewPhase);
       const verifyPhase:BuildPhase={
         id:'final-verify',
-        label:'Final verification',
+        label:'Verificação final',
         status:finalSmoke.ok&&finalCouncil.score>=75&&finalReview.ok?'done':'warn',
         detail:finalSmoke.score+'/100 smoke · '+finalCouncil.score+'/100 Council · '+finalReview.score+'/100 review'
       };
@@ -99,7 +109,7 @@ export function GrokBuildPanel(){
         if(repair?.files?.length){
           const map=new Map(finalFiles.map(file=>[file.path,file]));
           for(const file of repair.files)map.set(file.path,file);
-          finalFiles=Array.from(map.values());
+          finalFiles=repairWorkspaceFiles(Array.from(map.values()));
           finalSmoke=runLocalSmokeTest(finalFiles);
           finalCouncil=runLocalCouncil(finalFiles);
           finalReview=runBuildDiffReview(files,finalFiles);
@@ -123,7 +133,7 @@ export function GrokBuildPanel(){
 
       const wantsCouncil=s.deepThinkLevel==='max'||/council\s*x?10|war\s*room|pressure.?test|red.?team/i.test(task);
       if(wantsCouncil){
-        finalPhases.push({id:'council-x10-runtime',label:'Council X10 executable',status:'warn',detail:'Running independent review lenses and Chair.'});
+        finalPhases.push({id:'council-x10-runtime',label:'Council X10 executável',status:'warn',detail:'Running independent review lenses and Chair.'});
         const council=await runExecutableCouncilX10(task,finalFiles);
         const phase=finalPhases.find(x=>x.id==='council-x10-runtime');
         if(council.executed){
@@ -139,7 +149,7 @@ export function GrokBuildPanel(){
         }
       }
 
-      if(finalFiles?.length)s.mergeFiles(finalFiles);
+      if(finalFiles?.length)s.mergeFiles(repairWorkspaceFiles(finalFiles));
       setPhases(finalPhases);
       s.addMessage({role:'assistant',content:result.explanation+refinement+'\n\n'+finalPlan.join('\n')});
       s.addRun({title:task,status:'done',steps:finalPlan});
@@ -201,7 +211,7 @@ export function GrokBuildPanel(){
       <aside className="gbuild-agent">
         <div className="twincore-badge"><Sparkles size={13}/><div><b>LEXIS TwinCore X10</b><span>FORGE + AEGIS · Council 10</span></div></div>
         <div className="gbuild-thread">
-          {s.messages.slice(-8).map(m=><article className={m.role} key={m.id}><b>{m.role==='user'?'YOU':'AI'}</b><p>{m.content}</p></article>)}
+          {s.messages.slice(-8).map(m=><article className={m.role} key={m.id}><b>{m.role==='user'?'VOCÊ':'IA'}</b><p>{m.content}</p></article>)}
           {busy&&<div className="gbuild-running"><i/><i/><i/> executando sobre o projeto atual</div>}
         </div>
         {phases.length>0&&<div className="gbuild-phases">{phases.map(p=><div key={p.id} className={p.status}><span>{p.status==='done'?'✓':p.status==='skip'?'–':'!'}</span><div><b>{p.label}</b><small>{p.detail}</small></div></div>)}</div>}
@@ -212,7 +222,7 @@ export function GrokBuildPanel(){
       <main className="gbuild-workspace">
         <div className="gbuild-files">{files.map(f=><button key={f.path} className={s.activeFile===f.path?'active':''} onClick={()=>s.setActiveFile(f.path)}><FileCode2 size={12}/>{f.path}</button>)}</div>
         {view==='preview'
-          ?<iframe title="PredictLM Preview" sandbox="allow-scripts allow-forms allow-modals" srcDoc={preview}/>
+          ?<><iframe title="PredictLM Preview" sandbox="allow-scripts allow-forms allow-modals" srcDoc={preview}/>{previewError&&<div style={{position:'absolute',left:16,right:16,bottom:16,zIndex:20,padding:'10px 12px',borderRadius:10,background:'#2a1117',border:'1px solid #6b2d3b',color:'#ffd6dd',fontSize:12}}><b>Preview com erro:</b> {previewError}</div>}</>
           :<div className="gbuild-code">{active?<CodeMirror value={active.content} theme={oneDark} height="100%" extensions={[active.language==='css'?css():javascript({jsx:true,typescript:true})]} onChange={v=>s.updateFile(active.path,v)}/>:<div className="gbuild-empty">Selecione um arquivo.</div>}</div>}
       </main>
     </div>
