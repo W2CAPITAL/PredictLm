@@ -1,5 +1,6 @@
 import { TRAINING_KNOWLEDGE } from './learned-lessons';
 import { trainingSourceStats } from './source-registry';
+import { githubKnowledgeStats } from '@/lib/github-knowledge-engine';
 
 function normalize(text:string){
   return String(text||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
@@ -41,5 +42,5 @@ export function trainingContext(query:string,limit=4){
 
 export function trainingRuntimeStats(){
   const sources=trainingSourceStats();
-  return {sources,lessons:TRAINING_KNOWLEDGE.length};
+  return {sources,lessons:TRAINING_KNOWLEDGE.length,githubKnowledge:githubKnowledgeStats()};
 }
