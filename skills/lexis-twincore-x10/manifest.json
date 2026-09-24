@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.11.0",
+  "version": "5.12.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -32,7 +32,8 @@
     "tutor-mode",
     "deep-research",
     "books-courses",
-    "build-review"
+    "build-review",
+    "centum-parallax"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -121,7 +122,14 @@
     "global-learning-proposals",
     "image-quality-ladder",
     "optional-super-resolution",
-    "bounded-deep-loop"
+    "bounded-deep-loop",
+    "centum-100-question-gate",
+    "decision-10x10-review",
+    "third-brain-parallax",
+    "forge-aegis-parallax",
+    "council-x10-after-centum",
+    "strict-intent-no-generic-fallback",
+    "decision-uncertainty-preservation"
   ],
   "hosts": [
     "PredictLM",
