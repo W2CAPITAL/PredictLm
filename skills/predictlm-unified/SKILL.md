@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -376,3 +376,24 @@ Em decisão/certeza/comparação/risco/aprovação/prontidão:
 As 100 perguntas são internas por padrão.
 Sem fallback de conteúdo: falha/retrieval irrelevante nunca autoriza responder outra coisa.
 Fallback técnico entre runtimes continua permitido apenas para entregar o mesmo pedido.
+
+
+## Provider Mesh / Web Reach v1.9
+
+Cloud/provider routing:
+- generic AI, FreeLLMAPI, OpenCode, NVIDIA, DeepSeek, Kimi, Z.AI, MiniMax, Gemini, Groq, OpenRouter, Anthropic, Ark e self-hosted Ollama podem compor o cascade;
+- apenas providers configurados entram na ordem;
+- segredos permanecem server-side;
+- Anthropic usa Messages nativo; os demais usam adapter compatível quando suportado.
+
+Research:
+- Firecrawl primário quando configurado;
+- Apify dataset/run pode complementar;
+- fallback web gratuito continua independente;
+- conteúdo recuperado passa por provenance/relevance gate antes de influenciar resposta.
+
+Build/reference:
+- Open Lovable e Freebuff reforçam análise → implementação → sandbox/review → package;
+- FastChat reforça serving/eval multi-model;
+- Agent-Reach reforça tool reach/discovery;
+- adapters sociais ficam externos/opt-in e não viram dependência silenciosa.
