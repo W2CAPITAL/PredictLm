@@ -472,6 +472,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const github=githubKnowledgeContext(prompt,githubTopK);
   const learned=adaptiveContext(prompt,4);
   const instructions=adaptiveInstructionContext(8);
+  const globalLessons=globalLearningContext(prompt,3);
   const tutor=tutorSystemContext(prompt);
   const packed=optimizePromptPackage({
     messages,
@@ -479,7 +480,6 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     sections:[
       {label:'Contexto recuperado',text:context,priority:5},
       {label:'GitHub Knowledge Engine',text:github,priority:5},
-      {label:'Instruções persistentes do usuário',text:instructions,priority:7},
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
