@@ -6,7 +6,50 @@ function safeHost(url:string){try{return new URL(url).hostname}catch{return ''}}
 function stripHtml(input:string){return String(input||'').replace(/<[^>]+>/g,' ').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&amp;/g,'&').replace(/\s+/g,' ').trim()}
 
 function normalized(input:string){
-  return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
+}
+
+const STOPWORDS=new Set(['como','criar','fazer','uma','um','de','da','do','das','dos','para','com','sem','que','por','em','no','na','e','ou','o','a','os','as','me','eu','quero','preciso']);
+
+function queryTokens(input:string){
+  return normalized(input).split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!STOPWORDS.has(x));
+}
+
+function sourceRelevance(query:string,item:any){
+  const core=queryTokens(query);
+  if(!core.length)return {score:1,matches:1,titleMatches:0};
+  const title=normalized(item?.title||'');
+  const body=normalized((item?.summary||item?.description||'')+' '+(item?.site||'')+' '+(item?.source||''));
+  let score=0,matches=0,titleMatches=0;
+  for(const token of core){
+    if(new RegExp('\\b'+token+'\\b').test(title)){score+=7;matches++;titleMatches++}
+    else if(new RegExp('\\b'+token+'\\b').test(body)){score+=3;matches++}
+  }
+  const q=normalized(query);
+  if(/dragao|dragon/.test(q)&&/(dragao|dragon|escultura|sculpture)/.test(title+' '+body)){score+=4;matches++}
+  if(/metal|aco|ferro|solda/.test(q)&&/(metal|aco|steel|ferro|solda|welding|fabrication)/.test(title+' '+body)){score+=4;matches++}
+  if(/starlink|spacex|nasa|satelite/.test(q)&&/(starlink|spacex|nasa|satellite|telemetry|gibs|earthdata)/.test(title+' '+body)){score+=5;matches++}
+  if(/quant|qubit|matemat|calculo|algebra/.test(q)&&/(quant|qubit|math|matemat|calculo|algebra|matrix|statistic)/.test(title+' '+body)){score+=5;matches++}
+  if(/sgs|bacen|bcb|juros|pericia/.test(q)&&/(bcb|bacen|sgs|juros|interest|pericia|forensic)/.test(title+' '+body)){score+=5;matches++}
+  if(/datajud|djen|jurid|processo|tribunal/.test(q)&&/(datajud|djen|jurid|process|tribunal|cnj)/.test(title+' '+body)){score+=5;matches++}
+  return {score,matches,titleMatches};
+}
+
+function researchQueryPlan(query:string){
+  const q=normalized(query);
+  const planned=[query.trim()];
+  if(/dragao|dragon/.test(q)&&/metal|aco|ferro/.test(q)){
+    planned.push(query+' escultura metálica estrutura armação soldagem fabricação acabamento segurança');
+  }else if(/starlink|spacex|satelite|nasa|gibs/.test(q)){
+    planned.push(query+' telemetry API satellite Earth observation official documentation');
+  }else if(/quant|qubit|matemat|calculo|algebra/.test(q)){
+    planned.push(query+' formula derivation symbolic numerical verification academic');
+  }else if(/sgs|bacen|bcb|juros|pericia/.test(q)){
+    planned.push(query+' Banco Central SGS série oficial modalidade taxa metodologia');
+  }else if(/datajud|djen|jurid|processo|tribunal/.test(q)){
+    planned.push(query+' CNJ DataJud DJEN fonte oficial');
+  }
+  return Array.from(new Set(planned)).slice(0,2);
 }
 
 function isSoftwareResearchQuery(query:string){
@@ -18,8 +61,12 @@ function isAutomotiveResearchQuery(query:string){
 }
 
 function expandResearchQuery(query:string){
+  const q=normalized(query);
   if(isAutomotiveResearchQuery(query)){
     return query+' automotive engineering vehicle design chassis suspension braking powertrain safety homologation prototype';
+  }
+  if(/dragao|dragon/.test(q)&&/metal|aco|ferro/.test(q)){
+    return query+' escultura metálica estrutura armação soldagem fabricação acabamento segurança metal sculpture fabrication welding';
   }
   return query;
 }
@@ -111,13 +158,24 @@ async function duckHtmlSearch(query:string,limit:number){
   return out;
 }
 
-function enrichAndRank(items:any[],limit:number){
+function enrichAndRank(query:string,items:any[],limit:number){
   const enriched=items.filter(x=>x?.url).map(x=>{
     const q=sourceQuality(x.url,x.source);
-    return {...x,qualityScore:q.score,qualityTier:q.tier,qualityReasons:q.reasons};
+    const rel=sourceRelevance(query,x);
+    const authority=Math.floor(q.score/12);
+    const rank=rel.score*4+authority;
+    return {...x,qualityScore:q.score,qualityTier:q.tier,qualityReasons:q.reasons,relevanceScore:rel.score,relevanceMatches:rel.matches,rankScore:rank};
   });
-  const deduped=Array.from(new Map(enriched.map(x=>[x.url,x])).values());
-  return deduped.sort((a:any,b:any)=>Number(b.qualityScore||0)-Number(a.qualityScore||0)).slice(0,Math.max(limit,12));
+  const deduped=Array.from(new Map(enriched.map(x=>[x.url,x])).values()) as any[];
+  const coreCount=Math.max(1,queryTokens(query).length);
+  const relevant=deduped.filter((x:any)=>{
+    if(x.relevanceMatches>=2)return true;
+    if(coreCount===1&&x.relevanceMatches>=1)return true;
+    return x.relevanceScore>=7&&x.qualityScore>=65;
+  });
+  return relevant
+    .sort((a:any,b:any)=>Number(b.rankScore||0)-Number(a.rankScore||0))
+    .slice(0,Math.max(limit,12));
 }
 
 function coverage(items:any[]){
@@ -178,7 +236,7 @@ async function freeSearch(query:string,limit:number){
   if(duckAuthority.status==='fulfilled')web.push(...duckAuthority.value);
   else warnings.push('Busca de fontes fortes indisponível');
 
-  const ranked=enrichAndRank(web,limit);
+  const ranked=enrichAndRank(query,web,limit);
   return {provider:'free-fallback',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
 }
 
@@ -192,12 +250,19 @@ export async function POST(req:Request){
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
       try{
-        const result=await firecrawlSearch(expandResearchQuery(query),limit,key);
+        const plan=researchQueryPlan(query);
+        const searches=await Promise.all(plan.map(q=>firecrawlSearch(expandResearchQuery(q),Math.max(5,Math.ceil(limit/plan.length)+2),key)));
+        const merged={
+          provider:'firecrawl',
+          web:searches.flatMap(x=>x.web||[]),
+          news:searches.flatMap(x=>x.news||[]),
+          images:searches.flatMap(x=>x.images||[])
+        };
         let apify:any[]=[];
         try{apify=await apifyItems(limit)}catch{}
-        const web=enrichAndRank([...(result.web||[]),...apify],limit);
-        const news=enrichAndRank(result.news||[],limit);
-        return Response.json({query,...result,web,news,coverage:coverage([...web,...news])});
+        const web=enrichAndRank(query,[...merged.web,...apify],limit);
+        const news=enrichAndRank(query,merged.news,limit);
+        return Response.json({query,provider:'firecrawl',researchPlan:plan,web,news,images:merged.images,coverage:coverage([...web,...news])});
       }catch(error:any){
         const fallback=await freeSearch(query,limit);
         return Response.json({query,...fallback,warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])]});
@@ -208,7 +273,7 @@ export async function POST(req:Request){
     try{
       const apify=await apifyItems(limit);
       if(apify.length){
-        const web=enrichAndRank([...(fallback.web||[]),...apify],limit);
+        const web=enrichAndRank(query,[...(fallback.web||[]),...apify],limit);
         return Response.json({query,...fallback,web,coverage:coverage(web)});
       }
     }catch{}
