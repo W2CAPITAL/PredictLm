@@ -1,5 +1,6 @@
 import type { ConversationLanguage } from './language-policy';
 import { answerMatchesConversationLanguage } from './language-policy';
+import { looksLikeOperationalMonologue, operationalDisclosureRequested } from './human-presence';
 
 const REASONING_PATTERNS=[
   /<think[\s>]/i,
@@ -51,7 +52,7 @@ export function hasInternalRuntimeLeak(text:string){
   return INTERNAL_RUNTIME_PATTERNS.some(re=>re.test(value));
 }
 
-export function sanitizePublicAnswer(raw:string){
+export function sanitizePublicAnswer(raw:string,prompt=''){
   let value=String(raw||'')
     .replace(/<thinking>[\s\S]*?<\/thinking>/gi,'')
     .replace(/<think>[\s\S]*?<\/think>/gi,'')
@@ -60,9 +61,10 @@ export function sanitizePublicAnswer(raw:string){
 
   if(hasInternalReasoningLeak(value))return '';
 
+  const allowOps=operationalDisclosureRequested(prompt);
   value=value
     .split(/\r?\n/)
-    .filter(line=>!/^\s*(?:engine|provider|fallback|skill|route|router|trace|council|forge|aegis|parallax)\s*[:·-]/i.test(line))
+    .filter(line=>allowOps||!/^\s*(?:engine|provider|fallback|skill|route|router|trace|council|forge|aegis|parallax)\s*[:·-]/i.test(line))
     .join('\n')
     .replace(/\n{3,}/g,'\n\n')
     .trim();
@@ -70,10 +72,11 @@ export function sanitizePublicAnswer(raw:string){
   return value;
 }
 
-export function publicAnswerGate(text:string,language:ConversationLanguage){
-  const sanitized=sanitizePublicAnswer(text);
+export function publicAnswerGate(text:string,language:ConversationLanguage,prompt=''){
+  const sanitized=sanitizePublicAnswer(text,prompt);
   if(!sanitized)return {ok:false,content:'',reason:'internal-reasoning'};
-  if(hasInternalRuntimeLeak(sanitized))return {ok:false,content:'',reason:'internal-runtime'};
+  if(!operationalDisclosureRequested(prompt)&&hasInternalRuntimeLeak(sanitized))return {ok:false,content:'',reason:'internal-runtime'};
+  if(!operationalDisclosureRequested(prompt)&&looksLikeOperationalMonologue(sanitized))return {ok:false,content:'',reason:'operational-monologue'};
   if(!answerMatchesConversationLanguage(sanitized,language))return {ok:false,content:'',reason:'wrong-language'};
   if(sanitized.length<2)return {ok:false,content:'',reason:'empty'};
   return {ok:true,content:sanitized,reason:'ok'};
