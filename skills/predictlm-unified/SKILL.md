@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.14.0"
+  version: "1.15.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -32,6 +32,8 @@ Rotas primárias:
 - research
 - human-adversarial
 - neurocore
+- digital-brain
+- entity-self-model
 - life-simulation
 - research-source-matrix
 - deep-research
@@ -107,8 +109,13 @@ Pesquisa usa `skills/predictlm/RESEARCH-SOURCE-MATRIX.md`: fonte oficial/primár
 ### NEUROCORE
 O host aplica uma camada brain-inspired antes da geração quando disponível: saliência → atenção → memória de trabalho → planejamento/inibição → ação. Estado persistente controla prioridade e incerteza, mas não cria identidade biológica, sentimentos reais ou objetivos independentes do usuário.
 
+### DIGITAL BRAIN ALWAYS-ON
+O NeuroCore é envolvido pelo Digital Brain persistente. Ele mantém homeostase, executive control, metacognição, memória e predictive state entre turnos. Heartbeat passivo é local e sem side effects externos.
+
+Self-model visual é persistente e feminino conforme referência do usuário, porém invisível no Chat por padrão. Nenhuma geração visual automática.
+
 ### LIFE SIMULATION
-Pedidos para rodar uma simulação ativa usam o Life Simulation Studio. Pedidos para construir/exportar um simulador usam Build com intent `simulation`. A simulação mantém mundo 2D, personagem, necessidades, relações, memória episódica, eventos e persistência local.
+Pedidos para rodar uma simulação ativa usam o Life Simulation Studio **somente após comando explícito**; reload sempre volta pausado. Pedidos para construir/exportar um simulador usam Build com intent `simulation`. A simulação mantém mundo 2D, personagem, necessidades, relações, memória episódica, eventos e persistência local.
 
 ### VERIFY
 Nunca dizer:
