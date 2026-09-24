@@ -107,3 +107,11 @@ test('como seria se stays hypothetical instead of being rejected as missing-proc
   assert.equal(conversationAnswerIssue(prompt,answer),'');
   assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
 });
+
+test('como seria uma mosca falante is hypothetical, not how-to',()=>{
+  const prompt='Como seria uma mosca falante';
+  const answer='Uma mosca falante provavelmente seria inquieta, curiosa e rápida: comentaria cheiros, migalhas, voos pela cozinha e a frustração de bater numa janela transparente.';
+  assert.equal(classifyConversation(prompt),'hypothetical');
+  assert.equal(conversationAnswerIssue(prompt,answer),'');
+  assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
+});
