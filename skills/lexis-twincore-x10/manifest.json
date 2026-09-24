@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.19.0",
+  "version": "5.20.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -46,7 +46,9 @@
     "human-adversarial-lens",
     "research-source-matrix",
     "neurocore",
-    "life-simulation"
+    "life-simulation",
+    "digital-brain",
+    "entity-self-model"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -193,7 +195,15 @@
     "active-2d-simulation",
     "simulation-needs-memory-relations",
     "simulation-build-intent",
-    "simulation-not-consciousness-gate"
+    "simulation-not-consciousness-gate",
+    "always-on-digital-brain",
+    "passive-cognitive-heartbeat",
+    "persistent-self-model",
+    "user-reference-appearance",
+    "visual-generation-explicit-only",
+    "simulation-manual-only",
+    "simulation-reload-paused",
+    "howto-final-answer-not-research-snippets"
   ],
   "hosts": [
     "PredictLM",
