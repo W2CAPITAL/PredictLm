@@ -248,6 +248,19 @@ function isSimpleProcedural(prompt:string){
     && prompt.length<520;
 }
 
+function simpleAnswerIssue(prompt:string,content:string){
+  const q=normalize(prompt);
+  const out=normalize(content);
+  if(isSimpleStableFactual(prompt)){
+    const volatile=(out.match(/\b(atualmente|mais rico|fortuna|patrimonio|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes|em 20\d{2})\b/g)||[]).length;
+    if(volatile>=2&&!/\b(fortuna|patrimonio|patrimonio liquido|mais rico|ranking)\b/.test(q))return 'unsolicited-volatile-claims';
+  }
+  if(isSimpleProcedural(prompt)){
+    if(!/\b(primeiro|depois|passo|use|coloque|prepare|mantenha|plante|regue|deixe|retire|corte|adicione|espere|faça|faca)\b/.test(out))return 'missing-procedure';
+  }
+  return '';
+}
+
 function simpleTurnGuard(prompt:string,researchContext:string){
   if(isSimpleStableFactual(prompt)){
     return [
@@ -484,6 +497,8 @@ export async function POST(req:Request){
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         const content=gate.content;
+        const simpleIssue=simpleTurn?simpleAnswerIssue(prompt,content):'';
+        if(simpleIssue){errors.push(provider.name+' rejected: '+simpleIssue);continue;}
         const value={
           content,
           provider:provider.name,
