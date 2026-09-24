@@ -11,6 +11,7 @@ import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from './decision-centum';
+import { humanAdversarialContext } from './human-adversarial-lens';
 
 function useGithubKnowledge(input:string){
   const q=String(input||'').toLowerCase();
@@ -256,6 +257,7 @@ export async function answerViaLocalRuntime(
   const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
+  const humanLens=humanAdversarialContext(prompt);
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
   const centum=centumDecisionContext(prompt);
@@ -270,6 +272,7 @@ export async function answerViaLocalRuntime(
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Human Adversarial Lens',text:humanLens,priority:9},
       {label:'Centum Decision Gate',text:centum,priority:10},
       {label:'Third Brain PARALLAX',text:parallax,priority:10},
       {label:'Deep Loop',text:deepLoop,priority:9},
