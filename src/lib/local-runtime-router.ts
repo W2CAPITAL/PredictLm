@@ -14,6 +14,7 @@ import { centumDecisionContext, parallaxContext } from './decision-centum';
 import { humanAdversarialContext } from './human-adversarial-lens';
 import { digitalBrainContext, readBrowserDigitalBrain } from './digital-brain';
 import { humanPresenceContext } from './human-presence';
+import { isScenarioSimulationRequest, predictLMMasterContext } from './predictlm-master';
 
 function useGithubKnowledge(input:string){
   const q=String(input||'').toLowerCase();
@@ -271,7 +272,9 @@ export async function answerViaLocalRuntime(
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
   const humanLens=humanAdversarialContext(prompt);
+  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
   const humanPresence=humanPresenceContext(prompt);
+  const masterContext=predictLMMasterContext(prompt,deepMode);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
@@ -279,7 +282,7 @@ export async function answerViaLocalRuntime(
   const parallax=parallaxContext(prompt);
   const packed=optimizePromptPackage({
     messages:sanitizeMessages(history),
-    mode:runtime.kind==='lowram'?'ultra':(options?.deep?'lite':'full'),
+    mode:runtime.kind==='lowram'?'ultra':(deepMode?'lite':'full'),
     sections:[
       {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'GitHub Knowledge',text:github,priority:5},
@@ -287,6 +290,7 @@ export async function answerViaLocalRuntime(
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'PredictLM Master',text:masterContext,priority:10},
       {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
       {label:'Digital Brain control layer',text:brainContext,priority:10},
@@ -308,9 +312,9 @@ export async function answerViaLocalRuntime(
   ];
 
   let generated:{content:string;model:string};
-  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,!!options?.deep,options?.signal);
-  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep,options?.signal);
-  else generated=await generateOpenAI(runtime,messages,!!options?.deep,options?.signal);
+  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,deepMode,options?.signal);
+  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,deepMode,options?.signal);
+  else generated=await generateOpenAI(runtime,messages,deepMode,options?.signal);
 
   const gate=publicAnswerGate(generated.content,options?.language||'pt-BR',prompt);
   if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
