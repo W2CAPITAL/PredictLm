@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.10.0"
+  version: "1.11.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -347,7 +347,7 @@ Neural review nunca substitui smoke/build/test/typecheck.
 ## Runtime invariants v1.8
 
 Preservar em qualquer evolução:
-- Neural Lite auto-warm somente em idle/worker, sem cargas concorrentes;
+- Neural local somente sob demanda; nenhum auto-warm/download no primeiro acesso;
 - Local Runtime Router opcional; Browser Neural permanece independente;
 - Token Budget antes de RAG/modelo;
 - Deep Loop bounded + rollback;
@@ -413,3 +413,10 @@ New federated routes:
 - `office-artifacts`: DOCX + PPTX + PDF + XLSX with artifact validation.
 
 Dossier is a second-brain evidence/artifact route and must return its normalized context to the main answer route rather than replacing the Chat response.
+
+
+## SaaS Builder / Media v1.11
+
+Federar `saas-builder-fabric` para Build de negócio: tenant/workspace, RBAC, data model, auth, persistence, billing quando aplicável, audit trail, jobs e integrações reais.
+
+Media: imagem prioriza Nano Banana quando configurado; vídeo Auto roteia somente para provider temporal real configurado. Storyboard/motion local permanece fallback e deve ser rotulado como tal.
