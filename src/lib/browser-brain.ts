@@ -7,6 +7,7 @@ import { trainingContext } from './training/context';
 import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
 import { responseTopicAlignment } from './chat-intelligence';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
+import { compactText, optimizePromptPackage, packContext, type TokenBudgetStats } from './token-budget';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -16,6 +17,7 @@ export interface BrainReply {
   engine:BrainEngine;
   sources?:{title:string;source:string}[];
   fallbackReason?:string;
+  tokenStats?:TokenBudgetStats;
 }
 
 declare global {
@@ -340,6 +342,10 @@ export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile
   if(!worker||!loadedTier)return null;
   const learnedBuild=trainingContext(prompt,6);
   const githubBuild=githubKnowledgeContext(prompt,3);
+  const buildContext=packContext([
+    {label:'Approved implementation patterns',text:learnedBuild,priority:4},
+    {label:'GitHub Knowledge Engine context',text:githubBuild,priority:5}
+  ].filter(x=>x.text),'full');
   const system=[
     'You are the code refinement layer of a local app builder.',
     'Return ONLY valid JSON with keys explanation, plan, files.',
@@ -348,13 +354,12 @@ export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile
     'For business apps, require real navigation/sidebar, domain validation, loading/error/empty states, persistence boundary, API/integration adapters, server-only secrets and tests.',
     'Do not claim an integration is connected without credentials/handshake.',
     'Prefer edits that connect generated src modules to real behavior rather than decorative files.',
-    learnedBuild?('Approved implementation patterns:\n'+learnedBuild):'',
-    githubBuild?('GitHub Knowledge Engine context:\n'+githubBuild):''
+    buildContext.text
   ].filter(Boolean).join('\n\n');
   const snapshot=files
     .filter(f=>/^(App\.tsx|styles\.css|predict\.spec\.json|ARCHITECTURE\.md|src\/|server\/|\.env\.example)/.test(f.path))
     .slice(0,12)
-    .map(f=>({path:f.path,content:f.content.slice(0,2600)}));
+    .map(f=>({path:f.path,content:compactText(f.content,520)}));
   const request=[
     'TASK: '+prompt,
     'CURRENT PROJECT:',
@@ -396,18 +401,26 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const trained=trainingContext(prompt,5);
   const github=githubKnowledgeContext(prompt,3);
   const learned=adaptiveContext(prompt,4);
-  const recent=messages.slice(-10).map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
+  const packed=optimizePromptPackage({
+    messages,
+    mode:options?.deep?'lite':'full',
+    sections:[
+      {label:'Contexto recuperado',text:context,priority:5},
+      {label:'GitHub Knowledge Engine',text:github,priority:5},
+      {label:'Memória adaptativa local',text:learned,priority:4},
+      {label:'Padrões aprendidos',text:trained,priority:3}
+    ].filter(x=>x.text)
+  });
+  const recent=packed.messages.map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
   const compiled=compileSystemPrompt({
     userText:prompt,
     extra:[
-      recent?'Histórico recente:\n'+recent:'',
-      context?'Contexto recuperado:\n'+context:'',
-      trained?'Padrões aprendidos dos packs aprovados:\n'+trained:'',
-      github?'GitHub Knowledge Engine (top-k versionado):\n'+github:'',
-      learned?'Memória adaptativa local:\n'+learned:''
+      recent?'Histórico recente compactado:\n'+recent:'',
+      packed.context
     ].filter(Boolean)
   });
   const system=compiled.system;
+  const neuralMessages=packed.messages;
   const sources=[
     ...retrieveGitHubKnowledge(prompt,3).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
     ...retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}))
@@ -420,7 +433,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
         captureAdaptiveExperience(prompt,cleaned,'native-model');
-        return {content:cleaned,engine:'native',sources};
+        return {content:cleaned,engine:'native',sources,tokenStats:packed.stats};
       }
     }catch(error:any){
       fallbackReason=String(error?.message||'Browser native model unavailable');
@@ -435,7 +448,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         const draft=await neuralGenerate(
           system+'\n\nDEEP PASS 1 — FORGE: identifique o assunto central, restrições e uma resposta útil. Não fale sobre infraestrutura do PredictLM, agentes ou skills a menos que a pergunta seja sobre isso. Produza um rascunho curto e factual.',
           prompt,
-          messages,
+          neuralMessages,
           {maxNewTokens:loadedTier==='smart'?320:220,temperature:0.28}
         );
         options?.onStage?.('aegis');
@@ -453,12 +466,12 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         content=await neuralGenerate(
           system+'\n\nA resposta final deve cobrir explicitamente o substantivo/assunto principal do pedido e ser autocontida.',
           finalPrompt,
-          messages,
+          neuralMessages,
           {maxNewTokens:loadedTier==='smart'?720:500,temperature:0.34}
         );
       }else{
         options?.onStage?.('forge');
-        content=await neuralGenerate(system,prompt,messages);
+        content=await neuralGenerate(system,prompt,neuralMessages);
       }
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
@@ -470,7 +483,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
           options?.onStage?.('verify');
           lastNeuralError='';
           captureAdaptiveExperience(prompt,cleaned,'local-model');
-          return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources};
+          return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources,tokenStats:packed.stats};
         }
       }else{
         fallbackReason='Local neural model returned an empty response';
