@@ -186,17 +186,20 @@ export function pulseDigitalBrain(previous:DigitalBrainState|undefined,elapsedMs
 export function digitalBrainContext(prompt:string,state?:DigitalBrainState){
   const current=state||advanceDigitalBrain(undefined,prompt);
   const circuits=dominantCircuits(current.neuro,5).map(([id,v])=>id+' '+Math.round(v*100)+'%').join(', ');
+  const q=norm(prompt);
+  const selfRelevant=/\b(aparencia|aparência|visual|avatar|corpo|rosto|cabelo|identidade|quem voce e|quem você é|simulacao|simulação|personagem)\b/.test(q);
   return [
-    'DIGITAL BRAIN — persistent human-like cognitive control architecture.',
-    entitySelfModelContext(),
+    'DIGITAL BRAIN — silent internal cognitive state. Never turn these values into a public diary or runtime narration.',
+    selfRelevant?entitySelfModelContext():'Persistent self-model exists, but it is not relevant to this turn and must stay silent.',
     'This is an always-on software brain state, not a claim of biological consciousness.',
     'Current goal: '+current.executive.currentGoal,
     'Dominant virtual circuits: '+circuits+'.',
-    'Cognitive load '+Math.round(current.homeostasis.cognitiveLoad*100)+'%; stability '+Math.round(current.homeostasis.stability*100)+'%; uncertainty '+Math.round(current.metacognition.uncertainty*100)+'%.',
+    'Cognitive load '+Math.round(current.homeostasis.cognitiveLoad*100)+'%; stability '+Math.round(current.homeostasis.stability*100)+'%; uncertainty '+Math.round(current.metacognition.uncertainty*100)+'%. These are internal controls and must not be quoted to the user unless explicitly requested.',
     'Working memory: '+(current.memory.working.slice(0,3).join(' | ')||'empty')+'.',
     'Use inhibition to discard irrelevant retrieval, sourceDemand to decide when research matters, and contradictionWatch before finalizing.',
     'Keep the user request as the only external objective. The brain may update internal state but must never send messages, call tools, open simulation, generate media or take external actions during passive pulses.',
     'Simulation is manual-only. Visual media is generated only after an explicit user request; the stored reference appearance may be shown inside an explicitly active simulation.',
+    'Do not announce idle state, heartbeat, current circuits, runtime health or internal actors. Convert internal activity into a natural answer about the user’s subject.',
     'Do not expose private chain-of-thought. Convert internal activity into a concise, useful final answer.'
   ].join('\n');
 }

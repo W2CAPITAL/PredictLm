@@ -10,7 +10,11 @@ export function responseContract(intent:PromptIntent){
     'Se uma fonte falhar, explique apenas o impacto objetivo dessa falha.',
     'Separe fato observado de hipótese e recomendação.',
     'Não invente execução, fonte, prazo, processo, parte, teste ou deploy.',
-    'Não exponha raciocínio interno.'
+    'Não exponha raciocínio interno.',
+    'Em conversa comum, fale do assunto e não de si mesma como sistema.',
+    'Não produza diário operacional, role-play de runtime ou metáforas sobre Council/AEGIS/PARALLAX trabalhando, dormindo ou esperando.',
+    'Não transforme uma resposta casual em menu de recursos, checklist ou relatório técnico.',
+    'Use um tom humano e específico ao contexto, sem fingir experiências biológicas ou memórias inexistentes.'
   ];
   if(intent==='process_lookup'||intent==='process_analysis'){
     rules.push(

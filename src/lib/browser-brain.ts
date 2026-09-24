@@ -19,6 +19,7 @@ import { publicAnswerGate } from './public-answer-gate';
 import { classifyDomainEngines } from './domain-engine-fabric';
 import { humanAdversarialContext } from './human-adversarial-lens';
 import { digitalBrainContext, readBrowserDigitalBrain } from './digital-brain';
+import { humanPresenceContext } from './human-presence';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -555,6 +556,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
   const humanLens=humanAdversarialContext(prompt);
+  const humanPresence=humanPresenceContext(prompt);
   const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
@@ -569,6 +571,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
       {label:'Digital Brain control layer',text:brainContext,priority:10},
       {label:'Deep Loop',text:deepLoop,priority:9},
@@ -598,7 +601,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       const content=await nativeGenerate(system,prompt);
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
-        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR',prompt);
         if(!gate.ok)throw new Error('public-answer-gate:'+gate.reason);
         captureAdaptiveExperience(prompt,gate.content,'native-model');
         return {content:gate.content,engine:'native',sources,tokenStats:packed.stats};
@@ -668,7 +671,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       }
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
-        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR',prompt);
         if(!gate.ok){fallbackReason='Resposta local rejeitada pelo gate público: '+gate.reason;lastNeuralError=fallbackReason;content='';}
         const publicContent=gate.ok?gate.content:'';
         const topical=responseTopicAlignment(prompt,publicContent);
@@ -709,7 +712,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         temperature:options?.deep?0.28:0.38
       });
       const cleaned=cleanUserFacingAnswer(content);
-      const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+      const gate=publicAnswerGate(cleaned,options?.language||'pt-BR',prompt);
       const publicContent=gate.ok?gate.content:'';
       const topical=responseTopicAlignment(prompt,publicContent);
       if(gate.ok&&topical.relevant){

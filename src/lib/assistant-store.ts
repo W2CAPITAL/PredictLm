@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { hasInternalReasoningLeak, sanitizePublicAnswer } from './public-answer-gate';
+import { looksLikeOperationalMonologue } from './human-presence';
 
 export interface AssistantMessage {
   id:string;
@@ -50,7 +51,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   sessions:[initial],
   activeId:initial.id,
   webEnabled:false,
-  deepThink:true,
+  deepThink:false,
   cloudEnabled:false,
   localRuntimeEnabled:false,
   createChat:()=>set(s=>{const chat=empty();return {sessions:[chat,...s.sessions],activeId:chat.id}}),
@@ -59,9 +60,9 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
     let safeMessage=message;
     if(message.role==='assistant'){
       const sanitized=sanitizePublicAnswer(message.content);
-      if(sanitized)safeMessage={...message,content:sanitized};
-      else if(hasInternalReasoningLeak(message.content)){
-        safeMessage={...message,content:'A geração anterior continha análise interna em vez de uma resposta final. Refaça a pergunta para eu responder de forma limpa.'};
+      if(sanitized&&!looksLikeOperationalMonologue(sanitized))safeMessage={...message,content:sanitized};
+      else if(hasInternalReasoningLeak(message.content)||looksLikeOperationalMonologue(message.content)){
+        safeMessage={...message,content:'A geração anterior trouxe análise interna ou um relatório operacional em vez da resposta final. Gere novamente para receber uma resposta limpa.'};
       }
     }
     const next={...safeMessage,id:id(),createdAt:Date.now()} as AssistantMessage;
@@ -82,4 +83,12 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   setDeepThink:(deepThink)=>set({deepThink}),
   setCloudEnabled:(cloudEnabled)=>set({cloudEnabled}),
   setLocalRuntimeEnabled:(localRuntimeEnabled)=>set({localRuntimeEnabled})
-}),{name:'predictlm-assistant-v1'}));
+}),{
+  name:'predictlm-assistant-v1',
+  version:2,
+  migrate:(persisted:any,version)=>{
+    const state=persisted||{};
+    if(version<2)return {...state,deepThink:false};
+    return state;
+  }
+}));
