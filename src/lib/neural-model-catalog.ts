@@ -107,3 +107,74 @@ export const DESKTOP_NEURAL_CANDIDATES:DesktopNeuralCandidate[]=[
 export function browserModelFor(tier:NeuralTier){
   return BROWSER_NEURAL_MODELS[tier];
 }
+
+
+export interface LocalNeuralRuntime{
+  id:string;
+  label:string;
+  transport:'browser-worker'|'ollama'|'openai-compatible'|'custom-http';
+  endpoint?:string;
+  optional:boolean;
+  hardware:string;
+  note:string;
+}
+
+export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
+  {
+    id:'browser-qwen',
+    label:'Browser Qwen ONNX',
+    transport:'browser-worker',
+    optional:false,
+    hardware:'generic browser · CPU/WASM or WebGPU',
+    note:'Zero-server default. Lite 0.5B and Smart 1.5B remain the guaranteed local-first path.'
+  },
+  {
+    id:'ollama',
+    label:'Ollama',
+    transport:'ollama',
+    endpoint:'http://127.0.0.1:11434',
+    optional:true,
+    hardware:'desktop/Linux when Ollama is installed',
+    note:'Auto-probed only after user opt-in. Model remains user-selected/installed.'
+  },
+  {
+    id:'local-openai-4891',
+    label:'Local OpenAI API · 4891',
+    transport:'openai-compatible',
+    endpoint:'http://127.0.0.1:4891/v1',
+    optional:true,
+    hardware:'mobile/desktop local runtime',
+    note:'Compatibility slot inspired by local GGUF apps; no unrestricted-model policy is inherited.'
+  },
+  {
+    id:'local-openai-8080',
+    label:'llamafile / NanoMind · 8080',
+    transport:'openai-compatible',
+    endpoint:'http://127.0.0.1:8080/v1',
+    optional:true,
+    hardware:'CPU/local GGUF runtime',
+    note:'One compatibility slot can serve llamafile, NanoMind or another OpenAI-compatible local server.'
+  },
+  {
+    id:'geniex',
+    label:'Qualcomm GenieX',
+    transport:'openai-compatible',
+    endpoint:'http://127.0.0.1:18181/v1',
+    optional:true,
+    hardware:'supported Snapdragon/Qualcomm devices',
+    note:'Do not expose as available on non-Qualcomm hardware without a successful probe.'
+  },
+  {
+    id:'lowram',
+    label:'LowRAM AI Compiler',
+    transport:'custom-http',
+    endpoint:'http://127.0.0.1:8766',
+    optional:true,
+    hardware:'constrained Linux/local devices',
+    note:'Custom /v1/generate adapter with bounded context; reference source license remains unverified.'
+  }
+];
+
+export function localRuntimeCatalog(){
+  return LOCAL_NEURAL_RUNTIMES;
+}
