@@ -23,7 +23,10 @@ export function isGenericHowTo(prompt:string){
 }
 
 export function answerLooksProcedural(text:string){
-  return /\b(primeiro|depois|passos?|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|first|then|place|use|water|keep|install|select|mix)\b/.test(clean(text));
+  const normalized=clean(text);
+  if(/\b(primeiro|depois|passos?|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|defina|projete|monte|fabrique|conecte|teste|verifique|dimensione|adquira|first|then|place|use|water|keep|install|select|mix|define|design|build|assemble|test|check)\b/.test(normalized))return true;
+  if(/(?:^|\n)\s*(?:\d+[.)]|[-*•])\s+\S+/m.test(String(text||'')))return true;
+  return String(text||'').trim().length>=220&&/[.;:]/.test(text);
 }
 
 // Shared by cloud, browser, external local runtimes, cache and learned memory.
