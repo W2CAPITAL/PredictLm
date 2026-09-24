@@ -288,7 +288,7 @@ export async function answerViaLocalRuntime(
       runtime:runtime.id,
       label:runtime.label,
       model:generated.model,
-      tokenStats:{beforeChars:0,afterChars:0,savedChars:0,savedPct:0,sectionsUsed:0,messagesUsed:advisoryMessages.length,mode:'ultra'} as TokenBudgetStats,
+      tokenStats:{mode:'ultra',before:0,after:0,saved:0,savedPct:0,droppedMessages:0,dedupedBlocks:0} as TokenBudgetStats,
       sources:[]
     };
   }
