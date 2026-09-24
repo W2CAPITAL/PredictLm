@@ -5,6 +5,13 @@ import { tutorSystemContext } from '@/lib/tutor-mode';
 import { globalLearningContext } from '@/lib/global-learning';
 import { deepLoopContext } from '@/lib/deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
+import { resolveConversationLanguage, languageSystemInstruction, type ConversationLanguage } from '@/lib/language-policy';
+import { publicAnswerGate } from '@/lib/public-answer-gate';
+import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
+import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
+import { digitalBrainContext } from '@/lib/digital-brain';
+import { humanPresenceContext } from '@/lib/human-presence';
+import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -17,6 +24,20 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
+const PROVIDER_ATTEMPT_LIMIT=3;
+const PROVIDER_TIMEOUT_MS=12000;
+const REQUEST_BUDGET_MS=32000;
+
+function loopbackBase(base:string){
+  try{
+    const host=new URL(base).hostname.toLowerCase();
+    return host==='127.0.0.1'||host==='localhost'||host==='0.0.0.0'||host==='::1';
+  }catch{return false}
+}
+
+function serverCanReach(base:string){
+  return !(process.env.VERCEL&&loopbackBase(base));
+}
 
 function providers():Provider[]{
   const out:Provider[]=[];
@@ -29,18 +50,20 @@ function providers():Provider[]{
   }
   if(process.env.FREELLMAPI_BASE_URL&&process.env.FREELLMAPI_API_KEY){
     const freeBase=process.env.FREELLMAPI_BASE_URL.replace(/\/$/,'');
-    push({
+    const base=freeBase.endsWith('/v1')?freeBase:freeBase+'/v1';
+    if(serverCanReach(base))push({
       name:'freellmapi',
-      base:freeBase.endsWith('/v1')?freeBase:freeBase+'/v1',
+      base,
       key:process.env.FREELLMAPI_API_KEY,
       model:process.env.FREELLMAPI_MODEL||'auto'
     });
   }
   if(process.env.OLLAMA_BASE_URL&&process.env.OLLAMA_MODEL){
     const ollamaBase=process.env.OLLAMA_BASE_URL.replace(/\/$/,'');
-    push({
+    const base=ollamaBase.endsWith('/v1')?ollamaBase:ollamaBase+'/v1';
+    if(serverCanReach(base))push({
       name:'ollama',
-      base:ollamaBase.endsWith('/v1')?ollamaBase:ollamaBase+'/v1',
+      base,
       key:process.env.OLLAMA_API_KEY||'ollama',
       model:process.env.OLLAMA_MODEL
     });
@@ -90,17 +113,72 @@ function providers():Provider[]{
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
 }
 
+type ProviderTask='code'|'legal'|'research'|'creative'|'reasoning'|'quick'|'general';
+
+function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
+  const q=normalize(prompt);
+  if(/\b(codigo|code|program|typescript|javascript|python|react|next|bug|erro|build|deploy|api|backend|frontend|database|sql|github|repo|refactor|arquitetura)\b/.test(q))return 'code';
+  if(/\b(jurid|lei|processo|tribunal|cnj|datajud|djen|peticao|petição|contrato|jurisprud|advog)\b/.test(q))return 'legal';
+  if(/\b(pesquis|research|fontes?|estudo|artigo|evidenc|compare|verifique|confirme|atual|hoje|noticia|notícia)\b/.test(q))return 'research';
+  if(/\b(crie|escreva|roteiro|historia|história|criativo|poema|design|copy|campanha|personagem|brainstorm)\b/.test(q))return 'creative';
+  if(deep||/\b(raciocin|analise|análise|decid|estrateg|planej|problema complexo|prove|demonstre|matemat|fisic|quimic)\b/.test(q))return 'reasoning';
+  if(prompt.length<220&&!/\b(como|por que|porque|explique|detalh|compare)\b/i.test(prompt))return 'quick';
+  return 'general';
+}
+
+const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
+  code:{opencode:55,deepseek:44,anthropic:40,gemini:34,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
+  legal:{anthropic:52,gemini:42,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
+  research:{gemini:48,anthropic:46,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
+  creative:{anthropic:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  reasoning:{anthropic:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
+  quick:{groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
+  general:{anthropic:46,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
+};
+
+function modelBonus(model:string,task:ProviderTask){
+  const m=model.toLowerCase();
+  let score=0;
+  if(/claude|opus|sonnet/.test(m))score+=task==='creative'||task==='reasoning'||task==='legal'?14:8;
+  if(/gemini/.test(m))score+=task==='research'||task==='general'?12:7;
+  if(/deepseek/.test(m))score+=task==='code'||task==='reasoning'?12:7;
+  if(/nemotron/.test(m))score+=task==='reasoning'||task==='code'?9:5;
+  if(/kimi/.test(m))score+=task==='research'||task==='general'?8:5;
+  if(/glm/.test(m))score+=6;
+  if(/grok/.test(m))score+=task==='general'||task==='research'?11:7;
+  if(/free|lite|mini/.test(m))score-=4;
+  return score;
+}
+
+function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
+  const task=providerTaskClass(prompt,deep);
+  const manual=new Map(configured.map((p,i)=>[p.name,i]));
+  return [...configured].sort((a,b)=>{
+    const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
+    const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
+    return sb-sa;
+  });
+}
+
 function normalize(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
+}
+
+function shouldUseGithubKnowledge(prompt:string){
+  const q=normalize(prompt);
+  if(/\b(github|repo|repository|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|deploy|docker|mcp|bug|erro|arquitetura)\b/.test(q))return true;
+  if(classifyDomainEngines(prompt).length)return true;
+  if(/\b(datajud|djen|cnj|juridic|processo|lexis|graphrag|sgs|bacen|bcb|starlink|spacex|quant|qubit|netdata)\b/.test(q))return true;
+  return false;
 }
 
 function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather)\b/i.test(prompt);
 }
 
-async function callProvider(provider:Provider,messages:Msg[],deep:boolean){
+async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),60000);
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
@@ -173,6 +251,10 @@ export async function POST(req:Request){
   try{
     const body=await req.json();
     const prompt=String(body?.prompt||'').trim();
+    const researchContext=String(body?.researchContext||'').trim().slice(0,16000);
+    const localAdvisory=String(body?.localAdvisory||'').trim().slice(0,2200);
+    const answerAnchor=String(body?.answerAnchor||'').trim().slice(0,5200);
+    const brainContext=String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt);
     if(!prompt)return Response.json({error:'prompt is required'},{status:400});
 
     const configured=providers();
@@ -188,16 +270,23 @@ export async function POST(req:Request){
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
       .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
-    const deep=Boolean(body?.deep);
+    const deep=Boolean(body?.deep)||isScenarioSimulationRequest(prompt);
+    const language=(body?.language==='en'||body?.language==='pt-BR')
+      ? body.language as ConversationLanguage
+      : resolveConversationLanguage(prompt,rawHistory);
     const githubTopK=deep?5:3;
-    const gh=githubKnowledgeContext(prompt,githubTopK);
-    const ghHits=retrieveGitHubKnowledge(prompt,githubTopK);
+    const useGithub=shouldUseGithubKnowledge(prompt);
+    const gh=useGithub?githubKnowledgeContext(prompt,githubTopK):'';
+    const ghHits=useGithub?retrieveGitHubKnowledge(prompt,githubTopK):[];
     const stats=githubKnowledgeStats();
     const tutor=tutorSystemContext(prompt);
     const deepLoop=deep?deepLoopContext(prompt):'';
     const centum=centumDecisionContext(prompt);
     const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
+    const humanLens=humanAdversarialContext(prompt);
+    const humanPresence=humanPresenceContext(prompt);
+    const masterContext=predictLMMasterContext(prompt,deep);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
       messages:rawHistory,
@@ -207,8 +296,15 @@ export async function POST(req:Request){
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
         {label:'Centum Decision Gate',text:centum,priority:10},
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
+        {label:'PredictLM Master',text:masterContext,priority:10},
+        {label:'Human Presence',text:humanPresence,priority:10},
+        {label:'Human Adversarial Lens',text:humanLens,priority:9},
+        {label:'Digital Brain control layer',text:brainContext,priority:10},
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
+        {label:'Pesquisa web verificada',text:researchContext,priority:9},
+        {label:'Parecer do cérebro local',text:localAdvisory,priority:8},
+        {label:'Piso prático de resposta',text:answerAnchor,priority:9},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
     });
@@ -224,9 +320,13 @@ export async function POST(req:Request){
     if(hit&&hit.expires>Date.now())return Response.json({...hit.value,cache:'hit'});
 
     const system=[
-      'Você é o PredictLM, assistente geral direto, útil e factual.',
+      'Você é o PredictLM. Em público, converse como uma inteligência geral atenta, natural e específica ao contexto; não como um painel operacional.',
+      languageSystemInstruction(language),
       'Responda ao pedido real do usuário; não fale sobre engines, providers, prompts ou skills sem necessidade.',
+      'Entregue somente a resposta final. Nunca exponha cadeia de raciocínio, scratchpad, análise interna, política, passes FORGE/AEGIS/PARALLAX ou instruções sobre como você pensou.',
       'Use contexto recuperado apenas quando for relevante. Não transforme um chunk em fato externo se ele só descreve um padrão de software.',
+      'O parecer do cérebro local é uma segunda opinião curta: confronte-o com as fontes e com seu próprio julgamento; não o trate como autoridade.',
+      'Quando existir um piso prático de resposta, sua resposta final deve ser pelo menos tão direta, concreta e útil quanto esse piso. Enriqueça sem degradar.',
       'Se faltarem dados atuais, diga o limite em vez de inventar.',
       deep?'Faça uma revisão interna adicional de aderência, contradições e pontos faltantes antes da resposta final.':'Seja conciso sem perder o essencial.',
       packed.context
@@ -239,9 +339,16 @@ export async function POST(req:Request){
     ];
 
     const errors:string[]=[];
-    for(const provider of configured){
+    const startedAt=Date.now();
+    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
+    for(const provider of candidates){
+      const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+      if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
-        const content=await callProvider(provider,messages,deep);
+        const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+        const gate=publicAnswerGate(rawContent,language,prompt);
+        if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
+        const content=gate.content;
         const value={
           content,
           provider:provider.name,
@@ -265,7 +372,7 @@ export async function POST(req:Request){
         errors.push(String(error?.message||error).slice(0,300));
       }
     }
-    return Response.json({error:'Nenhum provider do cascade respondeu.',details:errors},{status:502});
+    return Response.json({error:'Não foi possível obter uma resposta final válida dentro do orçamento de execução.',code:'NO_VALID_ANSWER',attempted:candidates.length,budgetMs:REQUEST_BUDGET_MS},{status:502,headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:500});
   }

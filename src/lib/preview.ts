@@ -37,7 +37,7 @@ export function buildPreview(files: WorkspaceFile[]) {
     'window.addEventListener("error",function(e){showError(e.error||e.message)});',
     'window.addEventListener("unhandledrejection",function(e){showError(e.reason)});',
     'try{',
-    ' const compiled=Babel.transform('+JSON.stringify(source)+',{presets:["react"],sourceType:"script"}).code;',
+    ' const compiled=Babel.transform('+JSON.stringify(source)+',{presets:["typescript","react"],filename:"App.tsx",sourceType:"script"}).code;',
     ' new Function("React","ReactDOM",compiled)(React,ReactDOM);',
     '}catch(error){showError(error)}',
     '})();'

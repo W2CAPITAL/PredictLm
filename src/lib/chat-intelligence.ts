@@ -62,6 +62,28 @@ function carHowTo(){
   ].join('\n');
 }
 
+function metalDragonHowTo(){
+  return [
+    '**Se a ideia é criar um dragão físico de metal, trate como uma escultura estrutural: primeiro a armação, depois o volume, detalhes e acabamento.**',
+    '',
+    '1. **Defina escala e pose.** Para começar, 30–60 cm é muito mais controlável que uma peça de vários metros. Faça frente/lateral com medidas básicas.',
+    '2. **Escolha o esqueleto.** Use arame grosso, vergalhão fino ou tubo metálico para coluna, pernas, pescoço, cauda e asas. A base precisa impedir tombamento.',
+    '3. **Monte a armação antes dos detalhes.** Solde ou fixe o esqueleto e confira proporção, equilíbrio e pontos de esforço; asas e cauda criam bastante alavanca.',
+    '4. **Crie o volume.** Tela metálica expandida, arame, pequenas chapas e peças recicladas funcionam bem para costelas, músculos e superfícies.',
+    '5. **Faça cabeça, garras e placas separadamente.** É mais fácil ajustar mandíbula, chifres, dentes, dedos e escamas em módulos antes de unir tudo.',
+    '6. **Una as peças por etapas.** Em aço carbono, MIG/MAG costuma ser prático para estrutura; TIG ajuda em detalhes finos. Se você não domina solda, faça a armação com alguém experiente.',
+    '7. **Desbaste e acabamento.** Remova rebarbas, alinhe emendas, faça textura com esmerilhadeira/escova e teste se não há pontas cortantes soltas.',
+    '8. **Proteja o metal.** Desengraxe, aplique fundo anticorrosivo e depois tinta/esmalte apropriado; para visual cru, use selante compatível.',
+    '9. **Teste estabilidade.** Balance a peça, force levemente asas/cauda, confira soldas e fixe em base pesada. Peças grandes exigem cálculo de peso, ancoragem e transporte.',
+    '',
+    '**Materiais típicos:** vergalhão ou tubo fino · arame · tela expandida · chapa fina · sucata decorativa · solda · discos de corte/desbaste · fundo anticorrosivo · tinta.',
+    '',
+    '**Segurança:** corte e solda envolvem faísca, calor, fumos e metal projetado. Use máscara adequada à solda, óculos, luvas, roupa de algodão, ventilação e área sem materiais inflamáveis. Não trabalhe em recipiente fechado, galvanizado ou pintado sem conhecer o revestimento.',
+    '',
+    'Para uma primeira versão, eu faria um dragão de **40 cm**, com esqueleto em arame/vergalhão, corpo em tela e detalhes em chapinha. Depois de acertar proporção e equilíbrio, dá para escalar o mesmo projeto.'
+  ].join('\n');
+}
+
 function startupHowTo(){
   return [
     '**Comece pelo problema, não pela empresa.** Uma startup nasce quando você tenta resolver um problema real de forma repetível e escalável.',
@@ -80,10 +102,11 @@ function startupHowTo(){
   ].join('\n');
 }
 
-function practicalHowTo(prompt:string){
+export function practicalHowToReply(prompt:string){
   const p=clean(prompt);
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
   if(/\b(carro|automovel|automóvel|veiculo|veículo)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
+  if(/\b(dragao|dragon)\b/.test(p)&&/\b(metal|aco|ferro|solda|soldagem|escultura)\b/.test(p))return metalDragonHowTo();
   if(/startup|start-up/.test(p))return startupHowTo();
   if(/criar.*(app|aplicativo|sistema|site)|fazer.*(app|aplicativo|sistema|site)/.test(p)){
     return [
@@ -123,15 +146,15 @@ export function answerQuality(prompt:string,content:string){
 export function directConversationReply(prompt:string,history:AssistantMessage[],neural:{loaded:boolean;tier:string|null}):string|null{
   const p=clean(prompt);
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p)){
-    return 'Olá. O que você quer fazer? Posso conversar normalmente, explicar algo, pesquisar quando precisar de informação atual ou abrir o **Build** para continuar um projeto.';
+    return 'Oi. Tô aqui — manda.';
   }
   if(/voce me ama|gosta de mim|sente algo por mim/.test(p)){
     return 'Eu não sinto amor do jeito que uma pessoa sente, mas posso conversar com carinho, prestar atenção no que você diz e estar presente na conversa. Se você perguntou de um jeito mais afetivo: eu posso entrar na brincadeira sem fingir que tenho sentimentos humanos.';
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
-  if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'De nada. Pode continuar.';
-  if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'Hahaha. Manda a próxima.';
+  if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
+  if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length){
     const prev=clean(lastAssistant(history));
     if(/neural local|modelo local|qwen/.test(prev)){
@@ -144,10 +167,17 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   return null;
 }
 
-export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean){
+export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolean,prompt=''){
   if(kind==='casual'||kind==='context')return false;
+  const p=clean(prompt);
+  if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
   if(kind==='current'||kind==='factual')return true;
-  if(kind==='howto')return true;
+  if(kind==='howto'){
+    if(webEnabled)return true;
+    if(/\b(pesquis|fonte|verifique|seguranca|solda|welding|eletric|bateria|veiculo|homologacao|medic|jurid|lei|finance|quimic|pressao|pressão|gas|gás)\b/.test(p))return true;
+    return false;
+  }
+  if(/\b(pesquis|fonte|compare|verifique|atual|hoje|noticia|preco|cotacao|documentacao|manual|norma|lei|jurisprud|seguranca|homologacao)\b/.test(p))return true;
   return webEnabled;
 }
 
@@ -178,6 +208,27 @@ function expandResearchTokens(tokens:string[]){
   if(tokens.includes('programacao')||tokens.includes('codigo'))['software','developer','javascript','typescript','python'].forEach(x=>out.add(x));
   if(tokens.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x))){
     ['engenharia','automotiva','automotive','vehicle','design','chassi','estrutura','suspensao','freios','powertrain','seguranca','homologacao','prototipo'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['dragao','dragon'].includes(x))){
+    ['dragao','dragon','escultura','sculpture','estrutura','armacao','metal','metalica','soldagem','welding','acabamento'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['metal','metalica','metalico','aco','ferro'].includes(x))){
+    ['metal','metalica','metalico','aco','ferro','solda','soldagem','welding','fabricacao','fabrication','estrutura'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['starlink','spacex','satelite','satellite','nasa','orbital'].includes(x))){
+    ['space','mission','telemetry','launch','earth','imagery','gibs','dish','ground','orbit'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['matematica','calculo','algebra','matrix','matriz','quantum','quantica','qubit'].includes(x))){
+    ['equation','formula','linear','statistics','symbolic','circuit','gate','simulation','measurement'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['sgs','bacen','bcb','juros','pericia','ftshare'].includes(x))){
+    ['banco','central','serie','taxa','mercado','forensic','finance','observation','codigo'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['datajud','djen','juridico','processo','graphrag','tribunal'].includes(x))){
+    ['legal','document','evidence','timeline','entity','relation','cnj','publication'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['vercel','netdata','deploy','observabilidade','infraestrutura','servidor','mcp'].includes(x))){
+    ['deployment','health','metrics','logs','monitoring','service','alerts','runbook','runtime'].forEach(x=>out.add(x));
   }
   return [...out];
 }
@@ -254,13 +305,13 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
     };
   }
   if(kind==='howto'){
-    const evidence=useful.slice(0,8).map((x,i)=>(i+1)+'. **'+x.title+'** — '+trimSentence(x.summary||x.description||'',520)).join('\n');
+    const points=useful.slice(0,6)
+      .map(x=>trimSentence(x.summary||x.description||'',420))
+      .filter(Boolean);
     return {
       content:[
-        '**Síntese baseada nas fontes recuperadas**',
-        evidence,
-        '',
-        'Use estes pontos como evidência de apoio. A resposta final deve integrar requisitos, arquitetura, riscos, validação e próximos passos do domínio em vez de repetir um roteiro genérico.'
+        '**Pontos úteis encontrados nas fontes**',
+        ...points.map(x=>'- '+x)
       ].join('\n'),
       sources
     };
@@ -284,7 +335,11 @@ const TOPIC_SYNONYMS:Record<string,string[]>={
   automovel:['automovel','carro','veiculo','chassi','motor'],
   empresa:['empresa','negocio','cnpj','sociedade','mei','empresarial'],
   aplicativo:['aplicativo','app','software','sistema'],
-  app:['app','aplicativo','software','sistema']
+  app:['app','aplicativo','software','sistema'],
+  dragao:['dragao','dragon','escultura'],
+  metal:['metal','metalico','metalica','aco','ferro','solda','soldagem'],
+  escultura:['escultura','sculpture','modelagem','estrutura'],
+  soldagem:['soldagem','solda','welding']
 };
 
 export function responseTopicAlignment(prompt:string,content:string){

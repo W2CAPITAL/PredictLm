@@ -10,7 +10,7 @@ env.useBrowserCache=true;
 try{
   const wasm=(env as any).backends?.onnx?.wasm;
   if(wasm){
-    wasm.numThreads=self.crossOriginIsolated?Math.max(1,Math.min(2,self.navigator?.hardwareConcurrency||1)):1;
+    wasm.numThreads=1;
     wasm.proxy=false;
   }
 }catch{}
@@ -35,13 +35,9 @@ async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:
   if(requested==='smart'&&preferWebgpu){
     attempts.push({tier:'smart',device:'webgpu',dtype:'q4',label:'Smart · WebGPU q4'});
   }
-  if(requested==='smart'&&allowSmartWasm){
-    attempts.push({tier:'smart',device:'wasm',dtype:'q8',label:'Smart · CPU/WASM q8'});
-    attempts.push({tier:'smart',device:'wasm',dtype:'q4',label:'Smart · CPU/WASM q4'});
-  }
-  attempts.push({tier:'lite',device:'wasm',dtype:'q8',label:requested==='smart'?'Compatibilidade Lite · CPU/WASM q8':'Lite · CPU/WASM q8'});
-  attempts.push({tier:'lite',device:'wasm',dtype:'q4',label:'Lite · CPU/WASM q4'});
-  attempts.push({tier:'lite',device:'default',dtype:'q4',label:'Lite · backend automático'});
+  // Smart is WebGPU-only in the web app. Falling 1.5B back to WASM can lock low-end PCs.
+  // If Smart cannot use WebGPU, fall back directly to the 0.5B Lite q4 model.
+  attempts.push({tier:'lite',device:'wasm',dtype:'q4',label:requested==='smart'?'Compatibilidade Lite · CPU/WASM q4':'Lite · CPU/WASM q4'});
 
   let lastError:any=null;
   for(const attempt of attempts){
@@ -84,8 +80,9 @@ async function openGenerator(requested:Tier,preferWebgpu:boolean,allowSmartWasm:
 
 async function infer(messages:any[],maxNewTokens:number,temperature:number){
   if(!generator)throw new Error('Modelo local não carregado.');
+  const safeMax=backend==='wasm'?Math.min(Math.max(32,maxNewTokens||180),220):Math.min(Math.max(32,maxNewTokens||420),760);
   const out=await generator(messages,{
-    max_new_tokens:maxNewTokens,
+    max_new_tokens:safeMax,
     temperature,
     do_sample:temperature>0.15,
     top_p:.88,

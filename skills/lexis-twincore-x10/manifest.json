@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.17.0",
+  "version": "5.22.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -42,7 +42,15 @@
     "lexispredict-saas",
     "office-artifacts",
     "saas-builder-fabric",
-    "generative-media-auto-router"
+    "generative-media-auto-router",
+    "human-adversarial-lens",
+    "research-source-matrix",
+    "neurocore",
+    "life-simulation",
+    "digital-brain",
+    "entity-self-model",
+    "human-presence",
+    "predictlm-master"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -171,7 +179,39 @@
     "higgsfield-cli-external-bridge",
     "gemini-veo-3-1-video",
     "gemini-nano-banana-2-image",
-    "server-proxied-media-secrets"
+    "server-proxied-media-secrets",
+    "human-cooperative-adversarial-lens",
+    "intent-evidence-separation",
+    "sentiment-is-signal-not-proof",
+    "domain-source-matrix",
+    "openalex-academic-search",
+    "semantic-scholar-academic-search",
+    "investigative-source-tier",
+    "darkforum-metadata-only",
+    "extreme-content-no-raw-ingest",
+    "connectome-inspired-control",
+    "sensory-salience-attention-inhibition",
+    "persistent-neuro-state",
+    "uncertainty-calibration",
+    "life-simulation-studio",
+    "active-2d-simulation",
+    "simulation-needs-memory-relations",
+    "simulation-build-intent",
+    "simulation-not-consciousness-gate",
+    "always-on-digital-brain",
+    "passive-cognitive-heartbeat",
+    "persistent-self-model",
+    "user-reference-appearance",
+    "visual-generation-explicit-only",
+    "simulation-manual-only",
+    "simulation-reload-paused",
+    "howto-final-answer-not-research-snippets",
+    "human-presence-layer",
+    "silent-cognition",
+    "operational-monologue-gate",
+    "contextual-followup",
+    "diagnostics-only-internals",
+    "collapsed-reasoning-summary"
   ],
   "hosts": [
     "PredictLM",
@@ -179,5 +219,6 @@
     "Grok-compatible",
     "Claude-compatible",
     "Gemini-compatible"
-  ]
+  ],
+  "supersededBy": "predictlm-master"
 }

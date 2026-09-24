@@ -1,5 +1,7 @@
 import type { WorkspaceFile } from './types';
 import { buildSaaSBlueprintFiles, inferSaaSBlueprint } from './saas-product-fabric';
+import { buildDomainAppFiles, inferDomainAppBlueprint } from './domain-engine-fabric';
+import { buildLexisOperationalFiles } from './lexis-operational-fabric';
 
 export interface ProductRequirements {
   intent:string;
@@ -21,6 +23,7 @@ function has(text:string,re:RegExp){return re.test(text)}
 export function inferProductRequirements(prompt:string,intent:string):ProductRequirements{
   const p=String(prompt||'').toLowerCase();
   const blueprint=inferSaaSBlueprint(prompt,intent);
+  const domainBlueprint=inferDomainAppBlueprint(prompt);
   const business=['crm','store','dashboard'].includes(intent)||/\b(saas|crm|erp|helpdesk|ticket|admin|workspace|painel|dashboard|gest[aã]o|financeiro|vendas)\b/.test(p);
   const integrations:string[]=[];
   if(business)integrations.push('rest-api');
@@ -35,6 +38,7 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
     ['rest-api',/\bapi\b|endpoint|webhook|integra[cç][aã]o|integration/]
   ];
   for(const [name,re] of known)if(re.test(p))integrations.push(name);
+  if(domainBlueprint?.integrations?.length)integrations.push(...domainBlueprint.integrations);
 
   const needsAuth=has(p,/login|auth|usu[aá]rio|perfil|permiss[aã]o|rbac|multi.?user|equipe|convite|invite/)||business;
   const needsDatabase=has(p,/banco|database|postgres|supabase|firebase|persist|salvar|dados|registros|tenant|workspace|audit|billing|subscription/)||business;
@@ -45,7 +49,8 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
   const needsBackgroundJobs=has(p,/cron|job|fila|queue|agend|notifica[cç][aã]o|webhook|sync|sincron/);
   const needsBackend=needsDatabase||needsAuth||needsMultiTenant||needsBilling||needsAudit||needsBackgroundJobs||integrations.length>0||has(p,/backend|server|segredo|secret/);
 
-  const entities=blueprint?.entities?.length
+  const domainEntities=domainBlueprint?.entities||[];
+  const baseEntities=blueprint?.entities?.length
     ? blueprint.entities
     : intent==='crm'
       ? ['Lead','Customer','Opportunity','Invoice','Activity','Integration']
@@ -53,9 +58,13 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
         ? ['Product','Cart','Order','Customer','Payment']
         : intent==='dashboard'
           ? ['Metric','Event','Report','Filter']
-          : ['Record'];
+          : intent==='simulation'
+            ? ['World','Person','NeedState','Relationship','Memory','Event','Place']
+            : ['Record'];
+  const entities=Array.from(new Set([...baseEntities,...domainEntities]));
+  const modules=Array.from(new Set([...(blueprint?.modules||[]),...(domainBlueprint?.modules||[])]));
 
-  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities,modules:blueprint?.modules||[]};
+  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities,modules};
 }
 
 function envExample(req:ProductRequirements){
@@ -70,6 +79,9 @@ function envExample(req:ProductRequirements){
   if(req.integrations.includes('vercel'))lines.push('VERCEL_TOKEN=');
   if(req.integrations.includes('stripe'))lines.push('STRIPE_SECRET_KEY=','VITE_STRIPE_PUBLISHABLE_KEY=');
   if(req.integrations.includes('rest-api'))lines.push('EXTERNAL_API_BASE_URL=','EXTERNAL_API_KEY=');
+  if(req.integrations.includes('starlink-bridge'))lines.push('STARLINK_BRIDGE_BASE_URL=http://127.0.0.1:9200','STARLINK_BRIDGE_API_KEY=','STARLINK_CLIENT_ID=','STARLINK_CLIENT_SECRET=');
+  if(req.integrations.includes('ftshare'))lines.push('FTSHARE_MCP_URL=https://market.ft.tech/gateway/mcp','FTSHARE_API_KEY=');
+  if(req.integrations.includes('netdata'))lines.push('NETDATA_BASE_URL=http://127.0.0.1:19999','NETDATA_API_TOKEN=');
   if(req.needsDatabase)lines.push('DATABASE_URL=');
   if(req.needsAuth)lines.push('SESSION_SECRET=');
   if(req.needsBilling&&!req.integrations.includes('stripe'))lines.push('STRIPE_SECRET_KEY=','VITE_STRIPE_PUBLISHABLE_KEY=');
@@ -218,6 +230,10 @@ export function integrationConfigured(id){
   if(id==='github')return !!env('GITHUB_TOKEN');
   if(id==='vercel')return !!env('VERCEL_TOKEN');
   if(id==='stripe')return !!env('STRIPE_SECRET_KEY');
+  if(id==='spacex-public'||id==='nasa-gibs'||id==='bcb-sgs')return true;
+  if(id==='starlink-bridge')return !!env('STARLINK_BRIDGE_BASE_URL');
+  if(id==='ftshare')return !!env('FTSHARE_API_KEY')&&!!(env('FTSHARE_MCP_URL')||'https://market.ft.tech/gateway/mcp');
+  if(id==='netdata')return !!env('NETDATA_BASE_URL');
   return false;
 }
 function headersFor(id){
@@ -231,6 +247,9 @@ function headersFor(id){
   if(id==='github')return {Authorization:'Bearer '+env('GITHUB_TOKEN'),'User-Agent':'Predict-App'};
   if(id==='vercel')return {Authorization:'Bearer '+env('VERCEL_TOKEN')};
   if(id==='stripe')return {Authorization:'Bearer '+env('STRIPE_SECRET_KEY')};
+  if(id==='starlink-bridge')return env('STARLINK_BRIDGE_API_KEY')?{'x-api-key':env('STARLINK_BRIDGE_API_KEY')}:{};
+  if(id==='ftshare')return {'FTSHARE_API_KEY':env('FTSHARE_API_KEY')};
+  if(id==='netdata')return env('NETDATA_API_TOKEN')?{Authorization:'Bearer '+env('NETDATA_API_TOKEN')}:{};
   return {};
 }
 function baseFor(id){
@@ -242,6 +261,12 @@ function baseFor(id){
   if(id==='github')return 'https://api.github.com';
   if(id==='vercel')return 'https://api.vercel.com';
   if(id==='stripe')return 'https://api.stripe.com';
+  if(id==='spacex-public')return 'https://api.spacexdata.com';
+  if(id==='nasa-gibs')return 'https://gibs.earthdata.nasa.gov';
+  if(id==='bcb-sgs')return 'https://api.bcb.gov.br';
+  if(id==='starlink-bridge')return env('STARLINK_BRIDGE_BASE_URL');
+  if(id==='ftshare')return env('FTSHARE_MCP_URL')||'https://market.ft.tech/gateway/mcp';
+  if(id==='netdata')return env('NETDATA_BASE_URL');
   return '';
 }
 function safePath(value){
@@ -274,10 +299,16 @@ export async function testIntegration(id){
   if(!allow.includes(id))return {ok:false,error:'Integration not allowed'};
   if(!integrationConfigured(id))return {ok:false,configured:false,error:'Missing environment configuration'};
   if(id==='datajud')return {ok:true,configured:true,detail:'API key present; use a tribunal-specific _search endpoint for live validation.'};
+  if(id==='ftshare')return {ok:false,configured:true,detail:'FTShare is MCP Streamable HTTP; operational status requires initialize → tools/list → tools/call, not a fake GET probe.'};
   let path='/';
   if(id==='github')path='/rate_limit';
   if(id==='stripe')path='/v1/account';
   if(id==='djen')path='/comunicacao?pagina=1&itensPorPagina=1';
+  if(id==='spacex-public')path='/v5/launches/latest';
+  if(id==='nasa-gibs')path='/';
+  if(id==='bcb-sgs')path='/dados/serie/bcdata.sgs.1/dados/ultimos/1?formato=json';
+  if(id==='starlink-bridge')path='/health';
+  if(id==='netdata')path='/api/v1/info';
   try{
     const result=await proxyIntegration({id,path,method:'GET'});
     return {ok:result.status>=200&&result.status<400,configured:true,status:result.status,detail:result.status<400?'Provider reachable':'Provider returned '+result.status};
@@ -333,7 +364,9 @@ function moduleSkeletons(req:ProductRequirements):WorkspaceFile[]{
       ? ['Dashboard','Produtos','Pedidos','Clientes','Pagamentos','Configurações']
       : req.intent==='dashboard'
         ? ['Visão geral','Relatórios','Fontes','Alertas','Configurações']
-        : ['Workspace','Dados','Integrações','Configurações'];
+        : req.intent==='simulation'
+          ? ['Mundo','Personagem','Necessidades','Relações','Memórias','Configurações']
+          : ['Workspace','Dados','Integrações','Configurações'];
 
   const sidebar=`export const APP_NAV=${JSON.stringify(nav)} as const;
 
@@ -430,11 +463,86 @@ export function auditEvent(input:Omit<AuditEvent,'id'|'at'>):AuditEvent{
   ];
 }
 
+function simulationSkeletons(req:ProductRequirements):WorkspaceFile[]{
+  if(req.intent!=='simulation')return [];
+  const model=`export type LifeLocation='Casa'|'Trabalho'|'Café'|'Parque'|'Mercado'|'Clínica'|'Biblioteca';
+export interface NeedState{energy:number;hunger:number;social:number;fun:number;focus:number;stress:number;health:number}
+export interface LifeMemory{id:string;tick:number;summary:string;salience:number;kind:'routine'|'social'|'goal'|'event'|'warning'}
+export interface Relationship{id:string;name:string;affinity:number;trust:number;lastContact:number}
+export interface LifePerson{id:string;name:string;age:number;location:LifeLocation;x:number;y:number;money:number;occupation:string;action:string;goal:string;mood:string}
+export interface SimulationState{version:1;seed:number;tick:number;day:number;minute:number;running:boolean;speed:1|2|4|8;person:LifePerson;needs:NeedState;relationships:Relationship[];memories:LifeMemory[];lastEvent:string}
+`;
+  const policy=`import type { LifeLocation,SimulationState } from './model';
+const clamp=(v:number)=>Math.max(0,Math.min(100,Math.round(v)));
+export function chooseDestination(state:SimulationState):LifeLocation{
+  const n=state.needs,h=state.minute/60;
+  const rows:Array<[LifeLocation,number]>=[
+    ['Casa',(100-n.energy)*1.1+(100-n.hunger)*.9+(h>22||h<6?40:0)],
+    ['Trabalho',(h>=8&&h<=17?40:3)+n.focus*.35],
+    ['Café',(100-n.social)*.7+(100-n.fun)*.3],
+    ['Parque',(100-n.fun)*.5+n.stress*.7],
+    ['Mercado',(100-n.hunger)*.55],
+    ['Clínica',(100-n.health)*1.6],
+    ['Biblioteca',(100-n.focus)*.2+18]
+  ];
+  rows.sort((a,b)=>b[1]-a[1]);return rows[0][0];
+}
+export function degradeNeeds(state:SimulationState){
+  const n=state.needs;
+  return {...n,energy:clamp(n.energy-1),hunger:clamp(n.hunger-1),social:clamp(n.social-.4),fun:clamp(n.fun-.3),focus:clamp(n.focus-.3),stress:clamp(n.stress+.3),health:clamp(n.health-.05)};
+}
+`;
+  const memory=`import type { LifeMemory } from './model';
+export function remember(memories:LifeMemory[],entry:Omit<LifeMemory,'id'>){
+  const next={...entry,id:String(Date.now())+'-'+Math.random().toString(36).slice(2,7)};
+  return [next,...memories].sort((a,b)=>b.salience-a.salience||b.tick-a.tick).slice(0,24);
+}
+`;
+  const neuro=`export interface NeuroControl{salience:number;attention:number;workingMemory:number;planning:number;inhibition:number;social:number;threat:number;curiosity:number;action:number;uncertainty:number}
+const clamp01=(v:number)=>Math.max(0,Math.min(1,v));
+export function updateNeuro(prev:NeuroControl,input:{novelty:number;threat:number;social:number;planning:number;ambiguity:number}):NeuroControl{
+  return {
+    salience:clamp01(prev.salience*.65+Math.max(input.threat,input.social,input.planning)*.35),
+    attention:clamp01(prev.attention*.7+(input.planning+input.threat)*.15),
+    workingMemory:clamp01(prev.workingMemory*.72+input.planning*.2+input.ambiguity*.08),
+    planning:clamp01(prev.planning*.65+input.planning*.35),
+    inhibition:clamp01(prev.inhibition*.7+input.threat*.18+input.ambiguity*.12),
+    social:clamp01(prev.social*.72+input.social*.28),
+    threat:clamp01(prev.threat*.72+input.threat*.28),
+    curiosity:clamp01(prev.curiosity*.78+input.novelty*.22),
+    action:clamp01(prev.action*.68+input.planning*.32),
+    uncertainty:clamp01(prev.uncertainty*.75+input.ambiguity*.25)
+  };
+}
+`;
+  const selfModel=`export const SIMULATION_SELF_MODEL={\n  name:'Predict',\n  presentation:'feminine',\n  appearance:{hair:'long black hair, straight bangs, high ponytail',style:'dark alternative, black choker, black-and-white striped sleeves'},\n  visualPolicy:{autoGenerate:false,simulationOnly:true},\n  activationPolicy:{manualOnly:true,autoStart:false}\n} as const;\n`;
+  const readme=`# Simulation modules
+
+- model.ts: domain state only.
+- policy.ts: deterministic decision/need rules.
+- memory.ts: bounded episodic memory.
+- neurocore.ts: lightweight brain-inspired control heuristic.
+- self-model.ts: persistent visual identity + manual activation policy.
+
+The UI can change without rewriting the simulation model. The simulation starts paused, requires explicit activation, and does not auto-generate character images.
+`;
+  return [
+    {path:'src/simulation/model.ts',language:'typescript',content:model},
+    {path:'src/simulation/policy.ts',language:'typescript',content:policy},
+    {path:'src/simulation/memory.ts',language:'typescript',content:memory},
+    {path:'src/simulation/neurocore.ts',language:'typescript',content:neuro},
+    {path:'src/simulation/self-model.ts',language:'typescript',content:selfModel},
+    {path:'src/simulation/README.md',language:'markdown',content:readme}
+  ];
+}
 export function buildProjectScaffold(prompt:string,intent:string):WorkspaceFile[]{
   const req=inferProductRequirements(prompt,intent);
   const files:WorkspaceFile[]=[
     ...buildSaaSBlueprintFiles(prompt,intent),
+    ...buildDomainAppFiles(prompt),
+    ...buildLexisOperationalFiles(prompt),
     ...moduleSkeletons(req),
+    ...simulationSkeletons(req),
     {path:'src/types/domain.ts',language:'typescript',content:domainTypes(req)},
     {path:'src/domain/validation.ts',language:'typescript',content:validationModule(intent)},
     {path:'src/integrations/http.ts',language:'typescript',content:httpModule()},

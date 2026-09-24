@@ -1,7 +1,7 @@
 # PredictLM — Agent Rules
 
 ## Product
-PredictLM is a general assistant plus Build, Research, Imagine/Media, legal process intelligence and LEXIS TwinCore X10.
+PredictLM is one general assistant governed by PredictLM Master. Build, Research, Imagine/Media, legal process intelligence, TwinCore X10, agents and simulation are capabilities of that same assistant.
 
 ## Non-negotiable behavior
 - Answer the current request directly. Infrastructure is not the answer.
@@ -24,4 +24,4 @@ At minimum: `npm run build`.
 For sensitive changes also review auth, secrets, destructive actions, tenant boundaries and rollback.
 
 ## Skill
-Canonical meta-skill: `skills/lexis-twincore-x10/SKILL.md`.
+Canonical sovereign skill: `skills/predictlm-master/SKILL.md`. Legacy skills and agents are internal implementation modules and must defer to PredictLM Master on conflicts.

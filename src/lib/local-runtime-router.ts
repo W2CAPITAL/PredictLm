@@ -1,6 +1,9 @@
 import { adaptiveContext, adaptiveInstructionContext } from './adaptive-memory';
 import { knowledgeContext } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
+import { languageSystemInstruction, type ConversationLanguage } from './language-policy';
+import { publicAnswerGate } from './public-answer-gate';
+import { classifyDomainEngines } from './domain-engine-fabric';
 import { trainingContext } from './training/context';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
@@ -8,6 +11,15 @@ import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from './decision-centum';
+import { humanAdversarialContext } from './human-adversarial-lens';
+import { digitalBrainContext, readBrowserDigitalBrain } from './digital-brain';
+import { humanPresenceContext } from './human-presence';
+import { isScenarioSimulationRequest, predictLMMasterContext } from './predictlm-master';
+
+function useGithubKnowledge(input:string){
+  const q=String(input||'').toLowerCase();
+  return /\b(github|repo|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|docker|mcp|bug|erro|arquitetura|datajud|djen|lexis|graphrag|sgs|bacen|starlink|spacex|quant|qubit|netdata)\b/.test(q)||classifyDomainEngines(input).length>0;
+}
 
 export type LocalRuntimeKind='ollama'|'openai'|'lowram';
 export type LocalRuntimeId='freellmapi'|'ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
@@ -74,15 +86,23 @@ function localOnly(url:string){
   }catch{return false}
 }
 
-async function timedFetch(url:string,init:RequestInit={},timeoutMs=1800){
+async function timedFetch(url:string,init:RequestInit={},timeoutMs=1800,parentSignal?:AbortSignal){
   if(!localOnly(url))throw new Error('Local Runtime Router only accepts loopback endpoints.');
   const controller=new AbortController();
+  const onAbort=()=>controller.abort();
+  if(parentSignal){
+    if(parentSignal.aborted)controller.abort();
+    else parentSignal.addEventListener('abort',onAbort,{once:true});
+  }
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   const started=Date.now();
   try{
     const response=await fetch(url,{...init,signal:controller.signal,cache:'no-store'});
     return {response,latencyMs:Date.now()-started};
-  }finally{clearTimeout(timer)}
+  }finally{
+    clearTimeout(timer);
+    parentSignal?.removeEventListener('abort',onAbort);
+  }
 }
 
 async function probeOllama(candidate:LocalRuntimeCandidate):Promise<LocalRuntimeStatus>{
@@ -154,7 +174,8 @@ function sanitizeMessages(messages:{role:string;content:string}[]){
 async function generateOllama(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const model=runtime.model||'';
   if(!model)throw new Error('Ollama respondeu, mas nenhum modelo carregado/instalado foi encontrado.');
@@ -165,9 +186,9 @@ async function generateOllama(
       model,
       messages,
       stream:false,
-      options:{temperature:deep?0.28:0.45,num_predict:deep?1000:700}
+      options:{temperature:deep?0.28:0.45,num_predict:deep?650:420}
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error||'Ollama '+response.status));
   const content=String(data?.message?.content||data?.response||'').trim();
@@ -178,7 +199,8 @@ async function generateOllama(
 async function generateOpenAI(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const model=runtime.id==='freellmapi'?'auto':(runtime.model||'local');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/chat/completions',{
@@ -188,10 +210,10 @@ async function generateOpenAI(
       model,
       messages,
       stream:false,
-      temperature:deep?.28:.45,
-      max_tokens:deep?1000:700
+      temperature:deep ? .28 : .45,
+      max_tokens:deep?650:420
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error?.message||data?.error||runtime.label+' '+response.status));
   const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
@@ -202,7 +224,8 @@ async function generateOpenAI(
 async function generateLowRam(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const flat=messages.map(x=>x.role.toUpperCase()+': '+x.content).join('\n\n');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/generate',{
@@ -210,13 +233,13 @@ async function generateLowRam(
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       prompt:flat,
-      max_new_tokens:deep?700:420,
+      max_new_tokens:deep?520:320,
       temperature:deep?0.25:0.4,
       top_k:40,
       top_p:.9,
       repetition_penalty:1.05
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error||runtime.label+' '+response.status));
   const content=String(data?.text||data?.response||data?.generated_text||'').trim();
@@ -227,7 +250,7 @@ async function generateLowRam(
 export async function answerViaLocalRuntime(
   prompt:string,
   history:{role:string;content:string}[],
-  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto'}
+  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string;signal?:AbortSignal}
 ):Promise<LocalRuntimeReply>{
   if(typeof window==='undefined')throw new Error('Local Runtime Router requires the browser/desktop client.');
   const statuses=await probeLocalRuntimes();
@@ -240,26 +263,37 @@ export async function answerViaLocalRuntime(
     : null;
   const runtime=preferred||available[0];
 
-  const topK=runtime.kind==='lowram'?2:(options?.deep?5:3);
+  const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
+  const topK=runtime.kind==='lowram'?2:(deepMode?5:3);
+  const githubEnabled=useGithubKnowledge(prompt);
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
   const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
-  const github=githubKnowledgeContext(prompt,topK);
+  const github=githubEnabled?githubKnowledgeContext(prompt,topK):'';
   const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
+  const humanLens=humanAdversarialContext(prompt);
+  const humanPresence=humanPresenceContext(prompt);
+  const masterContext=predictLMMasterContext(prompt,deepMode);
+  const brainContext=digitalBrainContext(prompt,readBrowserDigitalBrain());
   const tutor=tutorSystemContext(prompt);
-  const deepLoop=options?.deep?deepLoopContext(prompt):'';
+  const deepLoop=deepMode?deepLoopContext(prompt):'';
   const centum=centumDecisionContext(prompt);
   const parallax=parallaxContext(prompt);
   const packed=optimizePromptPackage({
     messages:sanitizeMessages(history),
-    mode:runtime.kind==='lowram'?'ultra':(options?.deep?'lite':'full'),
+    mode:runtime.kind==='lowram'?'ultra':(deepMode?'lite':'full'),
     sections:[
+      {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'GitHub Knowledge',text:github,priority:5},
       {label:'Knowledge',text:knowledge,priority:5},
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'PredictLM Master',text:masterContext,priority:10},
+      {label:'Human Presence',text:humanPresence,priority:10},
+      {label:'Human Adversarial Lens',text:humanLens,priority:9},
+      {label:'Digital Brain control layer',text:brainContext,priority:10},
       {label:'Centum Decision Gate',text:centum,priority:10},
       {label:'Third Brain PARALLAX',text:parallax,priority:10},
       {label:'Deep Loop',text:deepLoop,priority:9},
@@ -269,7 +303,8 @@ export async function answerViaLocalRuntime(
   });
   const compiled=compileSystemPrompt({
     userText:prompt,
-    extra:[packed.context].filter(Boolean)
+    deep:deepMode,
+    extra:[languageSystemInstruction(options?.language||'pt-BR'),packed.context].filter(Boolean)
   });
   const messages=[
     {role:'system',content:compiled.system},
@@ -278,17 +313,20 @@ export async function answerViaLocalRuntime(
   ];
 
   let generated:{content:string;model:string};
-  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,!!options?.deep);
-  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep);
-  else generated=await generateOpenAI(runtime,messages,!!options?.deep);
+  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,deepMode,options?.signal);
+  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,deepMode,options?.signal);
+  else generated=await generateOpenAI(runtime,messages,deepMode,options?.signal);
 
-  const sources=retrieveGitHubKnowledge(prompt,topK).map(x=>({
+  const gate=publicAnswerGate(generated.content,options?.language||'pt-BR',prompt);
+  if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
+
+  const sources=(githubEnabled?retrieveGitHubKnowledge(prompt,topK):[]).map(x=>({
     title:x.heading,
     source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
   }));
 
   return {
-    content:generated.content,
+    content:gate.content,
     runtime:runtime.id,
     label:runtime.label,
     model:generated.model,

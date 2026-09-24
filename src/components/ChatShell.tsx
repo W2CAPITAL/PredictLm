@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
+import { Activity, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -18,19 +18,24 @@ import { assessFraudRisk, formatFraudAssessment, isFraudAnalysisRequest } from '
 import { isTutorRequest } from '@/lib/tutor-mode';
 import { isGlobalLearningInstruction } from '@/lib/global-learning';
 import { answerViaLocalRuntime, probeLocalRuntimes, setLocalRuntimeCredential } from '@/lib/local-runtime-router';
-import { loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
+import { resolveConversationLanguage } from '@/lib/language-policy';
+import { hasInternalReasoningLeak, publicAnswerGate, sanitizePublicAnswer } from '@/lib/public-answer-gate';
+import { looksLikeOperationalMonologue } from '@/lib/human-presence';
+import { cancelWebLLMLoad, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
 import { GrokResearchPanel } from '@/components/GrokResearchPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
+import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
+import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
 
 interface Props{
   onOpenLegal?:()=>void;
 }
 
-type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'plugins';
+type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'simulation'|'plugins';
 
 type ChatMediaKind='image'|'video';
 
@@ -43,11 +48,75 @@ function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
   return null;
 }
 
+function detectSimulationLaunchRequest(prompt:string){
+  const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  const simulation=/\b(simulacao|simulacao de vida|simulacao ativa|life simulation|life simulator|mundo vivo|personagem ativa)\b/.test(p);
+  const launch=/\b(ative|ativar|ativa|abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|ligue|ligar|quero ver|quero uma)\b/.test(p);
+  const appBuild=/\b(app|aplicativo|site|sistema|codigo|export|zip|build)\b/.test(p);
+  return simulation&&launch&&!appBuild;
+}
+
 function mediaSubject(prompt:string){
   return prompt
     .replace(/^(gere|gerar|crie|criar|faça|faca|desenhe|renderize|produza|quero)\s+/i,'')
     .replace(/^(uma?|um)\s+(imagem|foto|ilustração|ilustracao|vídeo|video|clipe|animação|animacao)\s+(de|com)?\s*/i,'')
     .trim()||prompt.trim();
+}
+
+function buildReasoningSummary(input:{
+  kind:string;
+  webCount?:number;
+  localBrain?:boolean;
+  provider?:boolean;
+  localRuntime?:boolean;
+  anchor?:boolean;
+  deep?:boolean;
+}){
+  const parts:string[]=[];
+  if(input.kind==='howto')parts.push('Tratei a pergunta como uma tarefa prática e priorizei passos que você consegue executar.');
+  else if(input.kind==='current')parts.push('Separei o que precisava de informação atual do que já podia ser respondido pelo contexto.');
+  else if(input.kind==='factual')parts.push('Chequei se a resposta permanecia no assunto e distinguia fato de inferência.');
+  else parts.push('Usei o contexto recente para responder ao que você quis dizer, sem recomeçar a conversa do zero.');
+  if(input.webCount)parts.push('Cruzei '+input.webCount+' fonte(s) relevante(s) e descartei resultados que desviavam do tema.');
+  if(input.anchor)parts.push('Mantive um piso prático para não trocar uma resposta útil por uma síntese mais vaga.');
+  if(input.localBrain)parts.push('Uma segunda leitura independente apontou possíveis lacunas antes da resposta final.');
+  if(input.deep)parts.push('Fiz uma revisão extra de aderência e contradições.');
+  return parts.join(' ');
+}
+
+function filterDisplayedSources(prompt:string,sources:{title:string;source:string}[],limit=8){
+  const seen=new Set<string>();
+  const rows=sources.filter(src=>{
+    const key=src.source||src.title;
+    if(!key||seen.has(key))return false;
+    seen.add(key);
+    const subject=(src.title+' '+src.source).replace(/https?:\/\/\S+/g,' ');
+    return responseTopicAlignment(prompt,subject).relevant;
+  });
+  return rows.slice(0,limit);
+}
+
+function safeHistoricalContent(content:string){
+  const sanitized=sanitizePublicAnswer(content);
+  if(sanitized&&!looksLikeOperationalMonologue(sanitized))return sanitized;
+  if(hasInternalReasoningLeak(content)||looksLikeOperationalMonologue(content))return 'Esta resposta antiga continha análise interna ou um relatório operacional em vez da resposta final. Gere novamente para receber uma resposta limpa.';
+  return content;
+}
+
+async function fetchWithTimeout(input:RequestInfo|URL,init:RequestInit={},timeoutMs=15000,parentSignal?:AbortSignal){
+  const controller=new AbortController();
+  const onAbort=()=>controller.abort();
+  if(parentSignal){
+    if(parentSignal.aborted)controller.abort();
+    else parentSignal.addEventListener('abort',onAbort,{once:true});
+  }
+  const timer=window.setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    return await fetch(input,{...init,signal:controller.signal});
+  }finally{
+    window.clearTimeout(timer);
+    parentSignal?.removeEventListener('abort',onAbort);
+  }
 }
 
 export function ChatShell({onOpenLegal}:Props){
@@ -68,6 +137,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [modelTick,setModelTick]=useState(0);
   const [activity,setActivity]=useState<string[]>([]);
   const bottom=useRef<HTMLDivElement>(null);
+  const turnAbort=useRef<AbortController|null>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
   const webllm=useMemo(()=>webLLMStatus(),[modelTick,loadState]);
@@ -98,13 +168,13 @@ export function ChatShell({onOpenLegal}:Props){
     return()=>window.removeEventListener('predictlm:neural-warmup',onWarm as EventListener);
   },[]);
 
-  async function webContext(query:string){
+  async function webContext(query:string,signal?:AbortSignal){
     try{
-      const r=await fetch('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:12})});
+      const r=await fetchWithTimeout('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:8})},10000,signal);
       const data=await r.json();
       if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
       const rawItems=[...(data.web||[]),...(data.news||[])];
-      const items=filterRelevantResearchItems(query,rawItems,10);
+      const items=filterRelevantResearchItems(query,rawItems,8);
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
@@ -119,11 +189,15 @@ export function ChatShell({onOpenLegal}:Props){
     const tutorIntent=isTutorRequest(prompt);
     const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
+    const simulationLaunch=detectSimulationLaunchRequest(prompt);
     const kind=classifyConversation(prompt,history);
+    const language=resolveConversationLanguage(prompt,history);
+    const brainContext=advanceBrowserDigitalBrainContext(prompt).context;
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
+    const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
-    const needsWeb=shouldSearchConversation(kind,s.webEnabled);
+    const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
 
     setInput('');
     setScreen('chat');
@@ -136,8 +210,23 @@ export function ChatShell({onOpenLegal}:Props){
       }).catch(()=>{});
     }
     s.addMessage({role:'user',content:prompt});
+    if(simulationLaunch){
+      try{sessionStorage.setItem('predictlm:simulation-explicit-start','1')}catch{}
+      setScreen('simulation');
+      s.addMessage({
+        role:'assistant',
+        content:'Simulação ativada. Ela começou a rodar porque você pediu explicitamente; você pode pausar, acelerar ou definir destino, nome e objetivo no painel.',
+        engine:'Predict Auto',
+        actions:['Life Simulation Studio aberto','Estado local preservado','Digital Brain conectado ao ciclo observar → priorizar → agir → memorizar'],
+        status:'done'
+      });
+      setActivity([]);
+      return;
+    }
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
+    const turnController=new AbortController();
+    turnAbort.current=turnController;
     setBusy(true);
     setActivity(
       processNumber
@@ -150,7 +239,7 @@ export function ChatShell({onOpenLegal}:Props){
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
             ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
-            : s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)
+            : safeLocalDeep
               ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','FORGE · preparando rascunho neural','AEGIS · revisando relevância','VERIFY · preparando resposta']
               : s.deepThink
                 ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','VERIFY · usando apenas contexto relevante']
@@ -162,7 +251,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(fraudIntent&&!processNumber){
         setActivity(['Classificando sinais de fraude','Verificando links, credenciais e pagamento']);
         const assessment=assessFraudRisk({texts:[prompt]});
-        const web=s.webEnabled?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+        const web=s.webEnabled?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
         s.addMessage({
           role:'assistant',
           content:formatFraudAssessment(assessment),
@@ -361,45 +450,57 @@ export function ChatShell({onOpenLegal}:Props){
         return;
       }
 
-      const web=needsWeb?await webContext(prompt):{text:'',sources:[] as any[],items:[] as any[]};
+      const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
+      const web=needsWeb?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
-      const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
-      const augmented=web.text
-        ? prompt+'\n\nFontes recuperadas. Responda à pergunta diretamente e use apenas o que for relevante; não liste links sem necessidade:\n'+web.text
-        : prompt;
-      const fallbackText=direct||research?.content||undefined;
+      const researchContext=web.text;
+      const fallbackText=direct||(kind==='howto'?practicalHowToReply(prompt):undefined)||((kind==='factual'||kind==='current')?research?.content:undefined);
+      const answerAnchor=kind==='howto'?(direct||practicalHowToReply(prompt)||''):'';
+      const directScore=direct?answerQuality(prompt,direct):-99;
+      const anchorScore=answerAnchor?answerQuality(prompt,answerAnchor):-99;
+      const advisory=(currentNeural.loaded||currentWebLLM.loaded)
+        ? await localBrainAdvisory(prompt,messages,{language,researchContext})
+        : null;
 
       if(kind!=='casual'&&kind!=='context'){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
         try{
-          const cloudResponse=await fetch('/api/chat',{
+          const cloudResponse=await fetchWithTimeout('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:augmented,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
-          });
+            body:JSON.stringify({prompt,researchContext,localAdvisory:advisory?.content||'',answerAnchor,brainContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
+          },33000,turnController.signal);
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
-            const cloudText=String(cloudData.content).trim();
-            const relevant=responseTopicAlignment(prompt,cloudText).relevant;
-            const quality=answerQuality(prompt,cloudText);
+            const gatedCloud=publicAnswerGate(String(cloudData.content||''),language,prompt);
+            const cloudText=gatedCloud.ok?gatedCloud.content:'';
+            const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
+            const quality=cloudText?answerQuality(prompt,cloudText):-99;
             if(!relevant||(kind==='howto'&&quality<3)){
-              setActivity(['Provider respondeu com baixa aderência','Continuando no Predict Auto','VERIFY · procurando resposta melhor']);
+              setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor','Validando a resposta final']);
             }else{
-            const cloudSources=[
+            const cloudSources=filterDisplayedSources(prompt,[
               ...web.sources,
               ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            ],8);
+            const finalText=kind==='howto'&&answerAnchor&&anchorScore>=quality?answerAnchor:cloudText;
             s.addMessage({
               role:'assistant',
-              content:cloudText,
+              content:finalText,
               engine:'Predict Auto',
               sources:cloudSources,
+              reasoningSummary:buildReasoningSummary({
+                kind,
+                webCount:cloudSources.length,
+                localBrain:!!advisory,
+                provider:true,
+                anchor:!!answerAnchor,
+                deep:s.deepThink
+              }),
               actions:[
-                cloudData.cache==='hit'?'Cache reutilizado':'Cache miss · geração executada',
-                'GitHub Knowledge v'+String(cloudData.knowledgeVersion||'—'),
-                'Provider Mesh automático respondeu',
-                ...(cloudData.tokenBudget?.savedPct?['Token Saver: ~'+cloudData.tokenBudget.savedPct+'% de contexto redundante removido']:[]),
-                'Gate final preserva fallback local se o cascade falhar'
+                ...(needsWeb&&cloudSources.length?['Pesquisa integrada · '+cloudSources.length+' fonte(s) relevante(s)']:[]),
+                ...(advisory?['Neural Local consultado como segundo cérebro']:[]),
+                'Resposta final validada antes de exibir'
               ],
               status:'done'
             });
@@ -407,47 +508,55 @@ export function ChatShell({onOpenLegal}:Props){
             }
           }
         }catch{}
-        setActivity(['Provider Mesh não respondeu','Predict Auto usando próximo runtime disponível','VERIFY · preparando resposta']);
+        setActivity(['A primeira rota não produziu uma resposta válida','Tentando outra rota automaticamente','Validando a resposta final']);
       }
 
 
       if(s.localRuntimeEnabled){
         setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
         try{
-          const localReply=await answerViaLocalRuntime(augmented,messages,{deep:s.deepThink,preferred:'auto'});
+          const localReply=await answerViaLocalRuntime(prompt,messages,{deep:s.deepThink,preferred:'auto',language,researchContext,signal:turnController.signal});
           const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
           if(relevant){
             setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
-            const localSources=[
+            const localSources=filterDisplayedSources(prompt,[
               ...web.sources,
               ...localReply.sources
-            ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
+            ],8);
             s.addMessage({
               role:'assistant',
               content:localReply.content,
               engine:'Predict Auto',
               sources:localSources,
+              reasoningSummary:buildReasoningSummary({
+                kind,
+                webCount:localSources.length,
+                localBrain:!!advisory,
+                localRuntime:true,
+                anchor:!!answerAnchor,
+                deep:s.deepThink
+              }),
               actions:[
-                'Runtime local automático respondeu',
-                ...(localReply.tokenStats.savedPct?['Token Saver: ~'+localReply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
-                'GitHub top-k + memória compactada',
-                'Resposta passou pelo gate de assunto'
+                ...(needsWeb&&localSources.length?['Pesquisa integrada · '+localSources.length+' fonte(s) relevante(s)']:[]),
+                'Resposta final validada antes de exibir'
               ],
               status:'done'
             });
             return;
           }
-          setActivity(['Local API respondeu fora do assunto','Retornando ao próximo motor']);
+          setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor']);
         }catch(err:any){
-          setActivity(['Local API indisponível: '+String(err?.message||'falha').slice(0,120),'Retornando ao próximo motor']);
+          setActivity(['Uma rota local não ficou disponível','Buscando outra rota automaticamente']);
         }
       }
 
-      let reply=await answerLocally(augmented,messages,{
+      let reply=await answerLocally(prompt,messages,{
         preferNative:false,
         knowledge:s.deepThink,
         fallbackText,
-        deep:s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded),
+        language,
+        researchContext,
+        deep:safeLocalDeep,
         onStage:stage=>{
           if(!s.deepThink||!(currentNeural.loaded||currentWebLLM.loaded))return;
           const stages={
@@ -461,14 +570,15 @@ export function ChatShell({onOpenLegal}:Props){
         }
       });
 
-      const directScore=direct?answerQuality(prompt,direct):-99;
       const replyScore=answerQuality(prompt,reply.content);
       const researchScore=research?answerQuality(prompt,research.content):-99;
 
       const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm')&&responseTopicAlignment(prompt,reply.content).relevant;
-      if(direct&&!neuralRelevant&&directScore>=replyScore){
+      if(kind==='howto'&&answerAnchor&&!neuralRelevant&&anchorScore>=replyScore){
+        reply={...reply,content:answerAnchor,sources:web.sources.slice(0,6)};
+      }else if(direct&&!neuralRelevant&&directScore>=replyScore){
         reply={...reply,content:direct,sources:web.sources.slice(0,4)};
-      }else if(research&&!neuralRelevant&&researchScore>replyScore){
+      }else if(kind!=='howto'&&research&&!neuralRelevant&&researchScore>replyScore){
         reply={...reply,content:research.content,sources:research.sources};
       }else if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
         reply={...reply,content:research.content,sources:research.sources};
@@ -476,20 +586,38 @@ export function ChatShell({onOpenLegal}:Props){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,10);
       }
 
+      const gate=publicAnswerGate(reply.content,language);
+      if(!gate.ok){
+        const candidates=[answerAnchor,direct,...((kind==='factual'||kind==='current')&&research?.content?[research.content]:[])].filter(Boolean) as string[];
+        const valid=candidates.map(x=>publicAnswerGate(x,language)).find(x=>x.ok);
+        if(valid)reply={...reply,content:valid.content,sources:web.sources.slice(0,6)};
+        else throw new Error('Não foi possível produzir uma resposta final válida para exibição.');
+      }else{
+        reply={...reply,content:gate.content};
+      }
       const engineLabel='Predict Auto';
       const actions=[
-        'Intenção identificada: '+kind,
-        ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
-        ...(learningInstruction?['Instrução persistente capturada localmente · proposta global enviada quando GitHub Learning estiver configurado']:[]),
-        ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
-        ...(currentNeural.loaded?['Runtime local econômico ativo']:[]),
-        ...(currentWebLLM.loaded?['Runtime local acelerado ativo']:[]),
-        ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?['Deep: revisão interna limitada ao orçamento do dispositivo']:[]),
-        ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
-        'Gate final verificou relevância ao assunto principal'
+        ...(needsWeb?['Pesquisa integrada ao Chat'+(web.sources.length?' · '+web.sources.length+' fonte(s) relevante(s)':' · nenhuma fonte útil encontrada')]:[]),
+        ...(tutorIntent?['Modo de aprendizagem aplicado']:[]),
+        'Resposta final validada antes de exibir'
       ];
-      s.addMessage({role:'assistant',content:reply.content,engine:engineLabel,sources:reply.sources,actions,status:'done'});
+      s.addMessage({
+        role:'assistant',
+        content:reply.content,
+        engine:engineLabel,
+        sources:reply.sources,
+        reasoningSummary:buildReasoningSummary({
+          kind,
+          webCount:reply.sources?.length||0,
+          localBrain:!!advisory||reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm',
+          anchor:!!answerAnchor,
+          deep:s.deepThink
+        }),
+        actions,
+        status:'done'
+      });
     }catch(err:any){
+      if(turnController.signal.aborted)return;
       const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
       s.addMessage({
         role:'assistant',
@@ -499,9 +627,30 @@ export function ChatShell({onOpenLegal}:Props){
       });
       fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
     }finally{
+      if(turnAbort.current===turnController)turnAbort.current=null;
       setBusy(false);
       setActivity([]);
       setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
+    }
+  }
+
+  function cancelCurrentTurn(){
+    turnAbort.current?.abort();
+    turnAbort.current=null;
+    cancelNeuralWork();
+    setBusy(false);
+    setActivity([]);
+    setModelTick(x=>x+1);
+    setModelError('Execução interrompida para manter o app responsivo.');
+  }
+
+  async function cancelModelLoad(){
+    const local=cancelNeuralLoad();
+    const web=await cancelWebLLMLoad();
+    if(local||web){
+      setLoadState(null);
+      setModelTick(x=>x+1);
+      setModelError('Carregamento local cancelado. O Predict Auto continua pelo servidor/pesquisa.');
     }
   }
 
@@ -648,10 +797,11 @@ export function ChatShell({onOpenLegal}:Props){
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
         <button className={screen==='build'?'active':''} onClick={()=>setScreen('build')}><span><Code2 size={16}/></span>Build</button>
+        <button className={screen==='simulation'?'active':''} onClick={()=>setScreen('simulation')}><span><Activity size={16}/></span>Simulação</button>
         <button onClick={onOpenLegal}><span><Scale size={16}/></span>Processos</button>
         <button className={screen==='imagine'?'active':''} onClick={()=>setScreen('imagine')}><span><ImageIcon size={16}/></span>Imagine</button>
         <button className={screen==='library'?'active':''} onClick={()=>setScreen('library')}><span><Library size={16}/></span>Library</button>
-        <button className={screen==='research'?'active':''} onClick={()=>setScreen('research')}><span><Globe2 size={16}/></span>Research</button>
+        <button className={s.webEnabled?'active':''} onClick={()=>{s.setWebEnabled(true);setScreen('chat')}}><span><Globe2 size={16}/></span>Pesquisa no Chat</button>
       </nav>
 
       <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
@@ -676,31 +826,32 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='build'?<GrokBuildPanel/>:
       screen==='research'?<GrokResearchPanel/>:
       screen==='imagine'?<GrokImaginePanel/>:
+      screen==='simulation'?<GrokSimulationPanel/>:
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/>
-        <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button>
-        <div className="grok-home-foot"><span className="private-dot"/> TwinCore X10 · memória local · projeto persistente</div>
+        <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
+        <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>setScreen('simulation')}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
+        <div className="grok-home-foot"><span className="private-dot"/> conversa · memória · criação</div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(m.content)}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.actions?.length?<details className={'grok-actions '+(m.status||'done')}><summary>{m.status==='error'?'Execução interrompida':m.status==='partial'?'Execução parcial':'O que foi feito'}</summary>{m.actions.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</details>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>working</span></div><div className="grok-thinking"><i/><i/><i/> executando ferramentas</div>{activity.length>0&&<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>}</div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>setScreen('research')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={onOpenLegal}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.reasoningSummary&&m.role==='assistant'?<details className="grok-reasoning"><summary><Brain size={11}/><span>Raciocínio</span><ChevronDown className="grok-reasoning-chevron" size={11}/></summary><p>{m.reasoningSummary}</p></details>:null}{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Raciocínio</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/></div>
       </section>}
 
-      {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong></div>}
+      {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong><button onClick={cancelModelLoad}>Cancelar</button></div>}
       {modelError&&<div className="grok-model-error">{modelError}<button onClick={()=>setModelError('')}><X size={12}/></button></div>}
     </main>
   </div>
 }
 
 function Composer(props:any){
-  const {value,setValue,send,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenLegal,compact}=props;
+  const {value,setValue,send,cancelTurn,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenSimulation,onOpenLegal,compact}=props;
   const localReady=!!(neural?.loaded||webllm?.loaded);
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
-    <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa — o Predict Auto escolhe o melhor motor disponível"/>
+    <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa"/>
     <div className="grok-composer-actions">
-      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenLegal}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenResearch}><Globe2 size={14}/><span><b>Research</b><small>Pesquisar fontes atuais</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
+      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Build Mode</b><small>Continuar ou criar aplicativo</small></span></button><button onClick={onOpenLegal}><Scale size={14}/><span><b>Processos</b><small>DataJud + DJEN + dossiê</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Simulação ativa</b><small>Personagem, mundo, memória e NeuroCore</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
@@ -717,7 +868,7 @@ function Composer(props:any){
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
           </div>}
         </div>
-        <button className="grok-send" onClick={send} disabled={!value.trim()||busy}><Send size={17}/></button>
+        <button className="grok-send" onClick={busy?cancelTurn:send} disabled={!busy&&!value.trim()} title={busy?'Parar execução':'Enviar'}>{busy?<X size={17}/>:<Send size={17}/>}</button>
       </div>
     </div>
   </div>

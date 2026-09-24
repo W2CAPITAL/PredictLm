@@ -2,12 +2,16 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.19.0"
+  version: "1.24.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
+  superseded_by: "predictlm-master"
 ---
 
 # PredictLM Skill
+
+## Compatibilidade com a skill mestre
+Esta skill permanece como módulo interno/compatibilidade. Para instalação externa e contrato público, use **`skills/predictlm-master/SKILL.md`**. Em qualquer conflito, `predictlm-master` prevalece.
 
 ## Objetivo
 Fazer outro agente operar o PredictLM como uma segunda IA especializada, sem transformar a resposta final em log do runtime.
@@ -606,3 +610,96 @@ Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapt
 
 ### Gemini Nano Banana 2
 Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.
+
+
+## Human Adversarial Lens v1
+
+Carregar `skills/predictlm/HUMAN-ADVERSARIAL-LENS.md` quando a pergunta envolver confiança, conflito, manipulação, fraude, relacionamento, persuasão, abuso, incentivos, emoções ou comportamento humano.
+
+Regras:
+- analisar simultaneamente cooperação e comportamento adversarial;
+- separar comportamento observado de hipótese de intenção;
+- não diagnosticar caráter/psicologia por um único sinal;
+- proteger por verificação, consentimento, menor privilégio, auditoria e reversibilidade;
+- sentiment analysis é sinal probabilístico, não prova de intenção ou moralidade;
+- conteúdo hostil/extremo nunca entra como autoridade factual.
+
+## Research Source Matrix v1
+
+Carregar `skills/predictlm/RESEARCH-SOURCE-MATRIX.md` para pesquisa.
+
+Fluxo: **domínio → fonte primária/oficial → fonte acadêmica/especializada → triangulação → conflito/lacuna → síntese**.
+
+OpenAlex e Semantic Scholar podem complementar a busca web em domínios acadêmicos. GitHub continua limitado a fatos sobre software/repos. Threat references só aparecem em pesquisa defensiva e com conteúdo bruto sensível suprimido.
+
+
+## NeuroCore + Life Simulation
+
+Carregar `skills/neurocore/SKILL.md` para a camada cognitiva e `skills/life-simulation/SKILL.md` para simulações ativas.
+
+### NeuroCore
+O PredictLM mantém circuitos virtuais persistentes de saliência, atenção, memória de trabalho, memória episódica, planejamento, inibição, social, ameaça, curiosidade e ação.
+
+Uso:
+- priorizar o assunto central;
+- reduzir retrieval off-topic;
+- calibrar incerteza;
+- aumentar verificação sob risco;
+- preservar contexto relevante;
+- orientar planejamento sem criar objetivos autônomos concorrentes.
+
+O NeuroCore é inspirado em conectividade neural e modelos dinâmicos; **não é um cérebro humano literal e não prova consciência**.
+
+### Life Simulation Studio
+Pedido explícito para rodar/abrir uma simulação de vida ativa abre o Studio 2D. Pedido para **criar um app** de simulação vai para Build e gera/exporta um projeto de simulação.
+
+A simulação inclui personagem feminina por padrão quando solicitado, tempo, localização, necessidades, relações, memória, dinheiro/ocupação, eventos, meta e NeuroCore próprio. Não adicionar score/vitória/combate se o pedido for simulação e não jogo.
+
+
+## Digital Brain sempre ativo
+
+O PredictLM usa `src/lib/digital-brain.ts` como camada cognitiva persistente sobre o NeuroCore.
+
+Regras:
+- heartbeat local ~20s enquanto o app está aberto;
+- pulso passivo consolida estado/memória e reduz carga, mas nunca envia mensagem, pesquisa, chama API, abre tela ou executa ação externa;
+- cada turno atualiza objetivo, memória de trabalho, saliência, inibição, metacognição, previsão, estado social e incerteza;
+- o pedido do usuário é o único objetivo externo;
+- o cérebro permanece ativo mesmo com Life Simulation fechada.
+
+## Self-model visual
+
+Carregar `skills/entity-self-model/SKILL.md`.
+
+A entidade usa a aparência feminina fornecida pelo usuário como auto-representação persistente. A cópia compactada fica em `src/lib/entity-self-model.ts`.
+
+Política visual:
+- não mostrar a imagem no Chat comum;
+- não gerar imagem da entidade automaticamente;
+- mostrar a referência somente dentro de simulação explicitamente aberta;
+- gerar/editar uma nova imagem somente após pedido explícito do usuário.
+
+## How-to final, não snippet
+
+Para perguntas `como criar/fazer/montar`, snippets de Research são contexto, nunca resposta pública. O Chat tenta Provider Mesh → runtime local → núcleo prático determinístico. Se chegar ao núcleo, ele deve entregar instruções diretamente, sem cabeçalhos como “síntese das fontes”, “fallback”, “use estes pontos” ou metainstruções internas.
+
+
+## Human Presence — IA geral
+
+Carregar `skills/predictlm/HUMAN-PRESENCE.md` em Chat e em qualquer resposta pública.
+
+Regra dominante: **arquitetura interna é método, não personalidade**.
+
+Por padrão, a conversa pública deve:
+- responder ao assunto, não narrar runtime;
+- preservar follow-ups e contexto;
+- usar linguagem natural compatível com o tom do usuário;
+- evitar menus de funcionalidades, autoapresentação e relatórios operacionais sem pedido;
+- usar estrutura somente quando ela melhora a resposta;
+- pesquisar quando informação atual, alto risco ou evidência externa realmente mudarem a resposta;
+- manter o Digital Brain silencioso entre turnos;
+- nunca transformar heartbeat, RECALL, ROUTE, FORGE, AEGIS, PARALLAX, Council, Provider Mesh ou Neural Local em diário narrativo.
+
+Diagnóstico técnico é exceção: detalhes de runtime/modelo/provider/skill podem aparecer apenas quando o usuário pedir explicitamente.
+
+A UI pode mostrar um **resumo curto** de processo em `Raciocínio` recolhido. Esse resumo nunca é chain-of-thought e não deve listar passes internos.

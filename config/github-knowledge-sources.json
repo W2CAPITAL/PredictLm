@@ -10,7 +10,8 @@
       "Apache-2.0",
       "BSD-2-Clause",
       "BSD-3-Clause",
-      "CC-BY-4.0"
+      "CC-BY-4.0",
+      "CC0-1.0"
     ],
     "note": "Only allow sources are copied into the runtime index. reference-only is distilled manually; quarantine and asset-only are never ingested.",
     "maxChunksPerRepo": 260
@@ -1738,6 +1739,857 @@
         "sales"
       ],
       "reason": "Architecture/reference with attribution requirements; generated code remains independently authored."
+    },
+    {
+      "repo": "Starlink/starlink",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "space",
+        "starlink",
+        "astronomy",
+        "scientific-software"
+      ],
+      "reason": "No repository license detected; architecture/history reference only."
+    },
+    {
+      "repo": "nasa-gibs/worldview",
+      "branch": "main",
+      "license": "NASA-1.3",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "doc/"
+      ],
+      "domains": [
+        "earth-observation",
+        "satellite-imagery",
+        "gibs",
+        "maps"
+      ],
+      "reason": "NASA Open Source Agreement 1.3 has custom obligations; use as architecture/data-service reference."
+    },
+    {
+      "repo": "gibme-npm/starlink",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "starlink",
+        "grpc",
+        "telemetry",
+        "enterprise-api",
+        "network"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "r-spacex/SpaceX-API",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "space",
+        "spacex",
+        "rest-api",
+        "launch-data"
+      ],
+      "weight": 1.02,
+      "reason": "Archived but useful for public space-data/API patterns."
+    },
+    {
+      "repo": "Baptajck/space",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "space",
+        "frontend",
+        "spacex-data"
+      ],
+      "weight": 0.9
+    },
+    {
+      "repo": "Kitsunp/kistmath-ai",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "KistMath_AI/",
+        "models/",
+        "training/"
+      ],
+      "domains": [
+        "math",
+        "symbolic-reasoning",
+        "curriculum-learning",
+        "memory"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "adjs/am-cq",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "machine-learning",
+        "quantum-computing",
+        "education"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "quantumgercom/Link-Layer-Schudeling",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "networking",
+        "scheduling",
+        "notebooks"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "krissiazawadzki/informacao_computacao_quantica",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "information",
+        "education",
+        "notebooks"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "smendoncabruna/ComputacaoQuantica",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "quantum",
+        "education",
+        "portuguese"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "Universidade-Livre/matematica",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "math",
+        "curriculum",
+        "education",
+        "portuguese"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "TechTastic/Advanced-Math",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "modules/"
+      ],
+      "domains": [
+        "math",
+        "linear-algebra",
+        "statistics",
+        "quaternions",
+        "pid"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "oalanicolas/ia",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "ai",
+        "learning",
+        "tools"
+      ],
+      "reason": "No license detected."
+    },
+    {
+      "repo": "MoKangMedical/digital-sage",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "socratic-dialogue",
+        "persona",
+        "tutoring",
+        "memory",
+        "saas"
+      ],
+      "weight": 1.01
+    },
+    {
+      "repo": "vercel/vercel",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "packages/cli/README.md",
+        "packages/"
+      ],
+      "domains": [
+        "vercel",
+        "deploy",
+        "build",
+        "cli",
+        "platform"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "ronilsondesouza045-beep/wotlk-local-server-kit",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "local-server",
+        "service-orchestration",
+        "health-check",
+        "portable-kit"
+      ],
+      "reason": "No license detected; local service/runbook patterns only."
+    },
+    {
+      "repo": "netdata/netdata",
+      "branch": "master",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "observability",
+        "metrics",
+        "alerts",
+        "anomaly-detection",
+        "edge"
+      ],
+      "reason": "GPL-3.0; architecture/observability patterns only."
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-MCP",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README_EN.md",
+        "docs/"
+      ],
+      "domains": [
+        "finance",
+        "mcp",
+        "structured-data",
+        "agents"
+      ],
+      "weight": 1.04,
+      "reason": "Hosted data-service rights/quotas are separate from repository license."
+    },
+    {
+      "repo": "edilsonaguiais/sgs-peritos",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "sgs_peritos/",
+        "exemplos/"
+      ],
+      "domains": [
+        "bcb",
+        "sgs",
+        "forensic-finance",
+        "interest-rates",
+        "brazil"
+      ],
+      "weight": 1.12
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-skill",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "ftshare-market-data/"
+      ],
+      "domains": [
+        "finance",
+        "agent-skill",
+        "routing",
+        "structured-data"
+      ],
+      "weight": 1.04,
+      "reason": "Hosted data-service rights/quotas are separate from repository license."
+    },
+    {
+      "repo": "protonspy/JusChat",
+      "branch": "main",
+      "license": "CC0-1.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/",
+        "tests/"
+      ],
+      "domains": [
+        "legal",
+        "graphrag",
+        "knowledge-graph",
+        "documents",
+        "rag"
+      ],
+      "weight": 1.1
+    },
+    {
+      "repo": "ergonzamarian/Analisador-de-Sentimentos",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "sentiment-analysis",
+        "human-signals",
+        "classification",
+        "evaluation"
+      ],
+      "reason": "No root LICENSE verified. Distill only the high-level lesson that sentiment is a probabilistic signal evaluated with precision/recall/F1, never a moral or intent classifier."
+    },
+    {
+      "repo": "msfidelis/gmud-for-the-win",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "change-management",
+        "git",
+        "ci",
+        "release-ops"
+      ],
+      "reason": "No root LICENSE verified. Architecture reference for deriving change documentation from Git/CI evidence."
+    },
+    {
+      "repo": "sheepzh/make-zero",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "privacy",
+        "browser-extension",
+        "local-encryption",
+        "security-ux"
+      ],
+      "reason": "MIT verified, but the project is an older client-side encryption utility. Use only privacy/UX patterns; never inherit weak/default-password assumptions as security guidance."
+    },
+    {
+      "repo": "leonardosegfault/humilhador-de-github",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "tone",
+        "sarcasm",
+        "consent",
+        "github-profile",
+        "rate-limit"
+      ],
+      "reason": "Use only for consent-aware tone/sarcasm patterns and server-side key/rate-limit boundaries; never train humiliation as a default interaction style."
+    },
+    {
+      "repo": "neurolib-dev/neurolib",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "neuroscience",
+        "whole-brain-modeling",
+        "neural-mass",
+        "connectivity",
+        "simulation"
+      ],
+      "weight": 1.14
+    },
+    {
+      "repo": "openMetadataInitiative/openMINDS",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "neuroscience",
+        "metadata",
+        "provenance",
+        "ontology",
+        "brain-data"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "HumanBrainProject/openMINDS",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "neuroscience",
+        "metadata",
+        "deprecated"
+      ],
+      "reason": "Deprecated upstream; use only as migration/history pointer to openMetadataInitiative/openMINDS."
+    },
+    {
+      "repo": "TheDragonChild/FlyPuter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "connectome",
+        "sensorimotor",
+        "flywire",
+        "brian2",
+        "physics-bridge"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "FoundationAgents/MetaGPT",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "agents",
+        "roles",
+        "sop",
+        "orchestration",
+        "software-company"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "PavelDoGreat/WebGL-Fluid-Simulation",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "webgl",
+        "simulation",
+        "visual-dynamics",
+        "browser"
+      ],
+      "weight": 0.92
+    },
+    {
+      "repo": "ludenio/SuperWEIRDGameKit",
+      "branch": "main",
+      "license": "CC0-1.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "README_Portuguese.md"
+      ],
+      "domains": [
+        "simulation",
+        "world-management",
+        "production",
+        "2d-world",
+        "state"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "fullya99/worldbox-mcp",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/architecture.md",
+        "docs/multi-agent.md",
+        "docs/protocol.md"
+      ],
+      "domains": [
+        "simulation",
+        "observe-act-loop",
+        "world-state",
+        "multi-agent",
+        "mcp"
+      ],
+      "weight": 1.1
+    },
+    {
+      "repo": "A2Faisal/SESAME",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "geospatial",
+        "human-earth",
+        "grids",
+        "simulation-data",
+        "visualization"
+      ],
+      "weight": 0.98
+    },
+    {
+      "repo": "developerrahulofficial/AI-Girlfriend",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "avatar",
+        "voice",
+        "persona",
+        "memory",
+        "human-interface"
+      ],
+      "reason": "Use only avatar/voice/persona interface patterns; no romantic/sexual dependency framing or third-party audio capture defaults."
+    },
+    {
+      "repo": "bulletphysics/bullet3",
+      "branch": "master",
+      "license": "Zlib",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "physics",
+        "collision",
+        "robotics",
+        "simulation"
+      ],
+      "reason": "Native physics architecture reference; not a required browser runtime and Zlib is outside the current RAG allow-license set."
+    },
+    {
+      "repo": "dhorions/Capital-and-Cargo",
+      "branch": "master",
+      "license": "Unlicense",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "economy",
+        "transport",
+        "reputation",
+        "automation",
+        "simulation"
+      ],
+      "reason": "Public-domain style license; distill high-level economy/automation concepts only."
+    },
+    {
+      "repo": "OpenRCT2/OpenRCT2",
+      "branch": "develop",
+      "license": "GPL-3.0+",
+      "mode": "reference-only",
+      "include": [
+        "readme.md"
+      ],
+      "domains": [
+        "management-simulation",
+        "agent-ai",
+        "world-state",
+        "simulation"
+      ],
+      "reason": "GPL/copyleft implementation remains architecture reference only."
+    },
+    {
+      "repo": "WorldBoxOpenMods/ModLoader",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "world-modules",
+        "plugins",
+        "simulation"
+      ],
+      "reason": "Use modular world/plugin lifecycle patterns only; PredictLM simulation is independent of WorldBox."
+    },
+    {
+      "repo": "Sairamg18814/shvayambhu",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "consciousness-claims",
+        "self-modification",
+        "introspection"
+      ],
+      "reason": "Repository makes extraordinary consciousness claims that are not established evidence. Do not ingest claims as facts or enable autonomous self-modification from this source."
+    },
+    {
+      "repo": "robert1811/life-simulator",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "events",
+        "career",
+        "relationships"
+      ],
+      "reason": "No license verified; concepts only. Harmful/crime mechanics are not imported as defaults."
+    },
+    {
+      "repo": "bitlifefreeonline/bitlife",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "events",
+        "local-storage"
+      ],
+      "reason": "License/IP status not verified; use generic life-simulation concepts only, not branding/assets/code."
+    },
+    {
+      "repo": "Krobix/life.html",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "life-simulation",
+        "negative-reference"
+      ],
+      "reason": "README states the project is nonfunctional/bad implementation inspiration; keep as negative reference only."
+    },
+    {
+      "repo": "Qwizer/realmap-10x",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "legacy-game-server",
+        "credentials-risk"
+      ],
+      "reason": "README exposes credentials and project is unrelated to PredictLM life simulation. Never ingest secrets or binaries."
+    },
+    {
+      "repo": "alestanalves/real-life-gaming",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-world",
+        "phaser",
+        "local-storage",
+        "simulation-ui"
+      ],
+      "reason": "License not verified; architecture concepts only."
+    },
+    {
+      "repo": "SimonSaysGiveMeSmile/gtasf.lol",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "world-rendering",
+        "react-three-fiber",
+        "simulation-ui"
+      ],
+      "reason": "License not verified; rendering architecture concepts only."
+    },
+    {
+      "repo": "HelloFangaming/HelloMarioEngine",
+      "branch": "master",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-engine",
+        "objects",
+        "rooms",
+        "event-loop",
+        "simulation-ui"
+      ],
+      "weight": 0.96,
+      "reason": "README explicitly states New BSD; use reusable engine/object/event architecture only, not Mario assets/IP."
+    },
+    {
+      "repo": "EasyRPG/Player",
+      "branch": "master",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/BUILDING.md"
+      ],
+      "domains": [
+        "2d-runtime",
+        "interpreter",
+        "event-loop",
+        "platform-abstraction",
+        "emscripten"
+      ],
+      "reason": "GPL-3.0 implementation remains architecture reference only."
+    },
+    {
+      "repo": "niksudan/prettylight",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "2d-lighting",
+        "shaders",
+        "surfaces",
+        "simulation-ui"
+      ],
+      "weight": 0.94
+    },
+    {
+      "repo": "YoYoGames/GameMaker-HTML5",
+      "branch": "develop",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "scripts/"
+      ],
+      "domains": [
+        "html5-runtime",
+        "canvas",
+        "input",
+        "audio",
+        "render-loop",
+        "browser"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "YoYoGames/GameMaker-Manual",
+      "branch": "develop",
+      "license": "copyrighted-docs",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "gamemaker",
+        "runtime-docs",
+        "html5",
+        "assets",
+        "build"
+      ],
+      "reason": "Manual content is copyright YoYo Games; use navigation/documentation concepts only, no corpus copying."
     }
   ]
 }
