@@ -1,0 +1,92 @@
+{
+  "version": 2,
+  "suite": "media-generation-v2",
+  "cases": [
+    {
+      "id": "real-video-auto-prefers-temporal-provider",
+      "input": {
+        "mode": "video",
+        "provider": "auto",
+        "prompt": "Naruto Kurama lutando com Sasuke Perfect Susanoo",
+        "deepThink": true,
+        "deepResearch": true
+      },
+      "expect": {
+        "notFinalProviders": [
+          "browser-mediarecorder",
+          "predict-storyboard"
+        ],
+        "requiresTaskOrVideoUrl": true,
+        "temporalGeneration": true,
+        "referenceGrounding": true
+      }
+    },
+    {
+      "id": "veo-reference-images-use-real-assets",
+      "input": {
+        "provider": "gemini",
+        "duration": 4,
+        "resolution": "720p",
+        "referenceImages": [
+          "data:image/png;base64,<fixture>"
+        ]
+      },
+      "expect": {
+        "effectiveDuration": 8,
+        "referenceImagesMax": 3,
+        "usesInlineImageBytes": true
+      }
+    },
+    {
+      "id": "structured-provider-error-never-leaks-object-object",
+      "input": {
+        "error": {
+          "error": {
+            "message": "quota exceeded"
+          }
+        }
+      },
+      "expect": {
+        "visibleTextContains": "quota exceeded",
+        "visibleTextExcludes": "[object Object]"
+      }
+    },
+    {
+      "id": "deep-media-planning",
+      "input": {
+        "deepThink": true,
+        "deepResearch": true,
+        "prompt": "produto futurista em chuva noturna"
+      },
+      "expect": {
+        "researchDepth": "comprehensive",
+        "directorBrief": true,
+        "finalPromptContainsTemporalDirectionsForVideo": true
+      }
+    },
+    {
+      "id": "no-real-provider-honest-fallback",
+      "input": {
+        "configuredTemporalProviders": []
+      },
+      "expect": {
+        "autoAvailable": false,
+        "localFallbackLabeledNonGenerative": true,
+        "noClaimOfNeuralVideo": true
+      }
+    },
+    {
+      "id": "comfyui-real-video-bridge",
+      "input": {
+        "provider": "comfyui",
+        "workflowConfigured": true
+      },
+      "expect": {
+        "submitEndpoint": "/prompt",
+        "pollEndpoint": "/history",
+        "assetEndpoint": "/view",
+        "requiresRealOutputFile": true
+      }
+    }
+  ]
+}
