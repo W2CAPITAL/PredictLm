@@ -20,6 +20,13 @@
 - `dhorions/Capital-and-Cargo` — Unlicense; economy, transport, reputation and automation patterns.
 - `A2Faisal/SESAME` — MIT; spatial grids and human-Earth data interoperability.
 
+## Browser / 2D runtime additions
+- `HelloFangaming/HelloMarioEngine` — New BSD/BSD-3-Clause stated in README; object/event/room architecture only, no franchise assets/IP.
+- `EasyRPG/Player` — GPL-3.0; portable interpreter/runtime architecture reference only.
+- `niksudan/prettylight` — MIT; lightweight 2D surfaces/shaders/lighting lifecycle.
+- `YoYoGames/GameMaker-HTML5` — Apache-2.0; browser canvas/input/audio/render/runtime patterns.
+- `YoYoGames/GameMaker-Manual` — copyrighted documentation; reference only for constraints/compatibility, not corpus copying.
+
 ## Reference-only / quarantine
 - `OpenRCT2/OpenRCT2` — GPL-3.0+; architecture reference only.
 - `robert1811/life-simulator` — license unverified; concepts only.
