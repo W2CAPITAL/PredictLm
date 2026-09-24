@@ -45,6 +45,17 @@ export function shouldForceLiteralMode(input:string){
   return isSpecificFranchisePrompt(input);
 }
 
+export function isAnimeFranchisePrompt(input:string){
+  const p=normalize(input);
+  return /\b(naruto|sasuke|kurama|susanoo|sharingan|rinnegan|uzumaki|uchiha|bijuu|besta de caudas|quatro caudas|four tails|son goku bijuu|dragon ball|goku|vegeta|gohan|freeza|frieza|cell|majin boo|majin buu|broly|oozaru|great ape|pikachu|pokemon|anime|manga|shonen)\b/.test(p);
+}
+
+export function recommendedImageStyle(input:string,currentStyle='Cinematic'){
+  const current=String(currentStyle||'Cinematic').trim()||'Cinematic';
+  if(isAnimeFranchisePrompt(input)&&/^cinematic$/i.test(current))return 'Anime';
+  return current;
+}
+
 export function buildSpecificNegativePrompt(originalPrompt:string,userNegative=''){
   const p=normalize(originalPrompt);
   const values=[
@@ -204,7 +215,7 @@ export function buildSafeCaptionPtBr(promptOriginal:string,existingCaption=''){
   if(/\bsasuke\b/.test(p)){
     return 'Sasuke aparece como o personagem central da cena, com sua identidade visual preservada.';
   }
-  if(/\bmacaco|monkey\b/.test(p)){
+  if(/\b(?:macaco|monkey)\b/.test(p)){
     return 'Retrato de um macaco em destaque, com foco no rosto e na expressão.';
   }
 
