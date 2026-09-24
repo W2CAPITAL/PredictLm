@@ -1,6 +1,7 @@
 import { compactText } from '@/lib/token-budget';
 
 export type ImagineParityStyle='Cinematic'|'Photoreal'|'Editorial'|'3D'|'Anime'|'Minimal'|'Product'|string;
+export type ImagePromptMode='auto'|'literal'|'imagine';
 
 const STYLE_DIRECTION:Record<string,string>={
   cinematic:'cinematic key art, dramatic composition, intentional lens language, volumetric depth, strong foreground/midground/background separation, film-grade lighting',
@@ -63,4 +64,56 @@ export function expandImagePromptForParity(input:{
 export function parityCaptionPtBr(originalPrompt:string){
   const subject=compactText(String(originalPrompt||'').trim(),120);
   return subject?'Imagem gerada para: '+subject:'Imagem gerada.';
+}
+
+
+export function buildDefaultNegativePrompt(originalPrompt:string,userNegative=''){
+  const base=[
+    'generic lookalike',
+    'wrong character identity',
+    'wrong hair color',
+    'wrong costume',
+    'missing requested transformation or power form',
+    'fused opponents',
+    'duplicated face',
+    'extra limbs',
+    'deformed hands',
+    'cropped head',
+    'blurry focal subject',
+    'low resolution',
+    'muddy textures',
+    'watermark',
+    'random text',
+    'fake UI'
+  ];
+  const p=String(originalPrompt||'').toLowerCase();
+  if(/naruto|kurama/.test(p))base.push('dragon instead of Kurama','lion instead of Kurama','generic blond warrior');
+  if(/sasuke|susanoo/.test(p))base.push('generic purple robot','generic demon instead of Perfect Susanoo');
+  if(userNegative.trim())base.unshift(userNegative.trim());
+  return Array.from(new Set(base)).join(', ');
+}
+
+export function buildLiteralImagePrompt(input:{
+  originalPrompt:string;
+  style?:ImagineParityStyle;
+  identityLock?:string;
+  referenceEvidence?:string;
+  negativePrompt?:string;
+}){
+  const original=compactText(String(input.originalPrompt||'').trim(),700);
+  const style=String(input.style||'').trim();
+  const negative=compactText(String(input.negativePrompt||'').trim(),520);
+  return compactText([
+    original,
+    style?('STYLE: '+style+'. Keep the user request literal; style may change rendering only, never subject identity or requested action.'):'',
+    input.identityLock||'',
+    input.referenceEvidence||'',
+    negative?('NEGATIVE CONSTRAINTS: '+negative+'.'):'',
+    'STRICT LITERAL MODE: do not invent AI/binary/circuit/data motifs, extra props, new costumes, new powers, new characters or a different setting unless the user explicitly requested them. Do not reinterpret named subjects into generic archetypes.'
+  ].filter(Boolean).join('\n\n'),1500);
+}
+
+export function chooseImagePromptMode(requested:ImagePromptMode,specificVisualPrompt:boolean):Exclude<ImagePromptMode,'auto'>{
+  if(requested==='literal'||requested==='imagine')return requested;
+  return specificVisualPrompt?'literal':'imagine';
 }

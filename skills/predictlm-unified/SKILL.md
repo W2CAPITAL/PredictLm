@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.19.0"
+  version: "1.20.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -520,3 +520,8 @@ Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity S
 - Referências/first frame devem ser passadas como mídia real quando o provider suporta, para reduzir drift de identidade.
 - Erros estruturados de mídia são convertidos em texto; a UI não deve exibir `[object Object]`.
 - ComfyUI local não é acessível pelo Vercel via localhost; só habilitar quando o endpoint for realmente alcançável pelo servidor/desktop.
+
+
+## Prompt calibration de imagem
+
+A skill `grok-imagine-parity` possui `auto | literal | imagine`. Auto protege personagens/franquias usando Literal quando expansão tende a causar drift; Imagine expande pedidos genéricos. Literal preserva o pedido, referências Firecrawl e negative constraints, sem Deep Think/Research reescreverem o conteúdo.

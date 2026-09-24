@@ -130,6 +130,60 @@
         "label": "Qualidade técnica",
         "semanticApprovalImplied": false
       }
+    },
+    {
+      "id": "specific-character-auto-uses-literal",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "crie o naruto kurama lutando com o sasuke susanoo perfeito"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "deepThinkRewrite": false,
+        "deepResearchRewrite": false,
+        "identityGrounding": true,
+        "firecrawlReferences": true
+      }
+    },
+    {
+      "id": "literal-regeneration-keeps-user-prompt",
+      "input": {
+        "mode": "image",
+        "promptMode": "literal",
+        "regenerate": true,
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "creativeRewrite": false,
+        "newSeed": true,
+        "negativeConstraints": true,
+        "referenceGrounding": true
+      }
+    },
+    {
+      "id": "generic-concept-auto-uses-imagine",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "uma cidade flutuante ao amanhecer"
+      },
+      "expect": {
+        "effectivePromptMode": "imagine",
+        "cinematicExpansion": true
+      }
+    },
+    {
+      "id": "image-plus-text-surface",
+      "input": {
+        "mode": "image",
+        "prompt": "duas forças elementais em confronto"
+      },
+      "expect": {
+        "realImage": true,
+        "shortPtBrCaption": true,
+        "captionDoesNotExposeTechnicalPrompt": true
+      }
     }
   ]
 }

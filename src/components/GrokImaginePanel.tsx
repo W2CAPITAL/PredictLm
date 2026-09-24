@@ -21,6 +21,12 @@ const motions:{id:LocalMotionStyle;label:string}[]=[
   {id:'drift',label:'Drift'}
 ];
 
+function looksSpecificVisualPrompt(input:string){
+  const p=String(input||'').toLowerCase();
+  if(/\b(naruto|sasuke|kurama|susanoo|goku|vegeta|pikachu|pokemon|sonic|mario|zelda|batman|superman|spider[- ]?man|homem aranha|kuromi|hello kitty)\b/.test(p))return true;
+  return /\b(personagem|character|anime|manga|franquia|franchise|marca|brand)\b/.test(p)&&String(input||'').length<260;
+}
+
 type MediaItem={
   id:string;
   kind?:'image'|'video'|'storyboard';
@@ -73,6 +79,9 @@ export function GrokImaginePanel(){
   const [directorBrief,setDirectorBrief]=useState('');
   const [researchContext,setResearchContext]=useState('');
   const [generatedRequest,setGeneratedRequest]=useState('');
+  const [promptMode,setPromptMode]=useState<'auto'|'literal'|'imagine'>('auto');
+  const [negativePrompt,setNegativePrompt]=useState('');
+  const [generatedCaption,setGeneratedCaption]=useState('');
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -118,6 +127,12 @@ export function GrokImaginePanel(){
     let research='';
     let brief='';
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
+    const literalImage=kind==='image'&&(promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
+    if(literalImage){
+      setDirectorBrief('');
+      setResearchContext('');
+      return {prompt:prompt.trim(),brief:'',research:''};
+    }
 
     if(deepResearch){
       setStage('Deep Research · buscando referências úteis…');
@@ -193,6 +208,29 @@ export function GrokImaginePanel(){
     };
   }
 
+  async function generateSceneCaption(expandedPrompt:string,fallback=''){
+    try{
+      const response=await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          prompt:[
+            'Escreva uma legenda natural em pt-BR de 1 a 2 frases para a cena de imagem solicitada.',
+            'Não repita o prompt técnico. Não invente elementos que não estejam no pedido ou no brief.',
+            'Pedido: '+prompt,
+            expandedPrompt?('Brief visual: '+expandedPrompt.slice(0,1800)):'',
+            'Comece direto pela descrição da cena.'
+          ].filter(Boolean).join('\n\n'),
+          deep:false,
+          messages:[]
+        })
+      });
+      const data=await response.json().catch(()=>({}));
+      if(response.ok&&typeof data?.content==='string'&&data.content.trim())return data.content.trim().slice(0,700);
+    }catch{}
+    return fallback||('Cena gerada: '+prompt.trim());
+  }
+
   async function saveLibrary(input:{
     kind:'image'|'video'|'storyboard';
     status?:string;
@@ -238,6 +276,8 @@ export function GrokImaginePanel(){
       body:JSON.stringify({
         prompt:renderPrompt,
         originalPrompt:prompt,
+        promptMode,
+        negativePrompt,
         style,
         attempt:renderAttempt,
         width:ratio.w,
@@ -257,9 +297,10 @@ export function GrokImaginePanel(){
       provider:String(data.provider||''),
       model:String(data.model||'flux'),
       expandedPrompt:String(data.expandedPrompt||renderPrompt),
-      caption:String(data.caption||''),
       referencesUsed:Array.isArray(data.referencesUsed)?data.referencesUsed:[],
-      referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[]
+      referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[],
+      promptMode:String(data.promptMode||promptMode),
+      caption:String(data.caption||'')
     };
   }
 
@@ -312,21 +353,24 @@ export function GrokImaginePanel(){
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
       const prepared=await prepareMediaPrompt('image');
-      const basePrompt=regenerate
-        ? [
-            buildQualityImagePrompt(prompt,{
-              style,
-              attempt:nextAttempt,
-              previousPrompt:generatedPrompt||undefined
-            }),
-            prepared.brief?('MEDIA DIRECTOR BRIEF: '+prepared.brief):'',
-            prepared.research?('RESEARCH-GROUNDED VISUAL NOTES: '+prepared.research):''
-          ].filter(Boolean).join('\n\n')
-        : prepared.prompt;
-      const reviewHints=nextReview?.promptHints?.length
+      const literalRequest=promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
+      const basePrompt=literalRequest
+        ? prepared.prompt
+        : regenerate
+          ? [
+              buildQualityImagePrompt(prompt,{
+                style,
+                attempt:nextAttempt,
+                previousPrompt:generatedPrompt||undefined
+              }),
+              prepared.brief?('MEDIA DIRECTOR BRIEF: '+prepared.brief):'',
+              prepared.research?('RESEARCH-GROUNDED VISUAL NOTES: '+prepared.research):''
+            ].filter(Boolean).join('\n\n')
+          : prepared.prompt;
+      const reviewHints=!literalRequest&&nextReview?.promptHints?.length
         ? '. Correções objetivas da geração anterior: '+nextReview.promptHints.join('; ')+'.'
         : '';
-      const uniqueness=regenerate
+      const uniqueness=!literalRequest&&regenerate
         ? '. Use a substantially different camera position, framing, subject placement and composition. Do not reproduce the previous image.'
         : '';
       const renderPrompt=basePrompt+reviewHints+uniqueness;
@@ -338,10 +382,12 @@ export function GrokImaginePanel(){
       let expandedPrompt=data.expandedPrompt||renderPrompt;
 
       if(data.provider==='entity-self-reference'){
+        const caption=await generateSceneCaption(expandedPrompt,data.caption);
         setReview(null);
         setGenerated(url);
         setGeneratedPrompt(expandedPrompt);
         setGeneratedRequest(prompt);
+        setGeneratedCaption(caption);
         setProvider(data.provider);
         await saveLibrary({
           kind:'image',
@@ -350,7 +396,7 @@ export function GrokImaginePanel(){
           url,
           enhancedPrompt:expandedPrompt,
           seed:nextSeed,
-          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity'}
+          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption}
         });
         return url;
       }
@@ -360,7 +406,7 @@ export function GrokImaginePanel(){
 
       // One automatic repair attempt prevents a visibly weak first render
       // from becoming the final asset. It never loops indefinitely.
-      if(!regenerate&&finalReview&&finalReview.score<72){
+      if(!regenerate&&finalReview&&finalReview.score<72&&data.promptMode!=='literal'){
         const repairSeed=autoVariationSeed(nextSeed);
         const repairPrompt=buildQualityImagePrompt(prompt,{
           style,
@@ -379,12 +425,14 @@ export function GrokImaginePanel(){
       }
 
       setReview(finalReview);
+      const caption=await generateSceneCaption(expandedPrompt,data.caption);
       const upscaled=await upscaleImageUrl(url);
       url=upscaled.url;
 
       setGenerated(url);
       setGeneratedPrompt(expandedPrompt);
       setGeneratedRequest(prompt);
+      setGeneratedCaption(caption);
       setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
       await saveLibrary({
         kind:'image',
@@ -409,7 +457,10 @@ export function GrokImaginePanel(){
           promptOriginal:prompt,
           promptExpanded:expandedPrompt,
           referenceCount:data.referencesUsed?.length||0,
-          referenceWarnings:data.referenceWarnings||[]
+          referenceWarnings:data.referenceWarnings||[],
+          promptMode:data.promptMode||promptMode,
+          negativePrompt,
+          caption
         }
       });
       return url;
@@ -449,11 +500,14 @@ export function GrokImaginePanel(){
       '\nAspect: '+ratio.label+
       '\nSeed: '+seed+
       '\nProvider: '+(provider||'auto')+
+      '\nPrompt mode: '+promptMode+
+      (negativePrompt?'\nNegative: '+negativePrompt:'')+
       '\nDeep Think: '+(deepThink?'on':'off')+
       '\nDeep Research: '+(deepResearch?'on':'off')+
       '\n\nEnhanced:\n'+enhanced+
       (directorBrief?'\n\nDirector brief:\n'+directorBrief:'')+
       (researchContext?'\n\nResearch context:\n'+researchContext:'')+
+      (generatedCaption?'\n\nScene caption:\n'+generatedCaption:'')+
       '\n\nMotion plan:\n- '+motionPlan.join('\n- ')+
       '\nDuration: '+duration+'ms\nMotion: '+motion,
       'markdown'
@@ -744,10 +798,16 @@ export function GrokImaginePanel(){
     setAttempt(Number(item.meta?.attempt||0));
     setReview(null);
     setProvider(item.provider||'');
+    setGeneratedCaption(String(item.meta?.caption||''));
+    if(item.meta?.promptMode==='literal'||item.meta?.promptMode==='imagine'||item.meta?.promptMode==='auto')setPromptMode(item.meta.promptMode);
+    if(typeof item.meta?.negativePrompt==='string')setNegativePrompt(item.meta.negativePrompt);
     if(item.kind==='video'){
       setMode('video');
       if(item.remote_url)setRemoteVideoUrl(item.remote_url);
-    }else setRemoteVideoUrl('');
+    }else{
+      setMode('image');
+      setRemoteVideoUrl('');
+    }
     setMotionUrl('');
   }
 
@@ -755,12 +815,14 @@ export function GrokImaginePanel(){
     const message='A imagem não carregou. Tente gerar novamente; gerações novas usam o proxy same-origin.';
     setGenerated('');
     setGeneratedPrompt('');
+    setGeneratedCaption('');
     setError(message);
     reportMediaError(message,{stage:'image-load'});
   }
 
   const mainBusy=loading||motionBusy;
   const mainProgress=mode==='video'&&motionBusy?Math.round(motionProgress*100):null;
+  const literalUiMode=mode==='image'&&(promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
 
   return <section className="gtool imagine-tool">
     <header className="gtool-head">
@@ -784,6 +846,17 @@ export function GrokImaginePanel(){
         <label><span>Prompt</span><textarea value={prompt} onChange={e=>{setPrompt(e.target.value);setAttempt(0);setReview(null)}} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
         <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>setRatio(x)}>{x.label}</button>)}</div>
+
+        {mode==='image'?<div className="gmedia-prompt-mode">
+          <span>Interpretação do prompt</span>
+          <div>
+            <button className={promptMode==='auto'?'active':''} onClick={()=>setPromptMode('auto')} type="button"><b>Auto</b><small>Personagem/franquia específica → literal; pedido genérico → Imagine.</small></button>
+            <button className={promptMode==='literal'?'active':''} onClick={()=>setPromptMode('literal')} type="button"><b>Literal</b><small>Zero reescrita criativa. Mantém pedido, identidade, referências e negative.</small></button>
+            <button className={promptMode==='imagine'?'active':''} onClick={()=>setPromptMode('imagine')} type="button"><b>Imagine</b><small>Expansão cinematográfica Grok-like antes do provider real.</small></button>
+          </div>
+          <label><span>Evitar · negative opcional</span><input value={negativePrompt} onChange={e=>setNegativePrompt(e.target.value)} placeholder="ex.: cabelo branco, personagens fundidos, texto, watermark"/></label>
+          {literalUiMode?<small className="gmedia-literal-note">Modo literal ativo: Deep Think/Research não reescrevem a imagem; Firecrawl e identity lock continuam ativos.</small>:null}
+        </div>:null}
 
         {mode==='video'?<div className="gmedia-video-options">
           <span>Motor</span>
@@ -833,11 +906,11 @@ export function GrokImaginePanel(){
         <div className="gmedia-auto-variation"><RefreshCw size={12}/><span>Variação automática</span><small>Cada geração usa uma composição nova; não precisa configurar seed.</small></div>
 
         <div className="gmedia-reasoning">
-          <button className={deepThink?'active':''} onClick={()=>setDeepThink(v=>!v)} type="button">
-            <BrainCircuit size={14}/><span><b>Deep Think</b><small>Diretor de mídia refina identidade, composição, ação, câmera, continuidade e áudio antes da geração.</small></span>
+          <button className={deepThink&&!literalUiMode?'active':''} onClick={()=>setDeepThink(v=>!v)} type="button" disabled={literalUiMode}>
+            <BrainCircuit size={14}/><span><b>Deep Think</b><small>{literalUiMode?'Desligado no Literal para não reescrever o pedido.':'Diretor de mídia refina identidade, composição, ação, câmera, continuidade e áudio antes da geração.'}</small></span>
           </button>
-          <button className={deepResearch?'active':''} onClick={()=>setDeepResearch(v=>!v)} type="button">
-            <Search size={14}/><span><b>Deep Research</b><small>Pesquisa referências e evidência visual antes do prompt final. Aumenta a latência para melhorar fidelidade.</small></span>
+          <button className={deepResearch&&!literalUiMode?'active':''} onClick={()=>setDeepResearch(v=>!v)} type="button" disabled={literalUiMode}>
+            <Search size={14}/><span><b>Deep Research</b><small>{literalUiMode?'Referências visuais continuam via Firecrawl sem injetar texto extra.':'Pesquisa referências e evidência visual antes do prompt final. Aumenta a latência para melhorar fidelidade.'}</small></span>
           </button>
         </div>
 
@@ -875,6 +948,7 @@ export function GrokImaginePanel(){
             <a href={generated} target="_blank" rel="noreferrer"><Download size={14}/>Abrir imagem</a>
             {provider?<span>{provider}</span>:null}
           </div>
+          {generatedCaption?<div className="gmedia-result-caption"><b>Cena gerada</b><p>{generatedCaption}</p></div>:null}
         </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Auto usa um motor temporal real configurado (Veo/ComfyUI/Veo 3/Seedance/Sora); motion local é somente fallback explícito.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
         {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
