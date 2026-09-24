@@ -859,7 +859,7 @@ export function GrokImaginePanel(){
           {motionSize&&!remoteVideoUrl?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
         </div>:null}
 
-        {review&&mode==='image'?<div className="gmedia-review"><b>Revisão automática da anterior: {review.score}/100</b><span>{review.observations.join(' · ')}</span></div>:null}
+        {review&&mode==='image'?<div className="gmedia-review"><b>Qualidade técnica da anterior: {review.score}/100</b><span>{review.observations.join(' · ')}</span></div>:null}
         {error?<div className="gmedia-error">{error}</div>:null}
       </div>
 
