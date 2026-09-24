@@ -320,8 +320,8 @@ export async function POST(req:Request){
   }
 
   const requestedResolution=safeResolution(body?.resolution);
-  const referenceUrls=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
-    .map((x:any)=>String(x||'').trim()).filter(Boolean).slice(0,3);
+  const referenceUrls:string[]=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
+    .map((x:any)=>String(x||'').trim()).filter((x:string)=>Boolean(x)).slice(0,3);
   const hasVisualInput=!!body?.imageUrl||referenceUrls.length>0;
   const duration=resolvedProvider==='gemini'
     ? geminiDuration(body?.duration,hasVisualInput,requestedResolution)
@@ -367,7 +367,7 @@ export async function POST(req:Request){
     if(resolvedProvider==='gemini'){
       endpoint=cfg.gemini.base+'/models/'+encodeURIComponent(cfg.gemini.model)+':predictLongRunning';
       const startImage=imageUrl?await imageToInline(imageUrl,req.url):null;
-      const referenceImages=(await Promise.all(referenceUrls.map(url=>imageToInline(url,req.url)))).filter(Boolean) as InlineImage[];
+      const referenceImages=(await Promise.all(referenceUrls.map((url:string)=>imageToInline(url,req.url)))).filter(Boolean) as InlineImage[];
       const instance:any={prompt};
       if(startImage)instance.image={inlineData:{mimeType:startImage.mimeType,data:startImage.data}};
       if(referenceImages.length){
