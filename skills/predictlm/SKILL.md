@@ -67,7 +67,7 @@ Preserva arquivos e projeto atual. Toda alteração deve distinguir:
 - o que ainda é recomendação.
 
 ## Media
-Imagem: prompt → geração → proxy same-origin → review → histórico metadata-only.
+Imagem: pedido → `grok-imagine-parity` → expansão cinematográfica → Firecrawl-first identity/reference grounding → provider real → review → histórico com prompt original + expandido + seed + model.
 Vídeo 1 cena: keyframe → motion local WebM → preview/download.
 Vídeo 3 cenas: storyboard coerente → 3 keyframes → transições/movimento → WebM → preview/download.
 O app nunca trata roteiro/prompt como vídeo pronto. Binários grandes ficam locais por padrão; Supabase recebe apenas metadados leves.
@@ -740,3 +740,7 @@ Para auto-retrato explícito do PredictLM, usar a imagem persistente do Entity S
 - Referências/first frame devem ser passadas como mídia real quando o provider suporta, para reduzir drift de identidade.
 - Erros estruturados de mídia são convertidos em texto; a UI não deve exibir `[object Object]`.
 - ComfyUI local não é acessível pelo Vercel via localhost; só habilitar quando o endpoint for realmente alcançável pelo servidor/desktop.
+
+
+## Grok Imagine Parity / Firecrawl-first
+Firecrawl já configurado é suficiente para referências visuais. Google Cloud Console/CSE não é requisito. A ausência de `GOOGLE_IMAGE_SEARCH_API_KEY`/`GOOGLE_IMAGE_SEARCH_CX` não deve gerar warning ao usuário. A geração preserva prompt original e prompt expandido, usa estilo como modificador real e não apresenta score técnico como aprovação semântica total.
