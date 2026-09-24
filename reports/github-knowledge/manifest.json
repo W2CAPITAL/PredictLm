@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T13:56:04.935Z",
-  "knowledgeVersion": "9257e3078acd78a4",
-  "chunkCount": 2755,
+  "generatedAt": "2026-09-24T17:10:39.082Z",
+  "knowledgeVersion": "44ed7e06de20c6fa",
+  "chunkCount": 3854,
   "sources": [
     {
       "repo": "mindsdb/mindshub",
@@ -322,7 +322,7 @@
       "repo": "AIGeniusInstitute/deepthink",
       "mode": "allow",
       "license": "MIT",
-      "commit": "8dedad46b58428b3c598d673c20f9c41fdc56414",
+      "commit": "11bd17f9d2d3a5398bb31518ee57e11a160fb831",
       "files": 1,
       "chunks": 117,
       "error": null
@@ -538,7 +538,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "b4a994e3d89aa8992a265e22107b89b91cedd5a4",
+      "commit": "d3005fbf3ed416e2d1f9c6a2bd31e95791edf1ba",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -574,7 +574,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "45e4e91ed377aeb1b06df99a7cfc90160aa65e9b",
+      "commit": "2db9c3b555d6660a8274d1120dbb1cdf63a11c48",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -610,7 +610,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "cf7f113377f7f7f278a8cd203d23aef245fe1441",
+      "commit": "08b5a38f3123eaddf6b7d29aba0613e15ba929e5",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -979,6 +979,465 @@
       "repo": "go2ismail/Free-CRM",
       "mode": "reference-only",
       "license": "CC-BY-4.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Starlink/starlink",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "nasa-gibs/worldview",
+      "mode": "reference-only",
+      "license": "NASA-1.3",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "gibme-npm/starlink",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "892d26e9a62bffdfb6bb576bfb4595ca5870941a",
+      "files": 2,
+      "chunks": 11,
+      "error": null
+    },
+    {
+      "repo": "r-spacex/SpaceX-API",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "9f56af14a75ae410c26eb0317971d51ae1574f6a",
+      "files": 71,
+      "chunks": 236,
+      "error": null
+    },
+    {
+      "repo": "Baptajck/space",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "1acc924198fd393e763ff699c040af8ffe136d85",
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Kitsunp/kistmath-ai",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "76209cebf62e62362f83b61e4d2722245555155e",
+      "files": 1,
+      "chunks": 38,
+      "error": null
+    },
+    {
+      "repo": "adjs/am-cq",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "quantumgercom/Link-Layer-Schudeling",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "krissiazawadzki/informacao_computacao_quantica",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "smendoncabruna/ComputacaoQuantica",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Universidade-Livre/matematica",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "d73c0361d50338de7ff5dd416126d327410e9770",
+      "files": 1,
+      "chunks": 18,
+      "error": null
+    },
+    {
+      "repo": "TechTastic/Advanced-Math",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "f6566097785e30d8969715b875111b0b59eaacab",
+      "files": 1,
+      "chunks": 3,
+      "error": null
+    },
+    {
+      "repo": "oalanicolas/ia",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "MoKangMedical/digital-sage",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "978cabf91b8ef45c50f4199be5e0b24d3ab25611",
+      "files": 1,
+      "chunks": 4,
+      "error": null
+    },
+    {
+      "repo": "vercel/vercel",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
+      "files": 120,
+      "chunks": 260,
+      "error": null
+    },
+    {
+      "repo": "ronilsondesouza045-beep/wotlk-local-server-kit",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "netdata/netdata",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-MCP",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "0c2f409c7276442f1f486d1d04181cf8383a6f0f",
+      "files": 2,
+      "chunks": 35,
+      "error": null
+    },
+    {
+      "repo": "edilsonaguiais/sgs-peritos",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "205a501959f961d1c2543141ff18cf958e202c82",
+      "files": 1,
+      "chunks": 10,
+      "error": null
+    },
+    {
+      "repo": "FTShare-Lab/FTShare-skill",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "09753265f66049422a1e685d9cb94dcf67a0a0ea",
+      "files": 120,
+      "chunks": 260,
+      "error": null
+    },
+    {
+      "repo": "protonspy/JusChat",
+      "mode": "allow",
+      "license": "CC0-1.0",
+      "commit": "b6da38afafd8266cafb0f9847f944a2822b009b3",
+      "files": 1,
+      "chunks": 20,
+      "error": null
+    },
+    {
+      "repo": "ergonzamarian/Analisador-de-Sentimentos",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "msfidelis/gmud-for-the-win",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "sheepzh/make-zero",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "leonardosegfault/humilhador-de-github",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "neurolib-dev/neurolib",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "9b6b2b8f082c0cfa212f05576ead55bf23046d6f",
+      "files": 12,
+      "chunks": 37,
+      "error": null
+    },
+    {
+      "repo": "openMetadataInitiative/openMINDS",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "19412fad8f493ef33f240df4d4109ddb73966f5e",
+      "files": 1,
+      "chunks": 9,
+      "error": null
+    },
+    {
+      "repo": "HumanBrainProject/openMINDS",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "TheDragonChild/FlyPuter",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "7511907dd3cf64d661155494ff04e1a6b2d23bda",
+      "files": 1,
+      "chunks": 4,
+      "error": null
+    },
+    {
+      "repo": "FoundationAgents/MetaGPT",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "11cdf466d042aece04fc6cfd13b28e1a70341b1f",
+      "files": 14,
+      "chunks": 110,
+      "error": null
+    },
+    {
+      "repo": "PavelDoGreat/WebGL-Fluid-Simulation",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "a2d292931f19d9b3b9f564e23e6c32729d2121c3",
+      "files": 1,
+      "chunks": 2,
+      "error": null
+    },
+    {
+      "repo": "ludenio/SuperWEIRDGameKit",
+      "mode": "allow",
+      "license": "CC0-1.0",
+      "commit": "4e86c38078964b745496f84b8c97512d129f5b7b",
+      "files": 2,
+      "chunks": 16,
+      "error": null
+    },
+    {
+      "repo": "fullya99/worldbox-mcp",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "e98d4f7062eb6fe21b590108de6c4545aa158f19",
+      "files": 4,
+      "chunks": 71,
+      "error": null
+    },
+    {
+      "repo": "A2Faisal/SESAME",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "977fae08dfd202196165eb32a8312c7960b37f68",
+      "files": 2,
+      "chunks": 14,
+      "error": null
+    },
+    {
+      "repo": "developerrahulofficial/AI-Girlfriend",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "bulletphysics/bullet3",
+      "mode": "reference-only",
+      "license": "Zlib",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "dhorions/Capital-and-Cargo",
+      "mode": "reference-only",
+      "license": "Unlicense",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "OpenRCT2/OpenRCT2",
+      "mode": "reference-only",
+      "license": "GPL-3.0+",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "WorldBoxOpenMods/ModLoader",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Sairamg18814/shvayambhu",
+      "mode": "quarantine",
+      "license": "Apache-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "robert1811/life-simulator",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "bitlifefreeonline/bitlife",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Krobix/life.html",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Qwizer/realmap-10x",
+      "mode": "quarantine",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "alestanalves/real-life-gaming",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "SimonSaysGiveMeSmile/gtasf.lol",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "HelloFangaming/HelloMarioEngine",
+      "mode": "allow",
+      "license": "BSD-3-Clause",
+      "commit": "25af13f3ec7e9ac39a7cecff08c9da229ac39073",
+      "files": 1,
+      "chunks": 2,
+      "error": null
+    },
+    {
+      "repo": "EasyRPG/Player",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "niksudan/prettylight",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "71f5762f7be59386bb3a950664c805328d6de8e5",
+      "files": 1,
+      "chunks": 6,
+      "error": null
+    },
+    {
+      "repo": "YoYoGames/GameMaker-HTML5",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "60e51be51ce7f3d52025ef18106cf172b8e22a00",
+      "files": 1,
+      "chunks": 4,
+      "error": null
+    },
+    {
+      "repo": "YoYoGames/GameMaker-Manual",
+      "mode": "reference-only",
+      "license": "copyrighted-docs",
       "commit": null,
       "files": 0,
       "chunks": 0,
