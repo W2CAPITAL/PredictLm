@@ -905,6 +905,145 @@
         "ux"
       ],
       "weight": 1.03
+    },
+    {
+      "repo": "petergyang/no-ai-slop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "writing-quality",
+        "editing",
+        "ai-slop"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "conorbronsdon/avoid-ai-writing",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "writing-quality",
+        "editing",
+        "style"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "every-app/open-seo",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "seo",
+        "web",
+        "metadata",
+        "audit"
+      ],
+      "weight": 1.06
+    },
+    {
+      "repo": "ComposioHQ/composio",
+      "branch": "next",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "tools",
+        "integrations",
+        "agents"
+      ],
+      "weight": 1.03
+    },
+    {
+      "repo": "higgsfield-ai/cli",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "media",
+        "cli",
+        "image",
+        "video"
+      ],
+      "weight": 1.02
+    },
+    {
+      "repo": "tashfeenahmed/freellmapi",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "model-router",
+        "openai-compatible",
+        "local-api"
+      ],
+      "weight": 1.08
+    },
+    {
+      "repo": "msitarzewski/agency-agents",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "agents",
+        "roles",
+        "handoff"
+      ],
+      "weight": 1.04
+    },
+    {
+      "repo": "OpenHands/OpenHands",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "coding-agent",
+        "planning",
+        "tools",
+        "review"
+      ],
+      "weight": 1.05
+    },
+    {
+      "repo": "awarexone/Agentic-Bug-Hunter",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "defensive-security",
+        "qa",
+        "bug-review"
+      ],
+      "reason": "Defensive QA/threat-model only; do not ingest offensive automation."
     }
   ]
 }
