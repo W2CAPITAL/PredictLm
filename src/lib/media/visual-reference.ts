@@ -16,17 +16,23 @@ function norm(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
 }
 
+export function mentionsEntityVisual(input:string){
+  const q=norm(input);
+  const self=/\b(voce|você|predict|predictlm|ia|inteligencia artificial|inteligência artificial)\b/.test(q);
+  const visual=/\b(imagem|foto|retrato|desenhe|desenha|gere|gerar|crie|criar|mostre|mostrar|visual|aparencia|aparência|rosto|corpo|look like)\b/.test(q);
+  return self&&visual;
+}
+
 export function isCanonicalSelfVisualRequest(input:string){
   const q=norm(input);
   const self=/\b(voce|você|predict|predictlm|ia|inteligencia artificial|inteligência artificial)\b/.test(q);
-  const identity=/\b(como voce e|como você é|como voce se ve|como você se vê|na vida real|sua aparencia|sua aparência|seu rosto|seu corpo|retrato seu|foto sua|self portrait|what do you look like|how do you see yourself)\b/.test(q);
-  const visual=/\b(imagem|foto|retrato|desenhe|desenha|gere|gerar|crie|criar|mostre|mostrar|visual|aparencia|aparência|look like)\b/.test(q);
-  return self&&(identity||visual&&/\b(voce|você|predict|predictlm)\b/.test(q));
+  const identity=/\b(como voce e|como você é|como voce se ve|como você se vê|como seria voce|como seria você|na vida real|sua aparencia|sua aparência|seu rosto real|retrato seu|foto sua|self portrait|what do you look like|how do you see yourself|show yourself)\b/.test(q);
+  return self&&identity;
 }
 
 export function needsExternalVisualReferences(input:string){
   const q=norm(input);
-  if(isCanonicalSelfVisualRequest(input))return false;
+  if(isCanonicalSelfVisualRequest(input)||mentionsEntityVisual(input))return false;
   const character=/\b(personagem|character|anime|cosplay|roupa|outfit|rosto|face|cabelo|hair|armadura|armor|criatura|dragon|dragao|dragão)\b/.test(q);
   const product=/\b(carro|car|moto|produto|product|arquitetura|interior|fachada|objeto|escultura|metal|maquina|máquina)\b/.test(q);
   const exact=/\b(exato|exata|especifico|específico|fiel|igual|identico|idêntico|referencia|referência|detalhado|detalhada|modelo|versao|versão)\b/.test(q);
