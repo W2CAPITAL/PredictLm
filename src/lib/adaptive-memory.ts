@@ -1,6 +1,6 @@
 'use client';
 
-export type ExperienceSource='local-model'|'native-model'|'build'|'feedback';
+export type ExperienceSource='local-model'|'native-model'|'build'|'feedback'|'instruction';
 
 export interface AdaptiveExperience{
   id:string;
@@ -63,6 +63,50 @@ function similarity(queryTerms:string[],row:AdaptiveExperience){
   return overlap/Math.max(3,Math.min(queryTerms.length,row.terms.length));
 }
 
+export function isAdaptiveInstruction(text:string){
+  const s=normalize(text);
+  return /\b(a partir de agora|sempre|nunca|prefiro|minha preferencia|lembre que|lembre se de|aprenda que|quero que voce|quando eu pedir|use sempre|nao use|de agora em diante)\b/.test(s);
+}
+
+export function captureAdaptiveInstruction(instruction:string){
+  if(typeof window==='undefined'||!safeToStore(instruction)||!isAdaptiveInstruction(instruction))return false;
+  const text=String(instruction).trim().slice(0,1600);
+  if(text.length<8)return false;
+  const now=Date.now();
+  const id='instruction-'+hash(normalize(text));
+  const rows=load();
+  const existing=rows.find(x=>x.id===id);
+  if(existing){
+    existing.updatedAt=now;
+    existing.uses+=1;
+    existing.confidence=Math.min(.99,existing.confidence+.03);
+    save(rows.sort((x,y)=>y.updatedAt-x.updatedAt));
+    return true;
+  }
+  rows.unshift({
+    id,
+    prompt:text,
+    answer:'Instrução persistente do usuário: '+text,
+    terms:terms(text),
+    source:'instruction',
+    confidence:.96,
+    uses:1,
+    createdAt:now,
+    updatedAt:now
+  });
+  save(rows.sort((x,y)=>y.updatedAt-x.updatedAt));
+  return true;
+}
+
+export function adaptiveInstructionContext(limit=8){
+  return load()
+    .filter(row=>row.source==='instruction'&&row.confidence>=.75)
+    .sort((a,b)=>b.updatedAt-a.updatedAt)
+    .slice(0,Math.max(1,limit))
+    .map(row=>'INSTRUÇÃO DO USUÁRIO: '+row.prompt.slice(0,700))
+    .join('\n');
+}
+
 export function captureAdaptiveExperience(prompt:string,answer:string,source:ExperienceSource='local-model'){
   if(typeof window==='undefined'||!safeToStore(prompt)||!safeToStore(answer))return;
   const p=String(prompt).trim().slice(0,1200);
@@ -83,7 +127,7 @@ export function captureAdaptiveExperience(prompt:string,answer:string,source:Exp
   rows.unshift({
     id,prompt:p,answer:a,terms:terms(p+' '+a),
     source,
-    confidence:source==='feedback'?.82:highRiskFactPattern(a)?.34:.5,
+    confidence:source==='instruction'?.96:source==='feedback'?.82:highRiskFactPattern(a)?.34:.5,
     uses:1,
     createdAt:now,
     updatedAt:now
@@ -136,6 +180,7 @@ export function adaptiveMemoryStats(){
   return {
     count:rows.length,
     trusted:rows.filter(x=>x.confidence>=.7).length,
+    instructions:rows.filter(x=>x.source==='instruction').length,
     lastUpdated:rows[0]?.updatedAt||null
   };
 }
