@@ -27,6 +27,7 @@ interface AssistantState {
   activeId:string;
   webEnabled:boolean;
   deepThink:boolean;
+  cloudEnabled:boolean;
   createChat():void;
   setActive(id:string):void;
   addMessage(message:Omit<AssistantMessage,'id'|'createdAt'>):void;
@@ -34,6 +35,7 @@ interface AssistantState {
   deleteSession(id:string):void;
   setWebEnabled(v:boolean):void;
   setDeepThink(v:boolean):void;
+  setCloudEnabled(v:boolean):void;
 }
 
 const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -45,6 +47,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   activeId:initial.id,
   webEnabled:false,
   deepThink:true,
+  cloudEnabled:false,
   createChat:()=>set(s=>{const chat=empty();return {sessions:[chat,...s.sessions],activeId:chat.id}}),
   setActive:(activeId)=>set({activeId}),
   addMessage:(message)=>set(s=>{
@@ -63,5 +66,6 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
     const chat=empty();return {sessions:[chat],activeId:chat.id};
   }),
   setWebEnabled:(webEnabled)=>set({webEnabled}),
-  setDeepThink:(deepThink)=>set({deepThink})
+  setDeepThink:(deepThink)=>set({deepThink}),
+  setCloudEnabled:(cloudEnabled)=>set({cloudEnabled})
 }),{name:'predictlm-assistant-v1'}));
