@@ -13,12 +13,14 @@ export interface ProductRequirements {
   needsBackgroundJobs:boolean;
   integrations:string[];
   entities:string[];
+  modules:string[];
 }
 
 function has(text:string,re:RegExp){return re.test(text)}
 
 export function inferProductRequirements(prompt:string,intent:string):ProductRequirements{
   const p=String(prompt||'').toLowerCase();
+  const blueprint=inferSaaSBlueprint(prompt,intent);
   const business=['crm','store','dashboard'].includes(intent)||/\b(saas|crm|erp|helpdesk|ticket|admin|workspace|painel|dashboard|gest[aã]o|financeiro|vendas)\b/.test(p);
   const integrations:string[]=[];
   if(business)integrations.push('rest-api');
@@ -53,7 +55,7 @@ export function inferProductRequirements(prompt:string,intent:string):ProductReq
           ? ['Metric','Event','Report','Filter']
           : ['Record'];
 
-  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities};
+  return {intent,needsBackend,needsValidation,needsAuth,needsDatabase,needsMultiTenant,needsBilling,needsAudit,needsBackgroundJobs,integrations:Array.from(new Set(integrations)),entities,modules:blueprint?.modules||[]};
 }
 
 function envExample(req:ProductRequirements){
@@ -323,9 +325,8 @@ function docs(req:ProductRequirements,prompt:string){
 }
 
 function moduleSkeletons(req:ProductRequirements):WorkspaceFile[]{
-  const blueprint=inferSaaSBlueprint('',req.intent);
-  const nav=blueprint?.modules?.length
-    ? blueprint.modules
+  const nav=req.modules?.length
+    ? req.modules
     : req.intent==='crm'
     ? ['Dashboard','Pipeline','Clientes','Financeiro','Integrações','Configurações']
     : req.intent==='store'
