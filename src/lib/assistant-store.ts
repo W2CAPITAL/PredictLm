@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { hasInternalReasoningLeak, sanitizePublicAnswer } from './public-answer-gate';
 
 export interface AssistantMessage {
   id:string;
@@ -11,6 +12,7 @@ export interface AssistantMessage {
   engine?:string;
   sources?:{title:string;source:string}[];
   actions?:string[];
+  reasoningSummary?:string;
   status?:'done'|'partial'|'error';
   media?:{kind:'image'|'video'|'file';url:string;label?:string;temporary?:boolean;downloadName?:string;mime?:string}[];
 }
@@ -54,7 +56,15 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
   createChat:()=>set(s=>{const chat=empty();return {sessions:[chat,...s.sessions],activeId:chat.id}}),
   setActive:(activeId)=>set({activeId}),
   addMessage:(message)=>set(s=>{
-    const next={...message,id:id(),createdAt:Date.now()} as AssistantMessage;
+    let safeMessage=message;
+    if(message.role==='assistant'){
+      const sanitized=sanitizePublicAnswer(message.content);
+      if(sanitized)safeMessage={...message,content:sanitized};
+      else if(hasInternalReasoningLeak(message.content)){
+        safeMessage={...message,content:'A geração anterior continha análise interna em vez de uma resposta final. Refaça a pergunta para eu responder de forma limpa.'};
+      }
+    }
+    const next={...safeMessage,id:id(),createdAt:Date.now()} as AssistantMessage;
     return {sessions:s.sessions.map(chat=>{
       if(chat.id!==s.activeId)return chat;
       const messages=[...chat.messages,next];
