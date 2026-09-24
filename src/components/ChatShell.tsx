@@ -383,7 +383,7 @@ export function ChatShell({onOpenLegal}:Props){
             s.addMessage({
               role:'assistant',
               content:localReply.content,
-              engine:'Local API · '+localReply.label,
+              engine:'Predict Auto',
               sources:localSources,
               actions:[
                 'Runtime: '+localReply.label+' · '+localReply.model,
@@ -439,7 +439,7 @@ export function ChatShell({onOpenLegal}:Props){
             }
           }
         }catch{}
-        setActivity(['Cloud Cascade indisponível','Retornando ao Neural/Knowledge local','VERIFY · preparando resposta']);
+        setActivity(['Provider Mesh não respondeu','Predict Auto usando próximo runtime disponível','VERIFY · preparando resposta']);
       }
 
       let reply=await answerLocally(augmented,messages,{
@@ -475,14 +475,14 @@ export function ChatShell({onOpenLegal}:Props){
         reply.sources=[...web.sources,...(reply.sources||[])].slice(0,10);
       }
 
-      const engineLabel=reply.engine==='knowledge-fallback'||reply.engine==='knowledge'?'Predict Core':reply.engine==='webllm'?'WebLLM · GPU':reply.engine;
+      const engineLabel='Predict Auto';
       const actions=[
         'Intenção identificada: '+kind,
         ...(tutorIntent?['Tutor Mode: mastery learning ativo']:[]),
         ...(learningInstruction?['Instrução persistente capturada localmente · proposta global enviada quando GitHub Learning estiver configurado']:[]),
         ...(needsWeb?['Pesquisa de contexto executada'+(web.sources.length?' · '+web.sources.length+' fonte(s)':' · sem fonte útil')]:[]),
-        ...(currentNeural.loaded?['Modelo local ONNX: '+(currentNeural.tier||'local')+' · '+(currentNeural.backend||'runtime')]:[]),
-        ...(currentWebLLM.loaded?['Modelo local WebLLM: '+(currentWebLLM.tier||'local')+' · WebGPU']:[]),
+        ...(currentNeural.loaded?['Runtime local econômico ativo']:[]),
+        ...(currentWebLLM.loaded?['Runtime local acelerado ativo']:[]),
         ...(s.deepThink&&(currentNeural.loaded||currentWebLLM.loaded)&&neuralRelevant?[reply.engine==='webllm'?'Deep WebLLM: revisão FORGE/AEGIS/PARALLAX aplicada internamente':'Deep executou duas passagens: FORGE → AEGIS']:[]),
         ...(reply.tokenStats?.savedPct?['Token Saver: ~'+reply.tokenStats.savedPct+'% de contexto redundante removido']:[]),
         'Gate final verificou relevância ao assunto principal'
