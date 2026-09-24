@@ -204,7 +204,7 @@ export async function answerViaLocalRuntime(
     : null;
   const runtime=preferred||available[0];
 
-  const topK=runtime.kind==='lowram'?2:3;
+  const topK=runtime.kind==='lowram'?2:(options?.deep?5:3);
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
   const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
   const github=githubKnowledgeContext(prompt,topK);
