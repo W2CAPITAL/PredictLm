@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.16.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.17.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.16.0"
+  version: "5.17.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.16.0
+# LEXIS TwinCore X10 v5.17.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -539,3 +539,20 @@ Media gates:
 - provider cascade for images;
 - Auto video chooses a configured temporal provider (Veo/Seedance/Sora);
 - local storyboard/motion is fallback only and must not be sold as neural video synthesis.
+
+
+## SaaS Runtime + Temporal Media v5.17
+
+SaaS Builder Fabric não é mais apenas conhecimento: ele materializa blueprint, módulos, entidades, tenant/RBAC/audit e gates dentro do workspace/export.
+
+Build:
+- blueprint detectado por domínio;
+- env/infrastructure preservados no ZIP;
+- acceptance checks multi-tenant obrigatórios quando aplicável;
+- referências SaaS/CRM com licença restrita permanecem reference-only.
+
+Media:
+- Nano Banana/provider cascade para imagem;
+- Auto video seleciona provider temporal real configurado;
+- local WebM/storyboard é fallback de motion, não vídeo neural;
+- Higgsfield CLI só entra como bridge externa autenticada.
