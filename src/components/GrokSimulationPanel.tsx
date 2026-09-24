@@ -20,7 +20,7 @@ function loadState():LifeSimulationState{
   if(typeof window==='undefined')return createLifeSimulation();
   try{
     const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    return raw?.version===1?raw:createLifeSimulation();
+    return raw?.version===1?{...raw,running:false}:createLifeSimulation();
   }catch{return createLifeSimulation()}
 }
 
