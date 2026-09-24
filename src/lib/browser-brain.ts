@@ -8,6 +8,7 @@ import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
 import { responseTopicAlignment } from './chat-intelligence';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 import { compactText, optimizePromptPackage, packContext, type TokenBudgetStats } from './token-budget';
+import { tutorSystemContext } from './tutor-mode';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -402,6 +403,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const githubTopK=options?.deep?5:3;
   const github=githubKnowledgeContext(prompt,githubTopK);
   const learned=adaptiveContext(prompt,4);
+  const tutor=tutorSystemContext(prompt);
   const packed=optimizePromptPackage({
     messages,
     mode:options?.deep?'lite':'full',
@@ -409,6 +411,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Contexto recuperado',text:context,priority:5},
       {label:'GitHub Knowledge Engine',text:github,priority:5},
       {label:'Memória adaptativa local',text:learned,priority:4},
+      {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
     ].filter(x=>x.text)
   });
