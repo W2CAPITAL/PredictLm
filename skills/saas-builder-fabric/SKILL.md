@@ -2,7 +2,7 @@
 name: saas-builder-fabric
 description: Padrões de produção para criar SaaS, CRM, ERP, helpdesk e workspaces completos no PredictLM Build, com tenancy, auth, RBAC, dados, billing, jobs, auditoria, integrações, testes e export.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   host: "PredictLM"
 ---
 
@@ -63,3 +63,27 @@ Segredos ficam server-side; tenant_id/workspace_id em toda query multi-tenant; s
 ## Definition of Done
 
 Não dizer "SaaS completo" se faltar auth/tenant/data/validation onde essas capacidades são essenciais.
+
+
+## Wiring real no Build
+
+Esta skill está ligada ao runtime do criador de apps, não apenas documentada:
+
+- `src/lib/saas-product-fabric.ts` detecta SaaS/CRM/ERP/helpdesk/workspace/creator e gera blueprint, entidades, tenant, audit e gates;
+- `src/lib/app-scaffolder.ts` injeta módulos, requisitos, tenancy, RBAC, validação, env e integração;
+- `src/lib/build-orchestrator.ts` expõe o blueprint como fase real do Build;
+- `src/lib/project-packager.ts` preserva `SAAS_BLUEPRINT.md`, env e infraestrutura no ZIP;
+- `src/lib/prompt-enhancer.ts` exige tenant/RBAC/audit/search/filter/pagination nos apps de negócio.
+
+## Padrões adicionados v1.1
+
+- Open SaaS / SaaS Boilerplate: auth, tenant, billing, protected routes, testes e deploy;
+- Twenty / Comp AI CRM / SalesmanCRM / Free-CRM: account/contact/lead/opportunity/activity, evidência, pipeline e follow-up;
+- ERPNext / Huly: módulos de business OS e separação de domínios;
+- Peppermint: ticket, requester, assignee, SLA, mensagens, anexos e activity log;
+- Friends: relacionamento, notas, lembretes e histórico de interações;
+- CreatorHub: creator/content/analytics como referência, sem Web3 obrigatório.
+
+## Anti-demo gate
+
+Para SaaS de negócio, o Build deve bloquear a ideia de “pronto” quando houver apenas cards estáticos. O mínimo é: dados mutáveis, validação, estados async, busca/filtro quando aplicável, persistência coerente, tenant/RBAC quando multiusuário, e export executável.
