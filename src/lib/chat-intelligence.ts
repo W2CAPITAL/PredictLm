@@ -179,6 +179,21 @@ function expandResearchTokens(tokens:string[]){
   if(tokens.some(x=>['carro','carros','veiculo','veiculos','automovel','automoveis'].includes(x))){
     ['engenharia','automotiva','automotive','vehicle','design','chassi','estrutura','suspensao','freios','powertrain','seguranca','homologacao','prototipo'].forEach(x=>out.add(x));
   }
+  if(tokens.some(x=>['starlink','spacex','satelite','satellite','nasa','orbital'].includes(x))){
+    ['space','mission','telemetry','launch','earth','imagery','gibs','dish','ground','orbit'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['matematica','calculo','algebra','matrix','matriz','quantum','quantica','qubit'].includes(x))){
+    ['equation','formula','linear','statistics','symbolic','circuit','gate','simulation','measurement'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['sgs','bacen','bcb','juros','pericia','ftshare'].includes(x))){
+    ['banco','central','serie','taxa','mercado','forensic','finance','observation','codigo'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['datajud','djen','juridico','processo','graphrag','tribunal'].includes(x))){
+    ['legal','document','evidence','timeline','entity','relation','cnj','publication'].forEach(x=>out.add(x));
+  }
+  if(tokens.some(x=>['vercel','netdata','deploy','observabilidade','infraestrutura','servidor','mcp'].includes(x))){
+    ['deployment','health','metrics','logs','monitoring','service','alerts','runbook','runtime'].forEach(x=>out.add(x));
+  }
   return [...out];
 }
 
