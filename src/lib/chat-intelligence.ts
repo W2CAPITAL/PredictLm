@@ -138,6 +138,12 @@ export function answerQuality(prompt:string,content:string){
   if(/^como\b/.test(p)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
   if(/^como\b/.test(p)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
   if(/nao tenho contexto|não tenho contexto|ative neural|ative o neural|fallback/i.test(text))score-=3;
+  const stableFactual=/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
+    && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|patrimônio|preco|preço|ranking)\b/.test(p);
+  if(stableFactual){
+    const volatileClaims=(clean(text).match(/\b(atualmente|mais rico|fortuna|patrimonio|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes|em 20\d{2})\b/g)||[]).length;
+    if(volatileClaims>=2)score-=4;
+  }
   const topical=responseTopicAlignment(prompt,text);
   if(!topical.relevant)score-=5;
   else if(topical.score>=0.66)score+=2;
