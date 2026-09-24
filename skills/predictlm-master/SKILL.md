@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.10.0"
+  version: "3.11.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.10
+# PredictLM Master v3.11
 
 ## Regra soberana
 
@@ -807,3 +807,19 @@ Imagine uses independent identity/reference and composition/action API directors
 `anthropics/claude-code` is reference-only because its official repository is proprietary/all-rights-reserved under Anthropic Commercial Terms. PredictLM independently implements general architecture patterns visible in its public documentation and plugin examples.
 
 `tanbiralam/claude-code` is quarantined because its own README describes it as leaked proprietary source and no valid license was verified. Its source is not copied, indexed, trained on, redistributed or used as a dependency.
+
+
+## Provider resilience + plugin learning
+
+New approved sources strengthen reliability without replacing the API-first contract.
+
+- Provider routing keeps ephemeral health/cooldown per remote provider/model so rate-limited or failing endpoints are not hammered repeatedly in the same runtime instance.
+- Success resets provider failure state. Cooldown is operational telemetry only, never user memory.
+- Local runtimes remain advisory even when every remote provider is unhealthy.
+- DeepSeek Harness contributes MIT-licensed architecture patterns for plugin ownership, lifecycle contracts, structured errors, tool-schema assembly and sparse prompt sections.
+- Hermes Agent contributes MIT-licensed patterns for bounded iteration, interrupts/stop gates, subagent isolation, searchable session memory, verification evidence and learning only after successful verified outcomes.
+- Free Claude Code contributes MIT-licensed multi-provider fallback/catalog/session patterns. Free-tier quotas and provider availability are volatile and must not be presented as permanent facts.
+- Awesome DeepSeek Agent is discovery/reference-only until its root license is verified.
+- Grok-Api remains quarantined: no verified license, discontinued, and designed around unauthenticated/proxy-bypass access. PredictLM must use official xAI endpoints or authorized aggregators only.
+
+Self-improvement rule: OBSERVE → VERIFY → PROMOTE. A model answer, failed run, secret, volatile quota claim or unverified external integration never becomes durable skill/memory automatically.
