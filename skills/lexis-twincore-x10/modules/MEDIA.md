@@ -53,7 +53,7 @@ Auto now prefers a configured **real temporal generator**. Motion/storyboard sta
 - Sora 2 via Mountsea (`/sora/generate` + `/sora/task`);
 - Seedance 2 via Seegen (`/jobs/createTask` + `/jobs/queryTask`);
 - Gemini Veo 3.1 official long-running generation with text-to-video, image-to-video and reference-image grounding;
-- user-configured ComfyUI workflows for LTX/SANA/compatible neural video engines (`/prompt` → `/history` → `/view`).
+- user-configured ComfyUI workflows for LTX/compatible neural video engines (`/prompt` → `/history` → `/view`).
 
 Provider keys stay server-side. The UI disables providers that are not configured and never pretends an unavailable provider is working.
 
@@ -95,7 +95,7 @@ Quando ativados no Imagine:
 
 ### ComfyUI neural adapter
 
-`COMFYUI_VIDEO_BASE_URL` + `COMFYUI_VIDEO_WORKFLOW_JSON` habilitam um bridge genérico para workflows API-format de LTX/SANA/outros modelos temporais.
+`COMFYUI_VIDEO_BASE_URL` + `COMFYUI_VIDEO_WORKFLOW_JSON` habilitam um bridge genérico para workflows API-format de LTX/outros modelos temporais.
 
 Placeholders suportados:
 `{{PROMPT}}`, `{{NEGATIVE_PROMPT}}`, `{{WIDTH}}`, `{{HEIGHT}}`, `{{DURATION}}`, `{{FPS}}`, `{{SEED}}`, `{{IMAGE_URL}}`, `{{IMAGE_BASE64}}`, `{{IMAGE_FILENAME}}`.
