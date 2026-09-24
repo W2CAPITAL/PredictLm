@@ -9,6 +9,10 @@ export interface QualityPromptOptions{
 
 const qualityCore=[
   'high fidelity',
+  'tack-sharp focal detail',
+  'clean high-frequency texture detail',
+  'high dynamic range without crushed shadows',
+  'stable anti-aliasing and clean edges',
   'coherent composition',
   'physically plausible perspective',
   'clean object boundaries',
@@ -28,6 +32,13 @@ const qualityCore=[
   'no fused objects',
   'no broken geometry',
   'no random artifacts',
+  'no blur',
+  'no smeared textures',
+  'no ghosting',
+  'no muddy details',
+  'no low-resolution appearance',
+  'no oversharpening halos',
+  'no waxy or plastic skin',
   'no warped faces or asymmetrical eyes',
   'no melted hands or impossible joints',
   'no low-resolution texture patches'
