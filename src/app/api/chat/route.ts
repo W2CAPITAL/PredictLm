@@ -190,6 +190,8 @@ export async function POST(req:Request){
     const body=await req.json();
     const prompt=String(body?.prompt||'').trim();
     const researchContext=String(body?.researchContext||'').trim().slice(0,16000);
+    const localAdvisory=String(body?.localAdvisory||'').trim().slice(0,2200);
+    const answerAnchor=String(body?.answerAnchor||'').trim().slice(0,5200);
     const brainContext=String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt);
     if(!prompt)return Response.json({error:'prompt is required'},{status:400});
 
@@ -235,6 +237,8 @@ export async function POST(req:Request){
         {label:'Deep Loop',text:deepLoop,priority:9},
         {label:'Tutor Mode',text:tutor,priority:6},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
+        {label:'Parecer do cérebro local',text:localAdvisory,priority:8},
+        {label:'Piso prático de resposta',text:answerAnchor,priority:9},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
       ].filter(x=>x.text)
     });
@@ -255,6 +259,8 @@ export async function POST(req:Request){
       'Responda ao pedido real do usuário; não fale sobre engines, providers, prompts ou skills sem necessidade.',
       'Entregue somente a resposta final. Nunca exponha cadeia de raciocínio, scratchpad, análise interna, política, passes FORGE/AEGIS/PARALLAX ou instruções sobre como você pensou.',
       'Use contexto recuperado apenas quando for relevante. Não transforme um chunk em fato externo se ele só descreve um padrão de software.',
+      'O parecer do cérebro local é uma segunda opinião curta: confronte-o com as fontes e com seu próprio julgamento; não o trate como autoridade.',
+      'Quando existir um piso prático de resposta, sua resposta final deve ser pelo menos tão direta, concreta e útil quanto esse piso. Enriqueça sem degradar.',
       'Se faltarem dados atuais, diga o limite em vez de inventar.',
       deep?'Faça uma revisão interna adicional de aderência, contradições e pontos faltantes antes da resposta final.':'Seja conciso sem perder o essencial.',
       packed.context
