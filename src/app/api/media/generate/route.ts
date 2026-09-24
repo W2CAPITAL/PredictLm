@@ -40,32 +40,41 @@ export async function POST(req:Request){
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
     const nanoKey=String(process.env.NANO_BANANA_API_KEY||'').trim();
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
-    const useNano=!mediaBase&&!!nanoKey;
-    const base=mediaBase||(useNano?nanoBase:'');
-    const key=mediaBase?mediaKey:nanoKey;
-    const model=useNano
-      ? String(process.env.NANO_BANANA_MODEL||'nano-banana').trim()
-      : String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
+    const requestedModel=String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
+    const nanoModel=String(process.env.NANO_BANANA_MODEL||'nano-banana').trim();
+    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'nano,configured')
+      .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+    const providers=[
+      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true}]:[]),
+      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false}]:[])
+    ];
 
-    if(base){
+    for(const provider of providers){
       try{
-        const url=base.replace(/\/$/,'')+(base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
+        const url=provider.base.replace(/\/$/,'')+(provider.base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
         const upstream=await fetch(url,{
           method:'POST',
-          headers:{'Content-Type':'application/json',...(key?{'Authorization':'Bearer '+key}:{})},
-          body:JSON.stringify({model,prompt,size:providerImageSize(width,height,useNano),n:1})
+          headers:{'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
+          body:JSON.stringify({
+            model:provider.model,
+            prompt,
+            size:providerImageSize(width,height,provider.nano),
+            n:1,
+            quality:'high'
+          }),
+          signal:AbortSignal.timeout(90000)
         });
         const data=await upstream.json().catch(()=>({}));
-        if(upstream.ok){
-          const first=data?.data?.[0]||{};
-          const remoteUrl=first.url||null;
-          const dataUrl=first.b64_json?'data:image/png;base64,'+first.b64_json:null;
-          if(remoteUrl||dataUrl){
-            return Response.json({url:remoteUrl||dataUrl,provider:useNano?'nano-banana':'configured-image',model,width,height,seed});
-          }
+        if(!upstream.ok)continue;
+        const first=data?.data?.[0]||{};
+        const remoteUrl=first.url||data?.url||null;
+        const b64=first.b64_json||data?.b64_json||null;
+        const dataUrl=b64?'data:image/png;base64,'+b64:null;
+        if(remoteUrl||dataUrl){
+          return Response.json({url:remoteUrl||dataUrl,provider:provider.id,model:provider.model,width,height,seed});
         }
       }catch{
-        // Provider externo falhou: preserve a geração local/proxy em vez de quebrar o Imagine.
+        // Continue to the next configured provider; public fallback remains available.
       }
     }
 
