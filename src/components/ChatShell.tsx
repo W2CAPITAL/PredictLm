@@ -285,12 +285,12 @@ export function ChatShell({onOpenLegal}:Props){
         const subject=mediaSubject(prompt);
         const seed=autoVariationSeed();
         if(mediaKind==='image'){
-          setActivity(['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição']);
+          setActivity(['Interpretando a imagem','Preparando referências visuais e identidade','Gerando composição']);
           const enhanced=buildQualityImagePrompt(subject,{style:'Cinematic',attempt:0});
           const r=await fetch('/api/media/generate',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:enhanced,width:1536,height:1536,seed,model:'flux'})
+            body:JSON.stringify({prompt:enhanced,width:1536,height:1536,seed,model:'flux',referenceMode:'auto'})
           });
           const data=await r.json();
           if(!r.ok||!data?.url)throw new Error(data?.error||'A geração de imagem não retornou um arquivo.');
@@ -298,6 +298,9 @@ export function ChatShell({onOpenLegal}:Props){
           let upscale:any={upscaled:false,provider:'none'};
           setActivity(['Imagem base criada em alta resolução','Super Resolution · tentando upscale 2×','Validando o resultado']);
           try{
+            if(data.provider==='entity-self-reference'){
+              upscale={upscaled:false,provider:'entity-self-reference',exact:true};
+            }else{
             const up=await fetch('/api/media/upscale',{
               method:'POST',
               headers:{'Content-Type':'application/json'},
@@ -307,6 +310,7 @@ export function ChatShell({onOpenLegal}:Props){
             if(up.ok&&upData?.upscaled&&upData?.url){
               imageUrl=String(upData.url);
               upscale=upData;
+            }
             }
           }catch{}
           fetch('/api/media/library',{
@@ -359,7 +363,7 @@ export function ChatShell({onOpenLegal}:Props){
           const r=await fetch('/api/media/generate',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:enhanced,width:1344,height:768,seed:seed+frames[i].seedOffset,model:'flux'})
+            body:JSON.stringify({prompt:enhanced,width:1344,height:768,seed:seed+frames[i].seedOffset,model:'flux',referenceMode:'auto'})
           });
           const data=await r.json();
           if(!r.ok||!data?.url)throw new Error(data?.error||('Falha ao gerar a cena '+(i+1)+'.'));
