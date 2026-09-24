@@ -501,11 +501,14 @@ export function GrokImaginePanel(){
       '\nAspect: '+ratio.label+
       '\nSeed: '+seed+
       '\nProvider: '+(provider||'auto')+
+      '\nPrompt mode: '+promptMode+
+      (negativePrompt?'\nNegative: '+negativePrompt:'')+
       '\nDeep Think: '+(deepThink?'on':'off')+
       '\nDeep Research: '+(deepResearch?'on':'off')+
       '\n\nEnhanced:\n'+enhanced+
       (directorBrief?'\n\nDirector brief:\n'+directorBrief:'')+
       (researchContext?'\n\nResearch context:\n'+researchContext:'')+
+      (generatedCaption?'\n\nScene caption:\n'+generatedCaption:'')+
       '\n\nMotion plan:\n- '+motionPlan.join('\n- ')+
       '\nDuration: '+duration+'ms\nMotion: '+motion,
       'markdown'
@@ -802,7 +805,10 @@ export function GrokImaginePanel(){
     if(item.kind==='video'){
       setMode('video');
       if(item.remote_url)setRemoteVideoUrl(item.remote_url);
-    }else setRemoteVideoUrl('');
+    }else{
+      setMode('image');
+      setRemoteVideoUrl('');
+    }
     setMotionUrl('');
   }
 
