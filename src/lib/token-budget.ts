@@ -86,9 +86,13 @@ export function packHistory(messages:CompactMessage[],mode:TokenSaveMode='full')
   const budget=DEFAULTS[mode].history;
   const recent=messages.filter(x=>x&&typeof x.content==='string'&&x.content.trim()).slice(-14);
   const chosen:CompactMessage[]=[];
+  const seen=new Set<string>();
   let used=0;
   for(let i=recent.length-1;i>=0;i--){
     const raw=recent[i];
+    const dedupKey=raw.role+'|'+normalizeForDedup(raw.content);
+    if(seen.has(dedupKey))continue;
+    seen.add(dedupKey);
     const remaining=Math.max(80,budget-used);
     const content=compactText(raw.content,Math.min(remaining,mode==='ultra'?280:420));
     const cost=estimateTokens(content)+6;
@@ -106,11 +110,18 @@ export function packContext(
 ){
   const cfg=DEFAULTS[mode];
   const before=sections.reduce((n,x)=>n+estimateTokens(x.text),0);
-  const {blocks,deduped}=dedupeBlocks(
-    [...sections]
-      .sort((a,b)=>(b.priority||0)-(a.priority||0))
-      .map(x=>x.label+'\n'+compactText(x.text,cfg.maxBlock))
-  );
+  const sorted=[...sections].sort((a,b)=>(b.priority||0)-(a.priority||0));
+  const seen=new Set<string>();
+  const blocks:string[]=[];
+  let deduped=0;
+  for(const section of sorted){
+    const body=compactText(section.text,cfg.maxBlock);
+    const key=normalizeForDedup(body).slice(0,1400);
+    if(!key)continue;
+    if(seen.has(key)){deduped++;continue}
+    seen.add(key);
+    blocks.push(section.label+'\n'+body);
+  }
   const kept:string[]=[];
   let used=0;
   for(const block of blocks){
