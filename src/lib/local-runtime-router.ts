@@ -3,6 +3,7 @@ import { knowledgeContext } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
 import { languageSystemInstruction, type ConversationLanguage } from './language-policy';
 import { publicAnswerGate } from './public-answer-gate';
+import { classifyDomainEngines } from './domain-engine-fabric';
 import { trainingContext } from './training/context';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
@@ -10,6 +11,11 @@ import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
 import { centumDecisionContext, parallaxContext } from './decision-centum';
+
+function useGithubKnowledge(input:string){
+  const q=String(input||'').toLowerCase();
+  return /\b(github|repo|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|docker|mcp|bug|erro|arquitetura|datajud|djen|lexis|graphrag|sgs|bacen|starlink|spacex|quant|qubit|netdata)\b/.test(q)||classifyDomainEngines(input).length>0;
+}
 
 export type LocalRuntimeKind='ollama'|'openai'|'lowram';
 export type LocalRuntimeId='freellmapi'|'ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
@@ -243,9 +249,10 @@ export async function answerViaLocalRuntime(
   const runtime=preferred||available[0];
 
   const topK=runtime.kind==='lowram'?2:(options?.deep?5:3);
+  const githubEnabled=useGithubKnowledge(prompt);
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
   const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
-  const github=githubKnowledgeContext(prompt,topK);
+  const github=githubEnabled?githubKnowledgeContext(prompt,topK):'';
   const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
@@ -288,7 +295,7 @@ export async function answerViaLocalRuntime(
   const gate=publicAnswerGate(generated.content,options?.language||'pt-BR');
   if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
 
-  const sources=retrieveGitHubKnowledge(prompt,topK).map(x=>({
+  const sources=(githubEnabled?retrieveGitHubKnowledge(prompt,topK):[]).map(x=>({
     title:x.heading,
     source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
   }));
