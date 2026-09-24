@@ -132,8 +132,12 @@ async function probeLowRam(candidate:LocalRuntimeCandidate):Promise<LocalRuntime
   }
 }
 
-export async function probeLocalRuntimes(){
-  const results=await Promise.all(LOCAL_RUNTIME_CANDIDATES.map(candidate=>{
+export async function probeLocalRuntimes(options?:{aggressive?:boolean}){
+  const candidates=options?.aggressive
+    ? LOCAL_RUNTIME_CANDIDATES
+    : LOCAL_RUNTIME_CANDIDATES.filter(candidate=>candidate.id==='freellmapi'&&hasLocalRuntimeCredential('freellmapi'));
+  if(!candidates.length)return [] as LocalRuntimeStatus[];
+  const results=await Promise.all(candidates.map(candidate=>{
     if(candidate.kind==='ollama')return probeOllama(candidate);
     if(candidate.kind==='lowram')return probeLowRam(candidate);
     return probeOpenAI(candidate);
@@ -229,7 +233,7 @@ export async function answerViaLocalRuntime(
   const statuses=await probeLocalRuntimes();
   const available=statuses.filter(x=>x.available);
   if(!available.length){
-    throw new Error('Nenhum runtime local acessível. Configure FreeLLMAPI ou inicie Ollama, llamafile/NanoMind, GenieX ou LowRAM e verifique CORS/porta local.');
+    throw new Error('Nenhum runtime local previamente configurado está acessível. O modo Auto não varre portas localhost para evitar travamentos e ruído no navegador.');
   }
   const preferred=options?.preferred&&options.preferred!=='auto'
     ? available.find(x=>x.id===options.preferred)
