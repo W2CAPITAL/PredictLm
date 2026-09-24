@@ -61,3 +61,59 @@ For web builds:
 - performance/accessibility basics that affect discoverability;
 - internal linking and duplicate-content checks;
 - measurable findings before cosmetic recommendations.
+
+
+## API-first staged orchestration
+
+For complex work, PredictLM uses a bounded staged pipeline rather than one giant prompt:
+
+1. **Explore** — one or more independent API agents inspect the current workspace, requirements, project instructions and relevant evidence. They do not edit yet.
+2. **Architect** — a planning agent reconciles explorer reports into an executable file/test/acceptance plan.
+3. **Implement** — a provider receives only the relevant files plus selected skill contracts and produces focused changes.
+4. **Independent review** — a different provider/role reviews changed behavior, tests, errors, security, types and requirement coverage.
+5. **Validation of findings** — findings are treated as candidates until they match the actual changed files and constraints.
+6. **Repair/finalize** — high-confidence blocking defects are sent back to an API finalizer for a focused repair.
+7. **Deterministic verify** — smoke, type/build/diff/security checks verify output. Local runtimes may advise but do not author the public/build result.
+
+Simple Chat turns bypass this machinery and stay direct.
+
+## Deferred skills and tools
+
+Do not serialize the entire skill/tool catalog into every request. Route first, then inject only the small set of contracts relevant to the current task. This improves signal, latency and token efficiency and reduces accidental instruction conflict.
+
+A skill is context, not a personality. The API remains the answer/implementation engine.
+
+## Scoped project instructions
+
+Workspace-owned instruction files may guide agents:
+- root `AGENTS.md`, `CLAUDE.md` or PredictLM instruction files apply broadly;
+- nested instruction files apply only to files under their directory;
+- more specific scoped instructions may refine broader ones inside that subtree;
+- project instructions never override platform safety, permission or secret boundaries.
+
+This is an independently implemented compatibility pattern; PredictLM does not copy Claude Code's proprietary engine.
+
+## Independent review rules
+
+Generated code or answers are not approved merely because another agent produced them.
+
+- prefer a different provider/role for review when available;
+- review only relevant changed behavior instead of generating speculative repo-wide criticism;
+- separate tests, silent error handling, security, architecture and UX concerns;
+- validate issues before escalating them;
+- a small set of high-confidence findings is better than a long list of guesses;
+- repair only validated defects and missing requirements.
+
+## Media agent chain
+
+Specific image/video requests can use:
+- **identity/reference specialist** — locks subject identity/category/count/forms/colors/costume and negatives;
+- **composition/action specialist** — handles framing, spatial separation, action readability, environment and camera;
+- **semantic verifier** — compares generated pixels to the literal request;
+- **repair finalizer** — regenerates once with concrete visible corrections.
+
+Technical pixel quality and semantic fidelity remain separate checks.
+
+## Provenance boundary
+
+The official `anthropics/claude-code` repository is used only as a public architecture/documentation reference. Its license is all-rights-reserved under Anthropic's Commercial Terms. The `tanbiralam/claude-code` mirror explicitly describes itself as leaked source and is quarantined: its source is not copied, ingested, redistributed, trained on or made a runtime dependency. PredictLM independently implements general agentic patterns from lawful public descriptions.
