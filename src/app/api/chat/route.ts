@@ -103,8 +103,9 @@ export async function POST(req:Request){
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
       .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
     const deep=Boolean(body?.deep);
-    const gh=githubKnowledgeContext(prompt,3);
-    const ghHits=retrieveGitHubKnowledge(prompt,3);
+    const githubTopK=deep?5:3;
+    const gh=githubKnowledgeContext(prompt,githubTopK);
+    const ghHits=retrieveGitHubKnowledge(prompt,githubTopK);
     const stats=githubKnowledgeStats();
     const packed=optimizePromptPackage({
       messages:rawHistory,
