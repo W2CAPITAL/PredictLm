@@ -2590,6 +2590,77 @@
         "build"
       ],
       "reason": "Manual content is copyright YoYo Games; use navigation/documentation concepts only, no corpus copying."
+    },
+    {
+      "repo": "Xiphereal/TheSims",
+      "branch": "trunk",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [],
+      "domains": [
+        "life-simulation",
+        "agent-actions",
+        "world-state"
+      ],
+      "reason": "License not verified; use only high-level simulation architecture concepts, no code/assets."
+    },
+    {
+      "repo": "DewingShen88/sims4-immersive-controls",
+      "branch": "main",
+      "license": "MIT-by-README",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "autonomy",
+        "interaction-weights",
+        "memory",
+        "reversible-actions"
+      ],
+      "reason": "Use only generic autonomy, interaction-weight, biography/memory and reversible-control concepts; no game-memory modification code."
+    },
+    {
+      "repo": "francot514/FreeSims",
+      "branch": "master",
+      "license": "MPL-2.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "life-simulation",
+        "world-state",
+        "work",
+        "neighborhood",
+        "household"
+      ],
+      "reason": "MPL-2.0 engine reference only; PredictLM keeps an independent implementation and does not require original game assets."
+    },
+    {
+      "repo": "oraksi/Sims-4-Respocket-DLC-Tool",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "dlc-circumvention",
+        "quarantine"
+      ],
+      "reason": "Not used. DLC unlocking/circumvention functionality is outside the PredictLM simulation architecture."
+    },
+    {
+      "repo": "savannah-medina85/sims-4-dlc-unlock",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "dlc-circumvention",
+        "quarantine"
+      ],
+      "reason": "Not used. DLC unlocking/circumvention functionality is outside the PredictLM simulation architecture."
     }
   ]
 }
