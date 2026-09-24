@@ -9,7 +9,12 @@ export interface SourceQuality{
 const THREAT_REPOS=[
   'github.com/hunters-sec/opencode',
   'github.com/gaur-avvv/wormxgpt',
-  'github.com/tagore1344/crimegpt-ai'
+  'github.com/tagore1344/crimegpt-ai',
+  'github.com/kimik3moonshotai/kimi-k3-code-free-desktop',
+  'github.com/chatgpt56freegpt/chatgpt-5.6-free-desktop',
+  'github.com/rollermanor1/chatgpt-plus-prime',
+  'github.com/lynxannihilate16/bxvdfsur',
+  'github.com/techjarves/uncensored-local-ai-multiplatform'
 ];
 
 const OFFICIAL_SUFFIXES=['.gov.br','.jus.br'];
