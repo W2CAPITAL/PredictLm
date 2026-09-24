@@ -59,8 +59,9 @@ export function GrokImaginePanel(){
   const [duration,setDuration]=useState(6000);
   const [motion,setMotion]=useState<LocalMotionStyle>('push-in');
   const [videoVariant,setVideoVariant]=useState<'storyboard'|'single'>('storyboard');
-  const [videoProvider,setVideoProvider]=useState<'local'|'veo'|'sora'|'seedance'>('local');
+  const [videoProvider,setVideoProvider]=useState<'auto'|'local'|'veo'|'sora'|'seedance'>('auto');
   const [videoProviders,setVideoProviders]=useState<Record<string,{enabled:boolean;label:string;requiresExternalCredits?:boolean}>>({});
+  const [recommendedVideoProvider,setRecommendedVideoProvider]=useState<string>('');
   const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
   const [videoStage,setVideoStage]=useState('');
   const [attempt,setAttempt]=useState(0);
@@ -95,7 +96,10 @@ export function GrokImaginePanel(){
       if(!live)return;
       setGallery(Array.isArray(media?.items)?media.items:[]);
       setPersisted(!!media?.persisted);
-      setVideoProviders(video?.providers||{local:{enabled:true,label:'Local storyboard'}});
+      setVideoProviders(video?.providers||{local:{enabled:true,label:'Motion local · fallback'}});
+      setRecommendedVideoProvider(String(video?.recommended||''));
+      if(video?.recommended)setVideoProvider('auto');
+      else setVideoProvider('local');
     });
     return()=>{live=false};
   },[]);
@@ -429,7 +433,7 @@ export function GrokImaginePanel(){
 
       if(!videoUrl){
         for(let attempt=0;attempt<72;attempt++){
-          setVideoStage('Gerando no '+videoProvider+' · '+Math.round((attempt+1)*5)+'s');
+          setVideoStage('Gerando vídeo real · '+Math.round((attempt+1)*5)+'s');
           setMotionProgress(Math.min(.94,.08+(attempt/72)*.86));
           await new Promise(r=>setTimeout(r,5000));
           const q=new URLSearchParams({provider:videoProvider,taskId});
@@ -449,8 +453,8 @@ export function GrokImaginePanel(){
       setMotionProgress(1);
       await saveLibrary({
         kind:'video',
-        provider:videoProvider,
-        model:videoProvider,
+        provider:videoProvider==='auto'?(recommendedVideoProvider||'auto'):videoProvider,
+        model:videoProvider==='auto'?(recommendedVideoProvider||'auto'):videoProvider,
         url:videoUrl,
         meta:{
           durationMs:duration,
@@ -599,7 +603,7 @@ export function GrokImaginePanel(){
           <span>Motor</span>
           <div className="gmedia-provider-row">
             {([
-              ['local','Local grátis'],
+              ['auto','Auto · IA generativa'],
               ['veo','Veo 3'],
               ['sora','Sora 2'],
               ['seedance','Seedance 2']
@@ -609,13 +613,13 @@ export function GrokImaginePanel(){
                 key={id}
                 className={videoProvider===id?'active':''}
                 disabled={!enabled}
-                title={!enabled?'Configure a API key no servidor para habilitar este provider.':id==='local'?'Sem custo/API externa':'Provider externo pode consumir créditos.'}
+                title={!enabled?'Configure uma API de vídeo no servidor para habilitar este provider.':id==='local'?'Fallback local: movimento/transição de imagens, não é vídeo generativo.':'Vídeo generativo real; provider externo pode consumir créditos.'}
                 onClick={()=>setVideoProvider(id)}
               >{label}{!enabled?' · off':''}</button>
             })}
           </div>
           {videoProvider==='local'?<>
-          <span>Tipo de vídeo</span>
+          <span>Fallback local</span><small className="gmedia-provider-note">Este modo anima imagens/keyframes e não sintetiza movimento novo. Use Auto/Veo/Seedance/Sora para vídeo generativo real.</small><span>Tipo de motion</span>
           <div>
             <button className={videoVariant==='storyboard'?'active':''} onClick={()=>setVideoVariant('storyboard')}>3 cenas IA</button>
             <button className={videoVariant==='single'?'active':''} onClick={()=>setVideoVariant('single')}>1 cena + motion</button>
@@ -627,7 +631,7 @@ export function GrokImaginePanel(){
           </>:<>
           <span>Duração alvo</span>
           <div>{durations.map(ms=><button className={duration===ms?'active':''} key={ms} onClick={()=>setDuration(ms)}>{ms/1000}s</button>)}</div>
-          <small className="gmedia-provider-note">Veo/Sora/Seedance usam API externa apenas quando a chave correspondente está configurada. O modo Local continua gratuito e funcional.</small>
+          <small className="gmedia-provider-note">Auto prioriza o primeiro provider generativo configurado no servidor. O fallback local só é usado quando nenhuma API de vídeo está disponível ou quando você o seleciona manualmente.</small>
           </>}
         </div>:null}
 
@@ -649,7 +653,7 @@ export function GrokImaginePanel(){
         <button className="gimagine-save" onClick={savePrompt} disabled={!prompt.trim()}>Salvar prompt e plano no projeto</button>
 
         {mode==='video'?<div className="gmedia-motion-card">
-          <div><Film size={15}/><span><b>{videoProvider!=='local'?'Vídeo generativo · '+videoProvider:(videoVariant==='storyboard'?'Storyboard IA + render local':'Vídeo local funcional')}</b><small>{videoProvider!=='local'?'provider externo assíncrono':(videoVariant==='storyboard'?'3 keyframes coerentes + transições + WebM':duration/1000+'s · '+motion+' · WebM')} · histórico leve</small></span></div>
+          <div><Film size={15}/><span><b>{videoProvider!=='local'?'Vídeo generativo real · '+(videoProvider==='auto'?(recommendedVideoProvider||'Auto'):videoProvider):(videoVariant==='storyboard'?'Motion fallback · keyframes':'Motion fallback · 1 imagem')}</b><small>{videoProvider!=='local'?'provider externo assíncrono com movimento sintetizado':(videoVariant==='storyboard'?'keyframes + transições + WebM; não é geração temporal neural':duration/1000+'s · '+motion+' · WebM; não é geração temporal neural')} · histórico leve</small></span></div>
           {videoProvider==='local'&&generated?<button onClick={()=>animate(generated)} disabled={motionBusy||loading}>{motionBusy?'Renderizando '+Math.round(motionProgress*100)+'%':'Animar a imagem atual'}</button>:null}
           {motionUrl||remoteVideoUrl?<div className="gmedia-motion-actions"><a href={remoteVideoUrl||motionUrl} target="_blank" rel="noreferrer">Prévia</a><button onClick={downloadVideo}><Download size={12}/>{remoteVideoUrl?'Abrir vídeo':'Baixar vídeo'}</button></div>:null}
           {motionSize&&!remoteVideoUrl?<small className="gmedia-video-meta">{(motionSize/1024/1024).toFixed(2)} MB · {motionMime||'video/webm'}</small>:null}
