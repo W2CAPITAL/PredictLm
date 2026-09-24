@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.13.0",
+  "version": "5.14.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -35,7 +35,9 @@
     "build-review",
     "centum-parallax",
     "runtime-federation",
-    "agent-fabric"
+    "agent-fabric",
+    "provider-mesh",
+    "web-reach"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -138,7 +140,13 @@
     "agent-fabric",
     "writing-quality-gate",
     "seo-audit-gate",
-    "defensive-bug-hunter"
+    "defensive-bug-hunter",
+    "multi-provider-cascade",
+    "server-secret-boundary",
+    "apify-research-bridge",
+    "web-reach",
+    "open-lovable-build-patterns",
+    "fastchat-serving-patterns"
   ],
   "hosts": [
     "PredictLM",
