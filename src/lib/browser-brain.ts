@@ -2,7 +2,7 @@ import type { WorkspaceFile } from './types';
 import { knowledgeContext, retrieveKnowledge } from './assistant-knowledge';
 import { compileSystemPrompt } from './prompt-os/compiler';
 import { cleanUserFacingAnswer } from './prompt-os/response-contract';
-import { adaptiveContext, adaptiveRecall, captureAdaptiveExperience } from './adaptive-memory';
+import { adaptiveContext, adaptiveInstructionContext, adaptiveRecall, captureAdaptiveExperience } from './adaptive-memory';
 import { trainingContext } from './training/context';
 import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
 import { responseTopicAlignment } from './chat-intelligence';
@@ -470,6 +470,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const githubTopK=options?.deep?5:3;
   const github=githubKnowledgeContext(prompt,githubTopK);
   const learned=adaptiveContext(prompt,4);
+  const instructions=adaptiveInstructionContext(8);
   const tutor=tutorSystemContext(prompt);
   const packed=optimizePromptPackage({
     messages,
@@ -477,6 +478,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     sections:[
       {label:'Contexto recuperado',text:context,priority:5},
       {label:'GitHub Knowledge Engine',text:github,priority:5},
+      {label:'Instruções persistentes do usuário',text:instructions,priority:7},
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
