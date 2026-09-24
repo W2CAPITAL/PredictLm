@@ -2,7 +2,7 @@
 name: life-simulation
 description: Cria, executa e exporta simulações 2D ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -101,3 +101,94 @@ A análise compara premissas, gatilhos, resultado imediato, consequências atras
 Não inventar probabilidades numéricas sem dados. Não apresentar futuro simulado como fato.
 
 Pergunta de cenário no Chat **não abre o Studio visual**. O Studio visual só abre com comando explícito para abrir/iniciar/rodar a simulação.
+
+
+## Agente executor real
+
+A simulação não responde a ordens apenas com texto. Uma ordem deve virar **plano estruturado e ações executáveis**.
+
+Fluxo obrigatório:
+
+**OBSERVE → DECIDE → PLAN → REPAIR PRECONDITIONS → ACT → VERIFY → MEMORY → REPLAN**.
+
+### Ações tipadas
+O executor suporta, no mínimo:
+- `move`;
+- `buy_food`;
+- `eat`;
+- `cook`;
+- `rest`;
+- `work`;
+- `study`;
+- `socialize`;
+- `message_friend`;
+- `exercise`;
+- `healthcare`;
+- `clean_home`;
+- `shower`;
+- `create`;
+- `wait`;
+- `set_goal`;
+- `speak`.
+
+Cada ação deve alterar estado real quando bem-sucedida: tempo, posição, dinheiro, fome/energia/estresse, inventário, habilidades, relações, limpeza da casa, memória ou objetivo.
+
+### Pré-condições
+Exemplos:
+- comprar comida → Mercado;
+- trabalhar → Trabalho;
+- estudar → Biblioteca;
+- descansar/banho/limpeza/cozinhar → Casa;
+- exercício → Parque;
+- saúde → Clínica;
+- comer em Casa → comida no inventário.
+
+Se o provider gerar uma sequência inválida, o runtime repara o plano adicionando deslocamentos/compras necessárias antes de executar.
+
+### Planner IA dedicado
+Pedidos da simulação usam um modo estruturado separado do Chat geral. O planner recebe apenas:
+- ordem do usuário;
+- estado atual do mundo;
+- inventário/habilidades/casa;
+- últimas ações;
+- segunda opinião curta do cérebro local.
+
+A saída é JSON validado. Se APIs falharem, o plano determinístico local continua executável.
+
+## Autonomia opt-in
+
+A autonomia só fica ativa após comando/botão explícito.
+
+Gatilhos aceitos incluem “decida o que fazer”, “aja sozinha”, “viva sua vida” e “faça o que achar melhor”.
+
+Com autonomia ativa, quando um plano termina o agente observa novamente o mundo e cria uma nova prioridade baseada em:
+1. saúde;
+2. energia;
+3. fome/comida;
+4. ambiente doméstico;
+5. dinheiro;
+6. social;
+7. estresse;
+8. conhecimento/habilidades;
+9. objetivo pessoal.
+
+Comandos “modo manual”, “desative autonomia” ou equivalentes interrompem esse ciclo.
+
+A autonomia permanece **somente dentro da simulação**; não chama ferramentas externas, não mexe em contas e não executa ações no computador do usuário.
+
+## Estado ampliado
+
+Além das necessidades e memórias, o agente mantém:
+- inventário de comida;
+- conhecimento;
+- habilidades: carreira, culinária, fitness, lógica, social e criatividade;
+- casa: limpeza e conforto;
+- histórico auditável de ações com estado antes/depois;
+- contador e última decisão autônoma.
+
+## Referências Sims-like
+
+- `Xiphereal/TheSims`: reference-only; usar apenas conceito de mundo/ações porque a licença não foi verificada.
+- `DewingShen88/sims4-immersive-controls`: reference-only; usar autonomia, pesos de interação, memória e reversibilidade em alto nível.
+- `francot514/FreeSims`: MPL-2.0, reference-only; casa/trabalho/comunidade e engine independente de assets proprietários.
+- repositórios de desbloqueio/DLC: **quarentena; não usar no código, corpus ou runtime**.
