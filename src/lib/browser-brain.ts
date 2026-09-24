@@ -6,6 +6,7 @@ import { adaptiveContext, adaptiveRecall, captureAdaptiveExperience } from './ad
 import { trainingContext } from './training/context';
 import { DEFAULT_BROWSER_MODELS } from './neural-model-catalog';
 import { responseTopicAlignment } from './chat-intelligence';
+import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -338,6 +339,7 @@ function parseBuildPatch(raw:string):NeuralBuildPatch|null{
 export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile[]):Promise<NeuralBuildPatch|null>{
   if(!worker||!loadedTier)return null;
   const learnedBuild=trainingContext(prompt,6);
+  const githubBuild=githubKnowledgeContext(prompt,3);
   const system=[
     'You are the code refinement layer of a local app builder.',
     'Return ONLY valid JSON with keys explanation, plan, files.',
@@ -346,7 +348,8 @@ export async function generateNeuralBuildPatch(prompt:string,files:WorkspaceFile
     'For business apps, require real navigation/sidebar, domain validation, loading/error/empty states, persistence boundary, API/integration adapters, server-only secrets and tests.',
     'Do not claim an integration is connected without credentials/handshake.',
     'Prefer edits that connect generated src modules to real behavior rather than decorative files.',
-    learnedBuild?('Approved implementation patterns:\n'+learnedBuild):''
+    learnedBuild?('Approved implementation patterns:\n'+learnedBuild):'',
+    githubBuild?('GitHub Knowledge Engine context:\n'+githubBuild):''
   ].filter(Boolean).join('\n\n');
   const snapshot=files
     .filter(f=>/^(App\.tsx|styles\.css|predict\.spec\.json|ARCHITECTURE\.md|src\/|server\/|\.env\.example)/.test(f.path))
@@ -373,6 +376,10 @@ function knowledgeReply(prompt:string){
   if(remembered.length&&remembered[0].confidence>=.72)return remembered[0].answer;
   const p=prompt.toLowerCase().trim();
   if(/quem (é|e) voc[eê]|o que voc[eê] (é|e)/.test(p))return 'Sou o **PredictLM**. No Chat eu converso e pesquiso; no Build eu continuo projetos, edito arquivos, reviso arquitetura e preparo exportação executável. Meu modo principal é local-first.';
+  const githubHits=retrieveGitHubKnowledge(prompt,3);
+  if(githubHits.length){
+    return githubHits.map((x,i)=>(i===0?'**'+x.heading+'**\n':'**Relacionado: '+x.heading+'**\n')+x.text).join('\n\n');
+  }
   const hits=retrieveKnowledge(prompt,5);
   if(hits.length){
     const best=hits.slice(0,3);
@@ -387,6 +394,7 @@ function knowledgeReply(prompt:string){
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
+  const github=githubKnowledgeContext(prompt,3);
   const learned=adaptiveContext(prompt,4);
   const recent=messages.slice(-10).map(m=>m.role.toUpperCase()+': '+m.content).join('\n');
   const compiled=compileSystemPrompt({
@@ -395,11 +403,15 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       recent?'Histórico recente:\n'+recent:'',
       context?'Contexto recuperado:\n'+context:'',
       trained?'Padrões aprendidos dos packs aprovados:\n'+trained:'',
+      github?'GitHub Knowledge Engine (top-k versionado):\n'+github:'',
       learned?'Memória adaptativa local:\n'+learned:''
     ].filter(Boolean)
   });
   const system=compiled.system;
-  const sources=retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}));
+  const sources=[
+    ...retrieveGitHubKnowledge(prompt,3).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
+    ...retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}))
+  ].filter((x,i,a)=>a.findIndex(y=>y.source===x.source)===i).slice(0,6);
   let fallbackReason='';
 
   if(typeof window!=='undefined'&&options?.preferNative!==false){
