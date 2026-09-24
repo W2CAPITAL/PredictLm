@@ -165,7 +165,8 @@ export function centumDecisionContext(prompt:string){
     'For each check internally classify: supported, contradicted, unknown, not-applicable.',
     'Unknown must never be silently promoted to fact. Contradictions must survive into the final confidence/risk judgment.',
     ...groups,
-    'After CENTUM, pass the result through the Council X10 perspectives and the Third Brain PARALLAX.',
+    'After CENTUM, review through Council X10: 1 Product/North Star, 2 Architecture/Systems, 3 Builder/Implementation, 4 UX/Human Factors, 5 Research/Domain, 6 Security/Abuse, 7 Failure/QA, 8 Legal/Privacy, 9 Operations/Cost, 10 Devil\'s Advocate.',
+    'Then Chair must reconcile agreements/disagreements before Third Brain PARALLAX.',
     'FINAL-ANSWER CONTRACT: answer only the requested deliverable. Do not narrate engines, fallback, skills, checklist, internal debate or chain-of-thought unless explicitly requested. If evidence is insufficient, state the specific uncertainty; do not substitute an unrelated generic fallback.'
   ].join('\n\n');
 }
