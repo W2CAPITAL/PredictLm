@@ -14,6 +14,7 @@ export interface LocalRuntimeCandidate{
   baseUrl:string;
   kind:LocalRuntimeKind;
   source:string;
+  priority:number;
 }
 
 export interface LocalRuntimeStatus extends LocalRuntimeCandidate{
@@ -33,11 +34,11 @@ export interface LocalRuntimeReply{
 }
 
 export const LOCAL_RUNTIME_CANDIDATES:LocalRuntimeCandidate[]=[
-  {id:'ollama',label:'Ollama',baseUrl:'http://127.0.0.1:11434',kind:'ollama',source:'Ollama / llamdrop patterns'},
-  {id:'local-4891',label:'Local OpenAI · 4891',baseUrl:'http://127.0.0.1:4891',kind:'openai',source:'Uncensored Local AI runtime pattern'},
-  {id:'local-8080',label:'Local OpenAI · 8080',baseUrl:'http://127.0.0.1:8080',kind:'openai',source:'llamafile / NanoMind runtime pattern'},
-  {id:'geniex',label:'GenieX · 18181',baseUrl:'http://127.0.0.1:18181',kind:'openai',source:'Qualcomm GenieX'},
-  {id:'lowram',label:'LowRAM · 8766',baseUrl:'http://127.0.0.1:8766',kind:'lowram',source:'LowRAM AI Compiler'}
+  {id:'ollama',label:'Ollama',baseUrl:'http://127.0.0.1:11434',kind:'ollama',source:'Ollama / llamdrop patterns',priority:100},
+  {id:'local-4891',label:'Local OpenAI · 4891',baseUrl:'http://127.0.0.1:4891',kind:'openai',source:'Local OpenAI-compatible runtime pattern',priority:92},
+  {id:'local-8080',label:'Local OpenAI · 8080',baseUrl:'http://127.0.0.1:8080',kind:'openai',source:'llamafile / NanoMind runtime pattern',priority:90},
+  {id:'geniex',label:'GenieX · 18181',baseUrl:'http://127.0.0.1:18181',kind:'openai',source:'Qualcomm GenieX',priority:88},
+  {id:'lowram',label:'LowRAM · 8766',baseUrl:'http://127.0.0.1:8766',kind:'lowram',source:'LowRAM AI Compiler',priority:60}
 ];
 
 function localOnly(url:string){
@@ -106,7 +107,7 @@ export async function probeLocalRuntimes(){
     if(candidate.kind==='lowram')return probeLowRam(candidate);
     return probeOpenAI(candidate);
   }));
-  return results.sort((a,b)=>Number(b.available)-Number(a.available)||(a.latencyMs||9999)-(b.latencyMs||9999));
+  return results.sort((a,b)=>Number(b.available)-Number(a.available)||b.priority-a.priority||(a.latencyMs||9999)-(b.latencyMs||9999));
 }
 
 function sanitizeMessages(messages:{role:string;content:string}[]){
