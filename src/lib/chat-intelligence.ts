@@ -187,6 +187,12 @@ export function practicalHowToReply(prompt:string){
   return null;
 }
 
+export function signalsKnowledgeGap(content:string){
+  const out=clean(String(content||''));
+  if(!out)return true;
+  return /\b(nao sei|nao tenho (?:essa )?informacao|nao tenho dados|nao tenho acesso|nao consigo responder|nao posso confirmar|sem contexto suficiente|cannot answer|i don'?t know|insufficient information|no information available)\b/.test(out);
+}
+
 export function answerQuality(prompt:string,content:string){
   const p=clean(prompt);
   const text=String(content||'').trim();

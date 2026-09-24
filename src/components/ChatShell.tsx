@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, Eye, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldPreferLocalRuntimeFirst, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -181,6 +181,24 @@ export function ChatShell({onOpenLegal}:Props){
     return()=>window.removeEventListener('predictlm:neural-warmup',onWarm as EventListener);
   },[]);
 
+  useEffect(()=>{
+    const mq=window.matchMedia('(max-width: 760px)');
+    const sync=(event?:MediaQueryListEvent)=>{
+      if((event?.matches??mq.matches))setSidebar(false);
+    };
+    sync();
+    mq.addEventListener?.('change',sync);
+    document.documentElement.dataset.predictlmMobileShell='ready';
+    return()=>{
+      mq.removeEventListener?.('change',sync);
+      delete document.documentElement.dataset.predictlmMobileShell;
+    };
+  },[]);
+
+  function closeSidebarOnMobile(){
+    if(typeof window!=='undefined'&&window.matchMedia('(max-width: 760px)').matches)setSidebar(false);
+  }
+
   async function webContext(query:string,signal?:AbortSignal){
     try{
       const r=await fetchWithTimeout('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:8})},10000,signal);
@@ -191,6 +209,53 @@ export function ChatShell({onOpenLegal}:Props){
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
     }catch{return {text:'',sources:[] as any[],items:[] as any[]}}
+  }
+
+  async function requestApiAnswer(input:{
+    prompt:string;
+    language:string;
+    kind:string;
+    messages:{role:string;content:string}[];
+    researchContext:string;
+    localAdvisory:string;
+    answerAnchor:string;
+    brainContext:string;
+    deep:boolean;
+    clean?:boolean;
+    signal:AbortSignal;
+  }){
+    try{
+      const response=await fetchWithTimeout('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          ...(input.clean?{mode:'clean-chat',useHistory:false}:{}),
+          prompt:input.prompt,
+          language:input.language,
+          messages:input.clean?[]:input.messages,
+          researchContext:input.researchContext,
+          localAdvisory:input.localAdvisory,
+          answerAnchor:input.answerAnchor,
+          brainContext:input.brainContext,
+          deep:input.clean?false:input.deep,
+          instructions:input.clean?'':adaptiveInstructionContext(4)
+        })
+      },input.clean?28000:36000,input.signal);
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data?.content)return {ok:false,text:'',data,reason:String(data?.code||data?.error||'provider-unavailable')};
+      const gate=publicAnswerGate(String(data.content||''),input.language as any,input.prompt);
+      if(!gate.ok)return {ok:false,text:'',data,reason:gate.reason||'public-gate'};
+      const text=gate.content;
+      const relevant=responseTopicAlignment(input.prompt,text).relevant;
+      const quality=answerQuality(input.prompt,text);
+      const minQuality=input.kind==='howto'?2:input.kind==='factual'?0:-1;
+      if(!relevant)return {ok:false,text,data,reason:'off-topic'};
+      if(quality<minQuality)return {ok:false,text,data,reason:'low-quality'};
+      if(signalsKnowledgeGap(text))return {ok:false,text,data,reason:'knowledge-gap'};
+      return {ok:true,text,data,reason:''};
+    }catch(error:any){
+      return {ok:false,text:'',data:{},reason:String(error?.message||error||'provider-error')};
+    }
   }
 
   async function send(){
@@ -211,7 +276,6 @@ export function ChatShell({onOpenLegal}:Props){
     const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
-    const preferLocalFirst=s.localRuntimeEnabled&&shouldPreferLocalRuntimeFirst(kind,prompt,s.deepThink,needsWeb);
 
     setInput('');
     setScreen('chat');
@@ -475,279 +539,170 @@ export function ChatShell({onOpenLegal}:Props){
       const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
       const factualAnchor=kind==='factual'?stableFactualReply(prompt):null;
       const practicalAnchor=kind==='howto'?practicalHowToReply(prompt):null;
+      const answerAnchor=kind==='howto'?(direct||practicalAnchor||''):(factualAnchor||direct||'');
 
-      // Known, stable, low-risk answers should not enter retrieval/provider roulette.
-      if(!needsWeb&&(factualAnchor||practicalAnchor)){
-        const anchored=factualAnchor||practicalAnchor||'';
-        const gate=publicAnswerGate(anchored,language,prompt);
-        if(gate.ok&&responseTopicAlignment(prompt,gate.content).relevant){
+      let web=needsWeb
+        ? await webContext(prompt,turnController.signal)
+        : {text:'',sources:[] as any[],items:[] as any[]};
+      let research=web.items.length?synthesizeResearch(prompt,web.items):null;
+      let researchContext=web.text;
+
+      // Local engines are auxiliary critics only. They never become the public
+      // answer in Predict Auto; the remote provider remains responsible.
+      const localAdvice:string[]=[];
+      if(currentNeural.loaded||currentWebLLM.loaded){
+        try{
+          const browserAdvice=await localBrainAdvisory(prompt,messages,{language,researchContext});
+          if(browserAdvice?.content)localAdvice.push('Browser local critic: '+browserAdvice.content);
+        }catch{}
+      }
+      if(s.localRuntimeEnabled){
+        setActivity(['API FIRST · preparando provider principal','LOCAL ASSIST · coletando segunda opinião','VERIFY · mantendo o pedido como fonte da verdade']);
+        try{
+          const runtimeAdvice=await answerViaLocalRuntime(prompt,messages,{
+            deep:false,
+            preferred:'auto',
+            language,
+            researchContext,
+            signal:turnController.signal,
+            advisoryOnly:true
+          });
+          setLocalRuntimeLabel(runtimeAdvice.label.replace(/ · \d+$/,''));
+          if(runtimeAdvice.content)localAdvice.push('Local runtime critic: '+runtimeAdvice.content);
+        }catch{}
+      }
+      const advisoryText=localAdvice.join('\n\n').slice(0,3200);
+
+      const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
+      const cleanEligible=!needsWeb&&prompt.length<=900&&(
+        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
+      );
+
+      setActivity([
+        'API FIRST · selecionando provider',
+        'AGENT/SKILL API · carregando somente contratos relevantes',
+        ...(advisoryText?['LOCAL ASSIST · segunda opinião pronta']:[]),
+        ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
+        'VERIFY · bloqueando resposta fora do pedido'
+      ]);
+
+      let candidate=await requestApiAnswer({
+        prompt,
+        language,
+        kind,
+        messages,
+        researchContext,
+        localAdvisory:advisoryText,
+        answerAnchor,
+        brainContext,
+        deep:s.deepThink,
+        clean:cleanEligible,
+        signal:turnController.signal
+      });
+
+      // A clean route is intentionally minimal. If the task needs more depth,
+      // retry once through the full API agent/skill mesh before researching.
+      if(!candidate.ok&&cleanEligible){
+        setActivity(['API FIRST · rota limpa insuficiente','AGENT/SKILL API · ampliando contexto relevante','VERIFY · segunda tentativa']);
+        candidate=await requestApiAnswer({
+          prompt,
+          language,
+          kind,
+          messages,
+          researchContext,
+          localAdvisory:advisoryText,
+          answerAnchor,
+          brainContext,
+          deep:s.deepThink,
+          clean:false,
+          signal:turnController.signal
+        });
+      }
+
+      // If the APIs genuinely do not know enough, learn on demand: search,
+      // filter by relevance, and ask the API again with grounded evidence.
+      const canAutoResearch=!needsWeb
+        && kind!=='casual'
+        && kind!=='context'
+        && kind!=='hypothetical'
+        && prompt.length<=2200;
+      if(!candidate.ok&&canAutoResearch){
+        setActivity(['KNOWLEDGE GAP · resposta insuficiente detectada','RESEARCH · buscando fontes relevantes','API FIRST · respondendo de novo com evidência']);
+        web=await webContext(prompt,turnController.signal);
+        research=web.items.length?synthesizeResearch(prompt,web.items):null;
+        researchContext=web.text;
+        if(researchContext){
+          candidate=await requestApiAnswer({
+            prompt,
+            language,
+            kind,
+            messages,
+            researchContext,
+            localAdvisory:advisoryText,
+            answerAnchor,
+            brainContext,
+            deep:s.deepThink,
+            clean:false,
+            signal:turnController.signal
+          });
+        }
+      }
+
+      if(candidate.ok){
+        const apiSources=filterDisplayedSources(prompt,[
+          ...web.sources,
+          ...(Array.isArray(candidate.data?.sources)?candidate.data.sources:[])
+        ],8);
+        s.addMessage({
+          role:'assistant',
+          content:candidate.text,
+          engine:'Predict Auto',
+          sources:apiSources,
+          reasoningSummary:buildReasoningSummary({
+            kind,
+            webCount:apiSources.length,
+            localBrain:!!advisoryText,
+            provider:true,
+            anchor:!!answerAnchor,
+            deep:s.deepThink
+          }),
+          actions:[
+            'API/provider executou a resposta final',
+            'Agent/skills selecionados no servidor',
+            ...(advisoryText?['Motor local usado apenas como crítico auxiliar']:[]),
+            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
+            'Resposta final validada antes de exibir'
+          ],
+          status:'done'
+        });
+        return;
+      }
+
+      // Never fill a provider failure with unrelated RAG. A small deterministic
+      // anchor is allowed only for questions we explicitly know how to answer.
+      const safeFallbacks=[practicalAnchor,factualAnchor,direct,research?.content]
+        .filter(Boolean) as string[];
+      for(const fallback of safeFallbacks){
+        const gate=publicAnswerGate(fallback,language,prompt);
+        if(gate.ok&&responseTopicAlignment(prompt,gate.content).relevant&&!signalsKnowledgeGap(gate.content)){
           s.addMessage({
             role:'assistant',
             content:gate.content,
             engine:'Predict Auto',
-            sources:[],
-            reasoningSummary:buildReasoningSummary({kind,anchor:true,deep:false}),
-            actions:['Resposta direta sem pesquisa ou contexto lateral','Resposta final validada antes de exibir'],
+            sources:research?.sources||[],
+            reasoningSummary:buildReasoningSummary({kind,webCount:research?.sources?.length||0,anchor:true}),
+            actions:[
+              'Providers não concluíram o turno',
+              'Fallback interno restrito ao mesmo pedido',
+              'Nenhum conteúdo lateral foi usado'
+            ],
             status:'done'
           });
           return;
         }
       }
 
-      const web=needsWeb?await webContext(prompt,turnController.signal):{text:'',sources:[] as any[],items:[] as any[]};
-      const research=web.items.length?synthesizeResearch(prompt,web.items):null;
-      const researchContext=web.text;
-      const fallbackText=direct||factualAnchor||practicalAnchor||((kind==='factual'||kind==='current')?research?.content:undefined);
-      const answerAnchor=kind==='howto'?(direct||practicalAnchor||''):'';
-      const directScore=direct?answerQuality(prompt,direct):-99;
-      const anchorScore=answerAnchor?answerQuality(prompt,answerAnchor):-99;
-
-      // Predict Auto should not automatically prefer a remote API just because one
-      // exists. For short static factual/procedural questions, a loaded local model
-      // often has a cleaner signal because it is not contaminated by retrieval
-      // snippets or the large cloud orchestration package.
-      if(preferLocalFirst){
-        setActivity(['LOCAL FIRST · usando o runtime já ativo','VERIFY · checando aderência e utilidade','FALLBACK · nuvem só se necessário']);
-        try{
-          const localReply=await answerViaLocalRuntime(prompt,messages,{
-            deep:false,
-            preferred:'auto',
-            language,
-            researchContext:'',
-            signal:turnController.signal
-          });
-          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
-          const quality=answerQuality(prompt,localReply.content);
-          const weak=!publicAnswerGate(localReply.content,language,prompt).ok;
-          const threshold=kind==='howto'?2:1;
-          if(relevant&&!weak&&quality>=threshold){
-            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
-            s.addMessage({
-              role:'assistant',
-              content:localReply.content,
-              engine:'Predict Auto',
-              sources:filterDisplayedSources(prompt,localReply.sources,6),
-              reasoningSummary:buildReasoningSummary({
-                kind,
-                localRuntime:true,
-                anchor:!!answerAnchor,
-                deep:false
-              }),
-              actions:[
-                'Runtime local priorizado para pergunta estática/prática',
-                'Resposta validada antes de exibir'
-              ],
-              status:'done'
-            });
-            return;
-          }
-        }catch{}
-        setActivity(['LOCAL FIRST não atingiu o piso de qualidade','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
-      }
-
-      const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
-      const cleanEligible=!needsWeb&&prompt.length<=700&&(
-        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
-      );
-      if(cleanEligible){
-        setActivity(['CLEAN CHAT · isolando o pedido atual','CASCADE · escolhendo provider','VERIFY · bloqueando resposta fora do assunto']);
-        try{
-          const cleanResponse=await fetchWithTimeout('/api/chat',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-              mode:'clean-chat',
-              prompt,
-              language,
-              messages:[],
-              useHistory:false
-            })
-          },26000,turnController.signal);
-          const cleanData=await cleanResponse.json();
-          if(cleanResponse.ok&&cleanData?.content){
-            const gate=publicAnswerGate(String(cleanData.content),language,prompt);
-            const cleanText=gate.ok?gate.content:'';
-            const relevant=!!cleanText&&responseTopicAlignment(prompt,cleanText).relevant;
-            const quality=cleanText?answerQuality(prompt,cleanText):-99;
-            const minQuality=kind==='howto'?2:0;
-            if(relevant&&quality>=minQuality){
-              s.addMessage({
-                role:'assistant',
-                content:cleanText,
-                engine:'Predict Auto',
-                sources:[],
-                reasoningSummary:buildReasoningSummary({kind,provider:true,deep:false}),
-                actions:['Contexto lateral e RAG desativados para este turno','Resposta final validada antes de exibir'],
-                status:'done'
-              });
-              return;
-            }
-          }
-        }catch{}
-        setActivity(['CLEAN CHAT não passou no gate','Tentando outra rota','Validando a resposta final']);
-      }
-
-      const advisory=(currentNeural.loaded||currentWebLLM.loaded)
-        ? await localBrainAdvisory(prompt,messages,{language,researchContext})
-        : null;
-
-      if(kind!=='casual'&&kind!=='context'){
-        setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
-        try{
-          const cloudResponse=await fetchWithTimeout('/api/chat',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt,researchContext,localAdvisory:advisory?.content||'',answerAnchor,brainContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
-          },33000,turnController.signal);
-          const cloudData=await cloudResponse.json();
-          if(cloudResponse.ok&&cloudData?.content){
-            const gatedCloud=publicAnswerGate(String(cloudData.content||''),language,prompt);
-            const cloudText=gatedCloud.ok?gatedCloud.content:'';
-            const relevant=!!cloudText&&responseTopicAlignment(prompt,cloudText).relevant;
-            const quality=cloudText?answerQuality(prompt,cloudText):-99;
-            const minCloudQuality=kind==='howto'?3:kind==='factual'?1:-99;
-            if(!relevant||quality<minCloudQuality){
-              setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor','Validando a resposta final']);
-            }else{
-            const cloudSources=filterDisplayedSources(prompt,[
-              ...web.sources,
-              ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
-            ],8);
-            const finalText=kind==='howto'&&answerAnchor&&anchorScore>=quality?answerAnchor:cloudText;
-            s.addMessage({
-              role:'assistant',
-              content:finalText,
-              engine:'Predict Auto',
-              sources:cloudSources,
-              reasoningSummary:buildReasoningSummary({
-                kind,
-                webCount:cloudSources.length,
-                localBrain:!!advisory,
-                provider:true,
-                anchor:!!answerAnchor,
-                deep:s.deepThink
-              }),
-              actions:[
-                ...(needsWeb&&cloudSources.length?['Pesquisa integrada · '+cloudSources.length+' fonte(s) relevante(s)']:[]),
-                ...(advisory?['Neural Local consultado como segundo cérebro']:[]),
-                'Resposta final validada antes de exibir'
-              ],
-              status:'done'
-            });
-            return;
-            }
-          }
-        }catch{}
-        setActivity(['A primeira rota não produziu uma resposta válida','Tentando outra rota automaticamente','Validando a resposta final']);
-      }
-
-
-      if(s.localRuntimeEnabled){
-        setActivity(['TOKEN SAVER · compactando histórico/contexto','LOCAL ROUTER · detectando runtime','SKILL/RAG · injetando somente top-k','VERIFY · checando resposta']);
-        try{
-          const localReply=await answerViaLocalRuntime(prompt,messages,{deep:s.deepThink,preferred:'auto',language,researchContext,signal:turnController.signal});
-          const relevant=responseTopicAlignment(prompt,localReply.content).relevant;
-          if(relevant&&publicAnswerGate(localReply.content,language,prompt).ok&&answerQuality(prompt,localReply.content)>=(kind==='howto'?2:1)){
-            setLocalRuntimeLabel(localReply.label.replace(/ · \d+$/,''));
-            const localSources=filterDisplayedSources(prompt,[
-              ...web.sources,
-              ...localReply.sources
-            ],8);
-            s.addMessage({
-              role:'assistant',
-              content:localReply.content,
-              engine:'Predict Auto',
-              sources:localSources,
-              reasoningSummary:buildReasoningSummary({
-                kind,
-                webCount:localSources.length,
-                localBrain:!!advisory,
-                localRuntime:true,
-                anchor:!!answerAnchor,
-                deep:s.deepThink
-              }),
-              actions:[
-                ...(needsWeb&&localSources.length?['Pesquisa integrada · '+localSources.length+' fonte(s) relevante(s)']:[]),
-                'Resposta final validada antes de exibir'
-              ],
-              status:'done'
-            });
-            return;
-          }
-          setActivity(['Resposta candidata rejeitada por baixa aderência','Buscando uma resposta melhor']);
-        }catch(err:any){
-          setActivity(['Uma rota local não ficou disponível','Buscando outra rota automaticamente']);
-        }
-      }
-
-      let reply=await answerLocally(prompt,messages,{
-        preferNative:false,
-        knowledge:s.deepThink,
-        fallbackText,
-        language,
-        researchContext,
-        deep:safeLocalDeep,
-        onStage:stage=>{
-          if(!s.deepThink||!(currentNeural.loaded||currentWebLLM.loaded))return;
-          const stages={
-            recall:['RECALL · recuperando contexto'],
-            plan:['RECALL · contexto recuperado','ROUTE · assunto identificado','FORGE · gerando rascunho neural'],
-            forge:['FORGE · gerando resposta neural'],
-            aegis:['FORGE · rascunho concluído','AEGIS · criticando resposta e removendo desvios'],
-            verify:['FORGE · concluído','AEGIS · revisão concluída','VERIFY · checando aderência ao pedido']
-          } as const;
-          setActivity([...stages[stage]]);
-        }
-      });
-
-      const replyScore=answerQuality(prompt,reply.content);
-      const researchScore=research?answerQuality(prompt,research.content):-99;
-
-      const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm')&&responseTopicAlignment(prompt,reply.content).relevant;
-      if(kind==='howto'&&answerAnchor&&!neuralRelevant&&anchorScore>=replyScore){
-        reply={...reply,content:answerAnchor,sources:web.sources.slice(0,6)};
-      }else if(factualAnchor&&!neuralRelevant&&answerQuality(prompt,factualAnchor)>=replyScore){
-        reply={...reply,content:factualAnchor,sources:[]};
-      }else if(direct&&!neuralRelevant&&directScore>=replyScore){
-        reply={...reply,content:direct,sources:web.sources.slice(0,4)};
-      }else if(kind!=='howto'&&research&&!neuralRelevant&&researchScore>replyScore){
-        reply={...reply,content:research.content,sources:research.sources};
-      }else if(kind!=='howto'&&(reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
-        reply={...reply,content:research.content,sources:research.sources};
-      }else if(web.sources.length){
-        reply.sources=[...web.sources,...(reply.sources||[])].slice(0,10);
-      }
-
-      const gate=publicAnswerGate(reply.content,language,prompt);
-      if(!gate.ok){
-        const candidates=[answerAnchor,factualAnchor,direct,...((kind==='factual'||kind==='current')&&research?.content?[research.content]:[])].filter(Boolean) as string[];
-        const valid=candidates.map(x=>publicAnswerGate(x,language,prompt)).find(x=>x.ok);
-        if(valid)reply={...reply,content:valid.content,sources:web.sources.slice(0,6)};
-        else throw new Error('Não foi possível produzir uma resposta final válida para exibição.');
-      }else{
-        reply={...reply,content:gate.content};
-      }
-      const engineLabel='Predict Auto';
-      const actions=[
-        ...(needsWeb?['Pesquisa integrada ao Chat'+(web.sources.length?' · '+web.sources.length+' fonte(s) relevante(s)':' · nenhuma fonte útil encontrada')]:[]),
-        ...(tutorIntent?['Modo de aprendizagem aplicado']:[]),
-        'Resposta final validada antes de exibir'
-      ];
-      s.addMessage({
-        role:'assistant',
-        content:reply.content,
-        engine:engineLabel,
-        sources:reply.sources,
-        reasoningSummary:buildReasoningSummary({
-          kind,
-          webCount:reply.sources?.length||0,
-          localBrain:!!advisory||reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm',
-          anchor:!!answerAnchor,
-          deep:s.deepThink
-        }),
-        actions,
-        status:'done'
-      });
+      throw new Error('Os providers não produziram uma resposta válida, e a pesquisa automática não encontrou evidência suficiente.');
     }catch(err:any){
       if(turnController.signal.aborted)return;
       const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
@@ -890,6 +845,7 @@ export function ChatShell({onOpenLegal}:Props){
   function openChat(id?:string){
     if(id)s.setActive(id);
     setScreen('chat');
+    closeSidebarOnMobile();
   }
 
   function unloadNeural(){
@@ -928,13 +884,13 @@ export function ChatShell({onOpenLegal}:Props){
 
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
-        <button className={screen==='build'?'active':''} onClick={()=>setScreen('build')}><span><Code2 size={16}/></span>Build</button>
-        <button className={screen==='simulation'?'active':''} onClick={()=>setScreen('simulation')}><span><Activity size={16}/></span>Simulação</button>
-        <button onClick={onOpenLegal}><span><Scale size={16}/></span>Processos</button>
-        <button className={screen==='imagine'?'active':''} onClick={()=>setScreen('imagine')}><span><ImageIcon size={16}/></span>Imagine</button>
-        <button className={screen==='vision'?'active':''} onClick={()=>setScreen('vision')}><span><Eye size={16}/></span>Visão</button>
-        <button className={screen==='library'?'active':''} onClick={()=>setScreen('library')}><span><Library size={16}/></span>Library</button>
-        <button className={s.webEnabled?'active':''} onClick={()=>{s.setWebEnabled(true);setScreen('chat')}}><span><Globe2 size={16}/></span>Pesquisa no Chat</button>
+        <button className={screen==='build'?'active':''} onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><span><Code2 size={16}/></span>Build</button>
+        <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Simulação</button>
+        <button onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}><span><Scale size={16}/></span>Processos</button>
+        <button className={screen==='imagine'?'active':''} onClick={()=>{setScreen('imagine');closeSidebarOnMobile()}}><span><ImageIcon size={16}/></span>Imagine</button>
+        <button className={screen==='vision'?'active':''} onClick={()=>{setScreen('vision');closeSidebarOnMobile()}}><span><Eye size={16}/></span>Visão</button>
+        <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><span><Library size={16}/></span>Library</button>
+        <button className={s.webEnabled?'active':''} onClick={()=>{s.setWebEnabled(true);setScreen('chat');closeSidebarOnMobile()}}><span><Globe2 size={16}/></span>Pesquisa no Chat</button>
       </nav>
 
       <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
@@ -946,10 +902,11 @@ export function ChatShell({onOpenLegal}:Props){
       </div>)}</div>
 
       <div className="grok-sidebar-bottom">
-        <button className={screen==='plugins'?'active':''} onClick={()=>setScreen('plugins')}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Local</b><small>private · local-first</small></span></div>
+        <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>API-first · local assist</small></span></div>
       </div>
     </aside>
+    {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
 
     <main className="grok-main">
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
@@ -965,7 +922,7 @@ export function ChatShell({onOpenLegal}:Props){
       !hasMessages?<section className="grok-home">
         <h1>O que vamos explorar?</h1>
         <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
-        <button className="grok-build-card" onClick={()=>setScreen('build')}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>setScreen('simulation')}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
+        <button className="grok-build-card" onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
         <div className="grok-home-foot"><span className="private-dot"/> conversa · memória · criação</div>
       </section>:
       <section className="grok-conversation-wrap">
@@ -992,13 +949,13 @@ function Composer(props:any){
         <div className="grok-model-wrap">
           <button className="predict-auto-trigger" onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>
           {modelMenu&&<div className="grok-model-menu grok-auto-menu">
-            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>Um único motor lógico. O roteador escolhe servidor, pesquisa, memória e runtime local sem expor modelos.</span></div></div>
+            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>APIs respondem; pesquisa, agents e skills entram no servidor quando úteis. O runtime local atua apenas como crítico auxiliar.</span></div></div>
             <div className="grok-auto-status">
-              <span><i className="online"/> Provider Mesh automático</span>
-              <span><i className={localReady?'online':''}/> {localReady?'Modo offline pronto':'Local sob demanda'}</span>
+              <span><i className="online"/> Provider Mesh · resposta principal</span>
+              <span><i className={localReady?'online':''}/> {localReady?'Auxiliar local pronto':'Auxiliar local sob demanda'}</span>
               <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
-            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar modo offline</b><span>Baixa apenas o motor local econômico quando você pedir. Nada é carregado automaticamente.</span></button>}
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar auxiliar local</b><span>Baixa o motor econômico apenas para crítica e segunda opinião. A resposta final continua sendo das APIs.</span></button>}
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
           </div>}
         </div>

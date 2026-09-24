@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.25.0"
+  version: "1.26.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -579,25 +579,16 @@ Veo usa geração assíncrona real. Quando imagens inline/reference são rejeita
 
 Deep Think de mídia usa o modo interno `media-director`; falha dos providers de chat é uma melhoria opcional indisponível e retorna resposta vazia/200, não uma cascata de 502 que bloqueia vídeo.
 
-## Predict Auto: local-first para perguntas simples
+## Predict Auto: API-first com contexto mínimo
 
-Quando um runtime local já está ativo, **modelo maior/remoto não vence automaticamente**.
+Predict Auto usa as APIs configuradas como mecanismo principal de resposta. Runtimes locais podem contribuir apenas como segunda opinião compacta.
 
-Para perguntas curtas, estáticas e comuns (`quem é…`, `o que é…`, `como plantar…`, `como chocar…`):
-- se não houver necessidade de dado atual/pesquisa, Predict Auto tenta o runtime local primeiro;
-- a resposta local só é aceita se passar relevância, gate público e piso mínimo de qualidade;
-- cloud continua fallback para baixa qualidade, falha local, Deep Think, pesquisa atual, técnico complexo ou contexto sensível;
-- Web habilitada significa permissão/capacidade, não obrigação de pesquisar cada mensagem.
-
-Busca automática é reservada a:
-- informação atual/volátil;
-- pedido explícito de fonte, pesquisa, verificação ou comparação;
-- how-to de alto risco/fortemente dependente de norma atual;
-- técnico/documentação quando Web está habilitada.
-
-Perguntas factuais estáticas não devem receber riqueza atual, ranking, cargo atual, números de mercado ou datas voláteis não pedidos. Perguntas `como ...` devem responder com procedimento, não com definição enciclopédica nem snippets homônimos.
-
-Para turnos simples, o pacote de prompt cloud deve ser compacto: remover Centum/PARALLAX/Human Adversarial/Digital Brain/Deep Loop quando não agregam valor. Uma IA forte com prompt excessivamente carregado pode responder pior do que um modelo pequeno com instrução limpa.
+- perguntas simples usam uma chamada de API enxuta, sem despejar RAG/skills irrelevantes;
+- perguntas complexas ativam no servidor somente agents/skills relacionados ao pedido;
+- informação atual ou lacuna real de conhecimento aciona pesquisa relevante e nova chamada de API;
+- Web habilitada é capacidade, e também pode ser acionada automaticamente quando a API não tem base suficiente;
+- snippets sem relação temática nunca substituem a resposta;
+- factual estático evita detalhes voláteis não pedidos; how-to deve entregar procedimento.
 
 
 ## Chat, canonical media and animal vision (2026-09-24)
@@ -632,3 +623,27 @@ Para `Naruto + Kurama vs Sasuke + Perfect Susanoo`:
 - explosão central não pode esconder os combatentes;
 - manter divisão visual laranja/dourado versus violeta/roxo e silhuetas legíveis;
 - Vale do Fim/estátuas entram somente quando pedidos.
+
+
+## API-first orchestration / local assist
+
+Este contrato substitui qualquer regra antiga de **local-first** no Chat:
+
+- **API/provider remoto produz a resposta pública final** em Predict Auto.
+- O servidor escolhe somente os agents e skills pertinentes à tarefa e injeta esses contratos na chamada da API; não despejar o catálogo inteiro no prompt.
+- Ollama, WebLLM, Neural Local, FreeLLMAPI e outros runtimes locais entram somente como **crítico/segunda opinião** quando ativos. Em modo auxiliar eles não executam skills, agents, RAG nem ferramentas e sua saída nunca é enviada diretamente ao usuário.
+- Se a primeira API não souber ou produzir uma candidata inválida, tente outra rota de API. Detectada lacuna de conhecimento, faça pesquisa relevante, filtre por aderência e envie a evidência novamente a uma API.
+- Nunca preencher uma lacuna com chunk aleatório, memória lateral ou base sem relação com o pedido.
+- Resposta interna determinística só pode ser fallback final restrito para um caso explicitamente conhecido e validado, nunca substituto geral das APIs.
+- Deep Think/Research ampliam a API principal; o motor local continua auxiliar.
+
+## Mobile-first shell
+
+Em telas até 760 px:
+- sidebar é off-canvas, fechada por padrão, com backdrop e fechamento após navegação;
+- usar `100dvh`/`100svh`, `env(safe-area-inset-*)` e viewport `device-width`;
+- Chat ocupa a largura útil inteira, composer fica acima da safe area e nenhum controle deve exigir zoom;
+- inputs/textarea usam pelo menos 16 px para evitar zoom automático no iOS;
+- ações principais têm alvo de toque próximo de 40–44 px;
+- Build, Imagine e Research empilham em uma coluna; listas secundárias viram faixas horizontais roláveis;
+- nenhum painel desktop de largura fixa pode causar overflow horizontal.

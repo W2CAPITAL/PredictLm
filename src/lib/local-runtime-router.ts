@@ -250,7 +250,7 @@ async function generateLowRam(
 export async function answerViaLocalRuntime(
   prompt:string,
   history:{role:string;content:string}[],
-  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string;signal?:AbortSignal}
+  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string;signal?:AbortSignal;advisoryOnly?:boolean}
 ):Promise<LocalRuntimeReply>{
   if(typeof window==='undefined')throw new Error('Local Runtime Router requires the browser/desktop client.');
   const statuses=await probeLocalRuntimes();
@@ -264,6 +264,35 @@ export async function answerViaLocalRuntime(
   const runtime=preferred||available[0];
 
   const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
+
+  if(options?.advisoryOnly){
+    const advisoryMessages=[
+      {
+        role:'system',
+        content:[
+          'Você é apenas um crítico local auxiliar do PredictLM.',
+          'Não responda ao usuário final e não execute agents, skills, RAG ou ferramentas.',
+          'Em até 5 linhas, indique fatos essenciais, possíveis erros ou lacunas que a API principal deve considerar.',
+          languageSystemInstruction(options?.language||'pt-BR')
+        ].join('\n')
+      },
+      ...sanitizeMessages(history).slice(-4),
+      {role:'user',content:prompt}
+    ];
+    let generated:{content:string;model:string};
+    if(runtime.kind==='ollama')generated=await generateOllama(runtime,advisoryMessages,false,options?.signal);
+    else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,advisoryMessages,false,options?.signal);
+    else generated=await generateOpenAI(runtime,advisoryMessages,false,options?.signal);
+    return {
+      content:generated.content.slice(0,1800),
+      runtime:runtime.id,
+      label:runtime.label,
+      model:generated.model,
+      tokenStats:{mode:'ultra',before:0,after:0,saved:0,savedPct:0,droppedMessages:0,dedupedBlocks:0} as TokenBudgetStats,
+      sources:[]
+    };
+  }
+
   const topK=runtime.kind==='lowram'?2:(deepMode?5:3);
   const githubEnabled=useGithubKnowledge(prompt);
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);

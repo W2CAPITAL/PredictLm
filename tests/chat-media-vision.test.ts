@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment} from '../src/lib/chat-intelligence';
+import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
@@ -67,4 +67,10 @@ test('canonical matchup recommends wide aspect when default square is unlocked',
   const {recommendedMatchupAspect}=await import('../src/lib/media/canonical-matchup');
   assert.equal(recommendedMatchupAspect('Naruto Kurama vs Sasuke Perfect Susanoo','1:1'),'16:9');
   assert.equal(recommendedMatchupAspect('Naruto Kurama vs Sasuke Perfect Susanoo','4:3'),'4:3');
+});
+
+test('knowledge gap detector triggers research retry instead of junk fallback',()=>{
+  assert.equal(signalsKnowledgeGap('Não tenho dados suficientes para responder isso.'),true);
+  assert.equal(signalsKnowledgeGap('Não sei essa informação.'),true);
+  assert.equal(signalsKnowledgeGap('Para plantar morango, use uma muda saudável em solo bem drenado e mantenha a coroa ao nível do solo.'),false);
 });
