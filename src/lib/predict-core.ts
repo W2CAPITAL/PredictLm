@@ -1,4 +1,6 @@
 import type { WorkspaceFile } from './types';
+import { inferDomainAppBlueprint } from './domain-engine-fabric';
+import { inferSaaSBlueprint } from './saas-product-fabric';
 
 export type CoreIntent =
   | 'calculator'
@@ -11,6 +13,7 @@ export type CoreIntent =
   | 'store'
   | 'portfolio'
   | 'landing'
+  | 'workspace'
   | 'generic';
 
 export type DeepThinkLevel = 'fast' | 'deep' | 'max';
@@ -42,7 +45,8 @@ const INTENTS: Array<{id:CoreIntent; words:RegExp; features:string[]}> = [
   {id:'crm',words:/crm|leads?|pipeline|clientes?|sales|vendas?|oportunidades?|financeiro/i,features:['dashboard executivo','sidebar','pipeline','clientes','financeiro','validação de dados','persistência','integrações','buscar','CRUD']},
   {id:'store',words:/loja|store|e-?commerce|produto|checkout|carrinho|shop/i,features:['catálogo','carrinho','quantidade','total']},
   {id:'portfolio',words:/portfolio|portfólio|curr[ií]culo|resume|cases?|projetos pessoais/i,features:['cases','filtros','contato']},
-  {id:'landing',words:/landing|site|p[aá]gina|page|saas|homepage|website/i,features:['CTA','seções','navegação']},
+  {id:'workspace',words:/\b(saas|erp|helpdesk|service desk|workspace|multi.?tenant|rbac|jur[ií]dic|datajud|djen|starlink|spacex|sat[eé]lite|quant|qubit|sgs|bacen|bcb|per[ií]cia|observab|netdata|mission control)\b/i,features:['sidebar','módulos de domínio','dados','integrações','estados reais','auditoria']},
+  {id:'landing',words:/landing|site|p[aá]gina|page|homepage|website/i,features:['CTA','seções','navegação']},
 ];
 
 function cleanPrompt(prompt:string){
@@ -52,7 +56,7 @@ function cleanPrompt(prompt:string){
 function titleFrom(prompt: string, intent:CoreIntent) {
   const p=cleanPrompt(prompt)
     .replace(/^(crie|criar|faça|faca|gere|gerar|quero|preciso de|construa|build|make)\s+/i,'')
-    .replace(/[^p{L}p{N}s-]/gu, ' ')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   if (!p) return intent==='generic'?'Predict App':intent[0].toUpperCase()+intent.slice(1);
@@ -467,7 +471,7 @@ function existingProjectIntent(files:WorkspaceFile[]):CoreIntent|''{
   const spec=files.find(f=>f.path==='predict.spec.json');
   try{
     const value=spec?String(JSON.parse(spec.content)?.spec?.intent||''):'';
-    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','generic'];
+    const allowed:CoreIntent[]=['calculator','todo','notes','timer','converter','dashboard','crm','store','portfolio','landing','workspace','generic'];
     return allowed.includes(value as CoreIntent)?value as CoreIntent:'';
   }catch{return ''}
 }
