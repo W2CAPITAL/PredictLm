@@ -502,8 +502,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
   }));
 
   const briefs=runs
-    .filter((x):x is PromiseFulfilledResult<{role:string;provider:Provider;text:string}>=>x.status==='fulfilled')
-    .map(x=>x.value)
+    .flatMap(x=>x.status==='fulfilled'?[x.value]:[])
     .filter(x=>x.text);
 
   if(!briefs.length)return Response.json({
