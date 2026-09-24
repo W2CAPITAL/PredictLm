@@ -264,3 +264,22 @@ Ollama can also be configured server-side for a local/self-hosted PredictLM inst
 ## Media prompt budgeting
 
 Imagine/Video does not forward the full conversation to image/video providers. The visual request is compiled into subject, intent, style, composition, constraints and continuity/review hints, then capped before provider submission.
+
+## Tutor Mode
+
+Explicit learning requests such as “me ensine”, “faça um quiz”, “plano de estudos” or “pratique comigo” activate a lightweight mastery-learning layer inspired by HKUDS/DeepTutor (Apache-2.0).
+
+PROBE → TEACH / PRACTICE → ASSESS → REVIEW
+
+Core behavior:
+
+- advancement is based on evidence of mastery, not a fixed stage counter;
+- memory/procedure objectives use recent weighted attempts with a 0.90 gate;
+- one correct attempt is capped at 0.50 mastery and two attempts at 0.80;
+- concept/design objectives use qualitative explanation/application checks;
+- quiz mode asks one question at a time and does not reveal the answer before the attempt;
+- due review takes priority over new material;
+- RAG/reading answers preserve source provenance and expose truncation/gaps;
+- Tutor Mode uses the same Token Budget Engine: Fast top-3 diverse sources, Deep up to top-5, LowRAM top-2.
+
+The implementation lives in src/lib/tutor-mode.ts and is injected into Browser Neural, Local Runtime Router and Cloud Cascade. The heavy Python backend from DeepTutor is not required.
