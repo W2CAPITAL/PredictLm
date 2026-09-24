@@ -192,7 +192,7 @@ async function generateOpenAI(
   if(!response.ok)throw new Error(String(data?.error?.message||data?.error||runtime.label+' '+response.status));
   const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
   if(!content)throw new Error(runtime.label+' retornou resposta vazia.');
-  return {content,model};
+  return {content,model:String(data?.model||response.headers.get('x-routed-model')||model)};
 }
 
 async function generateLowRam(
