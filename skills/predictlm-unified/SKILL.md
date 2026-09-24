@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.9.0"
+  version: "1.10.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -397,3 +397,19 @@ Build/reference:
 - FastChat reforça serving/eval multi-model;
 - Agent-Reach reforça tool reach/discovery;
 - adapters sociais ficam externos/opt-in e não viram dependência silenciosa.
+
+
+## Predict Auto / LexisPredict v1.10
+
+Public runtime:
+- one visible model identity, Predict Auto;
+- provider/model choice is internal;
+- browser local is opt-in/on-demand;
+- no automatic localhost scan;
+- no first-visit model download.
+
+New federated routes:
+- `lexispredict-saas`: CRM + jurídico + DataJud/DJEN + OCR + KPI + reports + documents + offline/sync;
+- `office-artifacts`: DOCX + PPTX + PDF + XLSX with artifact validation.
+
+Dossier is a second-brain evidence/artifact route and must return its normalized context to the main answer route rather than replacing the Chat response.
