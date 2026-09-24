@@ -445,6 +445,7 @@ export function ChatShell({onOpenLegal}:Props){
       const fallbackText=direct||(kind==='howto'?practicalHowToReply(prompt):undefined)||((kind==='factual'||kind==='current')?research?.content:undefined);
       const answerAnchor=kind==='howto'?(direct||practicalHowToReply(prompt)||''):'';
       const directScore=direct?answerQuality(prompt,direct):-99;
+      const anchorScore=answerAnchor?answerQuality(prompt,answerAnchor):-99;
       const advisory=(currentNeural.loaded||currentWebLLM.loaded)
         ? await localBrainAdvisory(prompt,messages,{language,researchContext})
         : null;
@@ -470,7 +471,7 @@ export function ChatShell({onOpenLegal}:Props){
               ...web.sources,
               ...(Array.isArray(cloudData.sources)?cloudData.sources:[])
             ].filter((x:any,i:number,a:any[])=>a.findIndex(y=>y.source===x.source)===i).slice(0,10);
-            const finalText=kind==='howto'&&direct&&directScore>=quality?direct:cloudText;
+            const finalText=kind==='howto'&&answerAnchor&&anchorScore>=quality?answerAnchor:cloudText;
             s.addMessage({
               role:'assistant',
               content:finalText,
@@ -561,9 +562,11 @@ export function ChatShell({onOpenLegal}:Props){
       const researchScore=research?answerQuality(prompt,research.content):-99;
 
       const neuralRelevant=(reply.engine==='neural-lite'||reply.engine==='neural-smart'||reply.engine==='webllm')&&responseTopicAlignment(prompt,reply.content).relevant;
-      if(direct&&!neuralRelevant&&directScore>=replyScore){
+      if(kind==='howto'&&answerAnchor&&!neuralRelevant&&anchorScore>=replyScore){
+        reply={...reply,content:answerAnchor,sources:web.sources.slice(0,6)};
+      }else if(direct&&!neuralRelevant&&directScore>=replyScore){
         reply={...reply,content:direct,sources:web.sources.slice(0,4)};
-      }else if(research&&!neuralRelevant&&researchScore>replyScore){
+      }else if(kind!=='howto'&&research&&!neuralRelevant&&researchScore>replyScore){
         reply={...reply,content:research.content,sources:research.sources};
       }else if((reply.engine==='knowledge'||reply.engine==='knowledge-fallback')&&research&&!direct){
         reply={...reply,content:research.content,sources:research.sources};
@@ -573,7 +576,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       const gate=publicAnswerGate(reply.content,language);
       if(!gate.ok){
-        const candidates=[direct,...((kind==='factual'||kind==='current')&&research?.content?[research.content]:[])].filter(Boolean) as string[];
+        const candidates=[answerAnchor,direct,...((kind==='factual'||kind==='current')&&research?.content?[research.content]:[])].filter(Boolean) as string[];
         const valid=candidates.map(x=>publicAnswerGate(x,language)).find(x=>x.ok);
         if(valid)reply={...reply,content:valid.content,sources:web.sources.slice(0,6)};
         else throw new Error('Não foi possível produzir uma resposta final válida para exibição.');
