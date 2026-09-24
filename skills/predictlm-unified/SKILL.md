@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.13.0"
+  version: "1.14.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
 ---
@@ -31,6 +31,8 @@ Rotas primárias:
 - build-review
 - research
 - human-adversarial
+- neurocore
+- life-simulation
 - research-source-matrix
 - deep-research
 - books-courses
@@ -101,6 +103,12 @@ Para confiança, conflito, persuasão, abuso, fraude, relacionamento, incentivos
 - não transformar material extremo, fóruns ou leaks em fonte factual.
 
 Pesquisa usa `skills/predictlm/RESEARCH-SOURCE-MATRIX.md`: fonte oficial/primária e acadêmica recebem prioridade por domínio; threat intelligence é lead; threat-reference exige corroboração.
+
+### NEUROCORE
+O host aplica uma camada brain-inspired antes da geração quando disponível: saliência → atenção → memória de trabalho → planejamento/inibição → ação. Estado persistente controla prioridade e incerteza, mas não cria identidade biológica, sentimentos reais ou objetivos independentes do usuário.
+
+### LIFE SIMULATION
+Pedidos para rodar uma simulação ativa usam o Life Simulation Studio. Pedidos para construir/exportar um simulador usam Build com intent `simulation`. A simulação mantém mundo 2D, personagem, necessidades, relações, memória episódica, eventos e persistência local.
 
 ### VERIFY
 Nunca dizer:
