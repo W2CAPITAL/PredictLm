@@ -208,7 +208,7 @@ async function generateOpenAI(
       model,
       messages,
       stream:false,
-      temperature:deep?.28:.45,
+      temperature:deep ? .28 : .45,
       max_tokens:deep?650:420
     })
   },30000,signal);
