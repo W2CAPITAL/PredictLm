@@ -146,15 +146,15 @@ export function answerQuality(prompt:string,content:string){
 export function directConversationReply(prompt:string,history:AssistantMessage[],neural:{loaded:boolean;tier:string|null}):string|null{
   const p=clean(prompt);
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p)){
-    return 'Olá. O que você quer fazer? Posso conversar normalmente, explicar algo, pesquisar quando precisar de informação atual ou abrir o **Build** para continuar um projeto.';
+    return 'Oi. Tô aqui — manda.';
   }
   if(/voce me ama|gosta de mim|sente algo por mim/.test(p)){
     return 'Eu não sinto amor do jeito que uma pessoa sente, mas posso conversar com carinho, prestar atenção no que você diz e estar presente na conversa. Se você perguntou de um jeito mais afetivo: eu posso entrar na brincadeira sem fingir que tenho sentimentos humanos.';
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
-  if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'De nada. Pode continuar.';
-  if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'Hahaha. Manda a próxima.';
+  if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
+  if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length){
     const prev=clean(lastAssistant(history));
     if(/neural local|modelo local|qwen/.test(prev)){
@@ -171,7 +171,12 @@ export function shouldSearchConversation(kind:ConversationKind,webEnabled:boolea
   if(kind==='casual'||kind==='context')return false;
   const p=clean(prompt);
   if(/^\s*[\d\s()+\-*/%^.,]+\s*$/.test(prompt))return false;
-  if(kind==='current'||kind==='factual'||kind==='howto')return true;
+  if(kind==='current'||kind==='factual')return true;
+  if(kind==='howto'){
+    if(webEnabled)return true;
+    if(/\b(pesquis|fonte|verifique|seguranca|solda|welding|eletric|bateria|veiculo|homologacao|medic|jurid|lei|finance|quimic|pressao|pressão|gas|gás)\b/.test(p))return true;
+    return false;
+  }
   if(/\b(pesquis|fonte|compare|verifique|atual|hoje|noticia|preco|cotacao|documentacao|manual|norma|lei|jurisprud|seguranca|homologacao)\b/.test(p))return true;
   return webEnabled;
 }
