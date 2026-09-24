@@ -84,15 +84,23 @@ function localOnly(url:string){
   }catch{return false}
 }
 
-async function timedFetch(url:string,init:RequestInit={},timeoutMs=1800){
+async function timedFetch(url:string,init:RequestInit={},timeoutMs=1800,parentSignal?:AbortSignal){
   if(!localOnly(url))throw new Error('Local Runtime Router only accepts loopback endpoints.');
   const controller=new AbortController();
+  const onAbort=()=>controller.abort();
+  if(parentSignal){
+    if(parentSignal.aborted)controller.abort();
+    else parentSignal.addEventListener('abort',onAbort,{once:true});
+  }
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   const started=Date.now();
   try{
     const response=await fetch(url,{...init,signal:controller.signal,cache:'no-store'});
     return {response,latencyMs:Date.now()-started};
-  }finally{clearTimeout(timer)}
+  }finally{
+    clearTimeout(timer);
+    parentSignal?.removeEventListener('abort',onAbort);
+  }
 }
 
 async function probeOllama(candidate:LocalRuntimeCandidate):Promise<LocalRuntimeStatus>{
@@ -164,7 +172,8 @@ function sanitizeMessages(messages:{role:string;content:string}[]){
 async function generateOllama(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const model=runtime.model||'';
   if(!model)throw new Error('Ollama respondeu, mas nenhum modelo carregado/instalado foi encontrado.');
@@ -175,9 +184,9 @@ async function generateOllama(
       model,
       messages,
       stream:false,
-      options:{temperature:deep?0.28:0.45,num_predict:deep?1000:700}
+      options:{temperature:deep?0.28:0.45,num_predict:deep?650:420}
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error||'Ollama '+response.status));
   const content=String(data?.message?.content||data?.response||'').trim();
@@ -188,7 +197,8 @@ async function generateOllama(
 async function generateOpenAI(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const model=runtime.id==='freellmapi'?'auto':(runtime.model||'local');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/chat/completions',{
@@ -199,9 +209,9 @@ async function generateOpenAI(
       messages,
       stream:false,
       temperature:deep?.28:.45,
-      max_tokens:deep?1000:700
+      max_tokens:deep?650:420
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error?.message||data?.error||runtime.label+' '+response.status));
   const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
@@ -212,7 +222,8 @@ async function generateOpenAI(
 async function generateLowRam(
   runtime:LocalRuntimeStatus,
   messages:{role:string;content:string}[],
-  deep:boolean
+  deep:boolean,
+  signal?:AbortSignal
 ){
   const flat=messages.map(x=>x.role.toUpperCase()+': '+x.content).join('\n\n');
   const {response}=await timedFetch(runtime.baseUrl+'/v1/generate',{
@@ -220,13 +231,13 @@ async function generateLowRam(
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       prompt:flat,
-      max_new_tokens:deep?700:420,
+      max_new_tokens:deep?520:320,
       temperature:deep?0.25:0.4,
       top_k:40,
       top_p:.9,
       repetition_penalty:1.05
     })
-  },90000);
+  },30000,signal);
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(String(data?.error||runtime.label+' '+response.status));
   const content=String(data?.text||data?.response||data?.generated_text||'').trim();
@@ -237,7 +248,7 @@ async function generateLowRam(
 export async function answerViaLocalRuntime(
   prompt:string,
   history:{role:string;content:string}[],
-  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string}
+  options?:{deep?:boolean;preferred?:LocalRuntimeId|'auto';language?:ConversationLanguage;researchContext?:string;signal?:AbortSignal}
 ):Promise<LocalRuntimeReply>{
   if(typeof window==='undefined')throw new Error('Local Runtime Router requires the browser/desktop client.');
   const statuses=await probeLocalRuntimes();
@@ -294,9 +305,9 @@ export async function answerViaLocalRuntime(
   ];
 
   let generated:{content:string;model:string};
-  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,!!options?.deep);
-  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep);
-  else generated=await generateOpenAI(runtime,messages,!!options?.deep);
+  if(runtime.kind==='ollama')generated=await generateOllama(runtime,messages,!!options?.deep,options?.signal);
+  else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep,options?.signal);
+  else generated=await generateOpenAI(runtime,messages,!!options?.deep,options?.signal);
 
   const gate=publicAnswerGate(generated.content,options?.language||'pt-BR');
   if(!gate.ok)throw new Error('Resposta local rejeitada pelo gate público: '+gate.reason);
