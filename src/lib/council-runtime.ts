@@ -2,6 +2,7 @@
 
 import type { WorkspaceFile } from './types';
 import { answerLocally, browserCapabilities, neuralStatus } from './browser-brain';
+import { centumDecisionContext, parallaxContext } from './decision-centum';
 
 export interface ExecutableCouncilLens{
   id:string;
@@ -14,6 +15,7 @@ export interface ExecutableCouncilResult{
   executed:boolean;
   lenses:ExecutableCouncilLens[];
   chair:string;
+  parallax:string;
   markdown:string;
   reason?:string;
 }
@@ -44,7 +46,7 @@ export async function runExecutableCouncilX10(task:string,files:WorkspaceFile[])
   const neural=neuralStatus();
   const caps=browserCapabilities();
   if(!neural.loaded&&!caps.native){
-    return {executed:false,lenses:[],chair:'',markdown:'',reason:'Nenhum modelo local/browser carregado para Council executável.'};
+    return {executed:false,lenses:[],chair:'',parallax:'',markdown:'',reason:'Nenhum modelo local/browser carregado para Council executável.'};
   }
 
   const project=digest(files);
@@ -59,7 +61,7 @@ export async function runExecutableCouncilX10(task:string,files:WorkspaceFile[])
       'Do not claim code was executed unless the evidence says so.',
       project
     ].join('\n\n');
-    const reply=await answerLocally(prompt,[],{preferNative:true,knowledge:false});
+    const reply=await answerLocally(prompt,[],{preferNative:true,knowledge:false,decisionAudit:false});
     lenses.push({id,name,focus,answer:reply.content.trim()});
   }
 
@@ -71,8 +73,28 @@ export async function runExecutableCouncilX10(task:string,files:WorkspaceFile[])
     'TASK: '+task,
     anonymous
   ].join('\n\n');
-  const chairReply=await answerLocally(chairPrompt,[],{preferNative:true,knowledge:false});
+  const chairReply=await answerLocally(chairPrompt,[],{preferNative:true,knowledge:false,decisionAudit:false});
   const chair=chairReply.content.trim();
+
+  const centum=centumDecisionContext(task);
+  const third=parallaxContext(task);
+  const parallaxPrompt=[
+    'You are PARALLAX, the third brain after FORGE/AEGIS and Council X10.',
+    'Do not merely vote for or against the Chair.',
+    'Find a defensible third frame: hidden variable, option C, staged/reversible experiment, second-order effect, different time horizon, or condition that reverses the conclusion.',
+    'TASK: '+task,
+    centum,
+    'COUNCIL X10 + CHAIR:',
+    anonymous,
+    '',
+    'CHAIR:',
+    chair,
+    third,
+    'Return concise sections: THIRD FRAME, OPTION C, HIDDEN VARIABLE, SECOND-ORDER EFFECT, REVERSIBLE TEST, REVERSAL CONDITION, FINAL IMPACT.',
+    'Do not expose chain-of-thought.'
+  ].filter(Boolean).join('\n\n');
+  const parallaxReply=await answerLocally(parallaxPrompt,[],{preferNative:true,knowledge:false,decisionAudit:false});
+  const parallax=parallaxReply.content.trim();
 
   const markdown=[
     '# Council X10 — executable review',
@@ -88,8 +110,12 @@ export async function runExecutableCouncilX10(task:string,files:WorkspaceFile[])
     '## Chair',
     '',
     chair,
+    '',
+    '## Third Brain — PARALLAX',
+    '',
+    parallax,
     ''
   ].join('\n');
 
-  return {executed:true,lenses,chair,markdown};
+  return {executed:true,lenses,chair,parallax,markdown};
 }
