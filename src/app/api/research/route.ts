@@ -1,4 +1,5 @@
 import { isSensitiveResearchQuery, sourceQuality, suppressRawResearchContent } from '@/lib/security/source-quality';
+import { inferResearchDepth, planResearchQueries, researchSourceBudget, type ResearchDepth } from '@/lib/research-policy';
 
 export const runtime='nodejs';
 
@@ -365,14 +366,28 @@ export async function POST(req:Request){
   try{
     const body=await req.json();
     const query=body?.query;
-    const limit=Math.max(3,Math.min(16,Number(body?.limit)||12));
     if(!query||typeof query!=='string') return Response.json({error:'query is required'},{status:400});
+
+    const requestedDepth=String(body?.depth||'').toLowerCase();
+    const depth:ResearchDepth=
+      requestedDepth==='fast'||requestedDepth==='balanced'||requestedDepth==='comprehensive'
+        ? requestedDepth
+        : inferResearchDepth(query);
+    const requestedLimit=Math.max(3,Math.min(16,Number(body?.limit)||12));
+    const limit=Math.max(requestedLimit,Math.min(16,researchSourceBudget(depth)));
+    const plan=Array.from(new Set([
+      ...researchQueryPlan(query),
+      ...planResearchQueries(query,depth)
+    ])).slice(0,depth==='comprehensive'?6:depth==='balanced'?4:2);
 
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
       try{
-        const plan=researchQueryPlan(query);
-        const searches=await Promise.all(plan.map(q=>firecrawlSearch(expandResearchQuery(q),Math.max(5,Math.ceil(limit/plan.length)+2),key)));
+        const searches=await Promise.all(plan.map(q=>firecrawlSearch(
+          expandResearchQuery(q),
+          Math.max(4,Math.ceil(limit/Math.max(1,plan.length))+2),
+          key
+        )));
         const merged={
           provider:'firecrawl',
           web:searches.flatMap(x=>x.web||[]),
@@ -382,25 +397,62 @@ export async function POST(req:Request){
         let apify:any[]=[];
         try{apify=await apifyItems(limit)}catch{}
         let academic:any[]=[];
-        try{academic=await academicSearch(query,Math.min(6,limit))}catch{}
+        try{academic=await academicSearch(query,Math.min(depth==='comprehensive'?8:6,limit))}catch{}
         const web=enrichAndRank(query,[...merged.web,...apify,...academic],limit);
         const news=enrichAndRank(query,merged.news,limit);
-        return Response.json({query,provider:'firecrawl',researchPlan:plan,web,news,images:merged.images,coverage:coverage([...web,...news])});
+        return Response.json({
+          query,
+          provider:'firecrawl',
+          researchDepth:depth,
+          researchPlan:plan,
+          web,
+          news,
+          images:merged.images.slice(0,Math.max(4,Math.min(12,limit))),
+          coverage:coverage([...web,...news])
+        });
       }catch(error:any){
         const fallback=await freeSearch(query,limit);
-        return Response.json({query,...fallback,warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])]});
+        return Response.json({
+          query,
+          ...fallback,
+          researchDepth:depth,
+          researchPlan:plan,
+          warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])]
+        });
       }
     }
 
-    const fallback=await freeSearch(query,limit);
+    // Free path: comprehensive research fans out only a few bounded queries,
+    // merges successful partial results, then re-ranks against the original intent.
+    const freePlans=plan.slice(0,depth==='comprehensive'?3:depth==='balanced'?2:1);
+    const settled=await Promise.allSettled(freePlans.map(q=>freeSearch(q,Math.max(6,Math.ceil(limit/freePlans.length)+2))));
+    const successful=settled.filter((x):x is PromiseFulfilledResult<any>=>x.status==='fulfilled').map(x=>x.value);
+    if(!successful.length){
+      const fallback=await freeSearch(query,limit);
+      return Response.json({query,...fallback,researchDepth:depth,researchPlan:plan});
+    }
+
+    let web=enrichAndRank(query,successful.flatMap(x=>x.web||[]),limit);
+    const news=enrichAndRank(query,successful.flatMap(x=>x.news||[]),limit);
+    const images=successful.flatMap(x=>x.images||[]).slice(0,Math.max(4,Math.min(12,limit)));
+    const warnings=successful.flatMap(x=>x.warnings||[]);
+
     try{
       const apify=await apifyItems(limit);
-      if(apify.length){
-        const web=enrichAndRank(query,[...(fallback.web||[]),...apify],limit);
-        return Response.json({query,...fallback,web,coverage:coverage(web)});
-      }
+      if(apify.length)web=enrichAndRank(query,[...web,...apify],limit);
     }catch{}
-    return Response.json({query,...fallback});
+
+    return Response.json({
+      query,
+      provider:successful[0]?.provider||'free-search',
+      researchDepth:depth,
+      researchPlan:plan,
+      web,
+      news,
+      images,
+      warnings:Array.from(new Set(warnings)),
+      coverage:coverage([...web,...news])
+    });
   }catch(err:any){
     return Response.json({error:err?.message||'Research failed'},{status:500});
   }
