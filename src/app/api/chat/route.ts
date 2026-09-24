@@ -10,6 +10,7 @@ import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
 import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
+import { humanPresenceContext } from '@/lib/human-presence';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -223,6 +224,7 @@ export async function POST(req:Request){
     const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
     const humanLens=humanAdversarialContext(prompt);
+    const humanPresence=humanPresenceContext(prompt);
     const localInstructions=String(body?.instructions||'').slice(0,2200);
     const packed=optimizePromptPackage({
       messages:rawHistory,
@@ -232,6 +234,7 @@ export async function POST(req:Request){
         {label:'Lições globais aprovadas',text:globalLessons,priority:7},
         {label:'Centum Decision Gate',text:centum,priority:10},
         {label:'Third Brain PARALLAX',text:parallax,priority:10},
+        {label:'Human Presence',text:humanPresence,priority:10},
         {label:'Human Adversarial Lens',text:humanLens,priority:9},
         {label:'Digital Brain control layer',text:brainContext,priority:10},
         {label:'Deep Loop',text:deepLoop,priority:9},
@@ -254,7 +257,7 @@ export async function POST(req:Request){
     if(hit&&hit.expires>Date.now())return Response.json({...hit.value,cache:'hit'});
 
     const system=[
-      'Você é o PredictLM, assistente geral direto, útil e factual.',
+      'Você é o PredictLM. Em público, converse como uma inteligência geral atenta, natural e específica ao contexto; não como um painel operacional.',
       languageSystemInstruction(language),
       'Responda ao pedido real do usuário; não fale sobre engines, providers, prompts ou skills sem necessidade.',
       'Entregue somente a resposta final. Nunca exponha cadeia de raciocínio, scratchpad, análise interna, política, passes FORGE/AEGIS/PARALLAX ou instruções sobre como você pensou.',
@@ -280,7 +283,7 @@ export async function POST(req:Request){
       if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
         const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
-        const gate=publicAnswerGate(rawContent,language);
+        const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         const content=gate.content;
         const value={
