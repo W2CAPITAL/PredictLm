@@ -10,7 +10,7 @@ env.useBrowserCache=true;
 try{
   const wasm=(env as any).backends?.onnx?.wasm;
   if(wasm){
-    wasm.numThreads=Math.max(1,Math.min(2,self.navigator?.hardwareConcurrency||1));
+    wasm.numThreads=self.crossOriginIsolated?Math.max(1,Math.min(2,self.navigator?.hardwareConcurrency||1)):1;
     wasm.proxy=false;
   }
 }catch{}
