@@ -338,7 +338,7 @@ export function GrokSimulationPanel(){
         <div className="sim-command">
           <Sparkles size={16}/>
           <input value={command} onChange={e=>setCommand(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')applyCommand()}} placeholder="Ex.: vá ao mercado, compre comida, volte para casa, coma e depois estude"/>
-          <button onClick={applyCommand} disabled={!command.trim()||agentBusy}>{agentBusy?<Loader2 className="sim-spin" size={14}/>:<Send size={14}/>}</button>
+          <button onClick={()=>{void applyCommand()}} disabled={!command.trim()||agentBusy}>{agentBusy?<Loader2 className="sim-spin" size={14}/>:<Send size={14}/>}</button>
         </div>
         {(agent.plan||agent.history.length>0)?<section className="sim-agent">
           <div className="sim-agent-head">
