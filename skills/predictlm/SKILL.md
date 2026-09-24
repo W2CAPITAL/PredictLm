@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.10.0"
+  version: "1.10.1"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -239,6 +239,8 @@ Regras:
 - nunca clonar repo durante request;
 - cada chunk preserva repo, commit/ref, path, licença e hash;
 - no máximo top-3/top-5 no prompt, nunca README inteiro;
+- índice limita cada repo a 260 chunks por sync para evitar domínio por volume;
+- retrieval é diversity-first: tenta um chunk por repositório antes de repetir a mesma fonte;
 - duplicatas são removidas por hash;
 - source reference-only não é copiada para o índice;
 - quarantine nunca entra no índice mesmo se o repo declarar MIT;
