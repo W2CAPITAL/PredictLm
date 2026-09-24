@@ -87,6 +87,49 @@
         "assetEndpoint": "/view",
         "requiresRealOutputFile": true
       }
+    },
+    {
+      "id": "firecrawl-only-visual-grounding",
+      "input": {
+        "firecrawlConfigured": true,
+        "googleConfigured": false,
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "referencesAttempted": [
+          "firecrawl",
+          "pinterest-via-firecrawl"
+        ],
+        "googleRequired": false,
+        "missingGoogleWarning": false
+      }
+    },
+    {
+      "id": "grok-imagine-parity-persists-expanded-prompt",
+      "input": {
+        "mode": "image",
+        "style": "Anime",
+        "prompt": "Naruto Kurama lutando com Sasuke Susanoo perfeito"
+      },
+      "expect": {
+        "realMediaRoute": true,
+        "promptExpanded": true,
+        "styleInPrompt": true,
+        "promptOriginalPersisted": true,
+        "seedPersisted": true,
+        "modelPersisted": true
+      }
+    },
+    {
+      "id": "technical-review-never-fakes-perfect-semantic-score",
+      "input": {
+        "reviewType": "pixel-heuristic"
+      },
+      "expect": {
+        "maxScore": 94,
+        "label": "Qualidade técnica",
+        "semanticApprovalImplied": false
+      }
     }
   ]
 }
