@@ -13,8 +13,8 @@ import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
-import { skills } from '@/lib/skills';
-import { planTask } from '@/lib/agent-runtime/routing';
+import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
+import { parseJsonObject } from '@/lib/server/provider-mesh';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -234,28 +234,19 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
 }
 
 function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
-  const plan=planTask(prompt);
   const q=normalize(prompt);
-  const ids=new Set<string>(['human-presence','prompt-os','provider-mesh']);
-  if(plan.route==='research'||hasResearch){ids.add('research-source-matrix');ids.add('deep-research');ids.add('web-reach')}
-  if(plan.route==='codebase-investigator'||/\b(codigo|code|app|site|sistema|bug|github|vercel|react|next|typescript|python)\b/.test(q)){
-    ids.add('agent-fabric');ids.add('build-review');ids.add('testing');
-  }
-  if(plan.route==='media'||/\b(imagem|image|video|vídeo|anime|render|foto)\b/.test(q)){
-    ids.add('grok-imagine-parity');ids.add('visual-reference-grounding');ids.add('media-director-deep');
-  }
-  if(plan.route==='legal-review'||plan.route==='scanner-processual'){
-    ids.add('lexis-twincore-x10');ids.add('datajud');
-  }
-  if(/\b(aprend|estud|ensine|quiz|curso|explica)\b/.test(q))ids.add('tutor-mode');
-  if(deep){ids.add('centum-parallax');ids.add('agent-fabric')}
-
-  const selected=skills.filter(s=>ids.has(s.id)).slice(0,7);
+  const surface=/(imagem|image|video|vídeo|anime|render|foto|storyboard)/i.test(q)
+    ? 'media'
+    : hasResearch||/(pesquis|research|fonte|source|web|documenta[cç][aã]o)/i.test(q)
+      ? 'research'
+      : 'chat';
+  const plan=planAgenticRun(prompt,surface,deep);
   return [
-    'API AGENT ROUTE: '+plan.route+' — '+plan.reason+'.',
-    'The remote provider is the primary answering engine. Execute only the relevant agent/skill contracts below; do not recite their names to the user.',
+    'API AGENTIC PLAN: '+plan.roles.join(' → ')+'.',
+    'The remote provider is the primary answering engine. Execute relevant contracts silently; do not recite agents, skills or routing to the user.',
+    'Use deferred skill discovery: load only task-relevant contracts instead of the entire catalog.',
     'Local runtimes, when present, are advisory evidence only and never outrank the remote provider.',
-    ...selected.map(s=>'SKILL '+s.id+': '+compactText(s.description,340))
+    skillContractContext(prompt,surface,surface==='chat'?7:9)
   ].join('\n');
 }
 
