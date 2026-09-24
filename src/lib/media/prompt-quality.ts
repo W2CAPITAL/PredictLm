@@ -15,6 +15,10 @@ const qualityCore=[
   'consistent lighting and shadows',
   'natural proportions',
   'fine material detail',
+  'high micro-contrast without oversharpening',
+  'clean high-frequency detail',
+  'no blur or smeared textures',
+  'no painterly mush unless explicitly requested',
   'intentional focal point',
   'no watermark',
   'no accidental text',
@@ -23,7 +27,10 @@ const qualityCore=[
   'no extra limbs or fingers',
   'no fused objects',
   'no broken geometry',
-  'no random artifacts'
+  'no random artifacts',
+  'no warped faces or asymmetrical eyes',
+  'no melted hands or impossible joints',
+  'no low-resolution texture patches'
 ].join(', ');
 
 export function buildQualityImagePrompt(input:string,options:QualityPromptOptions={}){
