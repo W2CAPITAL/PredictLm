@@ -14,6 +14,8 @@ import { deepLoopContext } from './deep-loop-policy';
 import { isDecisionRequest } from './decision-centum';
 import { webLLMGenerate, webLLMStatus } from './webllm-runtime';
 import { deterministicMathResult } from './deterministic-math-engine';
+import { languageSystemInstruction, type ConversationLanguage } from './language-policy';
+import { publicAnswerGate } from './public-answer-gate';
 
 export type NeuralTier='lite'|'smart';
 export type BrainEngine='native'|'webllm'|'neural-lite'|'neural-smart'|'conversation'|'research'|'knowledge'|'knowledge-fallback';
@@ -458,7 +460,7 @@ function knowledgeReply(prompt:string){
   return 'Não tenho evidência suficiente para responder isso com segurança nesta execução.';
 }
 
-export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;decisionAudit?:boolean;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
+export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;decisionAudit?:boolean;language?:ConversationLanguage;researchContext?:string;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
   const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
   const trained=trainingContext(prompt,5);
   const githubTopK=options?.deep?5:3;
@@ -473,6 +475,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
     messages,
     mode:options?.deep?'lite':'full',
     sections:[
+      {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'Contexto recuperado',text:context,priority:5},
       {label:'GitHub Knowledge Engine',text:github,priority:5},
       {label:'Memória adaptativa local',text:learned,priority:4},
@@ -487,6 +490,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const compiled=compileSystemPrompt({
     userText:prompt,
     extra:[
+      languageSystemInstruction(options?.language||'pt-BR'),
       recent?'Histórico recente compactado:\n'+recent:'',
       packed.context
     ].filter(Boolean)
@@ -504,8 +508,10 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       const content=await nativeGenerate(system,prompt);
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
-        captureAdaptiveExperience(prompt,cleaned,'native-model');
-        return {content:cleaned,engine:'native',sources,tokenStats:packed.stats};
+        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+        if(!gate.ok)throw new Error('public-answer-gate:'+gate.reason);
+        captureAdaptiveExperience(prompt,gate.content,'native-model');
+        return {content:gate.content,engine:'native',sources,tokenStats:packed.stats};
       }
     }catch(error:any){
       fallbackReason=String(error?.message||'Browser native model unavailable');
@@ -572,15 +578,18 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       }
       if(content.trim()){
         const cleaned=cleanUserFacingAnswer(content);
-        const topical=responseTopicAlignment(prompt,cleaned);
+        const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+        if(!gate.ok){fallbackReason='Resposta local rejeitada pelo gate público: '+gate.reason;lastNeuralError=fallbackReason;content='';}
+        const publicContent=gate.ok?gate.content:'';
+        const topical=responseTopicAlignment(prompt,publicContent);
         if(!topical.relevant){
           fallbackReason='A geração neural saiu do assunto principal e foi rejeitada pelo gate de relevância.';
           lastNeuralError=fallbackReason;
         }else{
           options?.onStage?.('verify');
           lastNeuralError='';
-          captureAdaptiveExperience(prompt,cleaned,'local-model');
-          return {content:cleaned,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources,tokenStats:packed.stats};
+          captureAdaptiveExperience(prompt,publicContent,'local-model');
+          return {content:publicContent,engine:loadedTier==='smart'?'neural-smart':'neural-lite',sources,tokenStats:packed.stats};
         }
       }else{
         fallbackReason='Local neural model returned an empty response';
@@ -610,13 +619,15 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
         temperature:options?.deep?0.28:0.38
       });
       const cleaned=cleanUserFacingAnswer(content);
-      const topical=responseTopicAlignment(prompt,cleaned);
-      if(topical.relevant){
+      const gate=publicAnswerGate(cleaned,options?.language||'pt-BR');
+      const publicContent=gate.ok?gate.content:'';
+      const topical=responseTopicAlignment(prompt,publicContent);
+      if(gate.ok&&topical.relevant){
         options?.onStage?.('verify');
-        captureAdaptiveExperience(prompt,cleaned,'webllm');
-        return {content:cleaned,engine:'webllm',sources,tokenStats:packed.stats};
+        captureAdaptiveExperience(prompt,publicContent,'webllm');
+        return {content:publicContent,engine:'webllm',sources,tokenStats:packed.stats};
       }
-      fallbackReason='WebLLM respondeu fora do assunto principal e foi rejeitado pelo gate de relevância.';
+      fallbackReason=gate.ok?'WebLLM respondeu fora do assunto principal e foi rejeitado pelo gate de relevância.':'WebLLM rejeitado pelo gate público: '+gate.reason;
     }catch(error:any){
       fallbackReason=String(error?.message||'WebLLM local generation failed');
     }
