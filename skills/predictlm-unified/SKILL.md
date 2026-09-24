@@ -277,3 +277,9 @@ Ordem:
 6. citar/provenance internamente e não despejar metadados ao usuário sem necessidade.
 
 Skill Forge não importa automaticamente todo SKILL.md encontrado. Somente allowlist permissiva entra no índice; reference-only vira lição manual de alto nível; quarantine é bloqueada.
+
+## Cascade opcional
+
+Cloud Cascade é uma rota explícita, desligada por padrão.
+Quando ativa: CACHE → GitHub top-k → provider configurado → VERIFY.
+Falha do server nunca apaga a rota local; o host continua com Neural/Knowledge.
