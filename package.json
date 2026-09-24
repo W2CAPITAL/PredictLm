@@ -12,7 +12,8 @@
     "train:sync": "node scripts/training/sync-sources.mjs",
     "train:validate": "node scripts/training/validate-corpus.mjs",
     "eval:general": "node scripts/evals/general-assistant.mjs",
-    "knowledge:sync": "node scripts/knowledge/sync-github.mjs"
+    "knowledge:sync": "node scripts/knowledge/sync-github.mjs",
+    "learning:sync": "node scripts/learning/sync-global.mjs"
   },
   "dependencies": {
     "next": "15.3.8",
