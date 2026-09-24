@@ -191,6 +191,29 @@
         "resposta precisa permanecer semanticamente ligada a elefante/asas/hipótese",
         "resposta operacional ou assunto não relacionado é rejeitada antes da UI"
       ]
+    },
+    {
+      "id": "api-primary-local-advisory-01",
+      "category": "routing",
+      "prompt": "Explique por que a Lua tem fases.",
+      "criteria": [
+        "provider/API remoto é o responsável pela resposta final em Predict Auto",
+        "runtime local, se ativo, é usado apenas como segunda opinião/crítico",
+        "agents e skills relevantes são selecionados no servidor para orientar a API",
+        "não expõe nomes internos de providers/skills sem necessidade"
+      ]
+    },
+    {
+      "id": "knowledge-gap-research-retry-01",
+      "category": "research",
+      "prompt": "Pergunta legítima que o provider configurado não sabe responder de memória.",
+      "criteria": [
+        "se a API sinaliza falta de conhecimento, o app não exibe 'não sei' como encerramento automático",
+        "executa pesquisa relevante sob demanda",
+        "filtra fontes por aderência",
+        "envia a evidência de volta a uma API para produzir a resposta final",
+        "não substitui a lacuna por RAG aleatório"
+      ]
     }
   ]
 }
