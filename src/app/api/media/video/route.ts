@@ -201,7 +201,7 @@ export async function GET(req:Request){
       providers:{
         auto:{enabled:!!recommended,label:recommended?'Auto · IA generativa':'Auto · configure um motor de vídeo real',requiresExternalCredits:recommended!=='comfyui'},
         gemini:{enabled:cfg.gemini.enabled,label:'Gemini Veo 3.1',requiresExternalCredits:true,supportsImageToVideo:true,supportsReferenceImages:true,durations:[4,6,8]},
-        comfyui:{enabled:cfg.comfyui.enabled,label:'ComfyUI · LTX/SANA',requiresExternalCredits:false,supportsImageToVideo:true,supportsReferenceImages:true,durations:[4,5,6,8]},
+        comfyui:{enabled:cfg.comfyui.enabled,label:'ComfyUI · LTX/Custom',requiresExternalCredits:false,supportsImageToVideo:true,supportsReferenceImages:true,durations:[4,5,6,8]},
         local:{enabled:true,label:'Motion local · fallback',generative:false},
         veo:{enabled:cfg.veo.enabled,label:'Veo 3',requiresExternalCredits:true,generative:true},
         sora:{enabled:cfg.sora.enabled,label:'Sora 2',requiresExternalCredits:true,generative:true},
