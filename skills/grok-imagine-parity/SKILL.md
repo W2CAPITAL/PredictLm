@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -262,3 +262,18 @@ Para `Naruto + Kurama vs Sasuke + Perfect Susanoo`:
 - explosão central não pode esconder os combatentes;
 - manter divisão visual laranja/dourado versus violeta/roxo e silhuetas legíveis;
 - Vale do Fim/estátuas entram somente quando pedidos.
+
+
+## Reference-first continuity from Arcads
+
+Patterns incorporated from the MIT-licensed `krusemediallc/arcads-claude-code` skill pack:
+
+- For a named/specific subject, **identity is established before style expansion**. Generate or retrieve one strong hero/reference first, then propagate that reference through later angles or video start frames.
+- Character consistency is stronger when the workflow separates **hero approval → additional angles → visual QA** instead of asking one prompt to invent every view independently.
+- Image-to-video should prefer an **approved still/start frame** when identity matters. Do not let the video model re-invent the character from text if a trusted still already exists.
+- Model routing is capability-based: use the image/video backend whose reference count, aspect ratio, typography/photoreal strengths and temporal behavior match the request instead of forcing every task through one provider.
+- Prompt composition should stay coherent: subject → action → camera → style/lighting → constraints. Avoid keyword soup.
+- Semantic QA checks concrete visible requirements: correct subject/category, count, defining attributes, reference adherence, text/limbs when relevant, and requested composition.
+- Repair is bounded. Regenerate only from concrete visible defects and preserve the accepted identity/reference; do not restart creatively from scratch.
+- External API pricing, model names, limits and availability from the Arcads repository are **volatile examples**, not permanent PredictLM facts. Verify before execution.
+- Bundled influencer/product photos are assets, not training material; PredictLM does not ingest them into its knowledge index.

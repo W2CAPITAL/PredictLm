@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.36.0"
+  version: "1.37.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -922,3 +922,17 @@ Conversas autocontidas e perguntas imaginativas não devem atravessar o pipeline
 - OpenAI (`OPENAI_API_KEY`) e xAI (`XAI_API_KEY`) também são providers nativos;
 - uma API lenta ou quebrada não pode consumir sozinha o timeout inteiro da conversa;
 - o gate de qualidade valida aderência depois da geração, mas não deve impor regras de how-to em hipóteses criativas.
+
+
+## Arcads media continuity reference
+
+The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approved media knowledge source.
+
+- establish a hero/reference before generating angle sets for identity-sensitive characters;
+- preserve accepted reference identity through subsequent views instead of re-inventing the subject independently;
+- prefer approved still/start-frame handoff for identity-sensitive image-to-video workflows when supported;
+- route by real model capabilities such as reference inputs, aspect ratios, typography/photoreal strengths and temporal behavior;
+- keep prompts coherent (subject → action → camera → style/light → constraints) instead of keyword soup;
+- run visual QA after generation and make only bounded repairs from concrete visible defects;
+- do not treat bundled reference photos/products as training material;
+- Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
