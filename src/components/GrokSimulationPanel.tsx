@@ -80,6 +80,19 @@ export function GrokSimulationPanel(){
   },[agent,hydrated]);
 
   useEffect(()=>{
+    if(!hydrated)return;
+    let pending='';
+    try{
+      pending=sessionStorage.getItem('predictlm:simulation-command')||'';
+      if(pending)sessionStorage.removeItem('predictlm:simulation-command');
+    }catch{}
+    if(!pending)return;
+    setCommand(pending);
+    const timer=window.setTimeout(()=>{void applyCommand(pending)},120);
+    return()=>window.clearTimeout(timer);
+  },[hydrated]);
+
+  useEffect(()=>{
     if(!state.running||agent.plan?.status==='running')return;
     const timer=window.setInterval(()=>{
       setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
@@ -191,8 +204,8 @@ export function GrokSimulationPanel(){
     setState(next);setAgent(createLifeAgentState());setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
   }
 
-  async function applyCommand(){
-    const value=command.trim();
+  async function applyCommand(override?:string){
+    const value=(override??command).trim();
     if(!value||agentBusy)return;
     setAgentBusy(true);
     setAgentError('');
