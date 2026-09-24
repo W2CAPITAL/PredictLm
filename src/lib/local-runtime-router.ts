@@ -7,6 +7,7 @@ import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
 import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
 import { deepLoopContext } from './deep-loop-policy';
+import { centumDecisionContext, parallaxContext } from './decision-centum';
 
 export type LocalRuntimeKind='ollama'|'openai'|'lowram';
 export type LocalRuntimeId='ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
@@ -217,6 +218,8 @@ export async function answerViaLocalRuntime(
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
   const tutor=tutorSystemContext(prompt);
   const deepLoop=options?.deep?deepLoopContext(prompt):'';
+  const centum=centumDecisionContext(prompt);
+  const parallax=parallaxContext(prompt);
   const packed=optimizePromptPackage({
     messages:sanitizeMessages(history),
     mode:runtime.kind==='lowram'?'ultra':(options?.deep?'lite':'full'),
@@ -226,6 +229,8 @@ export async function answerViaLocalRuntime(
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Centum Decision Gate',text:centum,priority:10},
+      {label:'Third Brain PARALLAX',text:parallax,priority:10},
       {label:'Deep Loop',text:deepLoop,priority:9},
       {label:'Tutor Mode',text:tutor,priority:6},
       {label:'Padrões aprendidos',text:trained,priority:3}
