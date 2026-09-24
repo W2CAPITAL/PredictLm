@@ -598,3 +598,7 @@ Vídeo:
 - Auto tenta provider temporal real antes do fallback local;
 - local motion/storyboard não pode ser descrito como síntese neural de vídeo;
 - Higgsfield CLI é bridge externa autenticada, não endpoint inventado de Vercel.
+
+
+### Gemini Veo 3.1
+Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapter usa operação assíncrona, polling e proxy de download para não expor a chave no navegador. Duração é normalizada para 4/6/8s e o provider fica antes do motion fallback local.
