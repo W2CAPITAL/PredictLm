@@ -17,15 +17,18 @@ const THREAT_REPOS=[
   'github.com/techjarves/uncensored-local-ai-multiplatform'
 ];
 
-const OFFICIAL_SUFFIXES=['.gov.br','.jus.br'];
+const OFFICIAL_SUFFIXES=['.gov.br','.jus.br','.gov'];
 const OFFICIAL_HOSTS=new Set([
   'gov.br','bcb.gov.br','cvm.gov.br','cnj.jus.br','stj.jus.br','stf.jus.br',
   'cert.br','nic.br','receita.economia.gov.br','planalto.gov.br',
-  'nhtsa.gov','unece.org','eur-lex.europa.eu'
+  'nhtsa.gov','unece.org','eur-lex.europa.eu','nasa.gov','earthdata.nasa.gov','gibs.earthdata.nasa.gov','api.bcb.gov.br'
 ]);
 const ACADEMIC_HOSTS=new Set([
   'arxiv.org','doi.org','dl.acm.org','ieeexplore.ieee.org','springer.com','nature.com','sciencedirect.com',
   'sae.org','iso.org'
+]);
+const PRIMARY_HOSTS=new Set([
+  'vercel.com','docs.vercel.com','api.vercel.com','github.com','api.spacexdata.com','market.ft.tech','ftai.chat'
 ]);
 const ESTABLISHED_HOSTS=new Set([
   'wikipedia.org','pt.wikipedia.org','reuters.com','apnews.com','bbc.com','bbc.co.uk'
@@ -54,9 +57,9 @@ export function sourceQuality(url:string,source?:string):SourceQuality{
     return {score:90,tier:'academic',reasons};
   }
 
-  if(host==='github.com'){
-    reasons.push('fonte primária para o próprio software/repositório, não para fatos externos');
-    return {score:70,tier:'primary',reasons};
+  if(PRIMARY_HOSTS.has(host)){
+    reasons.push(host==='github.com'?'fonte primária para o próprio software/repositório, não para fatos externos':'fonte primária do serviço/produto');
+    return {score:78,tier:'primary',reasons};
   }
 
   if(ESTABLISHED_HOSTS.has(host)){
