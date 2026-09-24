@@ -22,6 +22,9 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
+const PROVIDER_ATTEMPT_LIMIT=3;
+const PROVIDER_TIMEOUT_MS=12000;
+const REQUEST_BUDGET_MS=32000;
 
 function providers():Provider[]{
   const out:Provider[]=[];
@@ -111,9 +114,9 @@ function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather)\b/i.test(prompt);
 }
 
-async function callProvider(provider:Provider,messages:Msg[],deep:boolean){
+async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),60000);
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
@@ -264,9 +267,13 @@ export async function POST(req:Request){
     ];
 
     const errors:string[]=[];
-    for(const provider of configured){
+    const startedAt=Date.now();
+    const candidates=configured.slice(0,PROVIDER_ATTEMPT_LIMIT);
+    for(const provider of candidates){
+      const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+      if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
-        const rawContent=await callProvider(provider,messages,deep);
+        const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
         const gate=publicAnswerGate(rawContent,language);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         const content=gate.content;
@@ -293,7 +300,7 @@ export async function POST(req:Request){
         errors.push(String(error?.message||error).slice(0,300));
       }
     }
-    return Response.json({error:'Não foi possível obter uma resposta final válida neste runtime.',code:'NO_VALID_ANSWER'},{status:502,headers:{'Cache-Control':'no-store'}});
+    return Response.json({error:'Não foi possível obter uma resposta final válida dentro do orçamento de execução.',code:'NO_VALID_ANSWER',attempted:candidates.length,budgetMs:REQUEST_BUDGET_MS},{status:502,headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:500});
   }
