@@ -145,7 +145,7 @@ export function GrokImaginePanel(){
     setReview(null);
     setImageProviderWarning('');
     if(mode==='image'&&!styleManuallyChosen){
-      const nextStyle=recommendedImageStyle(value,style);
+      const nextStyle=recommendedImageStyle(value,'Cinematic');
       if(nextStyle!==style)setStyle(nextStyle);
     }
   }
@@ -309,6 +309,7 @@ export function GrokImaginePanel(){
         promptMode,
         negativePrompt,
         style,
+        styleLocked:styleManuallyChosen,
         attempt:renderAttempt,
         width:ratio.w,
         height:ratio.h,
