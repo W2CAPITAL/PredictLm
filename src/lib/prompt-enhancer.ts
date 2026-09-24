@@ -17,6 +17,7 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
     'First inspect the current state and write a short implementation spec before changing files.',
     'Separate product requirements, frontend, backend/data needs, environment/configuration, tests, security and packaging.',
     'Only add a backend when the product actually needs persistence, authentication, shared data, background work or server-only secrets.',
+    'For SaaS/business apps, identify actors, tenant/workspace boundary, roles/permissions, domain entities and critical workflows before implementation.',
     'Keep every existing working feature unless the request explicitly removes it.',
     'Validate the result and produce a runnable export, not a visual mockup.'
   ];
@@ -29,6 +30,7 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
     fullstack:[
       'Design the frontend information architecture and interaction model.',
       'Design the server/API boundary, persistence model and validation when justified.',
+      'If this is SaaS/multi-user, make tenant isolation, invitations, RBAC, audit trail and ownership explicit.',
       'Create a database/schema plan and seed data when persistence is required.',
       'Provide .env.example, setup commands and a production-ready packaging path.'
     ],
@@ -69,6 +71,7 @@ export function enhanceBuildPrompt(input:string,preset:PromptPreset,currentFiles
   const requirements=[...common,...extra[preset]];
   const acceptance=[
     'The requested primary workflow works end-to-end.',
+    'For multi-user SaaS, cross-tenant access is prevented and role boundaries are represented in the architecture/code.',
     'Visible controls are functional; no fake integrations or placeholder success states.',
     'Invalid/loading/empty/error states are handled where relevant.',
     'Secrets stay server-side and .env.example contains names/placeholders only.',
