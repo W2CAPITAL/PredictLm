@@ -562,6 +562,20 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
   },{headers:{'Cache-Control':'no-store'}});
 }
 
+type ChatDraftReview={
+  approved?:boolean;
+  confidence?:number;
+  issues?:Array<{severity?:string;issue?:string;fix?:string}>;
+  missing?:string[];
+};
+
+function draftNeedsRepair(review:ChatDraftReview|null){
+  if(!review)return false;
+  if(review.approved===false)return true;
+  return (review.issues||[]).some(x=>/^(critical|blocker|high)$/i.test(String(x.severity||'')));
+}
+
+
 export async function GET(){
   const configured=providers();
   return Response.json({
