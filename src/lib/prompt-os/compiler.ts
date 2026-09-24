@@ -4,6 +4,7 @@ import { atomsFor } from './prompt-bank';
 import { responseContract } from './response-contract';
 import { retrievePromptPatterns } from './retriever';
 import { centumDecisionContext, parallaxContext } from '@/lib/decision-centum';
+import { domainEngineContext } from '@/lib/domain-engine-fabric';
 
 export function compileSystemPrompt(opts:{userText:string;hasAttachment?:boolean;extra?:string[]}){
   const intent=classifyPromptIntent(opts.userText,!!opts.hasAttachment);
@@ -15,6 +16,7 @@ export function compileSystemPrompt(opts:{userText:string;hasAttachment?:boolean
     system:[
       'Você é PredictLM, um assistente geral, técnico, jurídico e de criação.',
       composeProjectContext(),
+      domainEngineContext(opts.userText),
       'CONTRATO DE RESPOSTA',
       responseContract(intent),
       centum,
