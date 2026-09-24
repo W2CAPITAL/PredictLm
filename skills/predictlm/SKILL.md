@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.10.3"
+  version: "1.11.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
 ---
@@ -19,6 +19,7 @@ RECALL → ROUTE → PLAN → FORGE → AEGIS → COUNCIL X10 quando necessário
 - chat
 - build
 - research
+- tutor
 - processos
 - legal/revisional
 - imagine/media
@@ -315,3 +316,22 @@ sujeito → intenção → estilo → composição → restrições → continui
 
 Prompts de imagem e storyboard têm budget próprio; repetições e previousPrompt são compactados antes de chamar o provider.
 O padrão vem de prompt compiler/retrieval/deterministic checks do `image2-ads-studio`, sem copiar galerias inteiras para contexto.
+
+## Tutor Mode — mastery learning
+
+Pedidos explícitos de estudo (`me ensine`, `quiz`, `plano de estudos`, `pratique comigo`, etc.) ativam o Tutor Mode. Pergunta factual comum continua no Chat normal.
+
+Loop:
+PROBE → TEACH/PRACTICE → ASSESS → REVIEW.
+
+Regras:
+- avanço por evidência de domínio, não por contador de fases;
+- memória/procedimento usam mastery recente ponderada, gate 0.90;
+- 1 acerto tem teto 0.50; 2 acertos, teto 0.80;
+- conceito/design exigem explicação Feynman, aplicação e trade-offs;
+- quiz faz uma questão por vez e não revela resposta antes da tentativa;
+- revisão vencida tem prioridade sobre conteúdo novo;
+- fontes recuperadas preservam provenance; lacuna/truncation fica explícita;
+- estado pedagógico local não é fine-tune.
+
+A implementação leve está em `src/lib/tutor-mode.ts`. O padrão foi adaptado de `HKUDS/DeepTutor` (Apache-2.0), sem importar seu backend Python pesado.
