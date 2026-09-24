@@ -36,13 +36,14 @@ function providerImageSize(width:number,height:number,nano:boolean){
   return '1024x1024';
 }
 
-function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string){
+function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean){
   const q=new URLSearchParams({
     prompt,
     width:String(width),
     height:String(height),
     seed:String(seed),
-    model:model||'flux'
+    model:model||'flux',
+    enhance:enhance?'true':'false'
   });
   return '/api/media/render?'+q.toString();
 }
@@ -225,7 +226,7 @@ export async function POST(req:Request){
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
     return Response.json({
-      url:localRenderUrl(groundedPrompt,width,height,seed,requestedModel),
+      url:localRenderUrl(groundedPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal'),
       provider:'pollinations-proxy',
       model:requestedModel,
       width,
