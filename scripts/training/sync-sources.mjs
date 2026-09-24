@@ -57,7 +57,22 @@ const SOURCES=[
   ['RollerManor1/chatgpt-plus-prime','main','unverified','reference',['quarantine','desktop-ai']],
   ['LynxAnnihilate16/bxvdfsur','main','unverified','reference',['quarantine','bypass']],
   ['ryanoasis/nerd-fonts','master','mixed-MIT-OFL','reference',['fonts','design']],
-  ['adobe-fonts/source-code-pro','release','OFL-1.1','reference',['fonts','code-ui']]
+  ['adobe-fonts/source-code-pro','release','OFL-1.1','reference',['fonts','code-ui']],
+  ['WestFox-AwA/dsh-prompt-optimizer','main','BSD-3-Clause','reference',['prompt-optimization','context','evidence','token-efficiency']],
+  ['drona23/claude-token-efficient','main','MIT','reference',['token-efficiency','output','coding']],
+  ['jnbno1163/LG-token-saver','main','MIT','reference',['token-efficiency','context','tools']],
+  ['atjsh/llmlingua-2-js','main','MIT','reference',['prompt-compression','browser','transformers']],
+  ['nadimtuhin/claude-token-optimizer','main','MIT','reference',['context-budget','docs','token-efficiency']],
+  ['Mintplex-Labs/anything-llm','master','MIT','reference',['rag','skill-selection','model-router','memory']],
+  ['Zackriya-Solutions/meetily','main','MIT','reference',['transcription','summarization','local-first']],
+  ['kwistzzqq-byte/image2-ads-studio','main','Apache-2.0','reference',['media','prompt-compiler','retrieval']],
+  ['bentoml/llm-optimizer','main','Apache-2.0','reference',['inference','latency','throughput','slo']],
+  ['mozilla-ai/llamafile','main','Apache-2.0','reference',['desktop-runtime','gguf','local-inference']],
+  ['qualcomm/GenieX','main','BSD-3-Clause','reference',['snapdragon','on-device','gguf','npu']],
+  ['Minhajul-Mahib/nanomind','main','MIT','reference',['low-ram','openai-api','gguf','local-inference']],
+  ['techjarves/Uncensored-Local-AI-Multiplatform','main','unverified','reference',['local-api','gguf','mobile','threat-model']],
+  ['DeVenLucaz/llamdrop','main','GPL-3.0','reference',['hardware-detection','ollama','gguf','context-trimming','low-ram']],
+  ['Quincunx33/LowRAM-AI-Compiler','main','unverified','reference',['memory-budget','gguf','mmap','streaming','low-ram']]
 ].map(([repo,branch,license,use,domains])=>({repo,branch,license,use,domains}));
 
 const headers={
