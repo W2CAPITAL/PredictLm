@@ -36,6 +36,7 @@ let loadedTier:NeuralTier|null=null;
 let loadedBackend:'webgpu'|'wasm'|null=null;
 let loadedModelId:string|null=null;
 let loadingTier:NeuralTier|null=null;
+let loadingPromise:Promise<void>|null=null;
 let lastNeuralError='';
 let seq=0;
 const pending=new Map<number,{resolve:(v:string)=>void;reject:(e:Error)=>void}>();
@@ -109,6 +110,36 @@ const NEURAL_MODELS:Record<NeuralTier,string>={
 
 const PREF_KEY='predictlm-neural-preference-v1';
 const PROFILE_KEY='predictlm-neural-profile-v2';
+const AUTO_WARM_KEY='predictlm-neural-autowarm-v1';
+
+type NeuralAutoWarmState={
+  failures:number;
+  lastFailureAt:number;
+  lastSuccessAt:number;
+};
+
+function readAutoWarmState():NeuralAutoWarmState{
+  if(typeof window==='undefined')return {failures:0,lastFailureAt:0,lastSuccessAt:0};
+  try{
+    const parsed=JSON.parse(localStorage.getItem(AUTO_WARM_KEY)||'{}');
+    return {
+      failures:Math.max(0,Number(parsed?.failures)||0),
+      lastFailureAt:Math.max(0,Number(parsed?.lastFailureAt)||0),
+      lastSuccessAt:Math.max(0,Number(parsed?.lastSuccessAt)||0)
+    };
+  }catch{return {failures:0,lastFailureAt:0,lastSuccessAt:0}}
+}
+
+export function recordNeuralAutoWarmResult(ok:boolean){
+  if(typeof window==='undefined')return;
+  try{
+    const state=readAutoWarmState();
+    const next:NeuralAutoWarmState=ok
+      ? {failures:0,lastFailureAt:state.lastFailureAt,lastSuccessAt:Date.now()}
+      : {failures:Math.min(5,state.failures+1),lastFailureAt:Date.now(),lastSuccessAt:state.lastSuccessAt};
+    localStorage.setItem(AUTO_WARM_KEY,JSON.stringify(next));
+  }catch{}
+}
 
 type NeuralProfile={
   requested:NeuralTier;
@@ -169,10 +200,11 @@ export async function restorePreferredNeuralModel(onProgress?:(p:{progress:numbe
 export async function loadNeuralModel(
   tier:NeuralTier,
   onProgress?:(p:{progress:number|null;status:string})=>void,
-  options?:{persistPreference?:boolean}
+  options?:{persistPreference?:boolean;timeoutMs?:number}
 ){
   if(loadedTier===tier)return;
-  if(loadingTier)throw new Error('Já existe um carregamento neural em andamento ('+loadingTier+').');
+  if(loadingTier===tier&&loadingPromise){await loadingPromise;return;}
+  if(loadingTier&&loadingPromise){try{await loadingPromise}catch{};if(loadedTier===tier)return;}
   loadingTier=tier;
   const w=ensureWorker();
   const caps=browserCapabilities();
@@ -198,16 +230,21 @@ export async function loadNeuralModel(
       : 'WebGPU indisponível; usando CPU/WASM automaticamente'
   });
 
-  return new Promise<void>((resolve,reject)=>{
+  const task=new Promise<void>((resolve,reject)=>{
     let settled=false;
     const timeout=window.setTimeout(()=>{
       if(settled)return;
       settled=true;
       w.removeEventListener('message',onMessage);
-      lastNeuralError='O carregamento local excedeu 8 minutos.';
+      lastNeuralError='O carregamento local excedeu o limite de segurança.';
+      try{w.terminate()}catch{}
+      if(worker===w)worker=null;
+      loadedTier=null;
+      loadedBackend=null;
+      loadedModelId=null;
       loadingTier=null;
       reject(new Error(lastNeuralError));
-    },8*60*1000);
+    },Math.max(30000,options?.timeoutMs||8*60*1000));
 
     const finish=(fn:()=>void)=>{
       if(settled)return;
@@ -268,12 +305,24 @@ export async function loadNeuralModel(
     const allowSmartWasm=tier==='smart'&&!realWebgpu&&caps.memory>=8&&caps.cores>=8;
     w.postMessage({type:'load',tier,webgpu:tier==='smart'&&realWebgpu,allowSmartWasm,models:NEURAL_MODELS});
   });
+  loadingPromise=task;
+  try{
+    await task;
+  }finally{
+    if(loadingPromise===task)loadingPromise=null;
+    if(loadingTier===tier)loadingTier=null;
+  }
 }
 
 export function neuralAutoWarmPolicy(){
   if(typeof navigator==='undefined')return {allowed:false,reason:'server'};
   const caps=browserCapabilities();
   const connection=(navigator as any).connection;
+  const state=readAutoWarmState();
+  const sixHours=6*60*60*1000;
+  if(state.failures>=2&&Date.now()-state.lastFailureAt<sixHours){
+    return {allowed:false,reason:'circuit-breaker',tier:'lite' as NeuralTier};
+  }
   if(connection?.saveData)return {allowed:false,reason:'save-data',tier:'lite' as NeuralTier};
   if(caps.memory>0&&caps.memory<2)return {allowed:false,reason:'very-low-memory',tier:'lite' as NeuralTier};
   if(caps.cores>0&&caps.cores<2)return {allowed:false,reason:'single-core',tier:'lite' as NeuralTier};
@@ -294,6 +343,7 @@ export function unloadNeuralModel(options?:{keepPreference?:boolean}){
   loadedBackend=null;
   loadedModelId=null;
   loadingTier=null;
+  loadingPromise=null;
   lastNeuralError='';
   if(!options?.keepPreference)saveNeuralPreference(null);
   for(const [,job] of pending)job.reject(new Error('Modelo local descarregado.'));
