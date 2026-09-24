@@ -2661,6 +2661,73 @@
         "quarantine"
       ],
       "reason": "Not used. DLC unlocking/circumvention functionality is outside the PredictLM simulation architecture."
+    },
+    {
+      "repo": "Ankit-exe/Anime-Character-Generator",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "anime",
+        "image-generation",
+        "gan",
+        "visual-identity"
+      ],
+      "reason": "No repository license verified. Use only high-level anime-generation and dataset/identity lessons; do not copy code or assets into runtime."
+    },
+    {
+      "repo": "seregazhuk/php-pinterest-bot",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/search.md"
+      ],
+      "domains": [
+        "pinterest",
+        "visual-reference",
+        "search",
+        "pagination"
+      ],
+      "reason": "MIT repository, but it automates an unofficial login/scraping surface. Use search/pagination concepts only; do not inherit credential automation or bypass platform controls."
+    },
+    {
+      "repo": "DynamiteBob17/Pinterest-Clone-Client",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "pinterest",
+        "image-library",
+        "reference-ui"
+      ],
+      "reason": "No repository license verified. Use only generic visual-library/UI concepts."
+    },
+    {
+      "repo": "SocQAPI/pinterest-pins-api",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/production-notes.md",
+        "node/"
+      ],
+      "domains": [
+        "pinterest",
+        "public-pins",
+        "visual-reference",
+        "api",
+        "pagination"
+      ],
+      "reason": "Repository is MIT but hosted API rights, quotas and platform terms are separate. Use server-side key, retry, pagination and provenance patterns only unless the service is explicitly configured."
     }
   ]
 }
