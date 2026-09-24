@@ -35,12 +35,34 @@ function localRenderUrl(prompt:string,width:number,height:number,seed:number,mod
   return '/api/media/render?'+q.toString();
 }
 
+function allowedReferenceHost(host:string){
+  const h=host.toLowerCase();
+  return h==='encrypted-tbn0.gstatic.com'||h.endsWith('.gstatic.com')||h.endsWith('.googleusercontent.com')||h==='i.pinimg.com'||h.endsWith('.pinimg.com');
+}
+
+async function fetchReferenceInline(value:string){
+  try{
+    const url=new URL(value);
+    if(url.protocol!=='https:'||!allowedReferenceHost(url.hostname))return null;
+    const response=await fetch(url,{signal:AbortSignal.timeout(6500),cache:'no-store'});
+    if(!response.ok)return null;
+    const mime=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();
+    if(!/^image\/(?:png|jpe?g|webp)$/.test(mime))return null;
+    const declared=Number(response.headers.get('content-length')||0);
+    if(declared>2_000_000)return null;
+    const bytes=Buffer.from(await response.arrayBuffer());
+    if(!bytes.length||bytes.length>2_000_000)return null;
+    return {inlineData:{mimeType:mime,data:bytes.toString('base64')}};
+  }catch{return null}
+}
+
 export async function POST(req:Request){
   try{
     const body=await req.json().catch(()=>({}));
     const rawPrompt=String(body?.prompt||'').trim();
     if(!rawPrompt)return Response.json({error:'Descreva a imagem.'},{status:400});
-    const prompt=compactText(rawPrompt,600);
+    const prompt=compactText(rawPrompt,1800);
+    const referenceImages=(Array.isArray(body?.referenceImages)?body.referenceImages:[]).map(String).slice(0,4);
 
     const width=clamp(Number(body?.width)||1024,256,2048);
     const height=clamp(Number(body?.height)||1024,256,2048);
@@ -68,13 +90,16 @@ export async function POST(req:Request){
         const url=provider.gemini
           ? provider.base+'/models/'+encodeURIComponent(provider.model)+':generateContent'
           : provider.base.replace(/\/$/,'')+(provider.base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
+        const referenceParts=provider.gemini
+          ? (await Promise.all(referenceImages.map(fetchReferenceInline))).filter(Boolean)
+          : [];
         const upstream=await fetch(url,{
           method:'POST',
           headers:provider.gemini
             ? {'Content-Type':'application/json','x-goog-api-key':provider.key}
             : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
           body:JSON.stringify(provider.gemini?{
-            contents:[{parts:[{text:prompt}]}],
+            contents:[{parts:[...referenceParts,{text:prompt}]}],
             generationConfig:{responseFormat:{image:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}}
           }:{
             model:provider.model,
@@ -95,7 +120,7 @@ export async function POST(req:Request){
         const mime=inline?.inlineData?.mimeType||inline?.inline_data?.mime_type||'image/png';
         const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
-          return Response.json({url:remoteUrl||dataUrl,provider:provider.id,model:provider.model,width,height,seed});
+          return Response.json({url:remoteUrl||dataUrl,provider:provider.id,model:provider.model,width,height,seed,referenceCount:referenceParts.length});
         }
       }catch{
         // Continue to the next configured provider; public fallback remains available.
