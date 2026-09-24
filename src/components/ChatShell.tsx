@@ -5,7 +5,7 @@ import { Activity, Brain, Code2, FolderOpen, Globe2, Image as ImageIcon, Library
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -392,7 +392,7 @@ export function ChatShell({onOpenLegal}:Props){
       const research=web.items.length?synthesizeResearch(prompt,web.items):null;
       const messages=history.slice(-12).map(m=>({role:m.role,content:m.content}));
       const researchContext=web.text;
-      const fallbackText=direct||((kind==='factual'||kind==='current')?research?.content:undefined);
+      const fallbackText=direct||(kind==='howto'?practicalHowToReply(prompt):undefined)||((kind==='factual'||kind==='current')?research?.content:undefined);
 
       if(kind!=='casual'&&kind!=='context'){
         setActivity(['CACHE · verificando resposta reutilizável','SKILL/RAG · recuperando GitHub top-k','CASCADE · tentando provider configurado','VERIFY · preparando resposta']);
