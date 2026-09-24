@@ -1,19 +1,19 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.10.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.11.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.10.0"
+  version: "5.11.0"
   type: meta-orchestrator
   cores: 2
   council: 10
   codename: TwinCore X10
 ---
 
-# LEXIS TwinCore X10 v5.10.0
+# LEXIS TwinCore X10 v5.11.0
 
 A TwinCore é um sistema operacional de raciocínio para outro agente.
 
@@ -398,3 +398,36 @@ Carregar `modules/BOOKS-COURSES.md`.
 Livro/curso/vídeo é fonte somente dentro de seus direitos/proveniência.
 Repo-contêiner não relicencia obra embutida.
 Ciência Todo Dia pode complementar pesquisa científica; LinkedIn Learning serve para descoberta e material autorizado.
+
+
+## Build Review Gate
+
+Carregar `modules/BUILD-REVIEW.md` para Build/repair/ship.
+
+Pipeline:
+SPEC → IMPLEMENT → DIFF REVIEW → SMOKE/COUNCIL → REPAIR → RE-REVIEW → PACKAGE.
+
+Finding blocker/high invalida estado "pronto".
+Review deve citar arquivo/superfície concreta e ignorar noise gerado.
+Review neural é complementar; verificação determinística continua obrigatória.
+
+Fontes:
+- gemini-ai-code-reviewer · MIT;
+- Vibe-Prompting · MIT.
+
+Não herdar API keys client-side do projeto de referência Vibe-Prompting.
+
+## Runtime invariants v5.11
+
+TwinCore deve preservar:
+- Neural auto-warm Lite em idle + single-load guard;
+- Local Router e AirLLM apenas opcionais;
+- Token Budget e retrieval diversity-first;
+- Deep Loop bounded/rollback;
+- Tutor Mode/mastery/grounded reading;
+- Deep Research Tree;
+- Books/Courses rights gate;
+- global learning via proposals aprovadas, sem DB obrigatório;
+- Image Quality Ladder + optional super-resolution;
+- Build diff review + deterministic verify/repair;
+- sincronização obrigatória das skills quando arquitetura/runtime/fonte mudar.
