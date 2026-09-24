@@ -7,6 +7,15 @@ function clamp(value:number,min:number,max:number){
   return Math.max(min,Math.min(max,Math.round(value||0)));
 }
 
+function geminiAspectRatio(width:number,height:number){
+  const ratio=width/Math.max(1,height);
+  if(ratio>1.45)return '16:9';
+  if(ratio<0.72)return '9:16';
+  if(ratio>1.18)return '4:3';
+  if(ratio<0.86)return '3:4';
+  return '1:1';
+}
+
 function providerImageSize(width:number,height:number,nano:boolean){
   if(!nano)return width+'x'+height;
   const ratio=width/Math.max(1,height);
@@ -38,24 +47,36 @@ export async function POST(req:Request){
     const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(body?.seed)||1)));
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
+    const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
+    const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1').trim().replace(/\/$/,'');
+    const geminiModel=String(process.env.GEMINI_IMAGE_MODEL||'gemini-3.1-flash-image').trim();
     const nanoKey=String(process.env.NANO_BANANA_API_KEY||'').trim();
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
     const requestedModel=String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
     const nanoModel=String(process.env.NANO_BANANA_MODEL||'nano-banana').trim();
-    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'nano,configured')
+    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,nano,configured')
       .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+    if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
     const providers=[
-      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true}]:[]),
-      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false}]:[])
+      ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
+      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
+      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false}]:[])
     ];
 
     for(const provider of providers){
       try{
-        const url=provider.base.replace(/\/$/,'')+(provider.base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
+        const url=provider.gemini
+          ? provider.base+'/models/'+encodeURIComponent(provider.model)+':generateContent'
+          : provider.base.replace(/\/$/,'')+(provider.base.endsWith('/v1')?'/images/generations':'/v1/images/generations');
         const upstream=await fetch(url,{
           method:'POST',
-          headers:{'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
-          body:JSON.stringify({
+          headers:provider.gemini
+            ? {'Content-Type':'application/json','x-goog-api-key':provider.key}
+            : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
+          body:JSON.stringify(provider.gemini?{
+            contents:[{parts:[{text:prompt}]}],
+            generationConfig:{responseFormat:{image:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}}
+          }:{
             model:provider.model,
             prompt,
             size:providerImageSize(width,height,provider.nano),
@@ -67,9 +88,12 @@ export async function POST(req:Request){
         const data=await upstream.json().catch(()=>({}));
         if(!upstream.ok)continue;
         const first=data?.data?.[0]||{};
+        const parts=Array.isArray(data?.candidates?.[0]?.content?.parts)?data.candidates[0].content.parts:[];
+        const inline=parts.find((x:any)=>x?.inlineData?.data||x?.inline_data?.data);
         const remoteUrl=first.url||data?.url||null;
-        const b64=first.b64_json||data?.b64_json||null;
-        const dataUrl=b64?'data:image/png;base64,'+b64:null;
+        const b64=inline?.inlineData?.data||inline?.inline_data?.data||first.b64_json||data?.b64_json||null;
+        const mime=inline?.inlineData?.mimeType||inline?.inline_data?.mime_type||'image/png';
+        const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
           return Response.json({url:remoteUrl||dataUrl,provider:provider.id,model:provider.model,width,height,seed});
         }
