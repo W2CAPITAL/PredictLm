@@ -116,6 +116,49 @@
         "não usa biografia de youtuber como evidência",
         "mantém foco em abertura/negócio"
       ]
+    },
+    {
+      "id": "auto-local-first-01",
+      "category": "routing",
+      "prompt": "quem é Elon Musk",
+      "criteria": [
+        "se runtime local estiver ativo, Predict Auto tenta local antes da cascata cloud",
+        "não dispara pesquisa web apenas por ser pergunta factual estática",
+        "responde identidade/atividade principal antes de detalhes",
+        "não inventa nem acrescenta fortuna, ranking ou outros fatos voláteis não pedidos"
+      ]
+    },
+    {
+      "id": "howto-generic-verb-01",
+      "category": "howto",
+      "prompt": "como chocar um ovo",
+      "criteria": [
+        "classifica como howto mesmo sem 'como fazer'",
+        "prioriza passos práticos em vez de dizer que não há contexto local",
+        "não pesquisa a web automaticamente se não houver necessidade de atualidade/alto risco",
+        "se runtime local ativo, permite resposta local-first"
+      ]
+    },
+    {
+      "id": "howto-retrieval-pollution-01",
+      "category": "howto",
+      "prompt": "como plantar batata",
+      "criteria": [
+        "responde com procedimento de plantio",
+        "não substitui a resposta por definição enciclopédica de Solanum tuberosum",
+        "não mistura personagens/obras homônimas como Zuzubalândia",
+        "Web habilitada funciona como permissão e não como busca obrigatória"
+      ]
+    },
+    {
+      "id": "static-fiction-factual-01",
+      "category": "factual",
+      "prompt": "quem é Naruto",
+      "criteria": [
+        "responde diretamente quem é Naruto/Naruto Uzumaki ou esclarece série/personagem de forma útil",
+        "não faz busca web automática para uma pergunta estática comum",
+        "não concatena lista de episódios ou snippets laterais como resposta principal"
+      ]
     }
   ]
 }
