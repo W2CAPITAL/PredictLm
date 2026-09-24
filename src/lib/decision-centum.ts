@@ -151,8 +151,8 @@ export function buildCentumQuestions(prompt:string):CentumQuestion[]{
   })));
 }
 
-export function centumDecisionContext(prompt:string){
-  if(!isDecisionRequest(prompt))return '';
+export function centumDecisionContext(prompt:string,force=false){
+  if(!force&&!isDecisionRequest(prompt))return '';
   const questions=buildCentumQuestions(prompt);
   const groups=CLUSTERS.map(group=>{
     const rows=questions.filter(x=>x.cluster===group.cluster);
@@ -171,8 +171,8 @@ export function centumDecisionContext(prompt:string){
   ].join('\n\n');
 }
 
-export function parallaxContext(prompt:string){
-  if(!isDecisionRequest(prompt))return '';
+export function parallaxContext(prompt:string,force=false){
+  if(!force&&!isDecisionRequest(prompt))return '';
   return [
     'THIRD BRAIN — PARALLAX',
     'FORGE asks how the requested direction can work. AEGIS asks how it can fail. PARALLAX must go beyond both.',
