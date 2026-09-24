@@ -204,13 +204,14 @@ export async function answerViaLocalRuntime(
     : null;
   const runtime=preferred||available[0];
 
-  const knowledge=knowledgeContext(prompt,4);
-  const trained=trainingContext(prompt,4);
-  const github=githubKnowledgeContext(prompt,3);
-  const learned=adaptiveContext(prompt,3);
+  const topK=runtime.kind==='lowram'?2:3;
+  const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
+  const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
+  const github=githubKnowledgeContext(prompt,topK);
+  const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const packed=optimizePromptPackage({
     messages:sanitizeMessages(history),
-    mode:options?.deep?'lite':'full',
+    mode:runtime.kind==='lowram'?'ultra':(options?.deep?'lite':'full'),
     sections:[
       {label:'GitHub Knowledge',text:github,priority:5},
       {label:'Knowledge',text:knowledge,priority:5},
@@ -233,7 +234,7 @@ export async function answerViaLocalRuntime(
   else if(runtime.kind==='lowram')generated=await generateLowRam(runtime,messages,!!options?.deep);
   else generated=await generateOpenAI(runtime,messages,!!options?.deep);
 
-  const sources=retrieveGitHubKnowledge(prompt,3).map(x=>({
+  const sources=retrieveGitHubKnowledge(prompt,topK).map(x=>({
     title:x.heading,
     source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
   }));
