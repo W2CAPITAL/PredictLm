@@ -172,6 +172,64 @@ function shouldUseGithubKnowledge(prompt:string){
   return false;
 }
 
+function simulationPlanGate(raw:string){
+  const fenced=String(raw||'').match(/\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/i)?.[1];
+  const candidate=fenced||String(raw||'').match(/\{[\s\S]*\}/)?.[0]||'';
+  if(!candidate)return null;
+  try{
+    const data=JSON.parse(candidate);
+    const allowed=new Set(['move','buy_food','eat','rest','work','study','socialize','exercise','healthcare','wait','set_goal','speak','cook','clean_home','shower','create','message_friend']);
+    const locations=new Set(['Casa','Trabalho','Café','Parque','Mercado','Clínica','Biblioteca']);
+    const actions=(Array.isArray(data?.actions)?data.actions:[])
+      .filter((x:any)=>x&&allowed.has(String(x.type||'')))
+      .slice(0,12)
+      .map((x:any)=>({
+        type:String(x.type),
+        ...(x.target&&locations.has(String(x.target))?{target:String(x.target)}:{}),
+        ...(Number.isFinite(Number(x.minutes))?{minutes:Math.max(5,Math.min(240,Number(x.minutes)))}:{}),
+        ...(x.text?{text:String(x.text).slice(0,220)}:{}),
+        ...(x.reason?{reason:String(x.reason).slice(0,180)}:{})
+      }));
+    if(!actions.length)return null;
+    return JSON.stringify({
+      objective:String(data?.objective||'Executar a instrução no mundo').slice(0,240),
+      summary:String(data?.summary||'Plano de ações executáveis.').slice(0,280),
+      actions
+    });
+  }catch{return null}
+}
+
+async function simulationPlanResponse(configured:Provider[],body:any,prompt:string){
+  const worldState=String(body?.worldState||'').slice(0,7000);
+  const localAdvisory=String(body?.localAdvisory||'').slice(0,1800);
+  const system=[
+    'Você é o planejador de uma simulação de vida 2D. Sua saída é executada pelo motor da simulação.',
+    'Retorne SOMENTE JSON válido. Nunca escreva prosa fora do JSON e nunca inclua chain-of-thought.',
+    'Formato: {"objective":"...","summary":"...","actions":[{"type":"move","target":"Mercado","reason":"..."},{"type":"buy_food"}]}',
+    'Ações permitidas: move, buy_food, eat, rest, work, study, socialize, exercise, healthcare, wait, set_goal, speak, cook, clean_home, shower, create, message_friend.',
+    'Destinos: Casa, Trabalho, Café, Parque, Mercado, Clínica, Biblioteca.',
+    'Pré-condições: comprar comida=Mercado; comer/cozinhar em Casa exige comida; estudar=Biblioteca; trabalhar=Trabalho; descansar/limpar/banho=Casa; exercício=Parque; saúde=Clínica; criar=Casa ou Biblioteca.',
+    'Planeje no máximo 10 ações e prefira ações que alteram o estado real.',
+    worldState?'ESTADO DO MUNDO:\n'+worldState:'',
+    localAdvisory?'SEGUNDA OPINIÃO LOCAL:\n'+localAdvisory:''
+  ].filter(Boolean).join('\n\n');
+  const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1200)}];
+  const candidates=taskAwareProviders(configured,'planejar ações de simulação '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const errors:string[]=[];
+  const startedAt=Date.now();
+  for(const provider of candidates){
+    const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+    if(remaining<1200)break;
+    try{
+      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+      const clean=simulationPlanGate(raw);
+      if(!clean){errors.push(provider.name+' invalid-plan');continue}
+      return Response.json({content:clean,provider:provider.name,model:provider.model,mode:'simulation-plan'},{headers:{'Cache-Control':'no-store'}});
+    }catch(error:any){errors.push(String(error?.message||error).slice(0,180))}
+  }
+  return Response.json({error:'Nenhum provider produziu um plano executável.',code:'NO_SIMULATION_PLAN',errors:errors.slice(0,3)},{status:502,headers:{'Cache-Control':'no-store'}});
+}
+
 function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather)\b/i.test(prompt);
 }
@@ -266,6 +324,8 @@ export async function POST(req:Request){
         message:'Nenhum provider server-side configurado; o cliente deve continuar para o próximo runtime local/core.'
       },{headers:{'Cache-Control':'no-store'}});
     }
+
+    if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')

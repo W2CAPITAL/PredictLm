@@ -56,6 +56,16 @@ function detectSimulationLaunchRequest(prompt:string){
   return simulation&&launch&&!appBuild;
 }
 
+function simulationCommandHandoff(prompt:string){
+  const cleaned=prompt
+    .replace(/\b(ative|ativar|ativa|abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|ligue|ligar)\b/gi,' ')
+    .replace(/\b(a|o|uma|um)?\s*(simulação|simulacao|simulação de vida|simulacao de vida|life simulation|life simulator|studio)\b/gi,' ')
+    .replace(/^[\s,;:.\-]+|[\s,;:.\-]+$/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+  return cleaned.length>=4?cleaned:'';
+}
+
 function mediaSubject(prompt:string){
   return prompt
     .replace(/^(gere|gerar|crie|criar|faça|faca|desenhe|renderize|produza|quero)\s+/i,'')
@@ -211,11 +221,15 @@ export function ChatShell({onOpenLegal}:Props){
     }
     s.addMessage({role:'user',content:prompt});
     if(simulationLaunch){
-      try{sessionStorage.setItem('predictlm:simulation-explicit-start','1')}catch{}
+      try{
+        sessionStorage.setItem('predictlm:simulation-explicit-start','1');
+        const handoff=simulationCommandHandoff(prompt);
+        if(handoff)sessionStorage.setItem('predictlm:simulation-command',handoff);
+      }catch{}
       setScreen('simulation');
       s.addMessage({
         role:'assistant',
-        content:'Simulação ativada. Ela começou a rodar porque você pediu explicitamente; você pode pausar, acelerar ou definir destino, nome e objetivo no painel.',
+        content:'Simulação ativada. Se sua frase também continha uma ação, ela foi entregue ao agente executor; caso contrário, o mundo segue em modo normal até você dar uma ordem.',
         engine:'Predict Auto',
         actions:['Life Simulation Studio aberto','Estado local preservado','Digital Brain conectado ao ciclo observar → priorizar → agir → memorizar'],
         status:'done'

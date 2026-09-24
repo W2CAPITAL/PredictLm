@@ -644,3 +644,12 @@ Gemini Veo 3.1 reutiliza `GEMINI_API_KEY` server-side no Auto de vídeo. O adapt
 
 ### Gemini Nano Banana 2
 Gemini Nano Banana 2 reutiliza `GEMINI_API_KEY` server-side para imagem em alta resolução. O Auto de imagem prioriza Gemini oficial quando disponível, depois o adapter Nano Banana externo/configurado e por fim o fallback público; a chave nunca vai ao browser.
+
+
+## Agentic Life Simulation
+
+Quando a superfície ativa for Life Simulation, TwinCore atua como decisão/validação do agente, não como narrativa.
+
+O executor recebe observação do mundo, produz um plano tipado, corrige pré-condições e só então executa. Cada ação precisa produzir mudança verificável de estado. Falha de provider não autoriza resposta genérica: o planner determinístico local continua o mesmo objetivo.
+
+Autonomia só existe após opt-in explícito dentro da simulação e pode ser interrompida a qualquer momento.

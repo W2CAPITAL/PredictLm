@@ -703,3 +703,17 @@ Por padrão, a conversa pública deve:
 Diagnóstico técnico é exceção: detalhes de runtime/modelo/provider/skill podem aparecer apenas quando o usuário pedir explicitamente.
 
 A UI pode mostrar um **resumo curto** de processo em `Raciocínio` recolhido. Esse resumo nunca é chain-of-thought e não deve listar passes internos.
+
+
+## Agentic Life Simulation
+
+Carregar `skills/life-simulation/SKILL.md` para qualquer simulação ativa.
+
+A simulação agora usa executor real de ações:
+**observe → decide → plan → repair preconditions → act → verify → memory → replan**.
+
+Ações mudam estado persistente (posição, tempo, dinheiro, necessidades, inventário, habilidades, relações e ambiente doméstico). Provider Mesh pode planejar, o cérebro local oferece segunda opinião e o plano determinístico mantém operação quando APIs falham.
+
+Autonomia é **opt-in** e limitada ao mundo simulado. O usuário pode ativar “IA Auto”/“decida o que fazer” e desativar com “modo manual”. Nenhuma autonomia da simulação vira ação externa no computador, web ou contas.
+
+Repositórios Sims-like são usados somente como referência arquitetural compatível com suas licenças; ferramentas de desbloqueio/DLC ficam em quarentena e não entram no código/corpus/runtime.
