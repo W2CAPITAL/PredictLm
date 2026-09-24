@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import { Activity, Brain, Clock3, HeartPulse, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet } from 'lucide-react';
+import { Activity, Brain, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle } from 'lucide-react';
 import {
   applySimulationInstruction,
   createLifeSimulation,
@@ -15,8 +15,21 @@ import {
 } from '@/lib/life-simulation-engine';
 import { dominantCircuits } from '@/lib/neurocore';
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
+import {
+  agentWorldObservation,
+  createLifeAgentState,
+  deterministicLifePlan,
+  executeNextLifeAgentAction,
+  normalizeLifeAgentState,
+  parseProviderLifePlan,
+  simulationPlannerPrompt,
+  startLifeAgentPlan,
+  type LifeAgentState
+} from '@/lib/life-simulation-agent';
+import { localBrainAdvisory } from '@/lib/browser-brain';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
+const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
 
 function loadState():LifeSimulationState{
   if(typeof window==='undefined')return createLifeSimulation();
@@ -29,6 +42,12 @@ function loadState():LifeSimulationState{
   }catch{return createLifeSimulation()}
 }
 
+function loadAgentState():LifeAgentState{
+  if(typeof window==='undefined')return createLifeAgentState();
+  try{return normalizeLifeAgentState(JSON.parse(localStorage.getItem(AGENT_STORAGE_KEY)||'null'))}
+  catch{return createLifeAgentState()}
+}
+
 function needLabel(value:number){return Math.max(0,Math.min(100,Math.round(value)))}
 
 export function GrokSimulationPanel(){
@@ -37,10 +56,14 @@ export function GrokSimulationPanel(){
   const [command,setCommand]=useState('');
   const [manualTarget,setManualTarget]=useState<LifeLocation|null>(null);
   const [scenarios,setScenarios]=useState<LifeScenarioResult[]>([]);
+  const [agent,setAgent]=useState<LifeAgentState>(()=>createLifeAgentState());
+  const [agentBusy,setAgentBusy]=useState(false);
+  const [agentError,setAgentError]=useState('');
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
     setState(loadState());
+    setAgent(loadAgentState());
     setHydrated(true);
   },[]);
 
@@ -50,12 +73,30 @@ export function GrokSimulationPanel(){
   },[state,hydrated]);
 
   useEffect(()=>{
-    if(!state.running)return;
+    if(!hydrated)return;
+    try{localStorage.setItem(AGENT_STORAGE_KEY,JSON.stringify(agent))}catch{}
+  },[agent,hydrated]);
+
+  useEffect(()=>{
+    if(!state.running||agent.plan?.status==='running')return;
     const timer=window.setInterval(()=>{
       setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
     },650);
     return()=>window.clearInterval(timer);
-  },[state.running,state.speed,manualTarget]);
+  },[state.running,state.speed,manualTarget,agent.plan?.status]);
+
+  useEffect(()=>{
+    const runningPlan=agent.plan?.status==='running';
+    if(!runningPlan||agentBusy)return;
+    const timer=window.setTimeout(()=>{
+      const result=executeNextLifeAgentAction(state,agent);
+      if(!result)return;
+      setState(result.state);
+      setAgent(result.agent);
+      if(result.agent.plan?.status==='failed')setAgentError(result.record.message);
+    },520);
+    return()=>window.clearTimeout(timer);
+  },[agent,state,agentBusy]);
 
   useEffect(()=>{
     const el=canvas.current;
@@ -123,19 +164,43 @@ export function GrokSimulationPanel(){
 
   function reset(){
     const next=createLifeSimulation();
-    setState(next);setManualTarget(null);setCommand('');setScenarios([]);
+    setState(next);setAgent(createLifeAgentState());setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
   }
 
-  function applyCommand(){
+  async function applyCommand(){
     const value=command.trim();
-    if(!value)return;
+    if(!value||agentBusy)return;
+    setAgentBusy(true);
+    setAgentError('');
     setScenarios(simulateLifeScenarios(state,value,{deep:true}));
-    setState(prev=>{
-      const result=applySimulationInstruction(prev,value);
-      if(result.forcedDestination)setManualTarget(result.forcedDestination);
-      return stepLifeSimulation(result.state,10,result.forcedDestination);
-    });
+
+    const deterministic=deterministicLifePlan(value,state);
+    let selected=deterministic;
+    try{
+      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent)});
+      const plannerPrompt=simulationPlannerPrompt(value,state,agent);
+      const response=await fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          prompt:plannerPrompt,
+          language:'pt-BR',
+          deep:false,
+          messages:[],
+          localAdvisory:advisory?.content||'',
+          answerAnchor:JSON.stringify({objective:deterministic.objective,summary:deterministic.summary,actions:deterministic.actions})
+        })
+      });
+      if(response.ok){
+        const data=await response.json();
+        const providerPlan=parseProviderLifePlan(String(data?.content||''),value,state);
+        if(providerPlan)selected=providerPlan;
+      }
+    }catch{}
+
+    setAgent(prev=>startLifeAgentPlan(prev,selected));
     setCommand('');
+    setAgentBusy(false);
   }
 
   function pickPlace(event:React.MouseEvent<HTMLCanvasElement>){
@@ -199,9 +264,33 @@ export function GrokSimulationPanel(){
 
         <div className="sim-command">
           <Sparkles size={16}/>
-          <input value={command} onChange={e=>setCommand(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')applyCommand()}} placeholder="Ex.: objetivo: aprender programação · vá ao parque · personagem: Luna"/>
-          <button onClick={applyCommand} disabled={!command.trim()}><Send size={14}/></button>
+          <input value={command} onChange={e=>setCommand(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')applyCommand()}} placeholder="Ex.: vá ao mercado, compre comida, volte para casa, coma e depois estude"/>
+          <button onClick={applyCommand} disabled={!command.trim()||agentBusy}>{agentBusy?<Loader2 className="sim-spin" size={14}/>:<Send size={14}/>}</button>
         </div>
+        {(agent.plan||agent.history.length>0)?<section className="sim-agent">
+          <div className="sim-agent-head">
+            <div><Brain size={13}/><b>Agente executor</b></div>
+            <span>{agent.plan?agent.plan.status:'idle'} · {agent.plan?.source||'local'}</span>
+          </div>
+          {agent.plan?<div className="sim-plan">
+            <strong>{agent.plan.objective}</strong>
+            <small>{agent.plan.summary}</small>
+            <div className="sim-plan-steps">{agent.plan.actions.map((action,index)=>{
+              const done=index<agent.plan!.cursor;
+              const current=index===agent.plan!.cursor&&agent.plan!.status==='running';
+              const failed=agent.plan!.status==='failed'&&index===Math.max(0,agent.plan!.cursor-1);
+              return <div key={action.id} className={current?'current':failed?'failed':done?'done':''}>
+                {failed?<XCircle size={12}/>:done?<CheckCircle2 size={12}/>:current?<Loader2 className="sim-spin" size={12}/>:<Circle size={12}/>}
+                <span><b>{action.type}</b>{action.target?' → '+action.target:''}</span>
+                <small>{action.reason||action.text||''}</small>
+              </div>;
+            })}</div>
+          </div>:null}
+          {agentError?<p className="sim-agent-error">{agentError}</p>:null}
+          {agent.history.length?<details className="sim-agent-log"><summary>Histórico de ações · {agent.history.length}</summary>
+            {agent.history.slice(-8).reverse().map(row=><div key={row.id}><b>{row.ok?'OK':'ERRO'}</b><span>{row.action.type}</span><small>{row.message}</small></div>)}
+          </details>:null}
+        </section>:null}
         {scenarios.length>0?<section className="sim-scenarios">
           <div className="sim-scenario-head"><Brain size={13}/><b>Scenario Lab</b><span>{scenarios.length} trajetórias · contrafactuais, não previsões</span></div>
           <div className="sim-scenario-grid">{scenarios.map(item=><article key={item.id}>
@@ -246,7 +335,8 @@ export function GrokSimulationPanel(){
       .sim-layout{max-width:1320px;margin:auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.65fr);gap:14px}.sim-world-card,.sim-panel{border:1px solid #202735;background:linear-gradient(180deg,#0e131c,#0a0e15);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.sim-world-card{padding:12px;min-width:0}
       .sim-toolbar{display:flex;gap:7px;align-items:center;margin-bottom:10px}.sim-toolbar button,.sim-toolbar select{border:1px solid #293143;background:#121823;color:#c9d2e2;border-radius:9px;padding:7px 10px;font-size:10px}.sim-toolbar button{display:flex;gap:5px;align-items:center}.sim-toolbar .primary{background:#6e55e7;color:#fff;border-color:#826df2}.sim-toolbar .active{border-color:#5dcaab;color:#76e0c1}.sim-toolbar .reset{margin-left:auto}
       .sim-canvas-wrap{position:relative;width:100%;height:360px}.sim-canvas{width:100%;height:360px;display:block;border:1px solid #1d2431;border-radius:14px;background:#080b11;cursor:crosshair}.sim-entity-avatar{position:absolute;width:48px;height:48px;object-fit:cover;object-position:center 28%;border-radius:50%;transform:translate(-50%,-52%);border:2px solid #8f7aff;box-shadow:0 0 0 3px rgba(8,11,17,.88),0 0 22px rgba(124,94,255,.45);pointer-events:none;user-select:none}.sim-world-foot{display:grid;grid-template-columns:auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
-      .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
+      .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-spin{animation:simspin .8s linear infinite}@keyframes simspin{to{transform:rotate(360deg)}}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
+      .sim-agent{margin-top:10px;border:1px solid #252d3d;border-radius:13px;background:#0a0f17;padding:11px}.sim-agent-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c2432;padding-bottom:8px}.sim-agent-head>div{display:flex;gap:6px;align-items:center}.sim-agent-head b{font-size:10px}.sim-agent-head span{font-size:9px;color:#8290a5}.sim-plan{padding-top:9px;display:grid;gap:7px}.sim-plan>strong{font-size:11px}.sim-plan>small{color:#7c899e;font-size:9px}.sim-plan-steps{display:grid;gap:5px}.sim-plan-steps>div{display:grid;grid-template-columns:16px 145px 1fr;gap:6px;align-items:center;border:1px solid #1c2430;border-radius:8px;padding:6px 7px;color:#778398}.sim-plan-steps>div.done{color:#66cfae}.sim-plan-steps>div.current{border-color:#7560e6;color:#c7bcff;background:#141128}.sim-plan-steps>div.failed{border-color:#a64f62;color:#ff91a6}.sim-plan-steps span{font-size:9px}.sim-plan-steps small{font-size:8px;color:#6f7c90}.sim-agent-error{font-size:9px;color:#ff8ba0}.sim-agent-log{margin-top:8px;color:#8693a8;font-size:9px}.sim-agent-log>div{display:grid;grid-template-columns:34px 70px 1fr;gap:6px;padding:5px 0;border-top:1px solid #171e29}.sim-agent-log b{color:#76d9b7}.sim-agent-log small{color:#778398}
       .sim-side{display:flex;flex-direction:column;gap:12px}.sim-panel{padding:13px}.sim-panel-title{display:grid;grid-template-columns:auto auto 1fr;gap:6px;align-items:center;border-bottom:1px solid #202735;padding-bottom:9px;margin-bottom:10px;color:#9c8cff}.sim-panel-title b{font-size:11px;color:#eef2f8}.sim-panel-title span{text-align:right;color:#7d8799;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .need-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.need-grid>div span{display:flex;justify-content:space-between;font-size:9px;color:#8a95a8}.need-grid em{font-style:normal;color:#cbd3e1}.need-grid i,.circuit-list i{height:5px;background:#181f2b;border-radius:999px;display:block;overflow:hidden;margin-top:4px}.need-grid u,.circuit-list u{height:100%;display:block;background:linear-gradient(90deg,#5e58dc,#65d2ad);border-radius:inherit}.need-grid .stress u{background:linear-gradient(90deg,#ffb15d,#ef5d72)}
       .sim-metrics{display:flex;gap:8px;margin-top:11px}.sim-metrics span{display:flex;align-items:center;gap:5px;border:1px solid #242c3a;background:#0c1119;border-radius:8px;padding:6px 8px;font-size:9px;color:#9da8ba}
