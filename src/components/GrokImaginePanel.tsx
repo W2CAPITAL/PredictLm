@@ -8,6 +8,7 @@ import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { preloadGeneratedImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
+import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -22,9 +23,7 @@ const motions:{id:LocalMotionStyle;label:string}[]=[
 ];
 
 function looksSpecificVisualPrompt(input:string){
-  const p=String(input||'').toLowerCase();
-  if(/\b(naruto|sasuke|kurama|susanoo|goku|vegeta|pikachu|pokemon|sonic|mario|zelda|batman|superman|spider[- ]?man|homem aranha|kuromi|hello kitty)\b/.test(p))return true;
-  return /\b(personagem|character|anime|manga|franquia|franchise|marca|brand)\b/.test(p)&&String(input||'').length<260;
+  return shouldForceLiteralMode(input);
 }
 
 type MediaItem={
@@ -209,16 +208,19 @@ export function GrokImaginePanel(){
   }
 
   async function generateSceneCaption(expandedPrompt:string,fallback=''){
+    const safeFallback=buildSafeCaptionPtBr(prompt,fallback);
+    if(shouldForceLiteralMode(prompt))return safeFallback;
     try{
       const response=await fetch('/api/chat',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           prompt:[
-            'Escreva uma legenda natural em pt-BR de 1 a 2 frases para a cena de imagem solicitada.',
-            'Não repita o prompt técnico. Não invente elementos que não estejam no pedido ou no brief.',
+            'Escreva uma legenda natural em pt-BR de uma frase para a cena solicitada.',
+            'Não repita prompt técnico, estilo, seed, resolução, lente, negative prompt ou instruções internas.',
+            'Não comece com faça, crie, gere, create ou make.',
             'Pedido: '+prompt,
-            expandedPrompt?('Brief visual: '+expandedPrompt.slice(0,1800)):'',
+            expandedPrompt?('Brief visual: '+expandedPrompt.slice(0,900)):'',
             'Comece direto pela descrição da cena.'
           ].filter(Boolean).join('\n\n'),
           deep:false,
@@ -226,9 +228,11 @@ export function GrokImaginePanel(){
         })
       });
       const data=await response.json().catch(()=>({}));
-      if(response.ok&&typeof data?.content==='string'&&data.content.trim())return data.content.trim().slice(0,700);
+      if(response.ok&&typeof data?.content==='string'){
+        return sanitizeLibraryCaption(data.content,safeFallback);
+      }
     }catch{}
-    return fallback||('Cena gerada: '+prompt.trim());
+    return safeFallback;
   }
 
   async function saveLibrary(input:{
@@ -300,7 +304,8 @@ export function GrokImaginePanel(){
       referencesUsed:Array.isArray(data.referencesUsed)?data.referencesUsed:[],
       referenceWarnings:Array.isArray(data.referenceWarnings)?data.referenceWarnings:[],
       promptMode:String(data.promptMode||promptMode),
-      caption:String(data.caption||'')
+      caption:String(data.caption||''),
+      displayTitle:String(data.displayTitle||buildDisplayTitle(prompt))
     };
   }
 
@@ -396,7 +401,7 @@ export function GrokImaginePanel(){
           url,
           enhancedPrompt:expandedPrompt,
           seed:nextSeed,
-          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption}
+          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption,displayTitle:data.displayTitle||buildDisplayTitle(prompt),promptOriginal:prompt}
         });
         return url;
       }
@@ -460,7 +465,8 @@ export function GrokImaginePanel(){
           referenceWarnings:data.referenceWarnings||[],
           promptMode:data.promptMode||promptMode,
           negativePrompt,
-          caption
+          caption,
+          displayTitle:data.displayTitle||buildDisplayTitle(prompt)
         }
       });
       return url;
@@ -786,11 +792,12 @@ export function GrokImaginePanel(){
 
   function openItem(item:MediaItem){
     const url=item.remote_url||item.thumbnail_url||'';
+    const original=mediaOriginalPrompt(item)||item.prompt||'';
     if(url){
       setGenerated(url);
-      setGeneratedPrompt(item.enhanced_prompt||item.prompt||'');
+      setGeneratedPrompt(item.enhanced_prompt||original);
     }
-    setPrompt(item.prompt||'');
+    setPrompt(original);
     setStyle(item.style||'Cinematic');
     const next=ratios.find(x=>x.label===item.aspect_ratio);
     if(next)setRatio(next);
@@ -798,7 +805,7 @@ export function GrokImaginePanel(){
     setAttempt(Number(item.meta?.attempt||0));
     setReview(null);
     setProvider(item.provider||'');
-    setGeneratedCaption(String(item.meta?.caption||''));
+    setGeneratedCaption(buildSafeCaptionPtBr(original,String(item.meta?.caption||'')));
     if(item.meta?.promptMode==='literal'||item.meta?.promptMode==='imagine'||item.meta?.promptMode==='auto')setPromptMode(item.meta.promptMode);
     if(typeof item.meta?.negativePrompt==='string')setNegativePrompt(item.meta.negativePrompt);
     if(item.kind==='video'){
@@ -957,13 +964,22 @@ export function GrokImaginePanel(){
 
     <section className="gmedia-library">
       <div className="gmedia-library-head"><div><span>Media Library</span><h2>Gerações recentes</h2></div><small>{persisted?'Supabase metadata-only · retenção leve':'Conectando ao repositório leve'}</small></div>
-      {gallery.length?<div className="gmedia-gallery">{gallery.map(item=><article key={item.id}>
-        <button className="gmedia-gallery-open" onClick={()=>openItem(item)}>
-          {item.remote_url||item.thumbnail_url?<img src={item.thumbnail_url||item.remote_url||''} alt={item.prompt}/>:<div className="gmedia-gallery-empty">{item.kind==='video'?<Film size={20}/>:<ImageIcon size={20}/>}</div>}
-          <span><b>{item.prompt}</b><small>{item.kind==='video'?'Vídeo':item.style||'Imagem'} · {item.aspect_ratio||''} · seed {item.seed||'—'}</small></span>
-        </button>
-        <button className="gmedia-gallery-delete" onClick={()=>removeItem(item)} title="Apagar do histórico"><Trash2 size={12}/></button>
-      </article>)}</div>:<div className="gmedia-library-empty">As imagens e vídeos gerados aparecerão aqui.</div>}
+      {gallery.length?<div className="gmedia-gallery">{gallery.map(item=>{
+        const original=mediaOriginalPrompt(item)||item.prompt||'';
+        const title=String(item.meta?.displayTitle||buildDisplayTitle(original));
+        const caption=buildSafeCaptionPtBr(original,String(item.meta?.caption||''));
+        return <article key={item.id}>
+          <button className="gmedia-gallery-open" onClick={()=>openItem(item)}>
+            {item.remote_url||item.thumbnail_url?<img src={item.thumbnail_url||item.remote_url||''} alt={title}/>:<div className="gmedia-gallery-empty">{item.kind==='video'?<Film size={20}/>:<ImageIcon size={20}/>}</div>}
+            <span className="gmedia-gallery-copy">
+              <b>{title}</b>
+              <em>{caption}</em>
+              <small>{item.kind==='video'?'Vídeo':item.style||'Imagem'} · {item.aspect_ratio||''}</small>
+            </span>
+          </button>
+          <button className="gmedia-gallery-delete" onClick={()=>removeItem(item)} title="Apagar do histórico"><Trash2 size={12}/></button>
+        </article>
+      })}</div>:<div className="gmedia-library-empty">As imagens e vídeos gerados aparecerão aqui.</div>}
     </section>
   </section>
 }
