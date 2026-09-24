@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.16.0",
+  "version": "5.17.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -127,7 +127,6 @@
     "structured-build-prompt",
     "blocking-secret-review",
     "review-repair-rerun",
-    "safe-neural-auto-warm",
     "global-learning-proposals",
     "image-quality-ladder",
     "optional-super-resolution",
@@ -164,7 +163,12 @@
     "saas-audit-jobs",
     "nano-banana-first",
     "generative-video-auto-router",
-    "honest-local-motion-fallback"
+    "honest-local-motion-fallback",
+    "saas-blueprint-runtime-files",
+    "saas-env-preserving-export",
+    "tenant-rbac-audit-scaffold",
+    "real-generative-video-priority",
+    "higgsfield-cli-external-bridge"
   ],
   "hosts": [
     "PredictLM",
