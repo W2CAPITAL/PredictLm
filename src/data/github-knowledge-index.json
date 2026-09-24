@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "2e3a570280a99c09",
-  "generatedAt": "2026-09-24T19:11:27.805Z",
+  "knowledgeVersion": "2b58242f248f9454",
+  "generatedAt": "2026-09-24T22:10:10.326Z",
   "sourceCount": 80,
   "chunkCount": 3938,
   "chunks": [
@@ -36708,9 +36708,9 @@
       "weight": 1.04
     },
     {
-      "id": "a09c232d856a128d42f1",
+      "id": "c397f2e773fbadec3bd0",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36724,9 +36724,9 @@
       "weight": 1.05
     },
     {
-      "id": "b5c6285368da71d16d0b",
+      "id": "80a583f1e6bf7fa24612",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36740,9 +36740,9 @@
       "weight": 1.05
     },
     {
-      "id": "7f6712879b2902fc1542",
+      "id": "4b0d18a28ba0da27603d",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36756,9 +36756,9 @@
       "weight": 1.05
     },
     {
-      "id": "a644ca4d683b13ee9206",
+      "id": "ae4c12fb8a683d26db12",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36772,9 +36772,9 @@
       "weight": 1.05
     },
     {
-      "id": "94266f888b8ce3ce6a70",
+      "id": "329c019528874e7fb2ea",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36788,9 +36788,9 @@
       "weight": 1.05
     },
     {
-      "id": "50f0d1c68bc5fc651816",
+      "id": "2be41524503148b55971",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36804,9 +36804,9 @@
       "weight": 1.05
     },
     {
-      "id": "7e12042fe6eb3ef763db",
+      "id": "670c493e56116d72fb03",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36820,9 +36820,9 @@
       "weight": 1.05
     },
     {
-      "id": "950fb00d0ffd59f38a8f",
+      "id": "1145ece510c543045885",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36836,9 +36836,9 @@
       "weight": 1.05
     },
     {
-      "id": "f99c6c6fea6f65312d67",
+      "id": "981da44b362a25222808",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36852,9 +36852,9 @@
       "weight": 1.05
     },
     {
-      "id": "5571839c481739cea612",
+      "id": "eaf5c085adcf20ebd227",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36868,9 +36868,9 @@
       "weight": 1.05
     },
     {
-      "id": "4a3cf78b037c3c04b52d",
+      "id": "6ba7fb8fd08fab96aa1a",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -36884,9 +36884,9 @@
       "weight": 1.05
     },
     {
-      "id": "64eee49abe703ef35ac9",
+      "id": "4838b58a97896fd537c3",
       "source": "OpenHands/OpenHands",
-      "ref": "ef4a7511910b",
+      "ref": "ef0c86d3455f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38160,9 +38160,9 @@
       "weight": 1.02
     },
     {
-      "id": "94bf6d35bb341d09488f",
+      "id": "cd15a59ca28479230cf1",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38175,9 +38175,9 @@
       "weight": 1.03
     },
     {
-      "id": "0a5bf13b0a0af3214132",
+      "id": "9ad02181d63d8f84c09e",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38190,9 +38190,9 @@
       "weight": 1.03
     },
     {
-      "id": "8be2da97e02767da5015",
+      "id": "353cc5b24fe0a6355bc4",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38205,9 +38205,9 @@
       "weight": 1.03
     },
     {
-      "id": "c28d136404a833553803",
+      "id": "7387a9bf334f89d683cd",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38220,9 +38220,9 @@
       "weight": 1.03
     },
     {
-      "id": "b57b927ee719fd4a6cef",
+      "id": "e74a76eec18657b009a0",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38235,9 +38235,9 @@
       "weight": 1.03
     },
     {
-      "id": "e160c8323ba069b19e6a",
+      "id": "d4e79ff54ac61f405861",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38250,9 +38250,9 @@
       "weight": 1.03
     },
     {
-      "id": "f02baba5d209fc320403",
+      "id": "2800f0e37bd4a2cb5c90",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38265,9 +38265,9 @@
       "weight": 1.03
     },
     {
-      "id": "15d9237154cd1e62b2ed",
+      "id": "0f75433190cd1d83b016",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38280,9 +38280,9 @@
       "weight": 1.03
     },
     {
-      "id": "8e0a66c615a2d9e84fef",
+      "id": "d26d4a4b99c2951dd090",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38295,9 +38295,9 @@
       "weight": 1.03
     },
     {
-      "id": "5096069478481c6c032e",
+      "id": "b4e0bc82228d29159a56",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38310,9 +38310,9 @@
       "weight": 1.03
     },
     {
-      "id": "0c24345bae53a3a90a3c",
+      "id": "c0a2cf2b70bf4016cf3f",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -38325,9 +38325,9 @@
       "weight": 1.03
     },
     {
-      "id": "ab686908e2dfd7f6deaa",
+      "id": "57ecf57ab936b5fd0ea8",
       "source": "CodebuffAI/freebuff",
-      "ref": "40fa90412f5a",
+      "ref": "cf685fa064d2",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [

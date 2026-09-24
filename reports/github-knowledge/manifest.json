@@ -1,8 +1,26 @@
 {
-  "generatedAt": "2026-09-24T19:11:27.805Z",
-  "knowledgeVersion": "2e3a570280a99c09",
+  "generatedAt": "2026-09-24T22:10:10.326Z",
+  "knowledgeVersion": "2b58242f248f9454",
   "chunkCount": 3938,
   "sources": [
+    {
+      "repo": "tanbiralam/claude-code",
+      "mode": "quarantine",
+      "license": "unlicensed-leaked-proprietary-source",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "anthropics/claude-code",
+      "mode": "reference-only",
+      "license": "proprietary-commercial-terms",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
     {
       "repo": "mindsdb/mindshub",
       "mode": "allow",
@@ -574,7 +592,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "ef4a7511910b8fe287f0bc32f6802d861678a808",
+      "commit": "ef0c86d3455fd51436ac30dacc98a86793bdd66e",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -610,7 +628,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "40fa90412f5afd89ad9ee00cc6fe445eebae656f",
+      "commit": "cf685fa064d21c74e96d548d59ce7eaa97f623bc",
       "files": 1,
       "chunks": 12,
       "error": null
