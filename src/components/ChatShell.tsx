@@ -28,7 +28,7 @@ import { GrokResearchPanel } from '@/components/GrokResearchPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
 import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
-import { advanceBrowserNeuroContext } from '@/lib/neurocore';
+import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -134,7 +134,7 @@ export function ChatShell({onOpenLegal}:Props){
     const simulationLaunch=detectSimulationLaunchRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
-    const neuroContext=advanceBrowserNeuroContext(prompt).context;
+    const brainContext=advanceBrowserDigitalBrainContext(prompt).context;
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
@@ -157,7 +157,7 @@ export function ChatShell({onOpenLegal}:Props){
         role:'assistant',
         content:'Simulação ativa aberta. Você pode deixar a personagem agir sozinha ou definir destino, nome e objetivo no painel.',
         engine:'Predict Auto',
-        actions:['Life Simulation Studio aberto','Estado local preservado','NeuroCore conectado ao ciclo observar → priorizar → agir → memorizar'],
+        actions:['Life Simulation Studio aberto','Estado local preservado','Digital Brain conectado ao ciclo observar → priorizar → agir → memorizar'],
         status:'done'
       });
       setActivity([]);
@@ -400,7 +400,7 @@ export function ChatShell({onOpenLegal}:Props){
           const cloudResponse=await fetch('/api/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt,researchContext,neuroContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
+            body:JSON.stringify({prompt,researchContext,brainContext,language,messages,deep:s.deepThink,instructions:adaptiveInstructionContext(4)})
           });
           const cloudData=await cloudResponse.json();
           if(cloudResponse.ok&&cloudData?.content){
