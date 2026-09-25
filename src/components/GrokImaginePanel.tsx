@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useState} from 'react';
-import { BrainCircuit, Download, Film, Image as ImageIcon, Loader2, Play, RefreshCw, Search, Sparkles, Trash2, WandSparkles } from 'lucide-react';
+import { BrainCircuit, Download, Film, Image as ImageIcon, Loader2, Play, RefreshCw, Search, Sparkles, Trash2, Upload, WandSparkles, X } from 'lucide-react';
 import { useStudio } from '@/lib/store';
 import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
 import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames, formatMediaResearchContext, mediaResearchQuery } from '@/lib/media/video-pipelines';
@@ -29,6 +29,8 @@ const motions:{id:LocalMotionStyle;label:string}[]=[
 function looksSpecificVisualPrompt(input:string){
   return shouldForceLiteralMode(input);
 }
+
+type LocalVisualReference={name:string;data:string};
 
 type MediaItem={
   id:string;
@@ -89,6 +91,7 @@ export function GrokImaginePanel(){
   const [negativePrompt,setNegativePrompt]=useState('');
   const [generatedCaption,setGeneratedCaption]=useState('');
   const [imageProviderWarning,setImageProviderWarning]=useState('');
+  const [referenceImages,setReferenceImages]=useState<LocalVisualReference[]>([]);
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -100,6 +103,37 @@ export function GrokImaginePanel(){
     [prompt,style,attempt,generatedPrompt]
   );
   const motionPlan=useMemo(()=>buildLocalMotionPlan(prompt,ratio.label),[prompt,ratio.label]);
+
+  async function addReferenceFiles(files:FileList|null){
+    if(!files?.length)return;
+    const incoming=Array.from(files).slice(0,Math.max(0,3-referenceImages.length));
+    const accepted:LocalVisualReference[]=[];
+    for(const file of incoming){
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
+        setError('Referência ignorada: use PNG, JPEG ou WebP.');
+        continue;
+      }
+      if(file.size>4_500_000){
+        setError('Referência ignorada: cada imagem deve ter no máximo 4,5 MB.');
+        continue;
+      }
+      const data=await new Promise<string>((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||''));
+        reader.onerror=()=>reject(reader.error||new Error('Falha ao ler referência.'));
+        reader.readAsDataURL(file);
+      }).catch(()=> '');
+      if(data)accepted.push({name:file.name.slice(0,120),data});
+    }
+    if(accepted.length){
+      setReferenceImages(prev=>[...prev,...accepted].slice(0,3));
+      setError('');
+    }
+  }
+
+  function removeReference(index:number){
+    setReferenceImages(prev=>prev.filter((_,i)=>i!==index));
+  }
 
   function reportMediaError(message:string,metadata:Record<string,any>={}){
     fetch('/api/feedback',{
@@ -352,7 +386,8 @@ export function GrokImaginePanel(){
         height:ratio.h,
         seed:renderSeed,
         model:'flux',
-        referenceMode:'auto'
+        referenceMode:'auto',
+        referenceImages:referenceImages.map(x=>x.data)
       })
     });
     const data=await r.json();
@@ -372,6 +407,7 @@ export function GrokImaginePanel(){
       displayTitle:String(data.displayTitle||buildDisplayTitle(prompt)),
       style:String(data.style||style),
       fidelityLimited:!!data.fidelityLimited,
+      referenceImagesPassed:Number(data.referenceImagesPassed||0),
       providerWarning:String(data.providerWarning||'')
     };
   }
@@ -605,7 +641,9 @@ export function GrokImaginePanel(){
           parityContract:'grok-imagine-parity',
           promptOriginal:prompt,
           promptExpanded:expandedPrompt,
-          referenceCount:data.referencesUsed?.length||0,
+          referenceCount:(data.referencesUsed?.length||0)+referenceImages.length,
+          userReferenceCount:referenceImages.length,
+          referenceImagesPassed:Number(data.referenceImagesPassed||0),
           referenceWarnings:data.referenceWarnings||[],
           promptMode:data.promptMode||promptMode,
           negativePrompt,
@@ -948,6 +986,7 @@ export function GrokImaginePanel(){
       setGeneratedPrompt(item.enhanced_prompt||original);
     }
     setPrompt(original);
+    setReferenceImages([]);
     setStyle(item.style||'Cinematic');
     const next=ratios.find(x=>x.label===item.aspect_ratio);
     if(next)setRatio(next);
@@ -1003,6 +1042,21 @@ export function GrokImaginePanel(){
         </div>
 
         <label><span>Prompt</span><textarea value={prompt} onChange={e=>updatePrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
+        {mode==='image'?<div style={{border:'1px solid #252a34',borderRadius:12,padding:10,display:'grid',gap:8}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+            <span style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.08em',color:'#8e99aa'}}>Referências visuais · {referenceImages.length}/3</span>
+            <label style={{display:'inline-flex',alignItems:'center',gap:5,border:'1px solid #303744',borderRadius:8,padding:'6px 8px',cursor:referenceImages.length>=3?'not-allowed':'pointer',fontSize:9,color:'#cbd3df'}}>
+              <Upload size={12}/>Adicionar
+              <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={referenceImages.length>=3} onChange={e=>{void addReferenceFiles(e.target.files);e.currentTarget.value=''}} style={{display:'none'}}/>
+            </label>
+          </div>
+          {referenceImages.length?<div style={{display:'flex',gap:7,overflowX:'auto'}}>
+            {referenceImages.map((ref,index)=><div key={ref.name+'-'+index} style={{position:'relative',width:66,height:66,flex:'0 0 66px',borderRadius:9,overflow:'hidden',border:'1px solid #303744',background:'#090c11'}}>
+              <img src={ref.data} alt={'Referência '+(index+1)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+              <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
+            </div>)}
+          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Para personagem específico, uma imagem canônica enviada aqui tem prioridade sobre busca automática e melhora muito o identity lock.</small>}
+        </div>:null}
         <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setStyleManuallyChosen(true);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>{setRatio(x);setRatioManuallyChosen(true)}}>{x.label}</button>)}</div>
 
