@@ -131,12 +131,18 @@ export async function reviewSemanticImage(url:string,prompt:string):Promise<impo
     });
     if(!response.ok)return unavailable;
     const data=await response.json();
-    if(data?.status==='passed')return {status:'passed',issues:[],retryPrompt:''};
+    if(data?.status==='passed')return {
+      status:'passed',issues:[],retryPrompt:'',
+      reviewProvider:String(data?.reviewProvider||''),
+      reviewModel:String(data?.reviewModel||'')
+    };
     if(data?.status==='failed'&&Array.isArray(data?.issues)){
       return {
         status:'failed',
         issues:data.issues.map((x:any)=>String(x||'').trim()).filter(Boolean).slice(0,6),
-        retryPrompt:String(data?.retryPrompt||'').trim().slice(0,1400)
+        retryPrompt:String(data?.retryPrompt||'').trim().slice(0,1400),
+        reviewProvider:String(data?.reviewProvider||''),
+        reviewModel:String(data?.reviewModel||'')
       };
     }
     return unavailable;
