@@ -5,7 +5,7 @@ import { Activity, Eye, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as 
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, isPurchaseLocationIntent, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -581,7 +581,7 @@ export function ChatShell({onOpenLegal}:Props){
             result.data?.provider==='freellmapi'
               ? 'FreeLLMAPI respondeu como provider padrão'
               : 'Provider mesh respondeu após a tentativa do FreeLLMAPI',
-            'PredictLM aplicou histórico, contexto, skills e validação',
+            result.data?.mode==='clean-chat'?'PredictLM preservou histórico e contexto sem RAG':'PredictLM aplicou contexto e validação',
             ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
             'Resposta final validada antes de exibir'
           ],
@@ -611,13 +611,16 @@ export function ChatShell({onOpenLegal}:Props){
         signal:turnController.signal
       });
 
-      // Fast chat is only the first attempt. If it is too shallow, retry the
-      // complete PredictLM prompt stack before any local/template fallback.
-      if(!candidate.ok&&cleanEligible){
+      // Ordinary Chat stays conversational. A rejected clean answer must not
+      // promote the turn into Agent Fabric / GitHub Knowledge / skill dumps.
+      // Full orchestration is reserved for explicit DeepThink or turns that
+      // genuinely require current/researched evidence.
+      const shouldUseFullRoute=s.deepThink||needsWeb;
+      if(!candidate.ok&&shouldUseFullRoute){
         setActivity([
-          'FREELLM FIRST · resposta rápida insuficiente',
-          'PREDICT CORE · ampliando histórico, skills e contexto',
-          'VERIFY · tentando resposta completa'
+          needsWeb?'RESEARCH · usando evidência necessária':'DEEPTHINK · ampliando análise',
+          'PREDICT ROUTER · tentando rota completa',
+          'VERIFY · mantendo foco no pedido'
         ]);
         candidate=await requestApiAnswer({
           prompt,
@@ -632,42 +635,6 @@ export function ChatShell({onOpenLegal}:Props){
           clean:false,
           signal:turnController.signal
         });
-      }
-
-      // Open-domain knowledge recovery: if the provider cannot answer a normal
-      // substantive request, research first and give the provider another
-      // grounded chance instead of returning a canned template.
-      const canAutoResearch=!candidate.ok
-        &&!needsWeb
-        &&!isPurchaseLocationIntent(prompt)
-        &&kind!=='casual'
-        &&kind!=='context'
-        &&kind!=='hypothetical'
-        &&prompt.length<=4000;
-      if(canAutoResearch){
-        setActivity([
-          'KNOWLEDGE GAP · resposta insuficiente detectada',
-          'RESEARCH · buscando contexto relevante',
-          'FREELLM FIRST · respondendo novamente com evidência'
-        ]);
-        web=await webContext(prompt,turnController.signal);
-        research=web.items.length?synthesizeResearch(prompt,web.items):null;
-        researchContext=web.text;
-        if(researchContext){
-          candidate=await requestApiAnswer({
-            prompt,
-            language,
-            kind,
-            messages,
-            researchContext,
-            localAdvisory:'',
-            answerAnchor,
-            brainContext,
-            deep:s.deepThink,
-            clean:false,
-            signal:turnController.signal
-          });
-        }
       }
 
       if(deliverProviderCandidate(candidate))return;

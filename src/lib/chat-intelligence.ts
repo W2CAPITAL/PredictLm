@@ -18,7 +18,7 @@ export function isGenericHowTo(prompt:string){
   if(isHypotheticalPrompt(prompt))return false;
   const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
   if(/^(?:passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return true;
-  if(/^como\s+(?:(?:eu\s+)?faco|(?:[a-z]+(?:ar|er|ir))|por)\b/.test(p))return true;
+  if(/^como\s+(?:(?:eu\s+)?faco|(?:posso|pode|podemos|poderia|poderíamos)\s+[a-z]+(?:ar|er|ir)|(?:[a-z]+(?:ar|er|ir))|por)\b/.test(p))return true;
   return false;
 }
 
@@ -29,7 +29,7 @@ export function isPurchaseLocationIntent(prompt:string){
 
 export function answerLooksProcedural(text:string){
   const normalized=clean(text);
-  if(/\b(primeiro|depois|passos?|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|defina|projete|monte|fabrique|conecte|teste|verifique|dimensione|adquira|first|then|place|use|water|keep|install|select|mix|define|design|build|assemble|test|check)\b/.test(normalized))return true;
+  if(/\b(primeiro|depois|passos?|faca|comece|crie|construa|desenvolva|trabalhe|organize|implemente|ajuste|invista|desbloqueie|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|defina|projete|monte|fabrique|conecte|teste|verifique|dimensione|adquira|first|then|place|use|water|keep|install|select|mix|define|design|build|assemble|test|check)\b/.test(normalized))return true;
   if(/(?:^|\n)\s*(?:\d+[.)]|[-*•])\s+\S+/m.test(String(text||'')))return true;
   return String(text||'').trim().length>=220&&/[.;:]/.test(text);
 }
@@ -39,6 +39,7 @@ export function conversationAnswerIssue(prompt:string,content:string){
   const p=clean(prompt),out=clean(content);
   if(!out)return 'empty';
   if(/nao tenho contexto local suficiente|nao tenho contexto suficiente|ative (?:o )?neural|^fallback\b/.test(out))return 'weak-local';
+  if(/(?:^|\n)\s*relacionado:\s*|predictlm\s+[a-z0-9 -]*\s+skill\b|cross-engine agents|github knowledge engine|api agent \+ skills/i.test(String(content||'')))return 'internal-context-leak';
   if(isGenericHowTo(prompt)&&!answerLooksProcedural(content))return 'missing-procedure';
   if(isHypotheticalPrompt(prompt)){
     const topical=responseTopicAlignment(prompt,content);

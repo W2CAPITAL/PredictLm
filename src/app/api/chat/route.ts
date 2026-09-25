@@ -1,4 +1,4 @@
-import { classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -500,13 +500,39 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   }
 
   const validateCandidate=async(provider:Provider)=>{
+    const validate=(raw:string)=>{
+      const gate=publicAnswerGate(raw,language,prompt);
+      if(!gate.ok)throw new Error(gate.reason);
+      const issue=conversationAnswerIssue(prompt,gate.content);
+      const alignment=responseTopicAlignment(prompt,gate.content);
+      const proceduralEnough=isGenericHowTo(prompt)&&answerLooksProcedural(gate.content);
+      if(issue||(!alignment.relevant&&!proceduralEnough))throw new Error(issue||'off-topic');
+      return gate.content;
+    };
+
     const raw=await callProvider(provider,messages,false,8500);
-    const gate=publicAnswerGate(raw,language,prompt);
-    if(!gate.ok)throw new Error(gate.reason);
-    const issue=conversationAnswerIssue(prompt,gate.content);
-    const alignment=responseTopicAlignment(prompt,gate.content);
-    if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
-    return {provider,content:gate.content};
+    try{
+      return {provider,content:validate(raw)};
+    }catch(firstError:any){
+      // Give the same provider one clean self-correction chance instead of
+      // escalating ordinary chat into RAG/skills/local fallback.
+      const repaired=await callProvider(provider,[
+        {role:'system',content:[
+          system,
+          'Your previous draft was rejected because it did not answer the user cleanly.',
+          'Rewrite from scratch. Answer only the current user request using recent conversation context.',
+          'Do not output README text, repository snippets, source dumps, agent/skill names, Related/Relacionado sections, or internal notes.',
+          'Return only the final natural-language answer.'
+        ].join('\n\n')},
+        ...recent,
+        {role:'user',content:compactText(prompt,1200)}
+      ],false,8500);
+      try{
+        return {provider,content:validate(repaired)};
+      }catch(secondError:any){
+        throw new Error(String(secondError?.message||firstError?.message||'rejected'));
+      }
+    }
   };
 
   const errors:string[]=[];
