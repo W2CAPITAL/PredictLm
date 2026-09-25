@@ -10,12 +10,16 @@ export interface VisualReference{
   imageUrl:string;
   sourceUrl:string;
   site:string;
+  query:string;
 }
 
 export interface VisualReferencePlan{
   query:string;
+  queries:string[];
   references:VisualReference[];
   warnings:string[];
+  candidatesFound:number;
+  searchRounds:number;
 }
 
 function normalize(input:string){
@@ -105,6 +109,57 @@ export function buildVisualIdentityLock(input:string){
   return rules.filter(Boolean).join(' ');
 }
 
+export function buildVisualReferenceQueries(input:string){
+  const raw=coreVisualIntent(input);
+  const p=normalize(raw);
+  const queries:string[]=[];
+  if(isNarutoKuramaVsSasukeSusanooPrompt(input)){
+    queries.push(
+      'Naruto Uzumaki Kurama chakra mode official anime reference full body',
+      'Naruto Uzumaki Kurama link mode anime screenshot canonical',
+      'Kurama Nine Tails Naruto canonical full body official anime reference',
+      'Sasuke Uchiha Perfect Susanoo official anime reference full body',
+      'Sasuke Perfect Susanoo anime screenshot canonical purple armored avatar',
+      'Naruto Kurama vs Sasuke Susanoo final battle anime reference'
+    );
+    if(/\b(vale do fim|valley of the end|hashirama|madara|estatuas)\b/.test(p)){
+      queries.push('Naruto Sasuke Valley of the End final battle anime reference');
+    }
+  }else if(/\b(freeza|frieza)\b/.test(p)){
+    queries.push(
+      'Frieza final form official Dragon Ball character reference white purple full body',
+      'Frieza final form Dragon Ball Super anime screenshot canonical',
+      'Frieza official character art solo white purple'
+    );
+  }else if(/\bnaruto\b/.test(p)&&/\b(kurama|kyuubi|kyubi|nove caudas|nine tails)\b/.test(p)){
+    queries.push(
+      'Naruto Uzumaki Kurama chakra mode official anime reference',
+      'Naruto Kurama link mode anime screenshot canonical',
+      'Kurama Nine Tails official anime full body reference'
+    );
+  }else if(/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p)){
+    queries.push(
+      'Sasuke Uchiha Perfect Susanoo official anime reference',
+      'Sasuke Perfect Susanoo anime screenshot full body purple avatar',
+      'Sasuke Uchiha official anime character reference'
+    );
+  }else if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p)){
+    queries.push('Dragon Ball Oozaru Great Ape official anime reference','Saiyan Great Ape full body anime screenshot');
+  }else if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\bnaruto\b/.test(p)){
+    queries.push('Naruto Four Tails Son Goku Bijuu official anime reference','Son Goku Four Tails Naruto full body reference');
+  }else{
+    const base=buildVisualReferenceQuery(input);
+    queries.push(base);
+    if(isLikelyNamedPersonPrompt(raw)){
+      const subject=extractRequestedNamedSubject(raw)||raw;
+      queries.push(subject+' official portrait reference',subject+' canonical appearance reference');
+    }else if(isSpecificVisualPrompt(raw)){
+      queries.push(compactText(raw+' official art canonical appearance',320),compactText(raw+' anime screenshot reference',320));
+    }
+  }
+  return [...new Set(queries.map(x=>compactText(x,320)).filter(Boolean))].slice(0,8);
+}
+
 export function buildVisualReferenceQuery(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
@@ -186,7 +241,8 @@ async function duckDuckGoImageSearch(query:string,limit:number):Promise<VisualRe
         title:String(item?.title||query).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180),
         imageUrl,
         sourceUrl,
-        site:safeHost(sourceUrl)
+        site:safeHost(sourceUrl),
+        query
       } satisfies VisualReference;
     })
     .filter(Boolean)
@@ -217,7 +273,8 @@ async function googleImageSearch(query:string,limit:number,pinterest=false):Prom
         title:String(item?.title||query).replace(/\s+/g,' ').trim().slice(0,180),
         imageUrl,
         sourceUrl,
-        site:safeHost(sourceUrl)
+        site:safeHost(sourceUrl),
+        query
       } satisfies VisualReference;
     })
     .filter(Boolean) as VisualReference[];
@@ -245,18 +302,19 @@ async function firecrawlImageSearch(query:string,limit:number,pinterest=false):P
       title:String(typeof item==='string'?query:(item?.title||query)).replace(/\s+/g,' ').trim().slice(0,180),
       imageUrl,
       sourceUrl,
-      site:safeHost(sourceUrl)
+      site:safeHost(sourceUrl),
+      query
     } satisfies VisualReference;
   }).filter(Boolean) as VisualReference[];
 }
 
 export async function resolveVisualReferences(input:string,limit?:number):Promise<VisualReferencePlan>{
-  const maxEnv=Number(process.env.PREDICTLM_VISUAL_REFERENCE_MAX||4);
-  const max=Math.max(1,Math.min(8,Number(limit)||maxEnv||4));
-  const queries=matchupReferenceQueries(input);
-  if(!queries.length)queries.push(buildVisualReferenceQuery(input));
+  const maxEnv=Number(process.env.PREDICTLM_VISUAL_REFERENCE_MAX||6);
+  const max=Math.max(1,Math.min(8,Number(limit)||maxEnv||6));
+  const matchup=matchupReferenceQueries(input);
+  const queries=[...new Set([...matchup,...buildVisualReferenceQueries(input)])].slice(0,8);
   const query=queries.join(' | ');
-  if(!isSpecificVisualPrompt(input))return {query,references:[],warnings:[]};
+  if(!isSpecificVisualPrompt(input))return {query,queries,references:[],warnings:[],candidatesFound:0,searchRounds:0};
 
   const warnings:string[]=[];
   const hasFirecrawl=!!String(process.env.FIRECRAWL_API_KEY||'').trim();
@@ -264,50 +322,61 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'google,firecrawl,pinterest-firecrawl,duckduckgo,pinterest-google')
     .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 
-  const tasks:{label:string;run:Promise<VisualReference[]>}[]=[];
+  const tasks:{label:string;query:string;run:Promise<VisualReference[]>}[]=[];
   for(const searchQuery of queries){
   for(const id of order){
-    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',run:firecrawlImageSearch(searchQuery,max,false)});
-    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
-    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',run:googleImageSearch(searchQuery,max,false)});
-    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',run:googleImageSearch(searchQuery,Math.min(3,max),true)});
-    if(id==='duckduckgo'||id==='duckduckgo-images')tasks.push({label:'DuckDuckGo Images',run:duckDuckGoImageSearch(searchQuery,max)});
+    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',query:searchQuery,run:firecrawlImageSearch(searchQuery,max,false)});
+    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',query:searchQuery,run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
+    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',query:searchQuery,run:googleImageSearch(searchQuery,max,false)});
+    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',query:searchQuery,run:googleImageSearch(searchQuery,Math.min(3,max),true)});
+    if(id==='duckduckgo'||id==='duckduckgo-images')tasks.push({label:'DuckDuckGo Images',query:searchQuery,run:duckDuckGoImageSearch(searchQuery,max)});
   }
 
   }
   const settled=await Promise.allSettled(tasks.map(x=>x.run));
   const merged:VisualReference[]=[];
   settled.forEach((task,index)=>{
-    if(task.status==='fulfilled'&&task.value[0]){
-      const group=Math.floor(index/Math.max(1,tasks.length/queries.length));
-      if(!merged.some(x=>(x as VisualReference & {queryGroup?:number}).queryGroup===group))merged.push({...task.value[0],queryGroup:group} as VisualReference);
-    }
-    else if(task.status==='rejected')warnings.push(tasks[index].label+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
+    if(task.status==='fulfilled')merged.push(...task.value);
+    else warnings.push(tasks[index].label+' · '+tasks[index].query+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
   });
 
   if(!hasGoogle){
     warnings.push('Google Images API não configurada; a busca visual automática continua por Firecrawl/DuckDuckGo quando disponíveis.');
   }
 
-  settled.forEach(task=>{if(task.status==='fulfilled')merged.push(...task.value.slice(1));});
   const seen=new Set<string>();
   const canonicalTerms=normalize(buildVisualReferenceQuery(input)).split(/\s+/).filter(x=>x.length>3);
   const trustedHosts=/fandom\.com$|wikipedia\.org$|wikimedia\.org$|crunchyroll\.com$|viz\.com$|toei-anim\.co\.jp$|dragon-ball-official\.com$|naruto-official\.com$/i;
-  const references=merged.filter(ref=>{
+  const ranked=merged.filter(ref=>{
     const key=ref.imageUrl;
     if(!key||seen.has(key))return false;
     seen.add(key);
     return true;
   }).sort((a,b)=>{
     const score=(ref:VisualReference)=>{
-      const hay=normalize(ref.title+' '+ref.site);
+      const hay=normalize(ref.title+' '+ref.site+' '+ref.query);
       const lexical=canonicalTerms.reduce((sum,term)=>sum+(hay.includes(term)?1:0),0);
       return lexical+(trustedHosts.test(ref.site)?3:0)+(ref.provider==='google-images'?1.5:0);
     };
     return score(b)-score(a);
-  }).slice(0,max);
+  });
+  const references:VisualReference[]=[];
+  for(const searchQuery of queries){
+    const candidate=ranked.find(ref=>ref.query===searchQuery&&!references.some(x=>x.imageUrl===ref.imageUrl));
+    if(candidate)references.push(candidate);
+    if(references.length>=max)break;
+  }
+  for(const candidate of ranked){
+    if(references.length>=max)break;
+    if(!references.some(x=>x.imageUrl===candidate.imageUrl))references.push(candidate);
+  }
   if(!references.length)warnings.push('A busca automática não retornou uma imagem pública utilizável desta vez.');
-  return {query,references,warnings:Array.from(new Set(warnings))};
+  return {
+    query,queries,references,
+    warnings:Array.from(new Set(warnings)),
+    candidatesFound:ranked.length,
+    searchRounds:queries.length>1?2:1
+  };
 }
 
 export function buildReferenceEvidencePrompt(refs:VisualReference[]){
