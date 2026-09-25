@@ -11,6 +11,8 @@ import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@
 import { preloadGeneratedImage, reviewSemanticImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
+import { loadCognitiveState } from '@/lib/cognitive/cognitive-memory';
+import { buildCreativeMediaControl } from '@/lib/cognitive/creative-media';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -412,6 +414,9 @@ export function GrokImaginePanel(){
 
       setImageStage(regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…');
       const prepared=await prepareMediaPrompt('image');
+      const cognitiveState=await loadCognitiveState().catch(()=>null);
+      const cognitiveCreativeBrief=cognitiveState?buildCreativeMediaControl(cognitiveState,prompt).publicBrief:'';
+      const combinedDirectorBrief=[prepared.brief,cognitiveCreativeBrief].filter(Boolean).join('\n\n');
       const literalRequest=isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
       const basePrompt=literalRequest
         ? prepared.prompt
@@ -436,7 +441,7 @@ export function GrokImaginePanel(){
 
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt,false,'',prepared.brief||'');
+      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt,false,'',combinedDirectorBrief);
       let url=data.url;
       let expandedPrompt=data.expandedPrompt||renderPrompt;
 
@@ -488,7 +493,7 @@ export function GrokImaginePanel(){
               previousPrompt:renderPrompt
             })+'. Correções obrigatórias: '+(finalReview?.promptHints||[]).join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
         setImageStage(semanticRepair?'Fidelidade abaixo do gate · corrigindo uma vez…':'Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair,semanticRepairHints,prepared.brief||'');
+        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair,semanticRepairHints,combinedDirectorBrief);
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
@@ -499,6 +504,33 @@ export function GrokImaginePanel(){
         if(semanticRepair)semanticReview=await reviewSemanticImage(url,prompt);
       }
 
+      // Character/identity-sensitive prompts get bounded extra recovery passes.
+      // This is capped to avoid infinite regeneration and never relaxes the original subject lock.
+      if(!regenerate&&looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed'){
+        const maxExtra=data.fidelityLimited?1:2;
+        for(let fidelityPass=0;fidelityPass<maxExtra&&semanticReview?.status==='failed';fidelityPass++){
+          const hints=(semanticReview.retryPrompt||semanticReview.issues.join('; ')).trim();
+          const retrySeed=autoVariationSeed(nextSeed);
+          const strictRepair=[
+            prompt,
+            'STRICT CHARACTER RECOVERY: preserve exactly the requested named subject(s), canonical identity, anatomy, costume, colors, count and requested action.',
+            hints?('VISIBLE ERRORS TO FIX: '+hints):'',
+            'Do not add unrelated opponents, substitute lookalikes, duplicate the focal character or invent a versus scene.',
+            'Change camera/composition only as needed to make the canonical identity unmistakable.'
+          ].filter(Boolean).join('\n\n');
+          setImageStage('Personagem fora do modelo · nova tentativa de fidelidade '+(fidelityPass+1)+'/'+maxExtra+'…');
+          data=await createImageUrl(strictRepair,retrySeed,nextAttempt+1,true,hints,combinedDirectorBrief);
+          url=data.url;
+          expandedPrompt=data.expandedPrompt||strictRepair;
+          nextSeed=retrySeed;
+          nextAttempt+=1;
+          setSeed(nextSeed);
+          setAttempt(nextAttempt);
+          finalReview=await reviewImageQuality(url).catch(()=>finalReview);
+          semanticReview=await reviewSemanticImage(url,prompt);
+        }
+      }
+
       const semanticWarning=semanticReview?.status==='failed'
         ? 'A revisão semântica ainda encontrou divergências visíveis: '+semanticReview.issues.slice(0,3).join('; ')+'.'
         : semanticReview?.status==='unavailable'
@@ -507,7 +539,10 @@ export function GrokImaginePanel(){
       data.providerWarning=[data.providerWarning,semanticWarning].filter(Boolean).join(' ');
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
-      const upscaled=await upscaleImageUrl(url);
+      const semanticFailedSpecific=looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed';
+      const upscaled=semanticFailedSpecific
+        ? {url,upscaled:false,provider:''}
+        : await upscaleImageUrl(url);
       url=upscaled.url;
 
       setGenerated(url);
@@ -517,7 +552,14 @@ export function GrokImaginePanel(){
       setImageProviderWarning(data.providerWarning||'');
       if(data.style&&data.style!==style)setStyle(data.style);
       setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
-      await saveLibrary({
+      if(semanticFailedSpecific){
+        setPersisted(false);
+        data.providerWarning=[
+          data.providerWarning,
+          'Esta geração específica falhou no gate de identidade e não foi adicionada às Gerações recentes.'
+        ].filter(Boolean).join(' ');
+        setImageProviderWarning(data.providerWarning);
+      }else await saveLibrary({
         kind:'image',
         provider:data.provider||'pollinations-proxy',
         model:data.model||'flux',
