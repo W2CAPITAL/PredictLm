@@ -596,7 +596,14 @@ export function responseTopicAlignment(prompt:string,content:string){
   let hits=0;
   for(const token of subject){
     const variants=TOPIC_SYNONYMS[token]||[token];
-    if(variants.some(v=>new RegExp('\\b'+v+'\\b').test(c)))hits++;
+    if(variants.some(v=>{
+      const exact=new RegExp('\\b'+v+'\\b');
+      if(exact.test(c))return true;
+      if(v.length<4)return false;
+      // Accept basic Portuguese inflections/plurals without turning topic
+      // alignment into a fuzzy semantic match.
+      return new RegExp('\\b'+v+'(?:s|es|m|am|em|ando|endo|indo)?\\b').test(c);
+    }))hits++;
   }
   const score=hits/subject.length;
   const hypothetical=isHypotheticalPrompt(prompt);
