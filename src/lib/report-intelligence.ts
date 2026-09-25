@@ -192,6 +192,29 @@ export function parallaxReportPrompt(request:string,sourceText:string,blueprint:
   ].join('\n\n');
 }
 
+export function councilReportPrompt(request:string,sourceText:string,blueprint:ReportBlueprint){
+  return [
+    'Você é Council X10 para revisão de um relatório. Produza síntese auditável, não chain-of-thought.',
+    'OBJETIVO: '+request,
+    'TIPO: '+blueprint.label,
+    reportEvidenceContract(),
+    'Avalie em 10 lentes independentes, cada uma com FACTS, RISKS, RECOMMENDATION e CHECK:',
+    '1. Product / North Star — utilidade e decisão que o relatório precisa habilitar.',
+    '2. Architecture / Systems — estrutura, dependências e fluxo causal/sistêmico.',
+    '3. Builder / Implementation — o que realmente foi executado/registrado versus alegado.',
+    '4. UX / Human Factors — impacto em pessoas, operação e interpretação do documento.',
+    '5. Research / Domain — regras do domínio, comparabilidade e qualidade da evidência.',
+    '6. Security / Abuse — fraude, manipulação, exposição e integridade dos dados quando relevante.',
+    '7. Failure / QA — falhas, regressões, inconsistências e teste decisivo.',
+    '8. Legal / Privacy — conformidade, minimização e limites de afirmação.',
+    '9. Operations / Cost — confiabilidade, capacidade, custo e continuidade.',
+    '10. Devil\'s Advocate — contra-caso mais forte e condição que derruba a conclusão.',
+    'Finalize com CONSENSUS, DISAGREEMENTS, TOP_RISK, TOP_OPPORTUNITY e DECISIVE_CHECK.',
+    'MATERIAL RECEBIDO:',
+    trimSource(sourceText)||'[sem material adicional]'
+  ].join('\n\n');
+}
+
 export function chairReportPrompt(input:{
   request:string;
   sourceText:string;
@@ -199,8 +222,9 @@ export function chairReportPrompt(input:{
   forge:string;
   aegis:string;
   parallax:string;
+  council?:string;
 }){
-  const {request,sourceText,blueprint,forge,aegis,parallax}=input;
+  const {request,sourceText,blueprint,forge,aegis,parallax,council}=input;
   return [
     'Você é CHAIR, editor final do PredictLM Report Architect.',
     'Gere UM relatório completo em português do Brasil, pronto para renderização.',
@@ -224,6 +248,7 @@ export function chairReportPrompt(input:{
     aegis,
     'PARALLAX — terceiro enquadramento:',
     parallax,
+    ...(council?['COUNCIL X10 — revisão multidisciplinar:',council]:[]),
     'MATERIAL ORIGINAL (fonte de verdade):',
     trimSource(sourceText)||'[sem material adicional]'
   ].join('\n\n');
