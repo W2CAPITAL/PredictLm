@@ -136,7 +136,7 @@ export async function POST(req:Request){
     const negativePrompt=buildDefaultNegativePrompt(sourcePrompt,userNegative);
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
     const referencePlan=referenceMode==='off'
-      ? {query:'',references:[],warnings:[] as string[]}
+      ? {query:'',queries:[] as string[],references:[],warnings:[] as string[],candidatesFound:0,searchRounds:0}
       : await resolveVisualReferences(sourcePrompt);
     const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
