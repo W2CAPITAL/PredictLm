@@ -488,7 +488,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -500,7 +500,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     },{status:503,headers:{'Cache-Control':'no-store'}});
   }
 
-  const validateCandidate=async(provider:Provider)=>{
+  const validateCandidate=async(provider:Provider,timeoutMs:number)=>{
     const validate=(raw:string)=>{
       const gate=publicAnswerGate(raw,language,prompt);
       if(!gate.ok)throw new Error(gate.reason);
@@ -511,12 +511,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
       return gate.content;
     };
 
-    const raw=await callProvider(provider,messages,false,8500);
+    const raw=await callProvider(provider,messages,false,timeoutMs);
     try{
       return {provider,content:validate(raw)};
     }catch(firstError:any){
-      // Give the same provider one clean self-correction chance instead of
-      // escalating ordinary chat into RAG/skills/local fallback.
       const repaired=await callProvider(provider,[
         {role:'system',content:[
           system,
@@ -527,7 +525,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
         ].join('\n\n')},
         ...recent,
         {role:'user',content:compactText(prompt,1200)}
-      ],false,8500);
+      ],false,Math.min(timeoutMs,4000));
       try{
         return {provider,content:validate(repaired)};
       }catch(secondError:any){
@@ -537,38 +535,27 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   };
 
   const errors:string[]=[];
-  const free=candidates.find(x=>x.name==='freellmapi');
-  if(free){
+  const attempted:string[]=[];
+  const startedAt=Date.now();
+  const cleanBudgetMs=28000;
+
+  for(const provider of candidates){
+    const remaining=cleanBudgetMs-(Date.now()-startedAt);
+    if(remaining<1000)break;
+    attempted.push(provider.name);
     try{
-      const result=await validateCandidate(free);
+      const result=await validateCandidate(provider,Math.min(7000,Math.max(900,remaining)));
       return Response.json({
         content:result.content,
         provider:result.provider.name,
         model:result.provider.model,
         mode:'clean-chat',
         sources:[],
-        apiRace:{attempted:['freellmapi'],winner:'freellmapi',strategy:'freellm-first'}
+        apiRace:{attempted,winner:result.provider.name,strategy:'sequential-failover'}
       },{headers:{'Cache-Control':'no-store'}});
     }catch(error:any){
-      errors.push('freellmapi: '+String(error?.message||error||'failed').slice(0,160));
+      errors.push(provider.name+': '+String(error?.message||error||'failed').slice(0,220));
     }
-  }
-
-  const fallbacks=candidates.filter(x=>x.name!=='freellmapi');
-  const attempts=await Promise.allSettled(fallbacks.map(validateCandidate));
-  for(let i=0;i<attempts.length;i++){
-    const result=attempts[i];
-    if(result.status==='fulfilled'){
-      return Response.json({
-        content:result.value.content,
-        provider:result.value.provider.name,
-        model:result.value.provider.model,
-        mode:'clean-chat',
-        sources:[],
-        apiRace:{attempted:[...(free?['freellmapi']:[]),...fallbacks.map(x=>x.name)],winner:result.value.provider.name,strategy:'freellm-first'}
-      },{headers:{'Cache-Control':'no-store'}});
-    }
-    errors.push(fallbacks[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
   }
 
   return Response.json({
@@ -576,8 +563,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     content:null,
     code:'NO_CLEAN_ANSWER',
     mode:'clean-chat',
-    errors:errors.slice(0,4)
+    attempted,
+    errors:errors.slice(0,8)
   },{status:502,headers:{'Cache-Control':'no-store'}});
+
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
