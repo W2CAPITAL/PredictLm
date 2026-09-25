@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.9.0"
+  version: "2.0.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -385,3 +385,18 @@ Rules:
 - a visibly wrong character still fails the semantic gate.
 
 The public fallback renderer forwards up to three searched reference URLs through the image-reference field supported by compatible image endpoints. Provider support remains model-dependent and must be reported truthfully.
+
+
+## Runtime fidelity fix v2.0 — reference-capable generation
+
+Automatic visual search only improves fidelity when the generation model actually consumes images.
+
+Required runtime:
+- text-only image models such as `flux` must not be counted as reference-grounded merely because an `image` URL was attached;
+- named/specific characters with automatic references should prefer an image-input model such as `kontext` (or another model whose input modalities explicitly include image);
+- the public renderer may try a bounded reference-capable sequence (`kontext` → `nanobanana-2-lite` → `p-image-edit`) but must not silently degrade a reference-sensitive request to a text-only model and claim fidelity;
+- semantic verification is provider-mesh based: Gemini is no longer the only possible visual reviewer;
+- Vercel Gateway/OpenAI-compatible vision, Anthropic vision, Gemini and other configured multimodal providers may review pixels;
+- a named character that visibly fails identity remains rejected, regardless of prompt similarity.
+
+Search reference → image-input model → generated pixels → independent multimodal semantic review.
