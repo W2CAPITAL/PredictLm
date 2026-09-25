@@ -128,3 +128,19 @@ Frank includes:
 - public mental-state summary (feeling/focus/want/tendency), never private chain-of-thought.
 
 Do not claim donor thoughts/memories, mind reading, or biological consciousness.
+
+
+## Frank hippocampal memory circuit
+
+Frank uses a lightweight hippocampal architecture inspired by HBP/EBRAINS memory modelling:
+
+**entorhinal input → dentate pattern separation → CA3 pattern completion → CA1 match/mismatch → consolidation**
+
+Properties:
+- similar experiences can separate into distinct engrams;
+- partial cues can retrieve related engrams;
+- emotion/salience modulates encoding strength;
+- low-arousal/safe periods can consolidate memories;
+- no donor biological memories are imported or claimed.
+
+The virtual neuronal mesh and hippocampal engrams are reproducible software states informed by biological structure, not copied living neurons.
