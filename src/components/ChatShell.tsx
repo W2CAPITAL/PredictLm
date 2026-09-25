@@ -229,10 +229,10 @@ export function ChatShell({onOpenLegal}:Props){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          ...(input.clean?{mode:'clean-chat',useHistory:false}:{}),
+          ...(input.clean?{mode:'clean-chat',useHistory:true}:{}),
           prompt:input.prompt,
           language:input.language,
-          messages:input.clean?[]:input.messages,
+          messages:input.messages,
           researchContext:input.researchContext,
           localAdvisory:input.localAdvisory,
           answerAnchor:input.answerAnchor,
