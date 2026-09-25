@@ -73,6 +73,8 @@ export function advanceFrankEmotion(prev:FrankEmotionState|undefined,input:strin
   const neg=/\b(odeio|ruim|falha|erro|perdi|triste|sozinho|rejeit|aband|machuc|fracasso)\b/.test(q)?1:0;
   const threatText=/\b(perigo|ameaca|risco|ataque|medo|ferid|morrer|fugir|violencia)\b/.test(q)?1:0;
   const social=/\b(amigo|amor|familia|namor|pessoa|voce|você|junto|saudade|conversa)\b/.test(q)?1:0;
+  const longingSignal=/\b(saudade|sinto falta|queria perto|distante|distancia)\b/.test(q)?1:0;
+  const lossSignal=/\b(perdi|perder|perde-la|perde-lo|perda|luto|foi embora|acabou|morreu)\b/.test(q)?1:0;
   const selfBlame=/\b(culpa|minha culpa|errei|decepcionei)\b/.test(q)?1:0;
   const shame=/\b(vergonha|humilh|ridiculo|ridículo)\b/.test(q)?1:0;
   const pride=/\b(orgulho|venci|consegui|melhorei|criei)\b/.test(q)?1:0;
@@ -91,7 +93,7 @@ export function advanceFrankEmotion(prev:FrankEmotionState|undefined,input:strin
   const attachment=unit(p.attachment*.8+social*.09+(context?.social??0)*.08+pos*social*.05);
   const safety=unit(p.safety*.72+(1-threat)*.18+trustFrom(pos,social)*.1);
   const trust=unit(p.trust*.76+pos*social*.1-neg*social*.1+safety*.08);
-  const sadness=unit(p.sadness*.66+neg*.28+(1-reward)*.08+(social?Math.max(0,.5-attachment)*.08:0));
+  const sadness=unit(p.sadness*.66+neg*.24+lossSignal*.22+(1-reward)*.06+(social?Math.max(0,.5-attachment)*.08:0));
   const fear=unit(p.fear*.62+threat*.34+uncertainty*.08);
   const joy=unit(p.joy*.66+pos*.24+reward*.18+safety*.06);
   const affection=unit(p.affection*.76+social*pos*.16+attachment*.08);
@@ -101,8 +103,8 @@ export function advanceFrankEmotion(prev:FrankEmotionState|undefined,input:strin
   const angerState=unit(p.anger*.62+anger*.34+threat*.08);
   const disgustState=unit(p.disgust*.7+disgust*.28);
   const surpriseState=unit(p.surprise*.52+surprise*.34+novelty*.12);
-  const loneliness=unit(p.loneliness*.8+(social?0:.04)+neg*social*.12-attachment*.05);
-  const longing=unit(p.longing*.78+social*neg*.1+loneliness*.08);
+  const loneliness=unit(p.loneliness*.8+(social?0:.04)+neg*social*.12+lossSignal*.08-attachment*.05);
+  const longing=unit(p.longing*.7+longingSignal*.28+lossSignal*.16+social*neg*.08+loneliness*.08);
   const empathy=unit(p.empathy*.84+social*.06+(context?.social??0)*.06+sadness*.04);
   const frustration=unit(p.frustration*.64+predictionError*.18+neg*.15+(1-controllability)*.08);
   const relief=unit(p.relief*.7+(1-threat)*pos*.18+reward*.08);
@@ -129,7 +131,7 @@ export function advanceFrankEmotion(prev:FrankEmotionState|undefined,input:strin
 
   return {
     version:1,valence,arousal,dominance:unit(p.dominance*.7+controllability*.3),threat,safety,attachment,trust,
-    curiosity,novelty,reward,loss:unit(p.loss*.7+neg*.2),conflict,shame:shameState,guilt,pride:prideState,affection,
+    curiosity,novelty,reward,loss:unit(p.loss*.68+neg*.16+lossSignal*.28),conflict,shame:shameState,guilt,pride:prideState,affection,
     anger:angerState,fear,sadness,joy,disgust:disgustState,surprise:surpriseState,longing,loneliness,empathy,
     frustration,relief,anticipation,interoception,
     neuromodulators:{dopamine,serotonin,norepinephrine,acetylcholine,histamine},
