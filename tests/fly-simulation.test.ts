@@ -17,7 +17,8 @@ test('FlyCore simulation agent moves autonomously inside world bounds',()=>{
   assert.equal(fly.tick,12);
   assert.ok(fly.x>=18&&fly.x<=LIFE_WORLD_WIDTH-18);
   assert.ok(fly.y>=20&&fly.y<=LIFE_WORLD_HEIGHT-22);
-  assert.ok(fly.x!==start.x||fly.y!==start.y);
+  assert.ok(Math.hypot(fly.x-start.x,fly.y-start.y)>8);
+  assert.ok(fly.z>=14&&fly.z<=92);
   assert.match(flySimulationBubble(fly),/bzz/i);
 });
 
