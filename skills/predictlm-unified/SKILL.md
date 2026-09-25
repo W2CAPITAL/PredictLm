@@ -801,3 +801,21 @@ Imagine:
 - gerações antigas identity-sensitive não verificadas são filtradas da galeria;
 - Cognitive Creative Brain melhora composição/novidade apenas dentro do identity lock;
 - nenhuma dependência Supabase foi adicionada; persistência continua local/IndexedDB/localStorage.
+
+
+## Report Architect / Dossier HTML (2026-09-25)
+
+PredictLM agora possui uma camada comum de relatórios:
+- src/lib/predict-dossier-html.ts: parser, roles, auto-split, numeração, validação e HTML;
+- /dossie-studio: edição/preview/nota/impressão/download;
+- /api/report-dossier: Markdown/JSON → HTML/JSON;
+- /dossie-exemplo.html: exemplo navegável;
+- skills/report-architect/SKILL.md: contrato sob demanda.
+
+O Chat detecta intenção de relatório e injeta o contrato apenas nesse turno. Pedidos comuns continuam no caminho normal.
+
+Qualidade: erros -25, avisos -8, dicas -2; meta >=85 e zero erros.
+
+Proveniência obrigatória para afirmações relevantes: [oficial], [fornecida], [inferência]. Riscos são qualitativos. Falhas de fonte e lacunas ficam explícitas. Exportação para Office Artifacts reutiliza o conteúdo já validado em vez de refazer a análise.
+
+Sem Supabase: renderer é determinístico; handoff Chat → Studio é local no navegador.
