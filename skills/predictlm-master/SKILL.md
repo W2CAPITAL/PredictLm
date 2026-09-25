@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.14.1"
+  version: "3.14.2"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.14.1
+# PredictLM Master v3.14.2
 
 ## Regra soberana
 
@@ -919,3 +919,25 @@ A ordem de autoridade é:
 4. referência portátil.
 
 Se uma referência portátil envelhecer ou divergir do runtime, o runtime atual vence. Referência nunca deve reativar comportamento antigo, provider removido ou política de fallback já substituída.
+
+
+# Physical Simulation + Character Fidelity gates v3.14.2
+
+These are release-blocking invariants.
+
+Simulation:
+- an agent is not "moving" if its update timer never executes;
+- fast state dependencies must not repeatedly cancel a slower agent interval;
+- agents cannot remain attached indefinitely to one salience target; use sample/dwell/cooldown/anti-stall;
+- rendered props and actionable props must share one canonical object registry;
+- a physical task must remain visually observable for multiple ticks;
+- POV objects should visually resemble their semantic object type.
+
+Imagine:
+- a named character replaced by a lookalike is failure, not partial success;
+- user-provided reference images have highest visual identity priority and should be passed multimodally where supported;
+- semantic pixel review must use concrete visible identity cues;
+- a failed identity candidate or an unverified fidelity-limited fallback is not shown/persisted as a valid final character generation;
+- searched references never outrank a user-uploaded reference.
+
+These gates are stronger than cosmetic polish or provider convenience. Never hide failure by changing only captions, titles or library metadata.
