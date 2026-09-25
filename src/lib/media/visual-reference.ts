@@ -2,7 +2,7 @@ import { canonicalMatchupLock, matchupReferenceQueries } from './canonical-match
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
-export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google';
+export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google'|'duckduckgo-images';
 
 export interface VisualReference{
   provider:VisualReferenceProvider;
@@ -143,6 +143,56 @@ function isSafePublicUrl(input:string){
   }catch{return false}
 }
 
+
+async function duckDuckGoImageSearch(query:string,limit:number):Promise<VisualReference[]>{
+  const searchUrl='https://duckduckgo.com/?q='+encodeURIComponent(query);
+  const htmlResponse=await fetch(searchUrl,{
+    cache:'no-store',
+    headers:{
+      'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+      'Accept-Language':'en-US,en;q=0.9'
+    },
+    signal:AbortSignal.timeout(9000)
+  });
+  if(!htmlResponse.ok)throw new Error('DuckDuckGo Images bootstrap '+htmlResponse.status);
+  const html=await htmlResponse.text();
+  const vqd=
+    html.match(/vqd=['"]([^'"]+)['"]/)?.[1]||
+    html.match(/vqd=([\d-]+)/)?.[1]||
+    '';
+  if(!vqd)throw new Error('DuckDuckGo Images token indisponível');
+
+  const params=new URLSearchParams({
+    l:'us-en',o:'json',q,vqd,f:',,,',p:'1',s:'0'
+  });
+  const response=await fetch('https://duckduckgo.com/i.js?'+params.toString(),{
+    cache:'no-store',
+    headers:{
+      'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+      'Referer':searchUrl,
+      'Accept':'application/json'
+    },
+    signal:AbortSignal.timeout(10000)
+  });
+  if(!response.ok)throw new Error('DuckDuckGo Images '+response.status);
+  const data=await response.json().catch(()=>({}));
+  return (Array.isArray(data?.results)?data.results:[])
+    .map((item:any)=>{
+      const imageUrl=String(item?.image||'').trim();
+      const sourceUrl=String(item?.url||item?.source||'').trim();
+      if(!isSafePublicUrl(imageUrl)||!isSafePublicUrl(sourceUrl))return null;
+      return {
+        provider:'duckduckgo-images',
+        title:String(item?.title||query).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180),
+        imageUrl,
+        sourceUrl,
+        site:safeHost(sourceUrl)
+      } satisfies VisualReference;
+    })
+    .filter(Boolean)
+    .slice(0,Math.max(1,Math.min(12,limit))) as VisualReference[];
+}
+
 async function googleImageSearch(query:string,limit:number,pinterest=false):Promise<VisualReference[]>{
   const key=String(process.env.GOOGLE_IMAGE_SEARCH_API_KEY||'').trim();
   const cx=String(process.env.GOOGLE_IMAGE_SEARCH_CX||'').trim();
@@ -211,7 +261,7 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   const warnings:string[]=[];
   const hasFirecrawl=!!String(process.env.FIRECRAWL_API_KEY||'').trim();
   const hasGoogle=!!String(process.env.GOOGLE_IMAGE_SEARCH_API_KEY||'').trim()&&!!String(process.env.GOOGLE_IMAGE_SEARCH_CX||'').trim();
-  const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'firecrawl,pinterest-firecrawl,google,pinterest-google')
+  const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'google,firecrawl,pinterest-firecrawl,duckduckgo,pinterest-google')
     .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 
   const tasks:{label:string;run:Promise<VisualReference[]>}[]=[];
@@ -221,6 +271,7 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
     if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',run:googleImageSearch(searchQuery,max,false)});
     if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',run:googleImageSearch(searchQuery,Math.min(3,max),true)});
+    if(id==='duckduckgo'||id==='duckduckgo-images')tasks.push({label:'DuckDuckGo Images',run:duckDuckGoImageSearch(searchQuery,max)});
   }
 
   }
@@ -234,18 +285,28 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     else if(task.status==='rejected')warnings.push(tasks[index].label+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
   });
 
-  if(!hasFirecrawl&&!hasGoogle){
-    warnings.push('Nenhuma fonte externa de referência visual está configurada; usando identity lock textual.');
+  if(!hasGoogle){
+    warnings.push('Google Images API não configurada; a busca visual automática continua por Firecrawl/DuckDuckGo quando disponíveis.');
   }
 
   settled.forEach(task=>{if(task.status==='fulfilled')merged.push(...task.value.slice(1));});
   const seen=new Set<string>();
+  const canonicalTerms=normalize(buildVisualReferenceQuery(input)).split(/\s+/).filter(x=>x.length>3);
+  const trustedHosts=/fandom\.com$|wikipedia\.org$|wikimedia\.org$|crunchyroll\.com$|viz\.com$|toei-anim\.co\.jp$|dragon-ball-official\.com$|naruto-official\.com$/i;
   const references=merged.filter(ref=>{
     const key=ref.imageUrl;
     if(!key||seen.has(key))return false;
     seen.add(key);
     return true;
+  }).sort((a,b)=>{
+    const score=(ref:VisualReference)=>{
+      const hay=normalize(ref.title+' '+ref.site);
+      const lexical=canonicalTerms.reduce((sum,term)=>sum+(hay.includes(term)?1:0),0);
+      return lexical+(trustedHosts.test(ref.site)?3:0)+(ref.provider==='google-images'?1.5:0);
+    };
+    return score(b)-score(a);
   }).slice(0,max);
+  if(!references.length)warnings.push('A busca automática não retornou uma imagem pública utilizável desta vez.');
   return {query,references,warnings:Array.from(new Set(warnings))};
 }
 
