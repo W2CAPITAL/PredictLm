@@ -82,6 +82,7 @@ export async function POST(req:Request){
     const preparedPrompt=compactText(rawPrompt,1100);
     const sourcePrompt=compactText(originalPrompt,700);
     const directorBrief=compactText(String(body?.directorBrief||'').trim(),620);
+    const frankVisualContext=compactText(String(body?.frankVisualContext||'').trim(),900);
     const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
     const styleLocked=!!body?.styleLocked;
     const style=styleLocked?requestedStyle:recommendedImageStyle(sourcePrompt,requestedStyle);
@@ -104,7 +105,7 @@ export async function POST(req:Request){
           originalPrompt:sourcePrompt,
           style,
           identityLock,
-          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR LOCK: '+directorBrief):''].filter(Boolean).join('\n'),
+          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR LOCK: '+directorBrief):'',frankVisualContext?('FRANK BRAIN VISUAL STATE: '+frankVisualContext):''].filter(Boolean).join('\n'),
           negativePrompt
         })
       : expandImagePromptForParity({
@@ -115,7 +116,7 @@ export async function POST(req:Request){
           height,
           attempt,
           identityLock,
-          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR NOTES: '+directorBrief):''].filter(Boolean).join('\n')
+          referenceEvidence:[evidencePrompt,directorBrief?('API VISUAL DIRECTOR NOTES: '+directorBrief):'',frankVisualContext?('FRANK BRAIN VISUAL STATE: '+frankVisualContext):''].filter(Boolean).join('\n')
         })+'\n\nNEGATIVE CONSTRAINTS: '+negativePrompt+'.';
 
     const genericRepair=compactText(String(body?.semanticRepairHints||'').trim(),520);
