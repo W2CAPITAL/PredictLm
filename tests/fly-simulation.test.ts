@@ -47,3 +47,22 @@ test('Fly simulation preserves the mapped FlyWire core metadata',()=>{
   assert.equal(fly.core.mappedSubgraph.neuronScale,139255);
   assert.equal(fly.core.mappedSubgraph.synapseScale,54500000);
 });
+
+
+test('Fly navigation keeps a persistent spatial target instead of orbiting',()=>{
+  let fly=createFlySimulationState();
+  const initialTarget=fly.targetId;
+  const positions:Array<[number,number]>=[];
+  for(let i=0;i<70;i++){
+    fly=stepFlySimulation(fly,{
+      personX:70,personY:520,personAction:'parado',personLocation:'Casa'
+    });
+    positions.push([fly.x,fly.y]);
+  }
+  assert.ok(fly.targetId);
+  assert.ok(fly.goal.length>0);
+  assert.ok(fly.lastTargets.length>0||fly.targetId!==initialTarget);
+  const spanX=Math.max(...positions.map(p=>p[0]))-Math.min(...positions.map(p=>p[0]));
+  const spanY=Math.max(...positions.map(p=>p[1]))-Math.min(...positions.map(p=>p[1]));
+  assert.ok(spanX>25||spanY>25);
+});

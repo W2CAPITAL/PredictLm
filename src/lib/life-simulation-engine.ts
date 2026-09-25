@@ -1,5 +1,4 @@
 import { advanceNeuroState, createNeuroState, type NeuroState } from './neurocore';
-import { ENTITY_SELF_MODEL } from './entity-self-model';
 
 export type LifeLocation='Casa'|'Trabalho'|'Café'|'Parque'|'Mercado'|'Clínica'|'Biblioteca';
 
@@ -36,7 +35,7 @@ export interface LifePerson{
   id:string;
   name:string;
   age:number;
-  gender:'female';
+  gender:'female'|'male'|'unspecified';
   x:number;
   y:number;
   heading:number;
@@ -95,7 +94,7 @@ function hash(seed:number,tick:number){
 }
 function place(id:LifeLocation){return places.find(x=>x.id===id)||places[0]}
 
-export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173){
+export function createLifeSimulation(name='Frank Stein',seed=173){
   const home=place('Casa');
   const state:LifeSimulationState={
     version:1,
@@ -108,16 +107,16 @@ export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173
     person:{
       id:'lia',
       name:name||'Lia',
-      age:27,
-      gender:'female',
+      age:30,
+      gender:'unspecified',
       x:home.x+home.w/2,
       y:home.y+home.h/2,
       heading:-Math.PI/4,
       location:'Casa',
       money:850,
-      occupation:'Analista de projetos',
+      occupation:'Agente autônomo experimental',
       currentAction:'Acordando e organizando o dia',
-      goal:'Manter uma vida equilibrada e avançar em um projeto pessoal',
+      goal:'Construir uma vida própria, aprender com experiências e desenvolver projetos escolhidos autonomamente',
       mood:'neutra'
     },
     needs:{energy:78,hunger:72,social:64,fun:60,focus:74,stress:22,health:86},
@@ -253,6 +252,45 @@ export function applySimulationInstruction(state:LifeSimulationState,instruction
     next.memories=addMemory(next,'Instrução recebida: '+instruction.slice(0,160),'goal',.62,.78);
   }
   return {state:next,forcedDestination:dest};
+}
+
+export function advanceLifeWorldPassive(input:LifeSimulationState,minutes=10){
+  const state:LifeSimulationState={
+    ...input,
+    tick:input.tick+1,
+    minute:input.minute+minutes,
+    person:{...input.person},
+    needs:{...input.needs},
+    relationships:input.relationships.map(x=>({...x})),
+    memories:[...input.memories],
+    places:[...input.places],
+    neuro:{...input.neuro,circuits:{...input.neuro.circuits}}
+  };
+  if(state.minute>=24*60){state.minute-=24*60;state.day+=1}
+  state.needs=updateNeeds(state,state.person.location,false);
+
+  const evt=maybeEvent(state);
+  if(evt){
+    state.lastEvent=evt.summary;
+    state.memories=addMemory(state,evt.summary,evt.kind,evt.valence,evt.salience);
+    if(evt.summary.includes('despesa'))state.person.money=Math.max(0,state.person.money-45);
+    if(evt.kind==='social')state.needs.social=n(state.needs.social+8);
+  }else{
+    state.lastEvent='Tempo passou · '+formatTime(state.minute)+' · '+state.person.currentAction;
+  }
+
+  state.person.mood=mood(state);
+  state.neuro=advanceNeuroState(state.neuro,[
+    'simulação de vida',
+    'tempo passivo',
+    state.person.currentAction,
+    state.lastEvent,
+    'objetivo '+state.person.goal,
+    'estresse '+state.needs.stress,
+    'energia '+state.needs.energy,
+    'social '+state.needs.social
+  ].join(' · '));
+  return state;
 }
 
 export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDestination?:LifeLocation|null){

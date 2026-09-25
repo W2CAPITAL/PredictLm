@@ -3,6 +3,7 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import {
+  advanceLifeWorldPassive,
   applySimulationInstruction,
   createLifeSimulation,
   simulationClock,
@@ -20,6 +21,7 @@ import {
   LIFE_WORLD_WIDTH,
   WORLD_OBJECTS,
   perceiveFlyWorld,
+  worldObject,
   perceiveHumanWorld
 } from '@/lib/life-world-open';
 import {
@@ -39,6 +41,7 @@ import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
 import {advanceCognitiveWorkspace,recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
+import {lifeMindSummary} from '@/lib/life-agent-mind';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
@@ -81,6 +84,7 @@ export function GrokSimulationPanel(){
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
+  const [toolBusy,setToolBusy]=useState(false);
   const [cameraZoom,setCameraZoom]=useState(1);
   const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
@@ -137,7 +141,9 @@ export function GrokSimulationPanel(){
   useEffect(()=>{
     if(!state.running||agent.plan?.status==='running')return;
     const timer=window.setInterval(()=>{
-      setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
+      setState(prev=>manualTarget
+        ? stepLifeSimulation(prev,10*prev.speed,manualTarget)
+        : advanceLifeWorldPassive(prev,10*prev.speed));
     },650);
     return()=>window.clearInterval(timer);
   },[state.running,state.speed,manualTarget,agent.plan?.status]);
@@ -170,6 +176,88 @@ export function GrokSimulationPanel(){
     },520);
     return()=>window.clearTimeout(timer);
   },[agent,state,agentBusy]);
+
+  useEffect(()=>{
+    if(!hydrated||toolBusy)return;
+    const last=agent.history[agent.history.length-1];
+    if(!last?.ok||last.action.type!=='use_object'||!last.action.objectId)return;
+    const obj=worldObject(last.action.objectId);
+    if(!obj)return;
+    const canResearch=obj.affordances.includes('research')||obj.kind==='computer'||obj.kind==='phone';
+    if(!canResearch||!agent.tools.internetEnabled)return;
+    if(state.tick-agent.tools.lastInternetTick<8)return;
+
+    let cancelled=false;
+    const run=async()=>{
+      setToolBusy(true);
+      const topic=[
+        state.person.goal,
+        agent.mind.currentWant,
+        agent.mind.currentFocus,
+        obj.label
+      ].filter(Boolean).join(' · ').slice(0,420);
+      const notes:string[]=[];
+      try{
+        const r=await fetch('/api/research',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({query:topic,limit:6,depth:'balanced'})
+        });
+        const data=await r.json().catch(()=>({}));
+        if(r.ok&&!cancelled){
+          const rows=[...(Array.isArray(data?.web)?data.web:[]),...(Array.isArray(data?.news)?data.news:[])]
+            .slice(0,3)
+            .map((x:any)=>String(x?.title||'Fonte')+': '+String(x?.description||x?.summary||'').replace(/\s+/g,' ').slice(0,180));
+          if(rows.length)notes.push('Internet: '+rows.join(' | '));
+        }
+      }catch{}
+
+      if(agent.tools.codeEnabled&&obj.kind==='computer'&&state.tick-agent.tools.lastCodeTick>=16){
+        try{
+          const r=await fetch('/api/simulation/code?pick='+(agent.autonomy.decisionCount%11),{cache:'no-store'});
+          const data=await r.json().catch(()=>({}));
+          if(r.ok&&!cancelled){
+            notes.push('Código próprio: '+String(data?.path||'')+' · símbolos '+(Array.isArray(data?.symbols)?data.symbols.slice(0,10).join(', '):''));
+          }
+        }catch{}
+      }
+
+      if(!cancelled&&notes.length){
+        const note=notes.join('\n').slice(0,1200);
+        setAgent(prev=>{
+          const next=normalizeLifeAgentState(prev);
+          return {
+            ...next,
+            knowledge:Math.min(100,next.knowledge+Math.min(8,2+notes.length*2)),
+            tools:{
+              ...next.tools,
+              lastInternetTick:state.tick,
+              lastCodeTick:notes.some(x=>x.startsWith('Código próprio:'))?state.tick:next.tools.lastCodeTick,
+              notes:[...next.tools.notes,note].slice(-20)
+            }
+          };
+        });
+        setState(prev=>({
+          ...prev,
+          person:{...prev.person,currentAction:'Pesquisou e incorporou conhecimento externo'},
+          lastEvent:'Frank aprendeu algo usando '+obj.label+'.',
+          memories:[{
+            id:'tool-'+prev.tick+'-'+Date.now().toString(36),
+            tick:prev.tick,day:prev.day,minute:prev.minute,
+            summary:note.slice(0,220),valence:.64,salience:.78,kind:'event'
+          },...prev.memories].slice(0,24)
+        }));
+      }
+      if(!cancelled)setToolBusy(false);
+    };
+    void run();
+    return()=>{cancelled=true};
+  },[
+    hydrated,toolBusy,state.tick,state.person.goal,
+    agent.history.length,agent.tools.internetEnabled,agent.tools.codeEnabled,
+    agent.tools.lastInternetTick,agent.tools.lastCodeTick,
+    agent.autonomy.decisionCount,agent.mind.currentWant,agent.mind.currentFocus
+  ]);
 
   // Autonomia IA: cria novo plano quando o anterior termina, mas só se o usuário a ativou.
   useEffect(()=>{
@@ -312,7 +400,8 @@ export function GrokSimulationPanel(){
         bench:['#8a6546','#60462f'],bookshelf:['#6c5140','#49362b'],table:['#87664e','#604736'],
         coffee:['#9a6850','#6c4838'],shelf:['#8f969c','#62686d'],treadmill:['#555d65','#343a40'],
         clinic_bed:['#c7dddd','#88aaac'],plant:['#4f8658','#31583a'],art:['#9a79ad','#644c72'],
-        trash:['#555b60','#373b3f'],door:['#77543e','#52392b']
+        trash:['#555b60','#373b3f'],door:['#77543e','#52392b'],window:['#8fd6f2','#4f8297'],
+        radio:['#66586f','#463c4d'],book:['#b68b59','#7d5e3d'],mirror:['#b9d9df','#6f8f96']
       };
       const [top,side]=colors[obj.kind]||['#777','#555'];
       drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
@@ -332,12 +421,12 @@ export function GrokSimulationPanel(){
     ctx.fillStyle=sky;ctx.fillRect(0,0,width,height);
 
     // Ground lot.
-    const ground=[iso(0,0),iso(640,0),iso(640,360),iso(0,360)];
+    const ground=[iso(0,0),iso(LIFE_WORLD_WIDTH,0),iso(LIFE_WORLD_WIDTH,LIFE_WORLD_HEIGHT),iso(0,LIFE_WORLD_HEIGHT)];
     poly(ground,'#456b52','#5d8768');
 
     // Isometric paving grid.
-    for(let x=0;x<=640;x+=80)line(iso(x,0),iso(x,360),'rgba(220,240,226,.10)');
-    for(let y=0;y<=360;y+=60)line(iso(0,y),iso(640,y),'rgba(220,240,226,.10)');
+    for(let x=0;x<=LIFE_WORLD_WIDTH;x+=80)line(iso(x,0),iso(x,LIFE_WORLD_HEIGHT),'rgba(220,240,226,.10)');
+    for(let y=0;y<=LIFE_WORLD_HEIGHT;y+=60)line(iso(0,y),iso(LIFE_WORLD_WIDTH,y),'rgba(220,240,226,.10)');
 
     // Paths between lots, behind buildings.
     ctx.lineCap='round';
@@ -686,6 +775,7 @@ export function GrokSimulationPanel(){
             <span><Users size={12}/>{relation.name}: {relation.affinity}%</span>
             <span>Comida: {agent.inventory.food}</span>
             <span>Conhecimento: {agent.knowledge}</span>
+            <span>{toolBusy?'Pesquisando…':'Internet '+(agent.tools.internetEnabled?'on':'off')}</span>
           </div>
           <div className="sim-agent-vitals">
             <span>Carreira <b>{agent.skills.career}</b></span>
@@ -696,6 +786,20 @@ export function GrokSimulationPanel(){
             <span>Criatividade <b>{agent.skills.creativity}</b></span>
             <span>Casa limpa <b>{agent.home.cleanliness}</b></span>
           </div>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Sparkles size={14}/><b>Mente pública · Frank</b><span>estado que governa ações</span></div>
+          <small className="sim-note"><b>Quer:</b> {agent.mind.currentWant}</small>
+          <small className="sim-note"><b>Foco:</b> {agent.mind.currentFocus}</small>
+          <small className="sim-note"><b>Pensamento público:</b> {agent.mind.publicThought}</small>
+          <div className="sim-metrics">
+            <span>Tédio {Math.round(agent.mind.boredom*100)}%</span>
+            <span>Novidade {Math.round(agent.mind.noveltySeeking*100)}%</span>
+            <span>Social {Math.round(agent.mind.socialDrive*100)}%</span>
+            <span>Domínio {Math.round(agent.mind.masteryDrive*100)}%</span>
+          </div>
+          <details className="sim-agent-log"><summary>Estado mental completo</summary><pre>{lifeMindSummary(agent.mind)}</pre></details>
         </section>
 
         <section className="sim-panel">
@@ -713,7 +817,9 @@ export function GrokSimulationPanel(){
             <div><span>central complex</span><i><u style={{width:Math.round(fly.core.centralComplex*100)+'%'}}/></i><b>{Math.round(fly.core.centralComplex*100)}%</b></div>
             <div><span>mushroom body</span><i><u style={{width:Math.round(fly.core.mushroomBody*100)+'%'}}/></i><b>{Math.round(fly.core.mushroomBody*100)}%</b></div>
           </div>
-          <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
+          <small className="sim-note"><b>Quer:</b> {fly.goal}</small>
+          <small className="sim-note"><b>Comportamento:</b> {fly.behavior}. Tédio {Math.round((fly.boredom||0)*100)}%. Alvos recentes: {(fly.lastTargets||[]).slice(0,4).join(', ')||'nenhum'}.</small>
+          <small className="sim-note">O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
         </section>
 
         <section className="sim-panel">
@@ -724,6 +830,12 @@ export function GrokSimulationPanel(){
             {humanVision.visible.slice(0,4).map(item=><span key={'h-'+item.id}>{item.label} · {Math.round(item.distance)}</span>)}
             {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>🪰 {item.label}</span>)}
           </div>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Brain size={14}/><b>Aprendizado externo</b><span>internet + próprio código</span></div>
+          <small className="sim-note">Acesso é deliberado pelo agente ao usar computador/celular; código é leitura pública allowlisted, sem secrets/env.</small>
+          {(agent.tools.notes.length?agent.tools.notes.slice(-3).reverse():['Ainda não pesquisou nada.']).map((note,i)=><small className="sim-note" key={i}>{note}</small>)}
         </section>
 
         <section className="sim-panel memories">

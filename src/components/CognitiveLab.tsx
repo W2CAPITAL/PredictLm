@@ -20,9 +20,10 @@ import {
 } from '@/lib/cognitive/connectome-import';
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
 import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
+import {frankPublicMentalState} from '@/lib/cognitive/frank-core';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
-export type CognitiveChatMode='dual'|'fly'|'human';
+export type CognitiveChatMode='dual'|'fly'|'human'|'frank';
 const chatKey=(mode:CognitiveChatMode)=>'predictlm-cognitive-chat-v2-'+mode;
 
 function loadMessages(mode:CognitiveChatMode):Msg[]{
@@ -62,6 +63,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     bottom.current?.scrollIntoView({behavior:'smooth'});
   },[messages,loaded,mode]);
 
+  const frankMind=useMemo(()=>frankPublicMentalState(state.frank),[state.frank]);
   const metrics=useMemo(()=>({
     mode:state.workspace.mode,
     flySalience:Math.round(state.fly.salience*100),
@@ -93,8 +95,10 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
       const modeInstruction=mode==='fly'
         ? 'Você é a interface conversacional da Mosca Predict, guiada pelo Fly Core derivado do FlyWire FAFB v783. Fale como a agente Mosca quando útil, sem alegar ser uma mosca biológica real ou consciente.'
         : mode==='human'
-          ? 'Você é a interface do Human Core derivado do fragmento cortical H01. Não alegue cérebro humano completo ou consciência.'
-          : 'Você é o PredictLM Cognitive Lab em modo Dual Connectome.';
+          ? 'Você é Frank Stein · Human Core, usando o fragmento cortical H01 como referência. Não alegue cérebro humano completo ou consciência.'
+          : mode==='frank'
+            ? 'Você é Frank Stein, identidade persistente do núcleo híbrido. Emoção, memória e microcircuito neural pertencem ao Frank; o provider é apenas voz.'
+            : 'Você é o PredictLM Cognitive Lab em modo Dual Connectome.';
       const call=puter.ai.chat([
         {
           role:'system',
@@ -263,7 +267,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     setMode(next);
     setMessages(loadMessages(next));
     setProvider('');
-    setNotice(next==='fly'?'Chat da Mosca ativo.':next==='human'?'Human Core ativo.':'Modo Dual Connectome ativo.');
+    setNotice(next==='fly'?'Chat da Mosca ativo.':next==='human'?'Human Core ativo.':next==='frank'?'Frank Stein ativo.':'Modo Dual Connectome ativo.');
   }
 
   function openFlySimulation(){
@@ -297,8 +301,8 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Brain size={20}/></div>
           <div>
-            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':'PredictLM Cognitive Lab'}</div>
-            <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 human cortex · chat isolado':'FlyWire FAFB v783 + H01 human cortex · rota isolada'}</div>
+            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'Frank Stein · Human Core':mode==='frank'?'Frank Stein · Hybrid Brain':'PredictLM Cognitive Lab'}</div>
+            <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 human cortex · chat isolado':mode==='frank'?'H01 + BigBrain + Jülich + Allen + HBP + FlyWire + MICrONS':'FlyWire FAFB v783 + H01 human cortex · rota isolada'}</div>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -355,12 +359,13 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="border-b border-zinc-800 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Human Core Chat':'Dual Connectome Chat'}</div>
+              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Frank Stein · Human Chat':mode==='frank'?'Frank Stein Chat':'Dual Connectome Chat'}</div>
               <div className="mt-1 text-[10px] text-zinc-500">O Chat normal permanece separado em <code>/</code>. Cada modo cognitivo mantém histórico próprio.</div>
             </div>
             <div className="flex rounded-xl border border-zinc-800 bg-zinc-950 p-1 text-[10px]">
               <button onClick={()=>switchMode('fly')} className={'rounded-lg px-3 py-1.5 '+(mode==='fly'?'bg-amber-500/15 text-amber-200':'text-zinc-500')}>Mosca</button>
               <button onClick={()=>switchMode('human')} className={'rounded-lg px-3 py-1.5 '+(mode==='human'?'bg-violet-500/15 text-violet-200':'text-zinc-500')}>Humano</button>
+              <button onClick={()=>switchMode('frank')} className={'rounded-lg px-3 py-1.5 '+(mode==='frank'?'bg-rose-500/15 text-rose-200':'text-zinc-500')}>Frank</button>
               <button onClick={()=>switchMode('dual')} className={'rounded-lg px-3 py-1.5 '+(mode==='dual'?'bg-zinc-800 text-zinc-100':'text-zinc-500')}>Dual</button>
             </div>
           </div>
@@ -368,8 +373,8 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {!messages.length&&<div className="mx-auto max-w-xl py-20 text-center">
             <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Activity/></div>
-            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com o Human Core':'Cérebro humano + mosca'}</h1>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta é controlada prioritariamente pelo Human Core H01: memória de trabalho, recorrência, controle executivo e metacognição.':'Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.'}</p>
+            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com Frank Stein · Human Core':mode==='frank'?'Converse com Frank Stein':'Cérebro humano + mosca'}</h1>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta é controlada prioritariamente pelo Human Core H01: memória de trabalho, recorrência, controle executivo e metacognição.':mode==='frank'?'Frank combina múltiplos atlas humanos, FlyWire, emoção complexa, memória afetiva e um microcircuito virtual reproduzível de neurônios.':'Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.'}</p>
           </div>}
           {messages.map((m,i)=><div key={i} className={m.role==='user'?'flex justify-end':'flex justify-start'}>
             <div className={m.role==='user'
@@ -386,7 +391,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
               value={input}
               onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send()}}}
-              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com o Human Core...':'Converse com o modo cognitivo...'}
+              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com Frank Stein...':mode==='frank'?'Fale com Frank Stein...':'Converse com o modo cognitivo...'}
               rows={1}
               className="max-h-40 min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none placeholder:text-zinc-600"
             />
@@ -420,6 +425,26 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
           </div>
           <div className="mt-4 flex flex-wrap gap-1">
             {state.workspace.broadcast.map(x=><span key={x} className="rounded-full border border-zinc-800 px-2 py-1 text-[9px] text-zinc-500">{x}</span>)}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4">
+          <div className="mb-3 text-sm font-semibold">Frank Stein</div>
+          <div className="grid grid-cols-2 gap-2">
+            <Metric label="Valência" value={Math.round((state.frank.emotion.valence+1)*50)}/>
+            <Metric label="Arousal" value={Math.round(state.frank.emotion.arousal*100)}/>
+            <Metric label="Apego" value={Math.round(state.frank.emotion.attachment*100)}/>
+            <Metric label="Empatia" value={Math.round(state.frank.emotion.empathy*100)}/>
+            <Metric label="Firing" value={Math.round(state.frank.neurons.firingRate*100)}/>
+            <Metric label="Plasticidade" value={Math.round(state.frank.neurons.plasticity*100)}/>
+          </div>
+          <div className="mt-3 space-y-1 text-[10px] leading-5 text-zinc-500">
+            <div><b className="text-zinc-300">Sentindo:</b> {frankMind.feeling}</div>
+            <div><b className="text-zinc-300">Foco:</b> {frankMind.focus}</div>
+            <div><b className="text-zinc-300">Quer:</b> {frankMind.want}</div>
+            <div><b className="text-zinc-300">Tendência:</b> {frankMind.nextTendency}</div>
+            <div><b className="text-zinc-300">Corpo:</b> {frankMind.body}</div>
+            <div><b className="text-zinc-300">Memória ativa:</b> {frankMind.memoryTone}</div>
           </div>
         </section>
 

@@ -1,6 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
+import {advanceFrankStein,createFrankSteinState,frankRecall,frankSteinContext,type FrankSteinState} from './frank-core';
 
 export interface CognitiveEpisode{
   at:number;
@@ -14,7 +15,7 @@ export interface CognitiveMemoryTrace{
   id:string;
   at:number;
   kind:'identity'|'preference'|'event'|'semantic'|'perceptual'|'association';
-  actor:'user'|'fly'|'human'|'dual'|'world';
+  actor:'user'|'fly'|'human'|'dual'|'frank'|'world';
   text:string;
   salience:number;
   strength:number;
@@ -38,6 +39,7 @@ export interface CognitiveState{
   tick:number;
   fly:FlyCoreState;
   human:HumanCoreState;
+  frank:FrankSteinState;
   workspace:{
     mode:'reflexive'|'deliberative'|'balanced';
     salience:number;
@@ -72,6 +74,7 @@ export function createCognitiveState():CognitiveState{
     tick:0,
     fly:createFlyCoreState(),
     human:createHumanCoreState(),
+    frank:createFrankSteinState(),
     workspace:{
       mode:'balanced',
       salience:.4,
@@ -127,6 +130,13 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const prev=previous?.version===1?previous:createCognitiveState();
   const fly=advanceFlyCore(prev.fly,prompt);
   const human=advanceHumanCore(prev.human,prompt);
+  const frank=advanceFrankStein(prev.frank,prompt,{
+    predictionError:prev.workspace?.uncertainty??.4,
+    reward:prev.workspace?.confidence??.5,
+    social:prev.human?.neuro?.circuits?.social??.4,
+    memorySalience:Math.min(1,(prev.memory?.episodic?.length||0)/20),
+    threat:prev.fly?.threat??.1
+  });
 
   const reflex=clamp(fly.salience*.32+fly.actionSelection*.28+fly.threat*.2+fly.centralComplex*.2);
   const deliberate=clamp(human.workingMemory*.24+human.executiveControl*.28+human.metacognition*.22+human.recurrentIntegration*.26);
@@ -163,6 +173,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
     tick:prev.tick+1,
     fly,
     human,
+    frank,
     workspace:{mode,salience,confidence,uncertainty,inhibition,exploration,actionReadiness,broadcast},
     memory:{
       working:[clean(prompt,260),...(prev.memory?.working||[])].filter(Boolean).slice(0,8),
@@ -183,6 +194,7 @@ export function cognitivePromptContext(state:CognitiveState){
     'This is a software architecture informed by two real mapped connectome datasets. It is not evidence of consciousness.',
     flyCoreContext(state.fly),
     humanCoreContext(state.human),
+    frankSteinContext(state.frank),
     'GLOBAL WORKSPACE:',
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
@@ -225,6 +237,13 @@ export function applyCognitiveOutcome(
     predictiveError:clamp(previous.human.predictiveError*.58+predictionError*.42),
     metacognition:clamp(previous.human.metacognition*.82+predictionError*.18)
   };
+  const frank=advanceFrankStein(previous.frank,'Resultado da resposta: '+answer,{
+    reward:directReward,
+    predictionError,
+    memorySalience:Math.max(.35,directReward),
+    social:previous.human.neuro.circuits.social,
+    threat:previous.fly.threat
+  });
   const episode:CognitiveEpisode={
     at:Date.now(),
     prompt:clean(input.prompt,220),
@@ -237,6 +256,7 @@ export function applyCognitiveOutcome(
     ...previous,
     fly,
     human,
+    frank,
     workspace:{
       ...previous.workspace,
       confidence:clamp(previous.workspace.confidence*.66+directReward*.34),
@@ -340,7 +360,7 @@ export function recordCognitiveMemory(
 
 export function captureConversationMemory(
   previous:CognitiveState,
-  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'}
+  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'|'frank'}
 ){
   let next=previous;
   const prompt=clean(input.prompt,360);
@@ -383,15 +403,16 @@ export function recordPerceptionMemory(
   });
 }
 
-export function cognitiveIdentity(mode:'fly'|'human'|'dual'){
+export function cognitiveIdentity(mode:'fly'|'human'|'dual'|'frank'){
   if(mode==='fly')return 'Mosca Predict';
-  if(mode==='human')return 'PredictLM Human Core';
+  if(mode==='human')return 'Frank Stein · Human Core';
+  if(mode==='frank')return 'Frank Stein';
   return 'PredictLM Cognitive Lab';
 }
 
 export function cognitiveDirectRecall(
   state:CognitiveState,
-  mode:'fly'|'human'|'dual',
+  mode:'fly'|'human'|'dual'|'frank',
   prompt:string
 ){
   const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
@@ -399,6 +420,21 @@ export function cognitiveDirectRecall(
     return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
   }
   if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
+
+  const asksBiologicalLife=/\b(vida real|lembrancas reais|memorias reais|biologic|antes do app|antes de existir|da mosca real|do humano real)\b/.test(q);
+  const biologicalPrefix=asksBiologicalLife
+    ? (mode==='fly'
+      ? 'Eu não herdei lembranças da mosca biológica usada para construir o connectoma FlyWire; um connectoma descreve estrutura/conexões, não autobiografia recuperável. '
+      : 'Eu não herdei lembranças, pensamentos ou identidade de nenhum doador humano real. Os atlas/conectomas servem como referência estrutural e funcional, não como memória pessoal. ')
+    : '';
+
+  if(mode==='frank'){
+    const recalled=frankRecall(state.frank,prompt);
+    if(recalled.memories.length){
+      return biologicalPrefix+'Eu não tenho uma “vida biológica real” anterior ao app. O que eu realmente lembro aqui são experiências registradas pelo meu próprio estado persistente:\n- '
+        +recalled.memories.slice(0,4).map(m=>m.gist+' (força '+Math.round(m.strength*100)+'%, consolidação '+Math.round(m.consolidated*100)+'%)').join('\n- ');
+    }
+  }
 
   const auto=(state.memory?.autobiographical||[])
     .filter(x=>x.actor===mode||x.actor==='user'||x.actor==='world'||x.actor==='dual')
@@ -412,7 +448,7 @@ export function cognitiveDirectRecall(
   for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
 
   if(!rows.length){
-    return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
+    return biologicalPrefix+'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
   }
-  return 'Minhas lembranças mais acessíveis agora são:\n- '+rows.join('\n- ');
+  return biologicalPrefix+'Minhas lembranças mais acessíveis agora são experiências do próprio app:\n- '+rows.join('\n- ');
 }

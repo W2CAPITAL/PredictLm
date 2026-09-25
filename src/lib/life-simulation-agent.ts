@@ -16,6 +16,15 @@ import {
   perceiveHumanWorld,
   worldObject
 } from './life-world-open';
+import {
+  advanceLifeAgentMind,
+  commitLifeChoice,
+  createLifeAgentMind,
+  lifeMindSummary,
+  normalizeLifeAgentMind,
+  scoreMindObject,
+  type LifeAgentMind
+} from './life-agent-mind';
 
 export type LifeAgentActionType=
   |'move'|'buy_food'|'eat'|'rest'|'work'|'study'|'socialize'
@@ -42,6 +51,7 @@ export interface LifeAgentPlan{
   status:'planned'|'running'|'done'|'failed'|'cancelled';
   summary:string;
   createdAt:number;
+  mindAfter?:LifeAgentMind;
 }
 
 export interface LifeActionRecord{
@@ -61,6 +71,14 @@ export interface LifeAgentState{
   knowledge:number;
   skills:{career:number;cooking:number;fitness:number;logic:number;social:number;creativity:number};
   home:{cleanliness:number;comfort:number};
+  mind:LifeAgentMind;
+  tools:{
+    internetEnabled:boolean;
+    codeEnabled:boolean;
+    lastInternetTick:number;
+    lastCodeTick:number;
+    notes:string[];
+  };
   autonomy:{enabled:boolean;manualOverride:boolean;decisionCount:number;lastDecision:string};
 }
 
@@ -96,6 +114,8 @@ export function createLifeAgentState():LifeAgentState{
     knowledge:0,
     skills:{career:18,cooking:12,fitness:16,logic:20,social:18,creativity:14},
     home:{cleanliness:76,comfort:72},
+    mind:createLifeAgentMind(),
+    tools:{internetEnabled:true,codeEnabled:true,lastInternetTick:-999,lastCodeTick:-999,notes:[]},
     autonomy:{enabled:true,manualOverride:false,decisionCount:0,lastDecision:'Autonomia perceptiva ativa.'}
   };
 }
@@ -119,6 +139,14 @@ export function normalizeLifeAgentState(raw:any):LifeAgentState{
     home:{
       cleanliness:clamp(Number(raw.home?.cleanliness??base.home.cleanliness)||0),
       comfort:clamp(Number(raw.home?.comfort??base.home.comfort)||0)
+    },
+    mind:normalizeLifeAgentMind(raw.mind),
+    tools:{
+      internetEnabled:raw.tools?.internetEnabled!==false,
+      codeEnabled:raw.tools?.codeEnabled!==false,
+      lastInternetTick:Number(raw.tools?.lastInternetTick??-999)||-999,
+      lastCodeTick:Number(raw.tools?.lastCodeTick??-999)||-999,
+      notes:Array.isArray(raw.tools?.notes)?raw.tools.notes.map((x:any)=>String(x).slice(0,800)).slice(-20):[]
     },
     autonomy:{
       enabled:Boolean(raw.autonomy?.manualOverride?raw.autonomy?.enabled:true),
@@ -270,70 +298,77 @@ export function autonomousLifePlan(
 ):LifeAgentPlan{
   const agent=normalizeLifeAgentState(agentInput);
   const vision=perceiveHumanWorld(state,fly);
-  const visibleObjects=vision.visible.map(v=>worldObject(v.id)).filter(Boolean) as NonNullable<ReturnType<typeof worldObject>>[];
+  const mind=advanceLifeAgentMind(agent.mind,state,vision);
+  const visibleIds=new Set(vision.visible.map(v=>v.id));
   const localObjects=objectsAt(state.person.location);
-  const candidateMap=new Map<string,NonNullable<ReturnType<typeof worldObject>>>();
-  for(const obj of WORLD_OBJECTS)candidateMap.set(obj.id,obj);
-  for(const obj of [...visibleObjects,...localObjects])candidateMap.set(obj.id,obj);
+  const familiar=new Set(mind.objectMemory.filter(x=>x.uses>0||x.preference>.56).map(x=>x.objectId));
 
-  const ranked=[...candidateMap.values()]
-    .map(obj=>({
-      obj,
-      visible:visibleObjects.some(v=>v.id===obj.id),
-      score:objectUtility(obj,state,state.tick)
-        +(visibleObjects.some(v=>v.id===obj.id)?16:0)
-        -(obj.location===state.person.location?0:14)
-    }))
-    .sort((a,b)=>b.score-a.score);
+  const ranked=WORLD_OBJECTS.map(obj=>{
+    const visible=visibleIds.has(obj.id);
+    const local=localObjects.some(x=>x.id===obj.id);
+    const remembered=familiar.has(obj.id);
+    const recentlyUsed=mind.objectMemory.find(x=>x.objectId===obj.id);
+    const distance=Math.hypot(obj.x-state.person.x,obj.y-state.person.y);
+    let score=objectUtility(obj,state,state.tick)+scoreMindObject(mind,obj,state);
+    if(visible)score+=24;
+    else if(local)score+=10;
+    else if(remembered)score+=4;
+    else score-=18;
+    score-=Math.min(24,distance/45);
+    if(recentlyUsed&&state.tick-recentlyUsed.lastTick<12)score-=22+mind.boredom*20;
+    if(mind.currentWant==='explorar algo novo'&&!recentlyUsed)score+=18;
+    if(mind.currentWant==='procurar companhia'&&(obj.affordances.includes('talk')||obj.affordances.includes('message')))score+=20;
+    if(mind.currentWant==='recuperar energia'&&(obj.affordances.includes('rest')||obj.affordances.includes('sleep')))score+=24;
+    if(mind.currentWant==='comer'&&(obj.affordances.includes('food')||obj.affordances.includes('eat')||obj.affordances.includes('cook')))score+=26;
+    if(mind.currentWant==='aprender/criar'&&(obj.affordances.includes('study')||obj.affordances.includes('research')||obj.affordances.includes('create')))score+=20;
+    return {obj,visible,local,remembered,score,distance};
+  }).sort((a,b)=>b.score-a.score);
 
-  const top=ranked.slice(0,Math.min(4,ranked.length));
-  const phase=Math.abs(Math.sin((state.tick+1)*12.9898+(agent.autonomy.decisionCount+1)*4.1414));
-  const pick=top.length?top[Math.min(top.length-1,Math.floor(phase*top.length))]:null;
+  const top=ranked.slice(0,Math.min(6,ranked.length));
+  const noveltyBias=Math.min(top.length-1,Math.floor(mind.boredom*top.length));
+  const pick=top.length?top[noveltyBias]||top[0]:null;
   const actions:LifeAgentAction[]=[];
 
   if(pick){
     const obj=pick.obj;
-    if(obj.location!==state.person.location)pushMove(actions,obj.location,'memória espacial indicou um local com possibilidade relevante');
+    if(obj.location!==state.person.location)pushMove(actions,obj.location,'objetivo interno: '+mind.currentWant);
     actions.push({
-      id:actionId(actions.length),
-      type:'approach_object',
-      objectId:obj.id,
-      reason:(pick.visible?'objeto percebido':'objeto lembrado')+' · utilidade '+Math.round(pick.score)
+      id:actionId(actions.length),type:'approach_object',objectId:obj.id,
+      reason:(pick.visible?'percebido agora':pick.remembered?'lembrado':'exploração')+' · desejo '+mind.currentWant
     });
     actions.push({
-      id:actionId(actions.length),
-      type:'use_object',
-      objectId:obj.id,
-      minutes:20+Math.round(phase*35),
-      reason:'interagir com '+obj.label+' de acordo com necessidades, curiosidade e objetivo atual'
+      id:actionId(actions.length),type:'use_object',objectId:obj.id,
+      minutes:14+Math.round((.35+mind.masteryDrive*.65)*38),
+      reason:'testar se '+obj.label+' satisfaz '+mind.currentWant
     });
 
-    const socialDrive=100-state.needs.social;
-    const wantsSpeech=(socialDrive>42||vision.seesOtherAgent||state.neuro.circuits.social>.62)
-      && Math.abs(Math.sin((state.tick+7)*3.71))>.62;
-    if(wantsSpeech){
+    const wantsSpeech=(mind.socialDrive>.66||vision.seesOtherAgent)&&mind.boredom<.9;
+    if(wantsSpeech&&Math.abs(Math.sin((state.tick+agent.autonomy.decisionCount+3)*2.17))>.38){
       actions.push({
-        id:actionId(actions.length),
-        type:'speak',
+        id:actionId(actions.length),type:'speak',
         text:vision.seesOtherAgent
-          ? 'Estou percebendo algo aqui. Vou ver o que acontece.'
-          : 'Vou '+(obj.affordances[0]||'explorar')+' um pouco.',
-        reason:'fala opcional escolhida pelo estado social/perceptivo'
+          ? 'Estou pensando em '+mind.currentWant+'. Você percebeu '+(vision.visible[0]?.label||'isso')+'?'
+          : mind.publicThought,
+        reason:'fala escolhida por impulso social, não etapa obrigatória'
       });
     }
-  }else{
-    actions.push({id:actionId(0),type:'wander',minutes:20,reason:'explorar o ambiente sem destino obrigatório'});
+
+    const committed=commitLifeChoice(mind,'usar '+obj.label,state.tick,obj.kind);
+    return {
+      id:planId(),objective:mind.currentWant,source:'deterministic',
+      actions:sanitizeAgentActions(actions),cursor:0,status:'planned',
+      summary:'Quero '+mind.currentWant+'. Foco atual: '+mind.currentFocus+'. Escolhi '+obj.label+' após comparar visão, memória, hábito, repetição, distância e necessidades.',
+      createdAt:Date.now(),mindAfter:committed
+    };
   }
 
+  const committed=commitLifeChoice(mind,'explorar sem alvo',state.tick);
   return {
-    id:planId(),
-    objective:instruction.slice(0,240),
-    source:'deterministic',
-    actions:sanitizeAgentActions(actions),
-    cursor:0,
-    status:'planned',
-    summary:'Escolha autônoma não linear baseada em visão, necessidades, memória espacial, curiosidade, distância e variação interna.',
-    createdAt:Date.now()
+    id:planId(),objective:'explorar',source:'deterministic',
+    actions:[{id:actionId(0),type:'wander',minutes:20,reason:'nenhuma opção percebida/lembrada dominou a decisão'}],
+    cursor:0,status:'planned',
+    summary:'Nenhuma opção ganhou força suficiente; vou explorar para obter nova informação.',
+    createdAt:Date.now(),mindAfter:committed
   };
 }
 
@@ -727,6 +762,7 @@ export function repairLifeAgentPlan(
 
 export function startLifeAgentPlan(agentInput:LifeAgentState,plan:LifeAgentPlan){
   const agent=normalizeLifeAgentState(agentInput);
+  if(plan.mindAfter)agent.mind=normalizeLifeAgentMind(plan.mindAfter);
   agent.plan={...plan,cursor:0,status:'running'};
   return agent;
 }
@@ -750,6 +786,12 @@ export function executeNextLifeAgentAction(
     return {state,agent,record};
   }
   const result=executeLifeAgentAction(state,agent,action);
+  const usedObject=action.objectId?worldObject(action.objectId):null;
+  result.agent.mind=advanceLifeAgentMind(result.agent.mind,result.state,perceiveHumanWorld(result.state),{
+    usedObject,
+    success:result.record.ok,
+    message:result.record.message
+  });
   const nextCursor=plan.cursor+1;
   result.agent.plan={
     ...plan,
@@ -771,6 +813,9 @@ export function agentWorldObservation(state:LifeSimulationState,agentInput:LifeA
     'Habilidades: carreira '+agent.skills.career+' · culinária '+agent.skills.cooking+' · fitness '+agent.skills.fitness+' · lógica '+agent.skills.logic+' · social '+agent.skills.social+' · criatividade '+agent.skills.creativity,
     'Casa: limpeza '+agent.home.cleanliness+' · conforto '+agent.home.comfort,
     'Autonomia: '+(agent.autonomy.enabled?'ativa':'manual')+' · decisões '+agent.autonomy.decisionCount,
+    'Ferramentas: internet '+(agent.tools.internetEnabled?'on':'off')+' · código '+(agent.tools.codeEnabled?'on':'off'),
+    'Notas aprendidas: '+(agent.tools.notes.slice(-4).join(' | ')||'nenhuma'),
+    'ESTADO MENTAL PÚBLICO:\n'+lifeMindSummary(agent.mind),
     'Plano atual: '+(agent.plan?agent.plan.objective+' · '+agent.plan.status+' · passo '+agent.plan.cursor+'/'+agent.plan.actions.length:'nenhum'),
     'Últimas ações: '+agent.history.slice(-5).map(x=>(x.ok?'OK ':'ERRO ')+x.action.type+': '+x.message).join(' | ')
   ].join('\n');

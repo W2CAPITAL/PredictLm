@@ -11,6 +11,8 @@ import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@
 import { preloadGeneratedImage, reviewSemanticImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
+import {loadCognitiveState} from '@/lib/cognitive/cognitive-memory';
+import {frankVisualState} from '@/lib/cognitive/frank-core';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -87,6 +89,7 @@ export function GrokImaginePanel(){
   const [negativePrompt,setNegativePrompt]=useState('');
   const [generatedCaption,setGeneratedCaption]=useState('');
   const [imageProviderWarning,setImageProviderWarning]=useState('');
+  const [frankBrainVisual,setFrankBrainVisual]=useState(false);
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -98,6 +101,14 @@ export function GrokImaginePanel(){
     [prompt,style,attempt,generatedPrompt]
   );
   const motionPlan=useMemo(()=>buildLocalMotionPlan(prompt,ratio.label),[prompt,ratio.label]);
+
+  async function currentFrankVisualContext(){
+    if(!frankBrainVisual&&!/\b(frank\s*stein|cerebro|cérebro|memoria|memória|sentimento|emo[cç][aã]o|mosca|human\s*core|fly\s*core)\b/i.test(prompt))return '';
+    try{
+      const cognitive=await loadCognitiveState();
+      return frankVisualState(cognitive.frank);
+    }catch{return ''}
+  }
 
   function reportMediaError(message:string,metadata:Record<string,any>={}){
     fetch('/api/feedback',{
@@ -310,11 +321,13 @@ export function GrokImaginePanel(){
 
   async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false,semanticRepairHints='',apiDirectorBrief=''){
     setImageStage('Preparando referências visuais e identidade…');
+    const frankVisualContext=await currentFrankVisualContext();
     const r=await fetch('/api/media/generate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         prompt:renderPrompt,
+        frankVisualContext,
         originalPrompt:prompt,
         promptMode,
         negativePrompt,
@@ -725,6 +738,7 @@ export function GrokImaginePanel(){
         body:JSON.stringify({
           provider:videoProvider,
           prompt:videoPrompt,
+          frankVisualContext:await currentFrankVisualContext(),
           duration:Math.max(3,Math.round(duration/1000)),
           imageUrl:currentImage,
           referenceImages,
@@ -993,6 +1007,9 @@ export function GrokImaginePanel(){
         <div className="gmedia-auto-variation"><RefreshCw size={12}/><span>Variação automática</span><small>Cada geração usa uma composição nova; não precisa configurar seed.</small></div>
 
         <div className="gmedia-reasoning">
+          <button className={frankBrainVisual?'active':''} onClick={()=>setFrankBrainVisual(v=>!v)} type="button">
+            <BrainCircuit size={14}/><span><b>Frank Brain</b><small>Usa emoção, memória e atividade neural persistentes como direção de expressão, postura, luz, ritmo e atmosfera. Não adiciona HUD/cérebro literal sem pedido.</small></span>
+          </button>
           <button className={deepThink&&!literalUiMode?'active':''} onClick={()=>setDeepThink(v=>!v)} type="button" disabled={literalUiMode}>
             <BrainCircuit size={14}/><span><b>Deep Think</b><small>{literalUiMode?'Desligado no Literal para não reescrever o pedido.':'Diretor de mídia refina identidade, composição, ação, câmera, continuidade e áudio antes da geração.'}</small></span>
           </button>

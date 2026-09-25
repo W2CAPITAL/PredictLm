@@ -1142,6 +1142,7 @@ export function ChatShell({onOpenLegal}:Props){
       <nav className="grok-nav">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
         <button onClick={()=>{window.location.href='/cognitive/fly'}}><span><Bug size={16}/></span>Mosca</button>
+        <button onClick={()=>{window.location.href='/cognitive/frank'}}><span><Brain size={16}/></span>Frank</button>
         <button className={screen==='build'?'active':''} onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><span><Code2 size={16}/></span>Build</button>
         <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Simulação</button>
         <button onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}><span><Scale size={16}/></span>Processos</button>

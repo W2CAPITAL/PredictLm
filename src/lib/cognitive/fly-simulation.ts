@@ -1,5 +1,5 @@
 import {advanceFlyCore,createFlyCoreState,type FlyCoreState} from './fly-core';
-import {LIFE_WORLD_HEIGHT,LIFE_WORLD_WIDTH,perceiveFlyWorld,worldObject} from '../life-world-open';
+import {LIFE_WORLD_HEIGHT,LIFE_WORLD_WIDTH,WORLD_OBJECTS,perceiveFlyWorld,worldObject} from '../life-world-open';
 import type {LifeSimulationState} from '../life-simulation-engine';
 
 export interface FlySimulationState{
@@ -17,6 +17,12 @@ export interface FlySimulationState{
   visible:string[];
   lastUtterance:string;
   silenceTicks:number;
+  targetId:string|null;
+  targetX:number;
+  targetY:number;
+  goal:string;
+  boredom:number;
+  lastTargets:string[];
   core:FlyCoreState;
 }
 
@@ -38,6 +44,12 @@ export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
     visible:[],
     lastUtterance:'',
     silenceTicks:0,
+    targetId:'work-coffee',
+    targetX:720,
+    targetY:172,
+    goal:'explorar um estímulo diferente',
+    boredom:.18,
+    lastTargets:[],
     core:core?.version===1?core:createFlyCoreState()
   };
 }
@@ -54,7 +66,10 @@ export function stepFlySimulation(
     height?:number;
   }
 ):FlySimulationState{
-  const prev=previous?.version===1?previous:createFlySimulationState();
+  const base=createFlySimulationState(previous?.core);
+  const prev:FlySimulationState=previous?.version===1
+    ? {...base,...previous,lastTargets:Array.isArray(previous.lastTargets)?previous.lastTargets:[]}
+    : base;
   const width=input.width||LIFE_WORLD_WIDTH;
   const height=input.height||LIFE_WORLD_HEIGHT;
   const currentZ=Number.isFinite(prev.z)?prev.z:34;
@@ -68,7 +83,28 @@ export function stepFlySimulation(
     needs:{},neuro:{}
   } as any);
   const vision=perceiveFlyWorld(prev,world);
-  const bestVisual=vision.visible[0];
+  const recent=new Set(Array.isArray(prev.lastTargets)?prev.lastTargets:[]);
+  const visibleRanked=vision.visible
+    .map(v=>({v,obj:worldObject(v.id)}))
+    .filter(x=>x.obj)
+    .map(x=>({
+      ...x,
+      score:(x.v.salience||0)*1.4+(x.obj!.flyAttraction||0)*1.1-(recent.has(x.obj!.id)?.7:0)-Math.min(.5,x.v.distance/320)
+    }))
+    .sort((a,b)=>b.score-a.score);
+  const bestVisual=visibleRanked[0]?.v;
+  const reachedTarget=Math.hypot((prev.targetX??prev.x)-prev.x,(prev.targetY??prev.y)-prev.y)<24;
+  const targetStale=prev.tick%45===0||reachedTarget||!prev.targetId;
+  let chosen=targetStale?(visibleRanked[0]?.obj||null):worldObject(String(prev.targetId||''));
+  if(!chosen){
+    const candidates=WORLD_OBJECTS
+      .filter(obj=>!recent.has(obj.id))
+      .map(obj=>({obj,score:obj.flyAttraction*1.25+obj.salience*.65+((obj.id.length*(prev.tick+3))%17)/30}))
+      .sort((a,b)=>b.score-a.score);
+    chosen=candidates[0]?.obj||WORLD_OBJECTS[(prev.tick*7)%Math.max(1,WORLD_OBJECTS.length)]||null;
+  }
+  const targetX=chosen?.x??Math.max(24,Math.min(width-24,(prev.x+173)%width));
+  const targetY=chosen?.y??Math.max(24,Math.min(height-24,(prev.y+119)%height));
   const observation=[
     'simulacao',
     'local '+input.personLocation,
@@ -90,28 +126,30 @@ export function stepFlySimulation(
   else if(core.inhibition>.64&&core.exploration<.52)behavior='hover';
 
   const phase=(prev.tick+1)*.43;
-  let tx=Math.cos(phase)*2.4;
-  let ty=Math.sin(phase*1.37)*1.8;
+  const targetDx=targetX-prev.x;
+  const targetDy=targetY-prev.y;
+  const targetDistance=Math.max(1,Math.hypot(targetDx,targetDy));
+  let tx=(targetDx/targetDistance)*2.15;
+  let ty=(targetDy/targetDistance)*1.9;
+  // Small sensory jitter prevents perfectly straight robotic paths without creating circular orbits.
+  tx+=(Math.sin((prev.tick+1)*1.91)*.18);
+  ty+=(Math.sin((prev.tick+1)*2.37+.7)*.15);
 
   if(behavior==='avoid'){
     tx+=(-dx/distance)*4.2;
     ty+=(-dy/distance)*3.3;
   }else if(behavior==='inspect'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*1.2;
-    ty+=((tyObj-prev.y)/od)*1.0;
+    tx+=(targetDx/targetDistance)*.75;
+    ty+=(targetDy/targetDistance)*.65;
   }else if(behavior==='approach'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*2.7;
-    ty+=((tyObj-prev.y)/od)*2.2;
+    tx+=(targetDx/targetDistance)*1.85;
+    ty+=(targetDy/targetDistance)*1.55;
   }else if(behavior==='hover'){
     tx*=.35;
     ty*=.35;
   }else{
-    tx+=Math.cos(phase*.53)*core.exploration*2.4;
-    ty+=Math.sin(phase*.71)*core.exploration*2.0;
+    tx+=(targetDx/targetDistance)*core.exploration*.9;
+    ty+=(targetDy/targetDistance)*core.exploration*.75;
   }
 
   const vx=clamp(prev.vx*.55+tx*.45,-5,5);
@@ -126,11 +164,9 @@ export function stepFlySimulation(
   if(y<20||y>height-22)y=clamp(height-y,20,height-22);
 
   const shouldSpeak=core.salience>.7&&core.inhibition<.62&&(prev.silenceTicks>5||prev.tick%13===0);
-  const targetLabel=behavior==='approach'||behavior==='inspect'
-    ? (bestVisual?.label||'humano')
-    : behavior==='avoid'
-      ? 'distância segura'
-      : input.personLocation;
+  const targetLabel=behavior==='avoid'
+    ? 'distância segura'
+    : (chosen?.label||bestVisual?.label||input.personLocation);
   const utterance=shouldSpeak
     ? behavior==='avoid'
       ? 'Bzz! longe.'
@@ -156,6 +192,20 @@ export function stepFlySimulation(
     visible:vision.visible.map(x=>x.label).slice(0,8),
     lastUtterance:utterance,
     silenceTicks:utterance?0:(prev.silenceTicks||0)+1,
+    targetId:chosen?.id||null,
+    targetX,
+    targetY,
+    goal:behavior==='avoid'
+      ? 'afastar-se de ameaça'
+      : behavior==='inspect'
+        ? 'inspecionar '+targetLabel
+        : behavior==='approach'
+          ? 'alcançar '+targetLabel
+          : 'procurar um estímulo novo em '+targetLabel,
+    boredom:clamp((prev.boredom??.18)*.82+(reachedTarget ? .12 : 0)-(chosen&&!recent.has(chosen.id) ? .08 : 0),0,1),
+    lastTargets:reachedTarget&&chosen
+      ? [chosen.id,...(prev.lastTargets||[]).filter(x=>x!==chosen!.id)].slice(0,8)
+      : (prev.lastTargets||[]).slice(0,8),
     core
   };
 }
