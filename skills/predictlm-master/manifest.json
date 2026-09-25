@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.14.1",
+  "version": "3.14.2",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -131,5 +131,9 @@
     "references/NEUROCORE-CORES.md",
     "references/RELATORIOS-DOSSIES.md",
     "references/RUNTIME-FEDERATION.md"
-  ]
+  ],
+  "releaseGates": {
+    "simulationLiveness": "macaque/fly timers, cooldowns, anti-stall, real object registry, multi-tick actions",
+    "characterFidelity": "user references first; semantic failure or unverified limited fallback cannot become valid final character art"
+  }
 }
