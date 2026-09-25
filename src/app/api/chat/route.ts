@@ -137,7 +137,7 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -163,13 +163,13 @@ function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
 }
 
 const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
-  code:{'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
-  legal:{'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
-  research:{'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
-  creative:{'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  reasoning:{'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  quick:{'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
-  general:{'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
+  code:{freellmapi:120,'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,ollama:2},
+  legal:{freellmapi:120,'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,ollama:2},
+  research:{freellmapi:120,'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,ollama:2},
+  creative:{freellmapi:120,'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,ollama:2},
+  reasoning:{freellmapi:120,'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,ollama:2},
+  quick:{freellmapi:120,'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,ollama:4},
+  general:{freellmapi:120,'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,ollama:3}
 };
 
 function modelBonus(model:string,task:ProviderTask){
@@ -191,11 +191,13 @@ function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
   const primary=rankHealthyProviders(primaryProviders(configured));
   const task=providerTaskClass(prompt,deep);
   const manual=new Map(primary.map((p,i)=>[p.name,i]));
-  return [...primary].sort((a,b)=>{
+  const ranked=[...primary].sort((a,b)=>{
     const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
     const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
     return sb-sa;
   });
+  const free=ranked.find(x=>x.name==='freellmapi');
+  return free?[free,...ranked.filter(x=>x!==free)]:ranked;
 }
 
 function normalize(input:string){
