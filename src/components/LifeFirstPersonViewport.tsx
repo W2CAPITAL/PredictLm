@@ -2,7 +2,8 @@
 'use client';
 
 import React,{useEffect,useRef} from 'react';
-import {buildFirstPersonScene,projectPerspective,type PovActor,type PovCamera} from '@/lib/life-pov-3d';
+import {buildFirstPersonScene,projectPerspective,worldToCamera,type PovActor,type PovCamera} from '@/lib/life-pov-3d';
+import {WORLD_OBJECTS} from '@/lib/life-world-open';
 
 export interface PovOtherAgent{
   id:string;
@@ -185,6 +186,28 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
           ctx.fillStyle='#fff';
           ctx.fillText(other.label,p.x,p.y-size*1.8);
         }
+      }
+
+      if(props.peripheralFovDeg&&props.peripheralFovDeg>props.fovDeg){
+        const rcx=width-42,rcy=height-54,rr=27;
+        ctx.fillStyle='rgba(3,7,11,.72)';
+        ctx.beginPath();ctx.arc(rcx,rcy,rr+5,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='rgba(208,197,255,.42)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(rcx,rcy,rr,0,Math.PI*2);ctx.stroke();
+        const half=(props.peripheralFovDeg*Math.PI/180)/2;
+        for(const obj of WORLD_OBJECTS){
+          const local=worldToCamera(camera,obj.x,obj.y,0);
+          if(local.distance>props.range)continue;
+          const angle=Math.atan2(local.right,local.forward);
+          if(Math.abs(angle)>half)continue;
+          const radial=Math.min(1,local.distance/props.range)*rr;
+          const dx=Math.sin(angle)*radial;
+          const dy=-Math.cos(angle)*radial;
+          ctx.fillStyle=obj.flyAttraction>.65?'#ffe4a0':'#aa9df0';
+          ctx.beginPath();ctx.arc(rcx+dx,rcy+dy,1.6,0,Math.PI*2);ctx.fill();
+        }
+        ctx.fillStyle='#c9c0f7';ctx.font='7px ui-sans-serif,system-ui';ctx.textAlign='center';
+        ctx.fillText(String(props.peripheralFovDeg)+'°',rcx,rcy+rr+9);
       }
 
       ctx.strokeStyle='rgba(255,255,255,.85)';
