@@ -133,7 +133,7 @@ export function worldStimuli(state:LifeSimulationState):LifeWorldStimulus[]{
     {id:'sun',label:dayLight>.2?'luz natural entrando pelas janelas':'ambiente escuro',kind:'light',x:480,y:300,intensity:.2+dayLight*.8},
     {id:'park-air',label:'vento e movimento das folhas',kind:'air',x:180,y:140,intensity:.35+.2*Math.abs(Math.sin(state.tick*.17))},
     {id:'park-sound',label:'sons do parque',kind:'sound',x:190,y:150,intensity:.3+.15*Math.abs(Math.sin(state.tick*.29))},
-    {id:'cafe-smell',label:'cheiro de café e comida',kind:'smell',x:505,y:310,intensity:mealHour?.85:.42},
+    {id:'cafe-smell',label:'cheiro de café e comida',kind:'smell',x:505,y:310,intensity:mealHour ? .85 : .42},
     {id:'street-light',label:'luz artificial do poste',kind:'light',x:676,y:246,intensity:.2+night*.75}
   ];
   if(state.tick%17===0)rows.push({id:'phone-note',label:'notificação no celular',kind:'notification',x:190,y:470,intensity:.9});
