@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.32.0"
+  version: "1.33.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -858,3 +858,16 @@ Imagine no longer depends on manual uploads for named characters.
 - A semantic review that actually sees a wrong identity still rejects the result.
 
 No Supabase dependency is introduced.
+
+
+## Universal Report Intelligence (2026-09-25)
+
+Report generation is now a first-class Agent Fabric workflow:
+
+REQUEST → REPORT TYPE/BLUEPRINT → FORGE → AEGIS → PARALLAX → (COUNCIL X10 when complex) → CHAIR → QUALITY → HTML.
+
+Kinds: executive, operational, financial, team, technical, incident, project, commercial, marketing, HR, risk, compliance, audit, comparative, legal, due diligence, research and custom.
+
+Complex/high-risk reports auto-escalate to Council X10. Unknown report categories use the custom blueprint.
+
+The output remains Report Architect dossier markdown and preserves [oficial]/[fornecida]/[inferência]. Internal brains are reviewers, never sources.
