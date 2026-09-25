@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -277,3 +277,14 @@ Patterns incorporated from the MIT-licensed `krusemediallc/arcads-claude-code` s
 - Repair is bounded. Regenerate only from concrete visible defects and preserve the accepted identity/reference; do not restart creatively from scratch.
 - External API pricing, model names, limits and availability from the Arcads repository are **volatile examples**, not permanent PredictLM facts. Verify before execution.
 - Bundled influencer/product photos are assets, not training material; PredictLM does not ingest them into its knowledge index.
+
+## Referências Grok/Media avaliadas em 2026-09-25
+
+Padrões arquiteturais que podem ser adaptados sem tornar serviço pago obrigatório:
+- flaqai/awesome-grok-imagine (MIT): brief separado em frame inicial, ação/física, câmera, continuidade e áudio; útil para prompt compiler e consistência.
+- starrlord/grokive (MIT): workspaces de mídia, histórico, coleções e separação entre prompt técnico e biblioteca visual.
+- apimart-API-Gateway/grok-image-api: adapter assíncrono submit → task id → poll; tratar como provider opcional e verificar termos/preço antes de uso.
+- Anil-matcha/Grok-Imagine-Image-2-API (MIT): padrão de job assíncrono, edição encadeada e upload de referência; adapter opcional.
+- wrappers que exigem cookie/cURL de sessão de serviços terceiros **não** entram no runtime padrão nem armazenam sessão do usuário.
+
+Regras de integração: provider de imagem continua opcional; chave fica server-side na Vercel quando usada; nenhuma credencial é persistida no IndexedDB/LocalStorage; fila assíncrona possui estados queued/running/succeeded/failed/cancelled; referência visual aprovada é preservada em edições subsequentes; ausência de provider não bloqueia Cognitive Lab nem Chat normal.
