@@ -4,9 +4,9 @@
 name: report-architect
 description: Relatórios e dossiês answer-first em dossier markdown, com qualidade 0–100 e HTML determinístico navegável.
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   host: "PredictLM"
-  runtime: "browser + server deterministic renderer"
+  runtime: "AI multi-brain planner + browser/server deterministic renderer"
 ---
 
 # Report Architect
@@ -134,3 +134,96 @@ Office Artifacts: se o usuário pedir PDF/DOCX, validar o dossiê primeiro, conv
 PredictLM Master: módulo sob demanda, nunca contexto permanente.
 
 Persistência: não exige Supabase. Handoff Chat → Studio é local; renderização é determinística e não faz chamada de IA.
+
+
+## Universal Report Engine v2.0
+
+Report Architect is not limited to executive/legal/technical reports. It must infer the reporting objective and choose a dynamic blueprint.
+
+First-class kinds:
+- executive;
+- operational;
+- financial;
+- team/performance;
+- technical;
+- incident/postmortem;
+- project/status;
+- sales/commercial;
+- marketing;
+- HR/People Analytics;
+- risk;
+- compliance;
+- audit;
+- comparative/before-after;
+- legal dossier;
+- due diligence;
+- research/study;
+- custom/generic.
+
+Unknown report types use the custom blueprint rather than refusing.
+
+### AI + brains pipeline
+
+Default generation route:
+
+**REQUEST + MATERIAL → TYPE/BLUEPRINT → FORGE → AEGIS → PARALLAX → CHAIR → QUALITY GATE → HTML**
+
+FORGE:
+- extract facts, metrics, timelines, patterns, hypotheses, risks, actions and missing data;
+- never write unsupported facts.
+
+AEGIS:
+- challenge numerical consistency, comparability, causality, provenance and overclaiming;
+- identify unsupported claims and required fixes.
+
+PARALLAX:
+- identify a defensible third frame, hidden variable, alternative explanation, second-order effect, reversal condition and decisive check.
+
+CHAIR:
+- merge only supported findings;
+- build the final dossier markdown;
+- hide internal actor names from the report body;
+- repair once when quality <85 or an error exists.
+
+### Council X10 escalation
+
+Auto-enable Council X10 for:
+- legal dossier;
+- due diligence;
+- audit;
+- risk report;
+- compliance report;
+- incident/postmortem;
+- large material (>12k chars);
+- explicit deep/council request.
+
+Council lenses:
+Product · Systems · Builder/Reality · Human Factors · Research/Domain · Security · Failure/QA · Legal/Privacy · Operations/Cost · Devil's Advocate.
+
+Council produces auditable findings, not private chain-of-thought.
+
+### Dynamic blueprints
+
+A blueprint is a recommendation, not a rigid template. Each section must answer a question needed by the report objective.
+
+Examples:
+- operational → metrics, flow/productivity, temporal comparison, bottlenecks, evidence, risk, action;
+- financial → metrics, revenue/expense/cash, drivers, exposures, scenarios, action;
+- team → workload, fronts/channels, interpretation, attention points, action;
+- incident → impact, timeline, evidence, root cause, what worked/failed, CAPA;
+- technical → scope/method, architecture, findings, cause, risk, correction, validation;
+- comparative → baseline, direct comparison, improved/worsened, causes, options;
+- research → question, method, evidence, synthesis, counterpoints, implications.
+
+### App integration
+
+- POST /api/report-dossier/generate → AI multi-brain generation.
+- POST /api/report-dossier → deterministic Markdown/JSON rendering.
+- /dossie-studio → prompt + source material + generation + editing + quality + preview/export.
+- Chat report requests route to /api/report-dossier/generate first; if unavailable, the normal report contract remains as fallback.
+
+Manual Markdown remains supported. AI generation never replaces deterministic validation/rendering.
+
+### Cognitive boundary
+
+Fly/Human/Macaque cognitive simulations are not factual sources and must never be cited as evidence in a report. The report uses the operational AI brains (FORGE/AEGIS/PARALLAX/CHAIR/Council) for analysis and review. Cognitive Lab may only be used for optional ideation if explicitly requested and its output remains [inferência].
