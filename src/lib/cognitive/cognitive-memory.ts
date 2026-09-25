@@ -26,7 +26,8 @@ function normalizeState(raw:any):CognitiveState{
     ...base,
     ...raw,
     fly:raw.fly?.version===1?raw.fly:base.fly,
-    human:raw.human?.version===1?raw.human:base.human,
+    human:raw.human?.version===1?{...base.human,...raw.human,crossSpeciesProxy:{...base.human.crossSpeciesProxy,...(raw.human.crossSpeciesProxy||{})}}:base.human,
+    macaque:raw.macaque?.version===1?raw.macaque:base.macaque,
     workspace:{...base.workspace,...(raw.workspace||{})},
     consciousAccess:{...base.consciousAccess,...(raw.consciousAccess||{})},
     memory:{
