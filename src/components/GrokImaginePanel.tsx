@@ -220,7 +220,7 @@ export function GrokImaginePanel(){
             mode:'media-director',
             prompt:directorPrompt,
             deep:true,
-            researchContext:research,
+            researchContext:[research,cognition].filter(Boolean).join('\n\n'),
             messages:[]
           })
         });
@@ -241,7 +241,8 @@ export function GrokImaginePanel(){
           researchContext:[research,cognition].filter(Boolean).join('\n\n')
         }),
         brief,
-        research
+        research,
+        cognition
       };
     }
 
