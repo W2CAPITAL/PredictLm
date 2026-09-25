@@ -121,7 +121,15 @@ export function GrokImaginePanel(){
         sessionStorage.removeItem('predictlm:imagine-prefill');
       }
     }catch{}
-    setGallery(loadBrowserMediaLibrary() as MediaItem[]);
+    const loadedGallery=loadBrowserMediaLibrary() as MediaItem[];
+    setGallery(loadedGallery.filter(item=>{
+      const original=mediaOriginalPrompt(item)||item.prompt||'';
+      const sensitive=looksSpecificVisualPrompt(original);
+      const semanticStatus=String(item.meta?.semanticReview?.status||'');
+      if(semanticStatus==='failed')return false;
+      if(sensitive&&item.meta?.fidelityLimited&&semanticStatus!=='passed')return false;
+      return true;
+    }));
     setPersisted(browserMediaLibraryAvailable());
     fetch('/api/media/video',{cache:'no-store'})
       .then(r=>r.json())
@@ -540,7 +548,9 @@ export function GrokImaginePanel(){
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
       const semanticFailedSpecific=looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed';
-      const upscaled=semanticFailedSpecific
+      const unverifiedLimitedSpecific=looksSpecificVisualPrompt(prompt)&&data.fidelityLimited&&semanticReview?.status!=='passed';
+      const blockFromRecent=semanticFailedSpecific||unverifiedLimitedSpecific;
+      const upscaled=blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
       url=upscaled.url;
@@ -552,11 +562,13 @@ export function GrokImaginePanel(){
       setImageProviderWarning(data.providerWarning||'');
       if(data.style&&data.style!==style)setStyle(data.style);
       setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
-      if(semanticFailedSpecific){
+      if(blockFromRecent){
         setPersisted(false);
         data.providerWarning=[
           data.providerWarning,
-          'Esta geração específica falhou no gate de identidade e não foi adicionada às Gerações recentes.'
+          semanticFailedSpecific
+            ? 'Esta geração específica falhou no gate de identidade e não foi adicionada às Gerações recentes.'
+            : 'Fallback de fidelidade limitada sem aprovação semântica: a imagem não foi adicionada às Gerações recentes.'
         ].filter(Boolean).join(' ');
         setImageProviderWarning(data.providerWarning);
       }else await saveLibrary({
