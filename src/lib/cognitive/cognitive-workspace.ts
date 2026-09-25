@@ -1,6 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
+import {advanceFrankStein,createFrankSteinState,frankSteinContext,type FrankSteinState} from './frank-core';
 
 export interface CognitiveEpisode{
   at:number;
@@ -38,6 +39,7 @@ export interface CognitiveState{
   tick:number;
   fly:FlyCoreState;
   human:HumanCoreState;
+  frank:FrankSteinState;
   workspace:{
     mode:'reflexive'|'deliberative'|'balanced';
     salience:number;
@@ -72,6 +74,7 @@ export function createCognitiveState():CognitiveState{
     tick:0,
     fly:createFlyCoreState(),
     human:createHumanCoreState(),
+    frank:createFrankSteinState(),
     workspace:{
       mode:'balanced',
       salience:.4,
@@ -127,6 +130,13 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const prev=previous?.version===1?previous:createCognitiveState();
   const fly=advanceFlyCore(prev.fly,prompt);
   const human=advanceHumanCore(prev.human,prompt);
+  const frank=advanceFrankStein(prev.frank,prompt,{
+    predictionError:prev.workspace?.uncertainty??.4,
+    reward:prev.workspace?.confidence??.5,
+    social:prev.human?.neuro?.circuits?.social??.4,
+    memorySalience:Math.min(1,(prev.memory?.episodic?.length||0)/20),
+    threat:prev.fly?.threat??.1
+  });
 
   const reflex=clamp(fly.salience*.32+fly.actionSelection*.28+fly.threat*.2+fly.centralComplex*.2);
   const deliberate=clamp(human.workingMemory*.24+human.executiveControl*.28+human.metacognition*.22+human.recurrentIntegration*.26);
@@ -163,6 +173,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
     tick:prev.tick+1,
     fly,
     human,
+    frank,
     workspace:{mode,salience,confidence,uncertainty,inhibition,exploration,actionReadiness,broadcast},
     memory:{
       working:[clean(prompt,260),...(prev.memory?.working||[])].filter(Boolean).slice(0,8),
@@ -183,6 +194,7 @@ export function cognitivePromptContext(state:CognitiveState){
     'This is a software architecture informed by two real mapped connectome datasets. It is not evidence of consciousness.',
     flyCoreContext(state.fly),
     humanCoreContext(state.human),
+    frankSteinContext(state.frank),
     'GLOBAL WORKSPACE:',
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
@@ -225,6 +237,13 @@ export function applyCognitiveOutcome(
     predictiveError:clamp(previous.human.predictiveError*.58+predictionError*.42),
     metacognition:clamp(previous.human.metacognition*.82+predictionError*.18)
   };
+  const frank=advanceFrankStein(previous.frank,'Resultado da resposta: '+answer,{
+    reward:directReward,
+    predictionError,
+    memorySalience:Math.max(.35,directReward),
+    social:previous.human.neuro.circuits.social,
+    threat:previous.fly.threat
+  });
   const episode:CognitiveEpisode={
     at:Date.now(),
     prompt:clean(input.prompt,220),
@@ -237,6 +256,7 @@ export function applyCognitiveOutcome(
     ...previous,
     fly,
     human,
+    frank,
     workspace:{
       ...previous.workspace,
       confidence:clamp(previous.workspace.confidence*.66+directReward*.34),
@@ -340,7 +360,7 @@ export function recordCognitiveMemory(
 
 export function captureConversationMemory(
   previous:CognitiveState,
-  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'}
+  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'|'frank'}
 ){
   let next=previous;
   const prompt=clean(input.prompt,360);
@@ -383,15 +403,16 @@ export function recordPerceptionMemory(
   });
 }
 
-export function cognitiveIdentity(mode:'fly'|'human'|'dual'){
+export function cognitiveIdentity(mode:'fly'|'human'|'dual'|'frank'){
   if(mode==='fly')return 'Mosca Predict';
   if(mode==='human')return 'PredictLM Human Core';
+  if(mode==='frank')return 'Frank Stein';
   return 'PredictLM Cognitive Lab';
 }
 
 export function cognitiveDirectRecall(
   state:CognitiveState,
-  mode:'fly'|'human'|'dual',
+  mode:'fly'|'human'|'dual'|'frank',
   prompt:string
 ){
   const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
