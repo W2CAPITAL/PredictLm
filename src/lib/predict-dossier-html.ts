@@ -438,24 +438,109 @@ export function renderReportHtml(markdown:string,options:RenderDossierOptions={}
 
 export function coerceDossier(input:any,options:RenderDossierOptions={}):DossierDocument{
   if(!input||typeof input!=='object')return parseDossierMarkdown('',options);
-  const rawSections=Array.isArray(input.sections)?input.sections:[];
+
+  const kindValues:DossierKind[]=['relatorio-executivo','dossie-juridico','due-diligence','relatorio-tecnico','pesquisa','generico'];
+  const classValues:DossierClassification[]=['publico','interno','confidencial','restrito'];
+  const requestedKind=String(input.meta?.kind||options.meta?.kind||'');
+  const requestedClass=String(input.meta?.classification||options.meta?.classification||'');
+  const kind:DossierKind=kindValues.includes(requestedKind as DossierKind)
+    ? requestedKind as DossierKind
+    : detectDossierKind(JSON.stringify(input));
+  const classification:DossierClassification=classValues.includes(requestedClass as DossierClassification)
+    ? requestedClass as DossierClassification
+    : 'confidencial';
+
+  const rawSections:Array<{title:string;body:string;role?:DossierRole;level?:2|3}>=[];
+  for(const row of (Array.isArray(input.sections)?input.sections:[]).slice(0,120)){
+    const title=clean(row?.title||'Seção',160);
+    const role=(row?.role&&['summary','metrics','timeline','evidence','risks','options','actions','sources','methodology','limitations','appendix','analysis'].includes(row.role)
+      ? row.role
+      : roleForTitle(title)) as DossierRole;
+    rawSections.push({title,body:clean(row?.body||row?.content||'',50000),role,level:row?.level===3?3:2});
+  }
+
+  const hasRole=(role:DossierRole)=>rawSections.some(x=>(x.role||roleForTitle(x.title))===role);
+  const addTopLevel=(role:DossierRole,title:string,body:string)=>{
+    if(body.trim()&&!hasRole(role))rawSections.push({title,body,role,level:2});
+  };
+
+  const metricBody=(Array.isArray(input.metrics)?input.metrics:[]).slice(0,80).map((row:any)=>{
+    if(typeof row==='string')return '- '+clean(row,500);
+    const label=clean(row?.label||row?.name||row?.key||'Indicador',120);
+    const value=clean(row?.value??row?.amount??row?.detail??'—',420);
+    return '- **'+label+':** '+value;
+  }).join('\n');
+  addTopLevel('metrics','Dados-chave',metricBody);
+
+  const timelineBody=(Array.isArray(input.timeline)?input.timeline:[]).slice(0,160).map((row:any)=>{
+    if(typeof row==='string')return '- '+clean(row,1000);
+    const date=clean(row?.date||row?.when||'data não informada',40);
+    const fact=clean(row?.title||row?.fact||row?.body||row?.summary||'Evento',700);
+    const source=clean(row?.source||'',180);
+    const marker=/\[(oficial|fornecida|infer[eê]ncia)\]/i.test(fact)?'':(row?.origin==='official'?' [oficial]':row?.origin==='provided'?' [fornecida]':row?.origin==='inference'?' [inferência]':'');
+    return '- '+date+' — '+fact+marker+(source?' (fonte: '+source+')':'');
+  }).join('\n');
+  addTopLevel('timeline','Cronologia',timelineBody);
+
+  const riskBody=(Array.isArray(input.risks)?input.risks:[]).slice(0,80).map((row:any)=>{
+    if(typeof row==='string')return '- '+clean(row,1000);
+    const rawLevel=norm(String(row?.level||row?.severity||'médio'));
+    const level=rawLevel.startsWith('alto')||rawLevel==='high'?'Alto':rawLevel.startsWith('baixo')||rawLevel==='low'?'Baixo':'Médio';
+    const title=clean(row?.title||row?.risk||row?.detail||'Risco',500);
+    const impact=clean(row?.impact||'',360);
+    const mitigation=clean(row?.mitigation||row?.mitigacao||'',360);
+    return '- **'+level+'** — '+title+(impact?' Impacto: '+impact+'.':'')+(mitigation?' Mitigação: '+mitigation+'.':'');
+  }).join('\n');
+  addTopLevel('risks','Riscos',riskBody);
+
+  const actionBody=(Array.isArray(input.actions)?input.actions:[]).slice(0,100).map((row:any)=>{
+    if(typeof row==='string')return '- '+clean(row,1000);
+    const action=clean(row?.action||row?.title||row?.text||'Ação',500);
+    const owner=clean(row?.owner||row?.responsible||row?.responsavel||'a definir',160)||'a definir';
+    const deadline=clean(row?.deadline||row?.due||row?.prazo||'',120);
+    const priority=clean(row?.priority||row?.prioridade||'',120);
+    return '- '+action+' (responsável: '+owner+(deadline?'; prazo: '+deadline:'')+')'+(priority?' — '+priority:'');
+  }).join('\n');
+  addTopLevel('actions','Próximos passos',actionBody);
+
+  const sourceBody=(Array.isArray(input.sources)?input.sources:[]).slice(0,120).map((row:any)=>{
+    if(typeof row==='string')return '- '+clean(row,1200);
+    const title=clean(row?.title||row?.name||row?.source||'Fonte',240);
+    const url=clean(row?.url||row?.href||'',1000);
+    const detail=clean(row?.detail||row?.description||row?.publisher||'',500);
+    const origin=String(row?.origin||row?.tag||'').toLowerCase();
+    const marker=origin.includes('oficial')||origin==='official'?' [oficial]':origin.includes('fornecid')||origin==='provided'?' [fornecida]':origin.includes('infer')?' [inferência]':'';
+    const linked=/^(https?:\/\/|mailto:)/i.test(url)?'['+title+']('+url+')':title;
+    return '- '+linked+(detail?' — '+detail:'')+marker;
+  }).join('\n');
+  addTopLevel('sources','Fontes',sourceBody);
+
+  const limitationsBody=(Array.isArray(input.limitations)?input.limitations:[]).slice(0,80)
+    .map((row:any)=>typeof row==='string'?clean(row,900):clean(row?.detail||row?.text||row?.title||'',900))
+    .filter(Boolean).map((x:string)=>'- '+x).join('\n');
+  addTopLevel('limitations','Limitações',limitationsBody);
+
   const seen=new Map<string,number>();
-  const sections:DossierSection[]=rawSections.slice(0,120).map((row:any,index:number)=>{
-    const title=clean(row?.title||'Seção '+(index+1),160);
-    const body=clean(row?.body||row?.content||'',50000);
+  let top=0,sub=0;
+  const sections:DossierSection[]=rawSections.map((row,index)=>{
+    const title=clean(row.title||'Seção '+(index+1),160);
+    const body=clean(row.body,50000);
+    const level=row.level===3&&top>0?3:2;
+    if(level===2){top++;sub=0}else{sub++}
     return {
-      id:clean(row?.id||uniqueId(title,seen),90),
-      number:String(row?.number||index+1),
+      id:uniqueId(title,seen),
+      number:level===2?String(top):top+'.'+sub,
       title,
-      role:(row?.role&&['summary','metrics','timeline','evidence','risks','options','actions','sources','methodology','limitations','appendix','analysis'].includes(row.role)?row.role:roleForTitle(title)) as DossierRole,
+      role:(row.role||roleForTitle(title)) as DossierRole,
       body,
       wordCount:words(body),
-      level:row?.level===3?3:2
+      level
     };
   });
+
   const meta:DossierMeta={
-    kind:(input.meta?.kind||options.meta?.kind||detectDossierKind(JSON.stringify(input))) as DossierKind,
-    classification:(input.meta?.classification||options.meta?.classification||'confidencial') as DossierClassification,
+    kind,
+    classification,
     author:clean(input.meta?.author||options.meta?.author||'',120)||undefined,
     generatedAt:clean(input.meta?.generatedAt||options.meta?.generatedAt||new Date().toISOString(),80)
   };
