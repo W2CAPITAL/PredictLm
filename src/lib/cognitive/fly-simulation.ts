@@ -98,7 +98,7 @@ export function stepFlySimulation(
   const cooled=prev.avoidTargetId&&prev.tick<prev.avoidUntilTick?prev.avoidTargetId:null;
   const currentVisible=prev.targetId?vision.visible.find(v=>v.id===prev.targetId):null;
   const candidates=vision.visible.filter(v=>v.id!==cooled).sort((a,b)=>targetScore(b)-targetScore(a));
-  let bestVisual=currentVisible&&currentVisible.id!==cooled?currentVisible:(candidates[0]||null);
+  let bestVisual:(typeof vision.visible)[number]|null=currentVisible&&currentVisible.id!==cooled?currentVisible:(candidates[0]||null);
   let targetId=bestVisual?.id||null;
 
   const observation=[
