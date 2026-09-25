@@ -429,6 +429,7 @@ export function GrokImaginePanel(){
       style:String(data.style||style),
       fidelityLimited:!!data.fidelityLimited,
       referenceImagesPassed:Number(data.referenceImagesPassed||0),
+      automaticReferenceCount:Number(data.automaticReferenceCount||0),
       providerWarning:String(data.providerWarning||'')
     };
   }
@@ -611,21 +612,24 @@ export function GrokImaginePanel(){
       const specificRequest=looksSpecificVisualPrompt(prompt);
       const semanticFailedSpecific=specificRequest&&semanticReview?.status==='failed';
       const unverifiedSpecific=specificRequest&&semanticReview?.status!=='passed';
-      const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed';
+      const referencesPassed=Number(data.referenceImagesPassed||0);
+      const automaticReferences=Number(data.automaticReferenceCount||0);
+      const hasAutomaticGrounding=referencesPassed>0||automaticReferences>0;
+      const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed'&&!hasAutomaticGrounding;
       const hardRejectSpecific=semanticFailedSpecific||unverifiedLimitedSpecific;
       const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
 
       if(hardRejectSpecific){
         const reasons=semanticReview?.status==='failed'
           ? semanticReview.issues.slice(0,3).join('; ')
-          : 'o provider disponível é de fidelidade limitada e não houve verificação semântica aprovada';
+          : 'a busca automática não conseguiu recuperar/encaminhar referência visual suficiente e o verificador semântico também não aprovou o resultado';
         setGenerated('');
         setGeneratedPrompt('');
         setGeneratedRequest(prompt);
         setGeneratedCaption('');
         setProvider(String(data.provider||''));
         setPersisted(false);
-        const rejectMessage='Geração rejeitada pelo gate de identidade: '+reasons+'. Envie 1–3 imagens de referência ou use um provider multimodal configurado; o app não vai apresentar este candidato como personagem correto.';
+        const rejectMessage='Geração rejeitada pelo gate de identidade: '+reasons+'. O PredictLM tentou pesquisar referências automaticamente; referência manual é apenas opcional.';
         setImageProviderWarning(rejectMessage);
         setError(rejectMessage);
         return '';
@@ -681,6 +685,7 @@ export function GrokImaginePanel(){
           referenceCount:(data.referencesUsed?.length||0)+referenceImages.length,
           userReferenceCount:referenceImages.length,
           referenceImagesPassed:Number(data.referenceImagesPassed||0),
+          automaticReferenceCount:Number(data.automaticReferenceCount||0),
           referenceWarnings:data.referenceWarnings||[],
           promptMode:data.promptMode||promptMode,
           negativePrompt,
@@ -1064,7 +1069,7 @@ export function GrokImaginePanel(){
       <div>
         <span>Imagine</span>
         <h1>Imagem e vídeo</h1>
-        <p>Imagem com Literal automático para personagens específicos, referências Firecrawl quando disponíveis e biblioteca local no navegador. Vídeo generativo usa providers configurados.</p>
+        <p>Imagem com Literal automático, busca visual automática (Google quando configurado + fontes públicas de fallback), identity lock e biblioteca local. Upload de referência é opcional.</p>
       </div>
       <div className="gmedia-repo-status"><i className={persisted?'online':''}/><span>{persisted?'Biblioteca local ativa':'Biblioteca local indisponível'}</span></div>
     </header>
@@ -1092,7 +1097,7 @@ export function GrokImaginePanel(){
               <img src={ref.data} alt={'Referência '+(index+1)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
               <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
             </div>)}
-          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Para personagem específico, uma imagem canônica enviada aqui tem prioridade sobre busca automática e melhora muito o identity lock.</small>}
+          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.</small>}
         </div>:null}
         <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setStyleManuallyChosen(true);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>{setRatio(x);setRatioManuallyChosen(true)}}>{x.label}</button>)}</div>
@@ -1105,7 +1110,7 @@ export function GrokImaginePanel(){
             <button className={promptMode==='imagine'?'active':''} onClick={()=>setPromptMode('imagine')} type="button"><b>Imagine</b><small>Expansão cinematográfica Grok-like antes do provider real.</small></button>
           </div>
           <label><span>Evitar · negative opcional</span><input value={negativePrompt} onChange={e=>setNegativePrompt(e.target.value)} placeholder="ex.: cabelo branco, personagens fundidos, texto, watermark"/></label>
-          {literalUiMode?<small className="gmedia-literal-note">Modo literal ativo: Deep Think/Research não reescrevem a imagem; Firecrawl e identity lock continuam ativos.</small>:null}
+          {literalUiMode?<small className="gmedia-literal-note">Modo literal ativo: Deep Think/Research não reescrevem a imagem; busca visual automática + identity lock continuam ativos.</small>:null}
         </div>:null}
 
         {mode==='video'?<div className="gmedia-video-options">
