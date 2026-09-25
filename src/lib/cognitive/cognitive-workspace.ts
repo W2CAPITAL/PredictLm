@@ -149,13 +149,13 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const organism=advanceOrganism(prev.organism,{prompt,fly,human,workspaceUncertainty:uncertainty});
   const consciousAccess:ConsciousAccessState={
     attention:clamp(prevAccess.attention*.5+salience*.3+human.neuro.circuits.attention*.2),
-    perceptualBinding:clamp(prevAccess.perceptualBinding*.5+human.recurrentIntegration*.22+fly.centralComplex*.2+macaque.regionalIntegration*.08),
+    perceptualBinding:clamp(prevAccess.perceptualBinding*.48+human.recurrentIntegration*.22+fly.centralComplex*.2+macaque.regionalIntegration*.06+macaque.claustrumIntegration*.04),
     selfModel:clamp(prevAccess.selfModel*.7+human.metacognition*.18+confidence*.12),
     continuity:clamp(prevAccess.continuity*.72+Math.min(1,(prev.memory?.episodic?.length||0)/12)*.18+human.workingMemory*.1),
     memoryAccess:clamp(prevAccess.memoryAccess*.52+human.workingMemory*.24+fly.mushroomBody*.24),
     agency:clamp(prevAccess.agency*.55+actionReadiness*.28+human.executiveControl*.17),
     reportability:clamp(prevAccess.reportability*.6+human.metacognition*.2+confidence*.2),
-    globalBroadcast:clamp(prevAccess.globalBroadcast*.48+salience*.2+deliberate*.2+reflex*.12),
+    globalBroadcast:clamp(prevAccess.globalBroadcast*.46+salience*.2+deliberate*.19+reflex*.11+macaque.pfcProjectionIntegration*.04),
     arousal:clamp(prevAccess.arousal*.7+fly.sensoryDrive*.16+human.neuro.arousal*.14)
   };
 
