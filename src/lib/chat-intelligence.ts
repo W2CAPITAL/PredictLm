@@ -63,6 +63,8 @@ export function classifyConversation(prompt:string,history:AssistantMessage[]=[]
   if(history.length&&isCnjContextReference(prompt))return 'context';
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p))return 'casual';
   if(/^(voce me ama|gosta de mim|sente algo por mim|obrigad[oa]|valeu|kkk+|haha|rsrs|boa|legal|bacana)[!.?\s]*$/.test(p))return 'casual';
+  if(/^(?:eu\s+)?(?:gosto|adoro|amo|curto|prefiro|odeio|detesto|nao gosto)\s+(?:de\s+)?\S+/i.test(p))return 'casual';
+  if(/^(?:eu\s+)?(?:to|estou|tô)\s+(?:cansad[oa]|feliz|triste|animad[oa]|entediad[oa]|com fome|com sono|de boa|bem|mal)\b/i.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
   if(/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|cotacao|preco|placar|presidente atual|versao atual)\b/.test(p))return 'current';
   if(isHypotheticalPrompt(prompt))return 'hypothetical';
@@ -282,15 +284,11 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     ].join('\n');
   }
 
-  if(kind==='casual')return 'Estou aqui. Pode continuar.';
-
-  return [
-    'O PredictLM conseguiu manter o turno ativo sem depender de um provider externo, mas não encontrou conhecimento local específico o bastante para produzir uma resposta factual detalhada com segurança.',
-    '',
-    '**Pedido recebido:** '+prompt.trim().slice(0,320),
-    '',
-    'O caminho correto neste caso é usar o Neural Local/WebLLM quando carregado, knowledge packs ou pesquisa quando necessária; providers externos permanecem opcionais.'
-  ].join('\n');
+  if(kind==='casual')return 'Tô acompanhando. Continua.';
+  if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
+    return 'Entendi. Continua — quero pegar melhor a ideia.';
+  }
+  return 'Não consegui formular uma resposta boa para isso agora. Se você mandar de novo, eu tento por outra rota sem jogar texto interno ou contexto aleatório na conversa.';
 }
 
 export function signalsKnowledgeGap(content:string){
@@ -335,6 +333,23 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
   if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
+
+  const like=p.match(/^(?:eu\s+)?(?:gosto|curto)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  if(like){
+    const thing=like[1].trim();
+    if(/\bbatatas?\b/.test(thing))return 'Batata é boa demais. Frita, assada, purê, nhoque… difícil errar. Qual versão você mais gosta?';
+    return 'Boa. O que você mais curte em '+thing+'?';
+  }
+  const love=p.match(/^(?:eu\s+)?(?:adoro|amo)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  if(love)return 'Aí sim. '+love[1].trim()+' claramente te ganhou. O que você mais gosta nisso?';
+  const dislike=p.match(/^(?:eu\s+)?(?:odeio|detesto|nao gosto)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  if(dislike)return 'Justo. O que mais te incomoda em '+dislike[1].trim()+'?';
+  const prefer=p.match(/^(?:eu\s+)?prefiro\s+(.+?)[.!?]*$/i);
+  if(prefer)return 'Entendi. Você prefere '+prefer[1].trim()+'. Comparando com o quê?';
+
+  if(/^(?:eu\s+)?(?:to|estou|tô)\s+cansad[oa]\b/i.test(p))return 'Puxado. Quer só conversar um pouco ou quer resolver alguma coisa que está te cansando?';
+  if(/^(?:eu\s+)?(?:to|estou|tô)\s+com fome\b/i.test(p))return 'Aí complica. Tá com vontade de comer o quê?';
+  if(/^(?:eu\s+)?(?:to|estou|tô)\s+com sono\b/i.test(p))return 'Sono bateu forte então. Você ainda precisa fazer alguma coisa ou já pode apagar?';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length){
     const prev=clean(lastAssistant(history));
     if(/neural local|modelo local|qwen/.test(prev)){

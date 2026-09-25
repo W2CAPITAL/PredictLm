@@ -485,18 +485,14 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
 
   const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
   if(!candidates.length){
-    const kind=classifyConversation(prompt);
-    const content=generativeOfflineReply(prompt,kind);
     return Response.json({
       available:false,
-      content,
-      provider:'predictlm-core',
-      model:'internal',
-      code:content?'PREDICTLM_INTERNAL':'NO_REMOTE_PROVIDER',
+      content:null,
+      code:'NO_REMOTE_PROVIDER',
       mode:'clean-chat',
       sources:[],
-      errors:content?[]:['Nenhuma API remota configurada ou disponível.']
-    },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
+      errors:['Nenhuma API remota configurada ou disponível.']
+    },{status:503,headers:{'Cache-Control':'no-store'}});
   }
 
   const validateCandidate=async(provider:Provider)=>{

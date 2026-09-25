@@ -258,6 +258,65 @@ export function ChatShell({onOpenLegal}:Props){
     }
   }
 
+  async function requestPuterChat(input:{
+    prompt:string;
+    messages:Array<{role:string;content:string}>;
+    language:string;
+    signal:AbortSignal;
+  }){
+    if(typeof window==='undefined')return {ok:false,text:'',reason:'browser-only'};
+    try{
+      const mod:any=await import('@heyputer/puter.js');
+      const puter:any=mod?.puter||mod?.default?.puter||mod?.default||null;
+      if(!puter?.ai?.chat)return {ok:false,text:'',reason:'puter-unavailable'};
+
+      const recent=input.messages
+        .filter(x=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
+        .slice(-8)
+        .map(x=>({role:x.role,content:safeHistoricalContent(x.content).slice(0,1200)}));
+      const promptMessages=[
+        {
+          role:'system',
+          content:[
+            'You are PredictLM, a natural general-purpose conversational assistant.',
+            input.language==='pt-BR'?'Answer in Brazilian Portuguese unless the user clearly requests another language.':'Answer in the user language.',
+            'Answer the actual message directly. Keep recent conversation context.',
+            'Do not mention providers, runtimes, knowledge packs, RAG, skills, routing or internal implementation.',
+            'Do not output repository snippets, README fragments, Related/Relacionado sections or internal notes.'
+          ].join(' ')
+        },
+        ...recent,
+        {role:'user',content:input.prompt}
+      ];
+
+      let abortHandler:()=>void=()=>{};
+      const aborted=new Promise((_,reject)=>{
+        abortHandler=()=>reject(new DOMException('Aborted','AbortError'));
+        input.signal.addEventListener('abort',abortHandler,{once:true});
+      });
+      const call=puter.ai.chat(promptMessages,{model:'gpt-5.6-luna',temperature:0.65,max_tokens:1000});
+      const result:any=await Promise.race([call,aborted]);
+      input.signal.removeEventListener('abort',abortHandler);
+
+      const raw=typeof result==='string'
+        ? result
+        : typeof result?.message?.content==='string'
+          ? result.message.content
+          : Array.isArray(result?.message?.content)
+            ? result.message.content.map((x:any)=>x?.text||'').join('\n')
+            : typeof result?.content==='string'
+              ? result.content
+              : '';
+      const gate=publicAnswerGate(String(raw||''),input.language as any,input.prompt);
+      if(!gate.ok)return {ok:false,text:'',reason:gate.reason||'puter-gate'};
+      if(!responseTopicAlignment(input.prompt,gate.content).relevant)return {ok:false,text:'',reason:'puter-off-topic'};
+      if(signalsKnowledgeGap(gate.content))return {ok:false,text:'',reason:'puter-knowledge-gap'};
+      return {ok:true,text:gate.content,reason:''};
+    }catch(error:any){
+      return {ok:false,text:'',reason:String(error?.message||error||'puter-error')};
+    }
+  }
+
   async function send(){
     const prompt=input.trim();
     if(!prompt||busy)return;
@@ -276,6 +335,7 @@ export function ChatShell({onOpenLegal}:Props){
     const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
+    const showExecutionDetails=s.deepThink||needsWeb;
 
     setInput('');
     setScreen('chat');
@@ -288,6 +348,22 @@ export function ChatShell({onOpenLegal}:Props){
       }).catch(()=>{});
     }
     s.addMessage({role:'user',content:prompt});
+
+    // Plain conversation should feel like conversation, not an orchestration
+    // report. Greetings, preferences and simple personal statements do not
+    // need a provider round-trip.
+    if(direct&&kind==='casual'&&!s.deepThink&&!needsWeb){
+      s.addMessage({
+        role:'assistant',
+        content:direct,
+        engine:'Predict Auto',
+        status:'done'
+      });
+      setBusy(false);
+      setActivity([]);
+      return;
+    }
+
     if(simulationLaunch){
       try{
         sessionStorage.setItem('predictlm:simulation-explicit-start','1');
@@ -569,22 +645,23 @@ export function ChatShell({onOpenLegal}:Props){
           role:'assistant',
           content:result.text,
           engine:'Predict Auto',
-          sources:apiSources,
-          reasoningSummary:buildReasoningSummary({
-            kind,
-            webCount:apiSources.length,
-            provider:true,
-            anchor:!!answerAnchor,
-            deep:s.deepThink
-          }),
-          actions:[
-            result.data?.provider==='freellmapi'
-              ? 'FreeLLMAPI respondeu como provider padrão'
-              : 'Provider mesh respondeu após a tentativa do FreeLLMAPI',
-            result.data?.mode==='clean-chat'?'PredictLM preservou histórico e contexto sem RAG':'PredictLM aplicou contexto e validação',
-            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
-            'Resposta final validada antes de exibir'
-          ],
+          sources:showExecutionDetails?apiSources:[],
+          ...(showExecutionDetails?{
+            reasoningSummary:buildReasoningSummary({
+              kind,
+              webCount:apiSources.length,
+              provider:true,
+              anchor:!!answerAnchor,
+              deep:s.deepThink
+            }),
+            actions:[
+              result.data?.provider==='freellmapi'
+                ? 'FreeLLMAPI respondeu como provider padrão'
+                : 'Provider mesh respondeu',
+              ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
+              'Resposta final validada antes de exibir'
+            ]
+          }:{}),
           status:'done'
         });
         return true;
@@ -639,6 +716,28 @@ export function ChatShell({onOpenLegal}:Props){
 
       if(deliverProviderCandidate(candidate))return;
 
+      // If server-side providers are unavailable, keep normal chat intelligent
+      // by trying the already-installed browser cloud API before local/template
+      // fallbacks. This path remains isolated from RAG and skills.
+      if(!s.deepThink&&!needsWeb&&kind!=='casual'&&kind!=='context'){
+        setActivity(['Tentando uma segunda rota de conversa']);
+        const puter=await requestPuterChat({
+          prompt,
+          messages,
+          language,
+          signal:turnController.signal
+        });
+        if(puter.ok){
+          s.addMessage({
+            role:'assistant',
+            content:puter.text,
+            engine:'Predict Auto',
+            status:'done'
+          });
+          return;
+        }
+      }
+
       setActivity([
         'PROVIDER MESH · APIs não concluíram o turno',
         ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · tentando geração local']:['PREDICT CORE · tentando conhecimento local']),
@@ -675,22 +774,20 @@ export function ChatShell({onOpenLegal}:Props){
               role:'assistant',
               content:publicText,
               engine:'Predict Auto',
-              sources:localSources,
-              reasoningSummary:buildReasoningSummary({
-                kind,
-                webCount:localSources.length,
-                localBrain:true,
-                anchor:!!localFallback,
-                deep:s.deepThink
-              }),
-              actions:[
-                'PredictLM Core executou a resposta local',
-                local.engine==='webllm'?'WebLLM local utilizado':
-                  local.engine==='neural-lite'||local.engine==='neural-smart'?'Neural Local utilizado':
-                    local.engine==='native'?'Modelo nativo do navegador utilizado':'Knowledge/memória interna utilizada',
-                ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
-                'Resposta validada antes de exibir'
-              ],
+              sources:showExecutionDetails?localSources:[],
+              ...(showExecutionDetails?{
+                reasoningSummary:buildReasoningSummary({
+                  kind,
+                  webCount:localSources.length,
+                  localBrain:true,
+                  anchor:!!localFallback,
+                  deep:s.deepThink
+                }),
+                actions:[
+                  'Resposta local validada',
+                  ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[])
+                ]
+              }:{}),
               status:'done'
             });
             return true;
@@ -766,18 +863,12 @@ export function ChatShell({onOpenLegal}:Props){
         }
       }
 
-      const rescue=generativeOfflineReply(prompt,kind)||[
-        'O PredictLM manteve o turno ativo, mas não encontrou base local específica o bastante para detalhar a resposta com segurança.',
-        '',
-        '**Pedido recebido:** '+prompt.trim().slice(0,320),
-        '',
-        'Carregue o Neural Local/WebLLM ou habilite pesquisa quando o assunto exigir conhecimento que não esteja nos knowledge packs. APIs externas continuam opcionais.'
-      ].join('\n');
+      const rescue=generativeOfflineReply(prompt,kind)||'Entendi. Tenta me dizer de outro jeito e eu sigo daqui.';
       s.addMessage({
         role:'assistant',
         content:sanitizePublicAnswer(rescue,prompt)||rescue,
         engine:'Predict Auto',
-        actions:['PredictLM Core preservou o turno','Sem falha dura de provider','Providers externos permanecem opcionais'],
+        ...(showExecutionDetails?{actions:['Resposta de contingência utilizada']}:{ }),
         status:'done'
       });
       return;
