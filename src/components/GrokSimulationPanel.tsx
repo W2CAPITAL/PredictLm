@@ -3,6 +3,7 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import {
+  advanceLifeWorldPassive,
   applySimulationInstruction,
   createLifeSimulation,
   simulationClock,
@@ -137,7 +138,9 @@ export function GrokSimulationPanel(){
   useEffect(()=>{
     if(!state.running||agent.plan?.status==='running')return;
     const timer=window.setInterval(()=>{
-      setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
+      setState(prev=>manualTarget
+        ? stepLifeSimulation(prev,10*prev.speed,manualTarget)
+        : advanceLifeWorldPassive(prev,10*prev.speed));
     },650);
     return()=>window.clearInterval(timer);
   },[state.running,state.speed,manualTarget,agent.plan?.status]);
@@ -332,12 +335,12 @@ export function GrokSimulationPanel(){
     ctx.fillStyle=sky;ctx.fillRect(0,0,width,height);
 
     // Ground lot.
-    const ground=[iso(0,0),iso(640,0),iso(640,360),iso(0,360)];
+    const ground=[iso(0,0),iso(LIFE_WORLD_WIDTH,0),iso(LIFE_WORLD_WIDTH,LIFE_WORLD_HEIGHT),iso(0,LIFE_WORLD_HEIGHT)];
     poly(ground,'#456b52','#5d8768');
 
     // Isometric paving grid.
-    for(let x=0;x<=640;x+=80)line(iso(x,0),iso(x,360),'rgba(220,240,226,.10)');
-    for(let y=0;y<=360;y+=60)line(iso(0,y),iso(640,y),'rgba(220,240,226,.10)');
+    for(let x=0;x<=LIFE_WORLD_WIDTH;x+=80)line(iso(x,0),iso(x,LIFE_WORLD_HEIGHT),'rgba(220,240,226,.10)');
+    for(let y=0;y<=LIFE_WORLD_HEIGHT;y+=60)line(iso(0,y),iso(LIFE_WORLD_WIDTH,y),'rgba(220,240,226,.10)');
 
     // Paths between lots, behind buildings.
     ctx.lineCap='round';
