@@ -163,7 +163,7 @@ async function duckDuckGoImageSearch(query:string,limit:number):Promise<VisualRe
   if(!vqd)throw new Error('DuckDuckGo Images token indisponível');
 
   const params=new URLSearchParams({
-    l:'us-en',o:'json',q,vqd,f:',,,',p:'1',s:'0'
+    l:'us-en',o:'json',q:query,vqd,f:',,,',p:'1',s:'0'
   });
   const response=await fetch('https://duckduckgo.com/i.js?'+params.toString(),{
     cache:'no-store',
