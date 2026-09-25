@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.0.0",
+  "version": "3.14.1",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -34,11 +34,17 @@
     "neural-local",
     "security",
     "fraud-shield",
-    "self-improve"
+    "self-improve",
+    "agent-fabric",
+    "cognitive-lab",
+    "fly-core",
+    "human-core-h01",
+    "macaque-core",
+    "report-architect"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
-    "predictlm": "This skill is the sovereign public behavior contract; specialized modules remain internal implementation."
+    "predictlm": "Sovereign public behavior contract. Specialized runtimes, cognitive cores and Report Architect remain internal capabilities."
   },
   "absorbedModules": [
     "predictlm-unified",
@@ -106,7 +112,24 @@
     "predictlm-scanner",
     "autodev-runtime",
     "prompt-os",
-    "media-pipelines"
+    "media-pipelines",
+    "cognitive-lab",
+    "macaque-core",
+    "report-architect"
   ],
-  "legacySkillsAreInternal": true
+  "legacySkillsAreInternal": true,
+  "connectomeCores": {
+    "fly": "FlyWire FAFB v783",
+    "human": "H01 cortical fragment",
+    "macaque": "Macaca fascicularis cortical atlas Cell 2023"
+  },
+  "noGenericFallbackAsAnswer": true,
+  "references": [
+    "references/AGENT-FABRIC.md",
+    "references/CONNECTOME_SOURCES.md",
+    "references/DATAJUD-NEURAL-MESH.md",
+    "references/NEUROCORE-CORES.md",
+    "references/RELATORIOS-DOSSIES.md",
+    "references/RUNTIME-FEDERATION.md"
+  ]
 }
