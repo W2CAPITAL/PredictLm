@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.30.0"
+  version: "1.31.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -717,3 +717,7 @@ The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approve
 - run visual QA after generation and make only bounded repairs from concrete visible defects;
 - do not treat bundled reference photos/products as training material;
 - Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
+
+## Cognitive Lab v4 compatibility
+
+Hosts legados devem delegar a nova arquitetura para neurocore v4 e life-simulation v2.1: população simulada multi-humana, recall sem eco autorreferente, observatório funcional, intenções persistentes e política anti-loop. Chat normal permanece isolado em /. Cognitive state usa IndexedDB local e não requer Supabase.
