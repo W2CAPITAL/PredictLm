@@ -33,15 +33,15 @@ function upstream(parts:string[]){
   }),{status:200,headers:{'Content-Type':'text/event-stream'}});
 }
 
-function request(messages:any[],cognitiveContext:string){
+function request(messages:any[],cognitiveContext:string,cognitiveMode?:'dual'|'fly'|'human'|'macaque'){
   return new Request('http://predictlm.test/api/chat/cognitive-stream',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages,language:'pt-BR',cognitiveContext})
+    body:JSON.stringify({messages,language:'pt-BR',cognitiveContext,cognitiveMode})
   }) as any;
 }
 
-test('cognitive stream injects dual-connectome context while preserving chat history',async()=>{
+test('cognitive stream injects dual-cognitive context while preserving chat history',async()=>{
   clearProviders();
   process.env.GROQ_API_KEY='groq-test';
   process.env.GROQ_MODEL='openai/gpt-oss-120b';
@@ -152,13 +152,44 @@ test('fly chat mode identifies itself as the FlyWire-controlled agent and stream
     const response=await POST(req);
     assert.equal(response.status,200);
     const text=await response.text();
-    assert.match(text,/"mode":"fly-connectome"/);
+    assert.match(text,/"mode":"fly-cognitive"/);
     assert.match(text,/Estou explorando/);
     const system=seen.messages.find((x:any)=>x.role==='system')?.content||'';
     assert.match(system,/Mosca Predict/);
     assert.match(system,/FlyWire FAFB v783/);
     assert.match(system,/Não deixe o Human Core dominar/i);
     assert.ok(seen.messages.some((x:any)=>x.role==='assistant'&&x.content==='Bzz, oi.'));
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
+
+
+test('macaque chat mode identifies the atlas proxy and streams normally',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  const original=globalThis.fetch;
+  let seen:any=null;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    assert.equal(String(input),'https://api.groq.com/openai/v1/chat/completions');
+    seen=JSON.parse(String(init?.body||'{}'));
+    return upstream(['Macaque Core ativo.']);
+  };
+  try{
+    const response=await POST(request(
+      [{role:'user',content:'O que você representa?'}],
+      'MACAQUE CORTEX CORE — 143 cortical regions, 264 cell types.',
+      'macaque'
+    ));
+    assert.equal(response.status,200);
+    const text=await response.text();
+    assert.match(text,/"mode":"macaque-cognitive"/);
+    assert.match(text,/Macaque Core ativo/);
+    const system=seen.messages.find((x:any)=>x.role==='system')?.content||'';
+    assert.match(system,/PredictLM Macaque Core/);
+    assert.match(system,/atlas cortical espacial\/transcriptômico de macaque/i);
+    assert.match(system,/não é um conectoma sináptico/i);
   }finally{
     globalThis.fetch=original;
     clearProviders();
