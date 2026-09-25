@@ -54,3 +54,13 @@ test('specific characters use automatic no-key image search instead of requiring
     if(saved.order===undefined)delete process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER;else process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER=saved.order;
   }
 });
+
+
+test('Naruto matchup expands separate identity and scene searches',async()=>{
+  const mod=await import('../src/lib/media/visual-reference');
+  const queries=mod.buildVisualReferenceQueries('Naruto modo Kurama vs Sasuke Susanoo');
+  assert.ok(queries.some(q=>/Naruto Uzumaki Kurama/i.test(q)));
+  assert.ok(queries.some(q=>/Sasuke Uchiha Perfect Susanoo/i.test(q)));
+  assert.ok(queries.some(q=>/vs Sasuke Susanoo|final battle/i.test(q)));
+  assert.ok(queries.length>=5);
+});
