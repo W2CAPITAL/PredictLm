@@ -771,7 +771,7 @@ export function executeNextLifeAgentAction(
       before:observation(state,agent),after:observation(state,agent),
       message:'Plano concluído.'
     };
-    return {state,agent,record};
+    return {state,agent,record,completed:true};
   }
   const result=executeLifeAgentAction(state,agent,action);
   const nextCursor=result.completed?plan.cursor+1:plan.cursor;
