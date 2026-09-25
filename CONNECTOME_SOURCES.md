@@ -58,3 +58,21 @@ The Fly Core is exposed directly at `/cognitive/fly`. It has its own conversatio
 The Life Simulation Studio also contains a visible autonomous fly agent. Its movement state is driven by the same `FlyCoreState` fields used by Fly chat (salience, threat, exploration, inhibition, mushroom-body association, central-complex drive and action selection).
 
 The simulation periodically synchronizes its Fly Core back to the Cognitive Lab IndexedDB state, so Fly chat and the simulated fly share one persistent controller state. The normal PredictLM Chat at `/` remains independent.
+
+## Cognitive Population and Observatory
+
+The v4 Cognitive Lab adds several independent **simulated human agents** to exercise memory, attention, planning, uncertainty and action selection with different parameters. They are software agents, not digitized real humans.
+
+No H01 record is treated as a donor personality or donor memory. H01 remains a structural cortical reference. The population's episodic/semantic state is created by PredictLM itself and persisted locally.
+
+The public observatory at /cognitive/observatory renders functional SVG maps and inspectable controller state. These drawings are explanatory diagrams, not MRI/fMRI/EEG images and not anatomical reconstructions.
+
+The observatory exposes only designed public state such as goal, focus, recalled runtime memory, selected action, confidence and uncertainty. It does not claim access to private model chain-of-thought.
+
+## Anti-loop simulation policy
+
+The Life Simulation no longer uses periodic trigonometric phases as the primary fly motion controller, and human destination selection is no longer a strict per-tick argmax.
+
+- Fly: persistent targets, novelty/revisit penalties, threat interrupts and reproducible stochastic exploration.
+- Human: persistent intentions, recent-location memory, repetition penalties, novelty, urgency interrupts and reproducible stochastic selection.
+- Both remain deterministic enough to replay from the same seed/state while avoiding visually obvious NPC loops.
