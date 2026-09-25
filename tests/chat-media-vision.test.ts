@@ -137,3 +137,20 @@ test('generic offline path never emits the old provider failure',()=>{
   assert.ok(answer);
   assert.doesNotMatch(answer!,/providers não produziram|pesquisa automática não encontrou/i);
 });
+
+
+test('como faço um tamanduá robo uses the specific robot plan',()=>{
+  const prompt='Como faço um tamanduá robo';
+  assert.equal(classifyConversation(prompt),'howto');
+  const answer=practicalHowToReply(prompt);
+  assert.ok(answer);
+  assert.match(answer!,/tamanduá-robô/i);
+  assert.match(answer!,/locomoção|chassi|sensores/i);
+  assert.doesNotMatch(answer!,/Defina exatamente o resultado final e a escala/);
+  assert.equal(conversationAnswerIssue(prompt,answer!),'');
+});
+
+test('generic robot request is not mistaken for tamandua robot',()=>{
+  const answer=practicalHowToReply('Como faço um robô simples');
+  assert.ok(!answer||!/tamanduá-robô/i.test(answer));
+});

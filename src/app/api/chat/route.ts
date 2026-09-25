@@ -137,7 +137,7 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -163,13 +163,13 @@ function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
 }
 
 const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
-  code:{'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,freellmapi:2,ollama:2},
-  legal:{'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,freellmapi:2,ollama:2},
-  research:{'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,freellmapi:2,ollama:2},
-  creative:{'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  reasoning:{'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,freellmapi:2,ollama:2},
-  quick:{'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,freellmapi:4,ollama:4},
-  general:{'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,freellmapi:3,ollama:3}
+  code:{freellmapi:120,'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,ollama:2},
+  legal:{freellmapi:120,'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,ollama:2},
+  research:{freellmapi:120,'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,ollama:2},
+  creative:{freellmapi:120,'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,ollama:2},
+  reasoning:{freellmapi:120,'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,ollama:2},
+  quick:{freellmapi:120,'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,ollama:4},
+  general:{freellmapi:120,'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,ollama:3}
 };
 
 function modelBonus(model:string,task:ProviderTask){
@@ -191,11 +191,13 @@ function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
   const primary=rankHealthyProviders(primaryProviders(configured));
   const task=providerTaskClass(prompt,deep);
   const manual=new Map(primary.map((p,i)=>[p.name,i]));
-  return [...primary].sort((a,b)=>{
+  const ranked=[...primary].sort((a,b)=>{
     const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
     const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
     return sb-sa;
   });
+  const free=ranked.find(x=>x.name==='freellmapi');
+  return free?[free,...ranked.filter(x=>x!==free)]:ranked;
 }
 
 function normalize(input:string){
@@ -471,10 +473,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
   }
 
-  // Race several configured APIs inside one bounded window. We still select
-  // the highest-priority valid response, but a slow/dead first provider can no
-  // longer consume the entire browser timeout before another API is attempted.
-  const attempts=await Promise.allSettled(candidates.map(async provider=>{
+  const validateCandidate=async(provider:Provider)=>{
     const raw=await callProvider(provider,messages,false,8500);
     const gate=publicAnswerGate(raw,language,prompt);
     if(!gate.ok)throw new Error(gate.reason);
@@ -482,9 +481,28 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     const alignment=responseTopicAlignment(prompt,gate.content);
     if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
     return {provider,content:gate.content};
-  }));
+  };
 
   const errors:string[]=[];
+  const free=candidates.find(x=>x.name==='freellmapi');
+  if(free){
+    try{
+      const result=await validateCandidate(free);
+      return Response.json({
+        content:result.content,
+        provider:result.provider.name,
+        model:result.provider.model,
+        mode:'clean-chat',
+        sources:[],
+        apiRace:{attempted:['freellmapi'],winner:'freellmapi',strategy:'freellm-first'}
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch(error:any){
+      errors.push('freellmapi: '+String(error?.message||error||'failed').slice(0,160));
+    }
+  }
+
+  const fallbacks=candidates.filter(x=>x.name!=='freellmapi');
+  const attempts=await Promise.allSettled(fallbacks.map(validateCandidate));
   for(let i=0;i<attempts.length;i++){
     const result=attempts[i];
     if(result.status==='fulfilled'){
@@ -494,10 +512,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
         model:result.value.provider.model,
         mode:'clean-chat',
         sources:[],
-        apiRace:{attempted:candidates.map(x=>x.name),winner:result.value.provider.name}
+        apiRace:{attempted:[...(free?['freellmapi']:[]),...fallbacks.map(x=>x.name)],winner:result.value.provider.name,strategy:'freellm-first'}
       },{headers:{'Cache-Control':'no-store'}});
     }
-    errors.push(candidates[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
+    errors.push(fallbacks[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
   }
 
   return Response.json({

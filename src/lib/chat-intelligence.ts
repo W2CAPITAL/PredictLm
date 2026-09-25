@@ -174,7 +174,7 @@ export function practicalHowToReply(prompt:string){
   if(/\b(fazer|cozinhar)\b/.test(p)&&/\barroz\b/.test(p)&&!/\b(integral|japones|risoto)\b/.test(p))return 'Para fazer arroz branco comum:\n\n1. Aqueça um pouco de óleo e refogue alho ou cebola, se quiser.\n2. Adicione 1 xícara de arroz e mexa rapidamente.\n3. Coloque cerca de 2 xícaras de água quente e sal a gosto.\n4. Quando ferver, reduza o fogo e cozinhe com a panela parcialmente tampada até a água secar e o grão ficar macio. Se ainda estiver duro, acrescente um pouco de água.\n5. Desligue, deixe descansar tampado por cerca de 5 minutos e solte com um garfo. A quantidade de água pode variar conforme o arroz.';
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
   if(/\b(carro|automovel|automóvel|veiculo|veículo|trator|caminhao|caminhão)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
-  if(/\b(tamandua|tamanduá|robo|robô|robot)\b/.test(p)&&/(criar|crie|fazer|montar|construir)/.test(p))return [
+  if(/\btamandua\b/.test(p)&&/\b(robo|robot)\b/.test(p)&&/(criar|crie|fazer|faco|faca|montar|construir)/.test(p))return [
     '**Trate um tamanduá-robô como um projeto de robótica + design biomimético**, não como um brinquedo improvisado.',
     '',
     '1. **Defina escala e função.** Brinquedo, exposição, pesquisa ou protótipo determinam peso, autonomia, custo e segurança.',
