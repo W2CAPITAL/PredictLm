@@ -65,17 +65,19 @@ export async function GET(req:Request){
     .slice(0,3);
 
   try{
-    const target=upstreamUrl(prompt,width,height,seed,model,enhance,references);
-    let upstream=await fetchImage(target);
-
-    // Uma segunda tentativa curta com turbo cobre indisponibilidade específica
-    // do modelo sem devolver HTML quebrado como se fosse uma imagem.
-    if(!upstream.ok&&model!=='turbo'){
-      await new Promise(r=>setTimeout(r,900));
-      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,'turbo',enhance,references));
+    const referenceModels=references.length
+      ? [model,'kontext','nanobanana-2-lite','p-image-edit'].filter((x,i,a)=>x&&a.indexOf(x)===i)
+      : [model,'turbo'].filter((x,i,a)=>x&&a.indexOf(x)===i);
+    let upstream:Response|null=null;
+    let usedModel=model;
+    for(let i=0;i<referenceModels.length;i++){
+      usedModel=referenceModels[i];
+      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,usedModel,enhance,references));
+      if(upstream.ok)break;
+      if(i<referenceModels.length-1)await new Promise(r=>setTimeout(r,650));
     }
 
-    if(!upstream.ok){
+    if(!upstream||!upstream.ok){
       const detail=(await upstream.text().catch(()=>'')).
         replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,220);
       return Response.json({error:'Provider de imagem respondeu '+upstream.status,detail},{status:502});
@@ -96,7 +98,8 @@ export async function GET(req:Request){
         'Content-Length':String(body.byteLength),
         'Cache-Control':'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400',
         'X-Predict-Media':'pollinations-proxy',
-        'X-Predict-Reference-Count':String(references.length)
+        'X-Predict-Reference-Count':String(references.length),
+        'X-Predict-Image-Model':usedModel
       }
     });
   }catch(error:any){
