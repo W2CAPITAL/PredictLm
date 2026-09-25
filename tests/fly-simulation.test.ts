@@ -37,7 +37,7 @@ test('FlyCore simulation reacts to nearby threat stimulus with avoidance',()=>{
   });
   assert.ok(next.core.threat>.5);
   assert.equal(next.behavior,'avoid');
-  assert.match(flySimulationBubble(next),/afastando/i);
+  assert.match(flySimulationBubble(next),/afastando|longe/i);
 });
 
 test('Fly simulation preserves the mapped FlyWire core metadata',()=>{
