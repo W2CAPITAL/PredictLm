@@ -20,6 +20,7 @@ import {
 } from '@/lib/cognitive/connectome-import';
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
 import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
+import {frankPublicMentalState} from '@/lib/cognitive/frank-core';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
 export type CognitiveChatMode='dual'|'fly'|'human'|'frank';
@@ -62,6 +63,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     bottom.current?.scrollIntoView({behavior:'smooth'});
   },[messages,loaded,mode]);
 
+  const frankMind=useMemo(()=>frankPublicMentalState(state.frank),[state.frank]);
   const metrics=useMemo(()=>({
     mode:state.workspace.mode,
     flySalience:Math.round(state.fly.salience*100),
@@ -436,7 +438,14 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
             <Metric label="Firing" value={Math.round(state.frank.neurons.firingRate*100)}/>
             <Metric label="Plasticidade" value={Math.round(state.frank.neurons.plasticity*100)}/>
           </div>
-          <div className="mt-3 text-[10px] leading-5 text-zinc-500">Sentimentos dominantes: {state.frank.emotion.dominant.join(', ')} · neurônios virtuais: {state.frank.neurons.neuronCount}</div>
+          <div className="mt-3 space-y-1 text-[10px] leading-5 text-zinc-500">
+            <div><b className="text-zinc-300">Sentindo:</b> {frankMind.feeling}</div>
+            <div><b className="text-zinc-300">Foco:</b> {frankMind.focus}</div>
+            <div><b className="text-zinc-300">Quer:</b> {frankMind.want}</div>
+            <div><b className="text-zinc-300">Tendência:</b> {frankMind.nextTendency}</div>
+            <div><b className="text-zinc-300">Corpo:</b> {frankMind.body}</div>
+            <div><b className="text-zinc-300">Memória ativa:</b> {frankMind.memoryTone}</div>
+          </div>
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
