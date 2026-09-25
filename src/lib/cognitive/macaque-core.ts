@@ -78,7 +78,7 @@ export function advanceMacaqueCore(previous:MacaqueCoreState|undefined,prompt:st
   const somatosensoryHierarchy=clamp(prev.somatosensoryHierarchy*.72+somato*.22+planning*.06);
   const regionalIntegration=clamp(prev.regionalIntegration*.66+planning*.1+social*.08+memory*.08+Math.max(visual,somato,auditory)*.08);
   const primateSpecificL4=clamp(prev.primateSpecificL4*.84+Math.max(visual,somato)*.1+novelty*.06);
-  const uncertainty=clamp(prev.uncertainty*.78+(q.length<4?.08:.02)+(1-Math.max(visual,somato,planning,social,auditory,memory,novelty))*.08);
+  const uncertainty=clamp(prev.uncertainty*.78+(q.length < 4 ? .08 : .02)+(1-Math.max(visual,somato,planning,social,auditory,memory,novelty))*.08);
 
   const corticalLayers={
     L1:clamp(prev.corticalLayers.L1*.82+Math.max(visual,auditory)*.08+regionalIntegration*.1),
