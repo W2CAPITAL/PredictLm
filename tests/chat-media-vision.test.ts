@@ -189,3 +189,21 @@ test('reported prompts stay out of procedural/retrieval pollution',()=>{
   assert.equal(isPurchaseLocationIntent(mcd),true);
   assert.equal(classifyConversation(mcd),'general');
 });
+
+
+test('game creation prompts remain clean practical chat',()=>{
+  for(const prompt of [
+    'Como posso criar um jogo',
+    'Como posso criar um game tycoon',
+    'Como posso criar um jogo de terror'
+  ]){
+    assert.equal(classifyConversation(prompt),'howto',prompt);
+    assert.equal(shouldSearchConversation('howto',true,prompt),false,prompt);
+  }
+});
+
+test('blocky follow-up remains a general contextual chat phrase',()=>{
+  const prompt='Eu queria ser todo quadradão';
+  assert.equal(classifyConversation(prompt),'general');
+  assert.equal(shouldSearchConversation('general',true,prompt),false);
+});
