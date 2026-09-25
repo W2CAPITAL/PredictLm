@@ -2,7 +2,7 @@
 name: life-simulation
 description: Cria, executa e exporta simulações 2.5D isométricas ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "3.1.0"
+  version: "3.2.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -285,3 +285,50 @@ A biografia serve para variar decisões e permitir recall contextual. Nunca conv
 - `JEFFY1234599/block-craft-browser-edition` — o README inspecionado declara MIT e descreve um sandbox voxel browser; usar somente padrões gerais confirmáveis, sem assumir como implementadas todas as alegações promocionais do README.
 
 PredictLM deve manter identidade visual própria e assets originais; “tipo Minecraft web” significa navegação/voxel/POV/interação, não redistribuir arte do Minecraft.
+
+
+## Runtime invariants v3.2 — movement and physical truth
+
+The visible world and the action world must be the same world.
+
+1. **Single object source of truth**
+   - render `WORLD_OBJECTS` as the physical furniture/props;
+   - do not draw decorative fake furniture that agents cannot perceive or use;
+   - object id, position, label, affordances and renderer must describe the same object.
+
+2. **Macaque liveness**
+   - the Macaque interval must not depend on fast-changing fly coordinates/state values that can cancel the timer before its first tick;
+   - runtime reads current world/fly state through stable refs;
+   - Macaque target selection has dwell, completion, cooldown and anti-stall;
+   - after inspecting/foraging/climbing, the target enters cooldown and Auri must choose another route;
+   - climb changes real z/height.
+
+3. **Fly anti-trap**
+   - no light/object may act as a permanent magnet;
+   - target reached → short sample/dwell → target cooldown → new waypoint;
+   - low-motion for several ticks triggers anti-stall recovery;
+   - bounds reflect velocity instead of teleporting to the opposite side;
+   - lamp attraction is a cue, not a dominant goal.
+
+4. **Physical actions take time**
+   - `approach_object` visibly moves toward the real object;
+   - `use_object` spans multiple executor ticks and exposes progress;
+   - rewards/state changes accumulate across the interaction rather than pretending a long task completed in one frame;
+   - the interaction remains visible long enough for map and POV renderers to show it.
+
+5. **POV object recognizability**
+   - tree/fruit tree: trunk + canopy/fruit;
+   - bench: seat/back/legs;
+   - bed: mattress/pillow;
+   - computer: desk/screen/stand/keyboard;
+   - bookshelf: shelves/books;
+   - whiteboard: board/frame;
+   - fridge: doors/handles;
+   - stove: burners;
+   - climbing/playground: bars/supports;
+   - trail: flat path;
+   - water/fountain: water/ripples;
+   - lamp: pole/light;
+   - flower: stem/bloom.
+
+A text log saying an action happened does not satisfy the simulation contract when the action should be physically observable.
