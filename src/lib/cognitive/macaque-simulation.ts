@@ -86,7 +86,7 @@ export function stepMacaqueSimulation(
   const candidates=vision.visible
     .filter(v=>v.id!==cooled)
     .sort((a,b)=>targetScore(b)-targetScore(a));
-  let best=currentVisible&&currentVisible.id!==cooled?currentVisible:(candidates[0]||null);
+  let best:(typeof vision.visible)[number]|null=currentVisible&&currentVisible.id!==cooled?currentVisible:(candidates[0]||null);
   let targetId=best?.id||null;
   let targetTicks=targetId&&targetId===prev.targetId?prev.targetTicks+1:0;
 
