@@ -66,7 +66,7 @@ test('cognitive stream injects dual-cognitive context while preserving chat hist
 
     assert.equal(response.status,200);
     const text=await response.text();
-    assert.match(text,/"mode":"dual-connectome"/);
+    assert.match(text,/"mode":"dual-cognitive"/);
     assert.match(text,/"provider":"groq"/);
     assert.match(text,/"content":"Resposta "/);
     const system=seen.messages.find((x:any)=>x.role==='system')?.content||'';
