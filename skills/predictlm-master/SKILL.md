@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.15.2"
+  version: "3.15.3"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.15.2
+# PredictLM Master v3.15.3
 
 ## Regra soberana
 
@@ -1025,3 +1025,19 @@ Release invariants:
 - rejected candidates never enter Recent;
 - retry is bounded; do not loop indefinitely;
 - manual references remain optional overrides, not routine user work.
+
+
+# Anime Character Catalog Grounding v3.15.3
+
+For anime character generation, identity resolution precedes generic image search.
+
+Required sequence:
+**prompt → named-character decomposition → AniList character resolution → alias/franchise disambiguation → catalog images → form/scene web search → real download → reference screening → generation → semantic review**.
+
+Rules:
+- catalog metadata is for identity/disambiguation, not proof that generated pixels are correct;
+- ambiguous names use connected media/franchise titles for ranking;
+- a multi-character scene resolves each character separately;
+- transformations/avatars such as Susanoo remain form/scene queries when they are not catalog characters;
+- do not ingest streaming/torrent/mirror logic from anime apps used as architectural references;
+- show catalog-resolved identities in Imagine diagnostics.
