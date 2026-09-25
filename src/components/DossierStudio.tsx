@@ -1,6 +1,6 @@
 'use client';
 
-import React,{useMemo,useRef,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,Download,FileText,Printer,ShieldCheck,Sparkles} from 'lucide-react';
 import {
   renderReportHtml,
@@ -59,6 +59,21 @@ export function DossierStudio(){
   const [theme,setTheme]=useState<'auto'|'light'|'dark'>('auto');
   const [maxWords,setMaxWords]=useState(380);
   const frame=useRef<HTMLIFrameElement>(null);
+
+  useEffect(()=>{
+    try{
+      const prefill=sessionStorage.getItem('predictlm:dossier-prefill');
+      const savedKind=sessionStorage.getItem('predictlm:dossier-kind') as DossierKind|null;
+      if(prefill){
+        setMarkdown(prefill);
+        sessionStorage.removeItem('predictlm:dossier-prefill');
+      }
+      if(savedKind&&kinds.some(x=>x.value===savedKind)){
+        setKind(savedKind);
+        sessionStorage.removeItem('predictlm:dossier-kind');
+      }
+    }catch{}
+  },[]);
 
   const rendered=useMemo(()=>renderReportHtml(markdown,{
     maxWordsPerSection:maxWords,
