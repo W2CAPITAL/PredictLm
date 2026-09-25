@@ -302,11 +302,15 @@ export async function GET(req:Request){
 export async function POST(req:Request){
   const body=await req.json().catch(()=>({}));
   const provider=safeProvider(body?.provider);
-  const prompt=String(body?.prompt||'').trim();
+  const rawPrompt=String(body?.prompt||'').trim();
+  const frankVisualContext=String(body?.frankVisualContext||'').replace(/\s+/g,' ').trim().slice(0,1200);
+  const prompt=frankVisualContext
+    ? rawPrompt+'\n\nFRANK BRAIN VISUAL STATE — use only for expression, body language, lighting, pacing, camera tension and environmental memory cues. Do not add literal brain HUDs unless requested:\n'+frankVisualContext
+    : rawPrompt;
   const cfg=config();
 
   if(!provider)return NextResponse.json({error:'Provider de vídeo inválido.'},{status:400});
-  if(!prompt)return NextResponse.json({error:'Descreva o vídeo.'},{status:400});
+  if(!rawPrompt)return NextResponse.json({error:'Descreva o vídeo.'},{status:400});
 
   const available=remoteOrder(cfg);
   const resolvedProvider:RemoteProvider=provider==='auto'?(available[0]||'gemini'):provider;
