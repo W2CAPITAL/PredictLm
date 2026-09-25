@@ -850,3 +850,23 @@ The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approve
 - run visual QA after generation and make only bounded repairs from concrete visible defects;
 - do not treat bundled reference photos/products as training material;
 - Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
+
+
+## Report Architect routing (2026-09-25)
+
+Relatório/dossiê é uma capability sob demanda, não contexto permanente do Chat.
+
+Quando detectReportIntent indicar pedido de relatório:
+1. carregar skills/report-architect/SKILL.md;
+2. exigir resposta primeiro e dossier markdown estruturado;
+3. marcar fatos com [oficial], [fornecida] ou [inferência];
+4. rodar validateDossier;
+5. buscar nota >=85 e zero erros;
+6. se HTML for solicitado, renderizar deterministicamente e devolver no Chat apenas conclusão + sumário + arquivo;
+7. manter o conteúdo completo disponível no /dossie-studio.
+
+Conversa comum não recebe REPORT_DOSSIER_CONTRACT.
+
+Report Architect não autoriza inventar processo, prazo, valor, fonte, probabilidade ou responsável. Falha de fonte é limitação; ausência pública não prova inexistência. Ato jurídico com efeito externo continua sob confirmação humana.
+
+Persistência do handoff Chat → Dossiê Studio é browser-local. Nenhuma dependência Supabase é necessária.
