@@ -100,7 +100,7 @@ export const WORLD_OBJECTS:LifeWorldObject[]=[
   {id:'world-tree1',label:'Árvore da rua',kind:'tree',location:'Parque',x:348,y:232,z:45,w:20,h:20,affordances:['observe'],salience:.32,flyAttraction:.84},
   {id:'world-tree2',label:'Árvore da rua',kind:'tree',location:'Parque',x:628,y:356,z:48,w:22,h:22,affordances:['observe'],salience:.34,flyAttraction:.86},
   {id:'world-bench',label:'Banco da praça',kind:'bench',location:'Parque',x:606,y:296,z:6,w:30,h:10,affordances:['rest','observe','talk'],salience:.4,flyAttraction:.18},
-  {id:'world-lamp',label:'Poste de luz',kind:'lamp',location:'Parque',x:676,y:246,z:52,w:8,h:8,affordances:['observe'],salience:.58,flyAttraction:.92}
+  {id:'world-lamp',label:'Poste de luz',kind:'lamp',location:'Parque',x:676,y:246,z:52,w:8,h:8,affordances:['observe'],salience:.46,flyAttraction:.34}
 ];
 
 const normAngle=(a:number)=>{
