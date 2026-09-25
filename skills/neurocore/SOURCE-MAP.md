@@ -8,6 +8,12 @@
 - `HumanBrainProject/openMINDS` — deprecated; conservar apenas como ponte histórica para a organização atual.
 - `TheDragonChild/FlyPuter` — MIT; sensorimotor bridge between FlyWire-inspired data and physics simulation.
 
+- Brain Science Data Center / Cell 2023 — macaque cortex single-cell spatial transcriptome atlas; 143 cortical regions, 264 transcriptome-defined cell types, 42,076,954 spatially annotated cortical cells and 1,493,240 snRNA-seq cells. Use only as non-human-primate cortical proxy; it is not a synapse-resolution connectome.
+  - BSDC CSTR: `33145.11.BSDC.1685409749.1663093488869060610`
+  - Paper: `10.1016/j.cell.2023.06.009`
+  - Explorer: `https://macaque.digital-brain.cn/spatial-omics`
+- User-supplied BSDC id `1888063966518173697` resolves to a mouse-brain spatial-transcriptome dataset and must not be labeled macaque.
+
 ## Agentes / decisão
 - `FoundationAgents/MetaGPT` — MIT; roles + SOP orchestration.
 - `Sairamg18814/shvayambhu` — Apache-2.0, reference-only: ideias de introspecção/loops podem ser estudadas, mas alegações de consciência não são adotadas como fato.
