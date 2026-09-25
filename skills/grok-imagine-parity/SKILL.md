@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -436,3 +436,28 @@ The Imagine UI must expose:
 A rejected candidate is not silently discarded. It is shown in a separate **candidate rejected / not saved** panel with concrete visible reasons and a retry button. It never enters Recent until it passes the identity gate.
 
 Manual upload remains optional and outranks automatic references only when the user deliberately supplies it.
+
+
+## Anime character catalog grounding v2.2
+
+Useful patterns audited from public anime apps:
+- Dovakiin0/Kitsune uses AniList-backed anime metadata and character objects with name/poster data;
+- Mangayomi supports AniList/MAL/Kitsu trackers;
+- Zenshin and Unyo integrate AniList for anime identity/catalog flows;
+- awesome-anime-sources and fontes-de-anime-e-mangas are source directories, not runtime character APIs;
+- MyAnimeProfile links to MyAnimeList character pages but is a static profile, not a robust runtime API.
+
+PredictLM adopts the safe/catalog portion only. It does **not** import torrent, episode-streaming, mirror, proxy or scraping flows from these projects.
+
+Character grounding order for anime:
+1. parse named identities/forms from the prompt;
+2. resolve canonical character names/aliases/franchise through AniList GraphQL;
+3. prioritize AniList character images as identity references;
+4. add form/scene references from Google/Firecrawl/DuckDuckGo;
+5. download and optionally VLM-screen candidates;
+6. pass approved references to an image-input generator;
+7. independently review generated pixels.
+
+For ambiguous names, franchise context must affect ranking. Example: "Kurama" inside a Naruto request must prefer the Naruto/Nine-Tails character over another anime character with the same name.
+
+UI should expose resolved catalog identities (e.g. Naruto Uzumaki · Sasuke Uchiha · Kurama).
