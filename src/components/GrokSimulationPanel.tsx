@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle } from 'lucide-react';
+import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import {
   applySimulationInstruction,
   createLifeSimulation,
@@ -14,7 +14,7 @@ import {
   type LifeSimulationState
 } from '@/lib/life-simulation-engine';
 import { dominantCircuits } from '@/lib/neurocore';
-import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
+import {cameraForFocus,placeVisual,pointInPolygon,projectedPlacePolygon,projectIsoPoint,type IsoCamera} from '@/lib/life-sim-25d';
 import {
   agentWorldObservation,
   autonomousLifePlan,
@@ -73,6 +73,8 @@ export function GrokSimulationPanel(){
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
+  const [cameraZoom,setCameraZoom]=useState(1);
+  const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
@@ -188,85 +190,204 @@ export function GrokSimulationPanel(){
     const rect=el.getBoundingClientRect();
     const dpr=Math.min(2,window.devicePixelRatio||1);
     const width=Math.max(640,Math.floor(rect.width));
-    const height=360;
+    const height=430;
     el.width=width*dpr;el.height=height*dpr;
     const ctx=el.getContext('2d');
     if(!ctx)return;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    const sx=width/640;
 
-    ctx.clearRect(0,0,width,height);
-    ctx.fillStyle='#080b11';ctx.fillRect(0,0,width,height);
+    const camera:IsoCamera=cameraFocus==='human'
+      ? cameraForFocus(state.person,width,height,cameraZoom)
+      : cameraFocus==='fly'
+        ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
+        : {zoom:cameraZoom,offsetX:0,offsetY:10};
 
-    ctx.strokeStyle='#171d29';ctx.lineWidth=1;
-    for(let x=0;x<640;x+=32){ctx.beginPath();ctx.moveTo(x*sx,0);ctx.lineTo(x*sx,height);ctx.stroke()}
-    for(let y=0;y<360;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}
-
-    ctx.strokeStyle='#273147';ctx.lineWidth=9;ctx.lineCap='round';
-    const paths=[[[110,95],[320,215],[530,95]],[[110,255],[320,215],[525,255]],[[320,215],[305,320]]];
-    for(const points of paths){
+    const poly=(points:Array<{x:number;y:number}>,fill:string,stroke?:string)=>{
+      if(!points.length)return;
       ctx.beginPath();
-      points.forEach(([x,y],i)=>i?ctx.lineTo(x*sx,y):ctx.moveTo(x*sx,y));
-      ctx.stroke();
+      ctx.moveTo(points[0].x,points[0].y);
+      for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
+      ctx.closePath();
+      ctx.fillStyle=fill;ctx.fill();
+      if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}
+    };
+
+    const line=(a:{x:number;y:number},b:{x:number;y:number},stroke:string,w=1)=>{
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.stroke();
+    };
+
+    const iso=(x:number,y:number,z=0)=>projectIsoPoint(x,y,z,width,height,camera);
+
+    const drawBox=(x:number,y:number,w:number,h:number,z:number,color:string,side:string)=>{
+      const a=iso(x,y,z),b=iso(x+w,y,z),d=iso(x,y+h,z),c1=iso(x+w,y+h,z);
+      const a0=iso(x,y,0),b0=iso(x+w,y,0),d0=iso(x,y+h,0),c0=iso(x+w,y+h,0);
+      poly([a,b,c1,d],color,'rgba(255,255,255,.12)');
+      poly([d,c1,c0,d0],side,'rgba(0,0,0,.18)');
+      poly([b,c1,c0,b0],side,'rgba(0,0,0,.18)');
+    };
+
+    const drawFurniture=(kind:string,p:any)=>{
+      const cx=p.x+p.w*.5,cy=p.y+p.h*.54;
+      if(kind==='home'){
+        drawBox(p.x+p.w*.16,p.y+p.h*.2,p.w*.34,p.h*.24,8,'#d9b7b0','#9f7c77');
+        drawBox(p.x+p.w*.58,p.y+p.h*.54,p.w*.18,p.h*.18,12,'#7a6254','#57463c');
+        drawBox(p.x+p.w*.55,p.y+p.h*.17,p.w*.22,p.h*.17,18,'#6f7781','#4f5660');
+      }else if(kind==='office'){
+        drawBox(p.x+p.w*.2,p.y+p.h*.28,p.w*.28,p.h*.15,10,'#707a88','#4f5863');
+        drawBox(p.x+p.w*.56,p.y+p.h*.5,p.w*.24,p.h*.15,10,'#707a88','#4f5863');
+        drawBox(p.x+p.w*.31,p.y+p.h*.58,p.w*.12,p.h*.12,17,'#586779','#3e4855');
+      }else if(kind==='cafe'){
+        for(const [ox,oy] of [[.28,.32],[.66,.55]]){drawBox(p.x+p.w*ox,p.y+p.h*oy,p.w*.13,p.h*.13,9,'#8b6048','#624333')}
+      }else if(kind==='park'){
+        drawBox(p.x+p.w*.26,p.y+p.h*.58,p.w*.28,p.h*.08,5,'#8a6546','#624732');
+        for(const [ox,oy] of [[.2,.25],[.72,.34],[.58,.7]]){
+          const base=iso(p.x+p.w*ox,p.y+p.h*oy,0);
+          ctx.fillStyle='#42684a';ctx.beginPath();ctx.arc(base.x,base.y-18*camera.zoom,12*camera.zoom,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#6a4f38';ctx.fillRect(base.x-2*camera.zoom,base.y-17*camera.zoom,4*camera.zoom,18*camera.zoom);
+        }
+      }else if(kind==='market'){
+        for(const ox of [.2,.48,.72])drawBox(p.x+p.w*ox,p.y+p.h*.28,p.w*.1,p.h*.48,14,'#8d959d','#626970');
+      }else if(kind==='clinic'){
+        drawBox(p.x+p.w*.2,p.y+p.h*.48,p.w*.34,p.h*.16,10,'#d5e8e8','#93b1b2');
+        drawBox(p.x+p.w*.65,p.y+p.h*.25,p.w*.12,p.h*.32,18,'#a8c6c8','#759597');
+      }else if(kind==='library'){
+        for(const ox of [.17,.68])drawBox(p.x+p.w*ox,p.y+p.h*.16,p.w*.11,p.h*.54,22,'#6c5140','#49372c');
+        drawBox(p.x+p.w*.38,p.y+p.h*.5,p.w*.23,p.h*.15,9,'#856c58','#5d4a3b');
+      }
+      const center=iso(cx,cy,1);
+      ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.ellipse(center.x,center.y,22*camera.zoom,8*camera.zoom,0,0,Math.PI*2);ctx.fill();
+    };
+
+    const sky=ctx.createLinearGradient(0,0,0,height);
+    sky.addColorStop(0,'#31445d');
+    sky.addColorStop(.48,'#1d2b3b');
+    sky.addColorStop(1,'#10161d');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,width,height);
+
+    // Ground lot.
+    const ground=[iso(0,0),iso(640,0),iso(640,360),iso(0,360)];
+    poly(ground,'#456b52','#5d8768');
+
+    // Isometric paving grid.
+    for(let x=0;x<=640;x+=80)line(iso(x,0),iso(x,360),'rgba(220,240,226,.10)');
+    for(let y=0;y<=360;y+=60)line(iso(0,y),iso(640,y),'rgba(220,240,226,.10)');
+
+    // Paths between lots, behind buildings.
+    ctx.lineCap='round';
+    const centers=new Map(state.places.map(p=>[p.id,{x:p.x+p.w/2,y:p.y+p.h/2}]));
+    const routes:Array<[LifeLocation,LifeLocation]>=[
+      ['Casa','Café'],['Café','Trabalho'],['Café','Mercado'],['Parque','Café'],['Clínica','Café'],['Café','Biblioteca']
+    ];
+    for(const [a,b] of routes){
+      const pa=centers.get(a),pb=centers.get(b);if(!pa||!pb)continue;
+      line(iso(pa.x,pa.y),iso(pb.x,pb.y),'rgba(210,198,175,.38)',14*camera.zoom);
+      line(iso(pa.x,pa.y),iso(pb.x,pb.y),'rgba(230,221,203,.28)',7*camera.zoom);
     }
 
-    for(const p of state.places){
+    // Lots/rooms sorted back-to-front for depth.
+    const sorted=[...state.places].sort((a,b)=>(a.x+a.y)-(b.x+b.y));
+    for(const p of sorted){
+      const visual=placeVisual(p.id);
+      const floor=projectedPlacePolygon(p,width,height,camera);
+      const h=visual.height;
       const active=p.id===state.person.location;
       const target=p.id===manualTarget;
-      ctx.fillStyle=active?'#172838':target?'#241f3c':'#10151f';
-      ctx.strokeStyle=active?'#56d7b0':target?'#a88cff':'#293346';
-      ctx.lineWidth=active||target?2:1;
-      ctx.beginPath();
-      ctx.roundRect(p.x*sx,p.y,p.w*sx,p.h,12);
-      ctx.fill();ctx.stroke();
-      ctx.fillStyle='#f4f7fb';ctx.font='600 12px ui-sans-serif,system-ui';
-      ctx.fillText(p.label,(p.x+10)*sx,p.y+20);
-      ctx.fillStyle='#778298';ctx.font='9px ui-sans-serif,system-ui';
-      const text=p.purpose.length>26?p.purpose.slice(0,26)+'…':p.purpose;
-      ctx.fillText(text,(p.x+10)*sx,p.y+36);
+
+      const shadow=floor.map(pt=>({x:pt.x+8*camera.zoom,y:pt.y+12*camera.zoom}));
+      poly(shadow,'rgba(0,0,0,.22)');
+      poly(floor,visual.floor,target?'#d5b8ff':active?'#78ebc6':'rgba(255,255,255,.13)');
+
+      const p1=floor[0],p2=floor[1],p4=floor[3];
+      const p1u=iso(p.x,p.y,h),p2u=iso(p.x+p.w,p.y,h),p4u=iso(p.x,p.y+p.h,h);
+      poly([p1,p2,p2u,p1u],visual.wallLight,'rgba(255,255,255,.18)');
+      poly([p1,p4,p4u,p1u],visual.wallDark,'rgba(255,255,255,.12)');
+
+      drawFurniture(visual.furniture,p);
+
+      const label=iso(p.x+p.w*.5,p.y+p.h*.5,h+4);
+      ctx.textAlign='center';
+      ctx.font=`600 ${Math.max(9,11*camera.zoom)}px ui-sans-serif,system-ui`;
+      ctx.fillStyle=active?'#eafff8':'#f1f4f7';
+      ctx.fillText(p.label,label.x,label.y-6);
+      if(active||target){
+        ctx.fillStyle=target?'#c9a8ff':'#72e0bd';
+        ctx.beginPath();ctx.arc(label.x,label.y+2,3.5*camera.zoom,0,Math.PI*2);ctx.fill();
+      }
     }
 
-    const px=state.person.x*sx,py=state.person.y;
-    const bubble=state.person.currentAction;
-    ctx.font='10px ui-sans-serif,system-ui';
-    const bw=Math.min(250,Math.max(120,ctx.measureText(bubble).width+22));
-    const bx=Math.max(8,Math.min(width-bw-8,px-bw/2));
-    const by=Math.max(8,py-70);
-    ctx.fillStyle='rgba(8,11,17,.92)';ctx.strokeStyle='#343f55';ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(bx,by,bw,31,9);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#d8dfec';
-    const shown=bubble.length>42?bubble.slice(0,42)+'…':bubble;
-    ctx.fillText(shown,bx+11,by+19);
+    // Human character rendered inside the world.
+    const hp=iso(state.person.x,state.person.y,0);
+    ctx.fillStyle='rgba(0,0,0,.34)';
+    ctx.beginPath();ctx.ellipse(hp.x,hp.y+6*camera.zoom,12*camera.zoom,5*camera.zoom,0,0,Math.PI*2);ctx.fill();
 
-    // FlyWire agent: visible simulation body driven by the same FlyCoreState
-    // used by /cognitive/fly.
-    const fx=fly.x*sx,fy=fly.y;
+    const humanScale=camera.zoom;
+    ctx.strokeStyle='#18212b';ctx.lineWidth=4*humanScale;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(hp.x-3*humanScale,hp.y-13*humanScale);ctx.lineTo(hp.x-8*humanScale,hp.y+1*humanScale);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hp.x+3*humanScale,hp.y-13*humanScale);ctx.lineTo(hp.x+8*humanScale,hp.y+1*humanScale);ctx.stroke();
+    ctx.fillStyle='#6e55e7';
+    ctx.beginPath();ctx.roundRect(hp.x-8*humanScale,hp.y-31*humanScale,16*humanScale,22*humanScale,5*humanScale);ctx.fill();
+    ctx.strokeStyle='#d8ad91';ctx.lineWidth=3*humanScale;
+    ctx.beginPath();ctx.moveTo(hp.x-7*humanScale,hp.y-24*humanScale);ctx.lineTo(hp.x-14*humanScale,hp.y-15*humanScale);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hp.x+7*humanScale,hp.y-24*humanScale);ctx.lineTo(hp.x+14*humanScale,hp.y-15*humanScale);ctx.stroke();
+    ctx.fillStyle='#d8ad91';ctx.beginPath();ctx.arc(hp.x,hp.y-39*humanScale,7*humanScale,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2b2633';ctx.beginPath();ctx.arc(hp.x,hp.y-41*humanScale,7.2*humanScale,Math.PI,Math.PI*2);ctx.fill();
+
+    // Original life-status marker (not copied game art).
+    const markerY=hp.y-64*humanScale;
+    ctx.fillStyle=state.needs.energy<35?'#ff856f':'#6ff0b3';
+    poly([
+      {x:hp.x,y:markerY-8*humanScale},
+      {x:hp.x+6*humanScale,y:markerY},
+      {x:hp.x,y:markerY+8*humanScale},
+      {x:hp.x-6*humanScale,y:markerY}
+    ],ctx.fillStyle as string,'rgba(255,255,255,.55)');
+
+    // Human action bubble.
+    const bubble=state.person.currentAction;
+    ctx.textAlign='left';ctx.font='10px ui-sans-serif,system-ui';
+    const shown=bubble.length>42?bubble.slice(0,42)+'…':bubble;
+    const bw=Math.min(250,Math.max(120,ctx.measureText(shown).width+22));
+    const bx=Math.max(8,Math.min(width-bw-8,hp.x-bw/2));
+    const by=Math.max(8,hp.y-101*humanScale);
+    ctx.fillStyle='rgba(10,13,18,.92)';ctx.strokeStyle='#465164';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(bx,by,bw,29,9);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#e4e9f1';ctx.fillText(shown,bx+11,by+18);
+
+    // FlyWire agent in real 2.5D flight height.
+    const groundFly=iso(fly.x,fly.y,0);
+    const fp=iso(fly.x,fly.y,fly.z||36);
+    ctx.fillStyle='rgba(0,0,0,.24)';
+    ctx.beginPath();ctx.ellipse(groundFly.x,groundFly.y,8*camera.zoom,3*camera.zoom,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(205,190,255,.25)';ctx.setLineDash([3,3]);
+    line(groundFly,fp,'rgba(205,190,255,.28)',1);
+    ctx.setLineDash([]);
+
     ctx.save();
-    ctx.translate(fx,fy);
+    ctx.translate(fp.x,fp.y);
     ctx.rotate(Math.atan2(fly.vy,fly.vx||.001));
-    ctx.globalAlpha=.72;
-    ctx.fillStyle='#d9e7ff';
-    ctx.beginPath();ctx.ellipse(-2,-5,7,3,-.35,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(-2,5,7,3,.35,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
-    ctx.fillStyle='#1c1b20';
-    ctx.beginPath();ctx.ellipse(0,0,8,4.5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#a88cff';
-    ctx.beginPath();ctx.arc(6,-2,2.2,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(6,2,2.2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#9aa8bf';ctx.lineWidth=1;
-    for(const oy of [-3,0,3]){ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy-5);ctx.stroke();ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy+5);ctx.stroke()}
+    const fs=Math.max(.8,camera.zoom);
+    ctx.globalAlpha=.76;ctx.fillStyle='#e9f5ff';
+    ctx.beginPath();ctx.ellipse(-3*fs,-5*fs,8*fs,3.2*fs,-.35,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(-3*fs,5*fs,8*fs,3.2*fs,.35,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.fillStyle='#191820';
+    ctx.beginPath();ctx.ellipse(0,0,8*fs,4.5*fs,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#bb8cff';ctx.beginPath();ctx.arc(6*fs,-2*fs,2.3*fs,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(6*fs,2*fs,2.3*fs,0,Math.PI*2);ctx.fill();
     ctx.restore();
 
-    const flyText=flySimulationBubble(fly);
-    ctx.font='9px ui-sans-serif,system-ui';
-    const fw=Math.max(88,ctx.measureText(flyText).width+16);
-    const fbx=Math.max(6,Math.min(width-fw-6,fx-fw/2));
-    const fby=Math.max(6,fy-34);
-    ctx.fillStyle='rgba(18,14,24,.9)';ctx.strokeStyle='#5b477d';ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(fbx,fby,fw,24,8);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#d9c9ff';ctx.fillText(flyText,fbx+8,fby+15);
-  },[state,manualTarget,fly]);
+    const flyText=flySimulationBubble(fly)+' · '+Math.round(fly.z||36)+'cm';
+    ctx.textAlign='left';ctx.font='9px ui-sans-serif,system-ui';
+    const fw=Math.max(96,ctx.measureText(flyText).width+16);
+    const fbx=Math.max(6,Math.min(width-fw-6,fp.x-fw/2));
+    const fby=Math.max(6,fp.y-31);
+    ctx.fillStyle='rgba(22,16,30,.9)';ctx.strokeStyle='#7458a0';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(fbx,fby,fw,23,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#e4d5ff';ctx.fillText(flyText,fbx+8,fby+15);
+
+    // Depth vignette/UI feel.
+    const vignette=ctx.createRadialGradient(width*.5,height*.46,width*.08,width*.5,height*.46,width*.72);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.32)');
+    ctx.fillStyle=vignette;ctx.fillRect(0,0,width,height);
+  },[state,manualTarget,fly,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
   const relation=state.relationships[0];
