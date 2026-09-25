@@ -18,7 +18,7 @@ test('macaque agent moves independently and exposes a public simulated thought',
 test('lifetime memories are explicitly synthetic while runtime experiences stay separate',()=>{
   const bundle=createSyntheticMindBundle('Lia');
   for(const actor of ['human','macaque','fly'] as const){
-    assert.ok(bundle[actor].memories.length>=6);
+    assert.ok(bundle[actor].memories.length>=11);
     assert.ok(bundle[actor].memories.every(x=>x.source==='synthetic-biography'));
     assert.equal(bundle[actor].biographyLabel,'synthetic');
   }
@@ -31,5 +31,8 @@ test('lifetime memories are explicitly synthetic while runtime experiences stay 
     threat:.1
   });
   assert.ok(human.memories.some(x=>x.source==='runtime'));
-  assert.match(human.publicThought,/Trabalho não é só ocupar um lugar/i);
+  assert.match(human.publicThought,/resultado|tarefa|trabalho/i);
+  assert.ok(human.candidateIntentions.length>=3);
+  assert.ok(human.decision.length>4);
+  assert.ok(human.thoughtHistory.length>=1);
 });
