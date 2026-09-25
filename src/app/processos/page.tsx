@@ -1,12 +1,12 @@
 import type {Metadata} from 'next';
 import './processos.css';
-import {ProcessIntelligenceCenter} from '@/components/ProcessIntelligenceCenter';
+import {LegalModule} from '@/components/LegalModule';
 
 export const metadata:Metadata={
-  title:'Processos · PredictLM',
-  description:'Central de inteligência processual com DataJud, DJEN, carteira, tarefas, retornos e IA.'
+  title:'Consulta de Processos · PredictLM',
+  description:'Consulta processual por número CNJ com DataJud, DJEN, linha do tempo e análise do PredictLM.'
 };
 
 export default function ProcessosPage(){
-  return <ProcessIntelligenceCenter/>;
+  return <LegalModule/>;
 }
