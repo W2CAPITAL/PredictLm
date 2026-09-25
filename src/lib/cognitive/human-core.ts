@@ -94,8 +94,8 @@ export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string
   const recurrentIntegration=clamp(prev.recurrentIntegration*.52+neuro.circuits.workingMemory*.17+neuro.circuits.planning*.15+neuro.circuits.attention*.09+macaque.regionalIntegration*.07);
   const strongInputGain=clamp(prev.strongInputGain*.72+Math.max(factual,planning,social)*.18+neuro.circuits.salience*.1);
   const predictiveError=clamp(prev.predictiveError*.62+neuro.uncertainty*.24+ambiguity*.14);
-  const executiveControl=clamp(prev.executiveControl*.58+neuro.circuits.planning*.24+inhibition*.18);
-  const workingMemory=clamp(prev.workingMemory*.52+neuro.circuits.workingMemory*.38+load*.1);
+  const executiveControl=clamp(prev.executiveControl*.55+neuro.circuits.planning*.23+inhibition*.17+macaque.pfcProjectionIntegration*.05);
+  const workingMemory=clamp(prev.workingMemory*.49+neuro.circuits.workingMemory*.36+load*.1+macaque.pfcProjectionIntegration*.05);
   const metacognition=clamp(prev.metacognition*.58+(1-neuro.confidence)*.18+factual*.14+ambiguity*.1);
 
   const layerDrive={
@@ -128,7 +128,7 @@ export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string
       proxyWeight,
       visualHierarchy:macaque.visualHierarchy,
       somatosensoryHierarchy:macaque.somatosensoryHierarchy,
-      corticalRegionalIntegration:macaque.regionalIntegration
+      corticalRegionalIntegration:clamp(macaque.regionalIntegration*.8+macaque.pfcProjectionIntegration*.12+macaque.claustrumIntegration*.08)
     }
   };
 }
