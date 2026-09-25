@@ -1,7 +1,8 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
-import {advanceFrankStein,createFrankSteinState,frankSteinContext,type FrankSteinState} from './frank-stein-brain';
+import {advanceFrankStein,createFrankSteinState,frankSteinContext,publicMentalStateFor,type FrankSteinState} from './frank-stein-brain';
+import {emotionMemoryTag} from './emotion-memory';
 
 export interface CognitiveEpisode{
   at:number;
@@ -9,6 +10,12 @@ export interface CognitiveEpisode{
   answerPreview:string;
   reward:number;
   predictionError:number;
+  emotion?:{
+    labels:string[];
+    valence:number;
+    arousal:number;
+    consolidation:number;
+  };
 }
 
 export interface CognitiveMemoryTrace{
@@ -246,12 +253,19 @@ export function applyCognitiveOutcome(
     predictiveError:clamp(previous.human.predictiveError*.58+predictionError*.42),
     metacognition:clamp(previous.human.metacognition*.82+predictionError*.18)
   };
+  const emotionalTag=emotionMemoryTag(previous.frank?.emotion||createFrankSteinState().emotion);
   const episode:CognitiveEpisode={
     at:Date.now(),
     prompt:clean(input.prompt,220),
     answerPreview:clean(answer,220),
     reward:directReward,
-    predictionError
+    predictionError,
+    emotion:{
+      labels:emotionalTag.labels.map(x=>x.name),
+      valence:emotionalTag.valence,
+      arousal:emotionalTag.arousal,
+      consolidation:emotionalTag.consolidation
+    }
   };
 
   return {
@@ -392,8 +406,8 @@ export function captureConversationMemory(
   next=recordCognitiveMemory(next,{
     kind:'event',actor,
     text:'Conversa: usuário: '+prompt+' | resposta: '+answer,
-    salience:.58+Math.min(.28,prompt.length/700),
-    strength:.86,
+    salience:Math.min(1,.52+Math.min(.22,prompt.length/700)+(next.frank?.emotion.emotionalMemoryBias||0)*.22),
+    strength:Math.min(1,.74+(next.frank?.emotion.emotionalMemoryBias||0)*.22),
     source:'conversation'
   });
   if(next.frank){
@@ -436,6 +450,19 @@ export function cognitiveDirectRecall(
   if(/\b(qual (?:e )?seu nome|quem e voce|quem voce e|como voce se chama)\b/.test(q)){
     return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
   }
+  if(/\b(o que (?:voce|você) (?:esta|está) pensando|no que (?:voce|você) pensa|como (?:voce|você) (?:se sente|esta se sentindo|está se sentindo)|o que (?:voce|você) quer|o que pretende|qual sua intencao|qual sua intenção)\b/.test(q)){
+    const mental=publicMentalStateFor(mode,state);
+    return [
+      'Meu estado mental público agora:',
+      '- Percebendo: '+mental.perceiving,
+      '- Sentindo: '+mental.feeling,
+      '- Lembrando: '+mental.remembering,
+      '- Querendo: '+mental.wanting,
+      '- Pretendendo: '+mental.intending,
+      '',
+      'Isso é um relatório sintético do meu estado cognitivo persistente, não chain-of-thought oculto nem leitura de mente biológica.'
+    ].join('\n');
+  }
   if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
 
   const auto=(state.memory?.autobiographical||[])
@@ -447,7 +474,10 @@ export function cognitiveDirectRecall(
   const rows:string[]=[];
   for(const item of auto.slice(0,3))rows.push(item.text);
   for(const item of perceptions.slice(0,2))rows.push('Percepção lembrada: '+item.text);
-  for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
+  for(const item of episodes.slice(0,2))rows.push(
+    'Episódio: '+item.prompt+' → '+item.answerPreview+
+    (item.emotion?.labels?.length?' [emoção: '+item.emotion.labels.slice(0,3).join(', ')+']':'')
+  );
 
   if(!rows.length){
     return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
