@@ -109,26 +109,26 @@ export function advanceOrganism(
   const isRest=/\b(descans|dorm|cansa|pausa|calma)\b/i.test(prompt);
 
   const drives={
-    energy:clamp(prev.drives.energy-.008-(input.human.neuro?.load||0)*.004+(isRest?.018:0)),
+    energy:clamp(prev.drives.energy-.008-(input.human.neuro?.load||0)*.004+(isRest ? .018 : 0)),
     safety:clamp(prev.drives.safety+(isThreat?-.12:.008)+(input.fly.threat>.6?-.04:0)),
-    social:clamp(prev.drives.social+(isSocial?.035:-.004)),
-    novelty:clamp(prev.drives.novelty+(isNovel?.055:-.006)+entropy*.008),
-    rest:clamp(prev.drives.rest+.01+(prev.drives.energy<.4?.03:0)-(isRest?.08:0)),
-    curiosity:clamp(prev.drives.curiosity+(isNovel?.04:.002)+(input.fly.exploration-.5)*.02)
+    social:clamp(prev.drives.social+(isSocial ? .035 : -.004)),
+    novelty:clamp(prev.drives.novelty+(isNovel ? .055 : -.006)+entropy*.008),
+    rest:clamp(prev.drives.rest+.01+(prev.drives.energy < .4 ? .03 : 0)-(isRest ? .08 : 0)),
+    curiosity:clamp(prev.drives.curiosity+(isNovel ? .04 : .002)+(input.fly.exploration-.5)*.02)
   };
 
   const arousal=clamp(
     prev.affect.arousal*.58+
     input.fly.salience*.16+
     input.human.neuro.arousal*.12+
-    (isThreat?.18:0)+
-    (isNovel?.08:0)
+    (isThreat ? .18 : 0)+
+    (isNovel ? .08 : 0)
   );
   const valence=clamp(
     (prev.affect.valence+1)/2*.62+
     drives.safety*.18+
     input.human.neuro.confidence*.1+
-    (isSocial?.05:0),
+    (isSocial ? .05 : 0),
     0,1
   )*2-1;
 
@@ -136,7 +136,7 @@ export function advanceOrganism(
   const urgency=(1-drives.safety)*.5+drives.rest*.22+input.fly.threat*.28;
   const exploreScore=drives.curiosity*.35+drives.novelty*.28+input.fly.exploration*.22+entropy*.15;
   const deliberateScore=input.human.executiveControl*.36+input.human.workingMemory*.22+(1-input.workspaceUncertainty)*.2+drives.energy*.12+prev.simulatedBrains[1].inhibition*.1;
-  const socialScore=drives.social*.42+(isSocial?.35:0)+prev.simulatedBrains[3].socialDrive*.23;
+  const socialScore=drives.social*.42+(isSocial ? .35 : 0)+prev.simulatedBrains[3].socialDrive*.23;
 
   let selectedAction='observar';
   let alternativeAction='explorar';
@@ -164,7 +164,7 @@ export function advanceOrganism(
     goal='obter informação nova e atualizar memória espacial/semântica';
   }
 
-  const profiles=prev.simulatedBrains.map((brain,index)=>{
+  const profiles=prev.simulatedBrains.map((brain)=>{
     const profileBias=brain.profile==='explorer'?exploreScore:
       brain.profile==='planner'?deliberateScore:
       brain.profile==='skeptic'?input.workspaceUncertainty:
