@@ -223,7 +223,7 @@ export function stepFlySimulation(
         ? currentZ
         : 30+38*rnd('fly-z-free|'+tick);
   const vz=clamp(currentVz*.48+(desiredZ-currentZ)*.13,-4,4);
-  const z=clamp(currentZ+vz,20,78);
+  const z=clamp(currentZ+vz,20,76);
 
   const arrived=targetDistance<22;
   const visited=targetId&&arrived
