@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.15.0"
+  version: "3.15.1"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.15.0
+# PredictLM Master v3.15.1
 
 ## Regra soberana
 
@@ -979,3 +979,30 @@ Rules:
 - Dossiê Studio can generate from an objective + pasted material, then remains fully editable;
 - Chat report requests use the same engine and hand off the complete Markdown to Dossiê Studio;
 - Cognitive Lab animal/human/primate simulations are not factual authorities for reports.
+
+
+# Vision + Clean Chat fidelity v3.15.1
+
+## Vision
+
+Animal/image recognition follows:
+**multimodal scene understanding → semantic identity → local classifier fallback**.
+
+- The default Animal Vision mode uses a configured multimodal provider mesh first.
+- The lightweight browser MobileNet/ImageNet classifier is fallback only; it is not a general scene-understanding model.
+- A middling non-animal ImageNet label must abstain instead of confidently calling an obvious animal a household object.
+- Browser-only mode remains available for privacy/offline use and must disclose its category limitations.
+- Semantic results may include common name, probable scientific name, broad group, description and alternatives; exact species must not be invented when pixels do not support it.
+
+## Clean simple chat
+
+For ordinary stable questions and simple how-to turns:
+- do not inject GitHub Knowledge, training corpus snippets or unrelated RAG merely because DeepThink is on;
+- do not display source/context cards unless the turn actually warrants research/current information or is a technical source-backed task;
+- preserve every material modifier in the user request before choosing a canned procedural shortcut;
+- contradictory/absurd modifiers (e.g. "chocar um ovo com uma britadeira") override the generic recipe and must be answered literally;
+- `knowledge:false` is a hard retrieval/source boundary, not a suggestion.
+
+## Character generation
+
+Named-character generation must send automatic references to a model that really accepts image input. Text-only `flux` cannot be treated as grounded. Semantic image verification uses the multimodal provider mesh rather than depending only on one Gemini key.
