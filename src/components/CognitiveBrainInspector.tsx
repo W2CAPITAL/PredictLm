@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import {Brain,CircleDot,Network,ScanSearch,Sparkles} from 'lucide-react';
+import {Brain,CircleDot,ImageIcon,Network,ScanSearch,Sparkles} from 'lucide-react';
 import type {CognitiveState} from '@/lib/cognitive/cognitive-workspace';
 import {normalizeOrganismState} from '@/lib/cognitive/organism-engine';
 
@@ -26,9 +26,24 @@ export function CognitiveBrainInspector({state}:{state:CognitiveState}){
     {label:'Threat',value:state.fly.threat}
   ];
 
+  function openBrainImagine(){
+    const prompt=[
+      'Visualização científica conceitual do PredictLM Cognitive Lab.',
+      'Mostrar lado a lado um cérebro humano cortical estilizado e um cérebro de mosca inspirado no connectoma FlyWire,',
+      'com redes neurais, regiões funcionais, sinapses e fluxos de atenção/memória destacados.',
+      'Incluir quatro perspectivas humanas simuladas como pequenos mapas neurais distintos, sem retratar pessoas reais.',
+      'Estética de laboratório neurocientífico premium, legível, fundo escuro, sem alegar consciência nem leitura mental real.'
+    ].join(' ');
+    try{sessionStorage.setItem('predictlm:imagine-prefill',prompt)}catch{}
+    window.location.href='/?screen=imagine';
+  }
+
   return <section className="rounded-2xl border border-cyan-500/20 bg-cyan-500/[0.035] p-4">
     <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Network size={15} className="text-cyan-300"/> Neuro Inspector</div>
     <p className="mb-3 text-[10px] leading-5 text-zinc-500">Telemetria computacional dos circuitos e agentes simulados. Não é leitura de mente humana/mosca real.</p>
+    <button onClick={openBrainImagine} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-[10px] text-cyan-200 hover:bg-cyan-500/10">
+      <ImageIcon size={13}/> Criar imagem dos cérebros no Imagine
+    </button>
 
     <div className="grid grid-cols-2 gap-2">
       <BrainMini title="Human Core" icon={<Brain size={13}/>} nodes={humanNodes}/>
