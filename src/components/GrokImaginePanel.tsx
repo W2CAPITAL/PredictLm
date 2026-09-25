@@ -32,6 +32,29 @@ function looksSpecificVisualPrompt(input:string){
 
 type LocalVisualReference={name:string;data:string};
 
+type GroundingTrace={
+  query:string;
+  queries:string[];
+  candidatesFound:number;
+  urlsDownloaded:number;
+  visuallyReviewed:number;
+  visuallyApproved:number;
+  referencesPassed:number;
+  provider:string;
+  model:string;
+  reviewProvider:string;
+  reviewModel:string;
+  semanticStatus:'passed'|'failed'|'unavailable'|'';
+  issues:string[];
+};
+
+type RejectedCandidate={
+  url:string;
+  provider:string;
+  model:string;
+  reasons:string[];
+};
+
 type MediaItem={
   id:string;
   kind?:'image'|'video'|'storyboard';
@@ -92,6 +115,8 @@ export function GrokImaginePanel(){
   const [generatedCaption,setGeneratedCaption]=useState('');
   const [imageProviderWarning,setImageProviderWarning]=useState('');
   const [referenceImages,setReferenceImages]=useState<LocalVisualReference[]>([]);
+  const [groundingTrace,setGroundingTrace]=useState<GroundingTrace|null>(null);
+  const [rejectedCandidate,setRejectedCandidate]=useState<RejectedCandidate|null>(null);
   const addFile=useStudio(s=>s.addFile);
 
   const enhanced=useMemo(
@@ -226,6 +251,8 @@ export function GrokImaginePanel(){
     setAttempt(0);
     setReview(null);
     setImageProviderWarning('');
+    setGroundingTrace(null);
+    setRejectedCandidate(null);
     if(mode==='image'&&!styleManuallyChosen){
       const nextStyle=recommendedImageStyle(value,'Cinematic');
       if(nextStyle!==style)setStyle(nextStyle);
@@ -416,6 +443,22 @@ export function GrokImaginePanel(){
     const url=String(data.url);
     setImageStage('Finalizando imagem…');
     await preloadGeneratedImage(url);
+    const referenceReview=data?.referenceReview||{};
+    setGroundingTrace({
+      query:String(data.referenceQuery||''),
+      queries:Array.isArray(referenceReview.queries)?referenceReview.queries.map((x:any)=>String(x||'')).filter(Boolean).slice(0,8):[],
+      candidatesFound:Number(referenceReview.candidatesFound||data.automaticReferenceCount||0),
+      urlsDownloaded:Number(referenceReview.urlsDownloaded||data.searchedReferenceCount||0),
+      visuallyReviewed:Number(referenceReview.visuallyReviewed||0),
+      visuallyApproved:Number(referenceReview.visuallyApproved||data.searchedReferenceCount||0),
+      referencesPassed:Number(data.referenceImagesPassed||0),
+      provider:String(data.provider||''),
+      model:String(data.model||'flux'),
+      reviewProvider:'',
+      reviewModel:'',
+      semanticStatus:'',
+      issues:[]
+    });
     return {
       url,
       provider:String(data.provider||''),
@@ -430,7 +473,10 @@ export function GrokImaginePanel(){
       fidelityLimited:!!data.fidelityLimited,
       referenceImagesPassed:Number(data.referenceImagesPassed||0),
       automaticReferenceCount:Number(data.automaticReferenceCount||0),
-      providerWarning:String(data.providerWarning||'')
+      providerWarning:String(data.providerWarning||''),
+      referenceQuery:String(data.referenceQuery||''),
+      referenceReview,
+      searchedReferenceCount:Number(data.searchedReferenceCount||0)
     };
   }
 
@@ -601,6 +647,17 @@ export function GrokImaginePanel(){
         }
       }
 
+      setGroundingTrace(prev=>prev?{
+        ...prev,
+        provider:String(data.provider||prev.provider),
+        model:String(data.model||prev.model),
+        referencesPassed:Number(data.referenceImagesPassed||prev.referencesPassed||0),
+        reviewProvider:String(semanticReview?.reviewProvider||''),
+        reviewModel:String(semanticReview?.reviewModel||''),
+        semanticStatus:semanticReview?.status||'',
+        issues:Array.isArray(semanticReview?.issues)?semanticReview.issues:[]
+      }:prev);
+
       const semanticWarning=semanticReview?.status==='failed'
         ? 'A revisão semântica ainda encontrou divergências visíveis: '+semanticReview.issues.slice(0,3).join('; ')+'.'
         : semanticReview?.status==='unavailable'
@@ -620,16 +677,22 @@ export function GrokImaginePanel(){
       const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
 
       if(hardRejectSpecific){
-        const reasons=semanticReview?.status==='failed'
-          ? semanticReview.issues.slice(0,3).join('; ')
-          : 'a busca automática não conseguiu recuperar/encaminhar referência visual suficiente e o verificador semântico também não aprovou o resultado';
+        const reasonList=semanticReview?.status==='failed'&&semanticReview.issues.length
+          ? semanticReview.issues.slice(0,6)
+          : ['A busca automática não conseguiu recuperar/encaminhar referência visual suficiente e o verificador semântico também não aprovou o resultado.'];
+        setRejectedCandidate({
+          url,
+          provider:String(data.provider||''),
+          model:String(data.model||''),
+          reasons:reasonList
+        });
         setGenerated('');
         setGeneratedPrompt('');
         setGeneratedRequest(prompt);
         setGeneratedCaption('');
         setProvider(String(data.provider||''));
         setPersisted(false);
-        const rejectMessage='Geração rejeitada pelo gate de identidade: '+reasons+'. O PredictLM tentou pesquisar referências automaticamente; referência manual é apenas opcional.';
+        const rejectMessage='Candidato rejeitado pelo gate de identidade. Ele continua visível para inspeção e não foi salvo como geração válida.';
         setImageProviderWarning(rejectMessage);
         setError(rejectMessage);
         return '';
@@ -640,6 +703,7 @@ export function GrokImaginePanel(){
         : await upscaleImageUrl(url);
       url=upscaled.url;
 
+      setRejectedCandidate(null);
       setGenerated(url);
       setGeneratedPrompt(expandedPrompt);
       setGeneratedRequest(prompt);
@@ -1086,7 +1150,7 @@ export function GrokImaginePanel(){
         <label><span>Prompt</span><textarea value={prompt} onChange={e=>updatePrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
         {mode==='image'?<div style={{border:'1px solid #252a34',borderRadius:12,padding:10,display:'grid',gap:8}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-            <span style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.08em',color:'#8e99aa'}}>Referências visuais · {referenceImages.length}/3</span>
+            <span style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.08em',color:'#8e99aa'}}>Referências manuais opcionais · {referenceImages.length}/3</span>
             <label style={{display:'inline-flex',alignItems:'center',gap:5,border:'1px solid #303744',borderRadius:8,padding:'6px 8px',cursor:referenceImages.length>=3?'not-allowed':'pointer',fontSize:9,color:'#cbd3df'}}>
               <Upload size={12}/>Adicionar
               <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={referenceImages.length>=3} onChange={e=>{void addReferenceFiles(e.target.files);e.currentTarget.value=''}} style={{display:'none'}}/>
@@ -1098,6 +1162,23 @@ export function GrokImaginePanel(){
               <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
             </div>)}
           </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.</small>}
+        </div>:null}
+        {mode==='image'&&groundingTrace?<div style={{border:'1px solid #292d39',background:'#0b1017',borderRadius:11,padding:9,display:'grid',gap:7}}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9}}>
+            <b style={{color:'#dce5ef'}}>Grounding automático</b>
+            <span style={{color:groundingTrace.semanticStatus==='passed'?'#71d7ae':groundingTrace.semanticStatus==='failed'?'#ff8b94':'#8fa1b5'}}>{groundingTrace.semanticStatus==='passed'?'identidade aprovada':groundingTrace.semanticStatus==='failed'?'identidade reprovada':'verificação pendente/indisponível'}</span>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5}}>
+            {[
+              ['encontrados',groundingTrace.candidatesFound],
+              ['baixados',groundingTrace.urlsDownloaded],
+              ['aprovados',groundingTrace.visuallyApproved],
+              ['enviados',groundingTrace.referencesPassed]
+            ].map(([label,value])=><span key={String(label)} style={{border:'1px solid #232a35',borderRadius:8,padding:6,color:'#7e8b9d',fontSize:8}}><b style={{display:'block',color:'#bcaeff',fontSize:13}}>{value}</b>{label}</span>)}
+          </div>
+          <small style={{color:'#657184',fontSize:8}}>Gerador: {groundingTrace.provider||'—'} / {groundingTrace.model||'—'} · Revisor: {groundingTrace.reviewProvider||'—'} / {groundingTrace.reviewModel||'—'}</small>
+          {groundingTrace.queries.length?<details style={{fontSize:8,color:'#7f8c9d'}}><summary>Buscas automáticas ({groundingTrace.queries.length})</summary>{groundingTrace.queries.map((q,i)=><em key={q+'-'+i} style={{display:'block',fontStyle:'normal',padding:'3px 0',borderTop:'1px solid #1c232d'}}>{q}</em>)}</details>:null}
+          {groundingTrace.issues.length?<ul style={{margin:0,paddingLeft:17,color:'#eaa6ab',fontSize:8}}>{groundingTrace.issues.map((issue,i)=><li key={issue+'-'+i}>{issue}</li>)}</ul>:null}
         </div>:null}
         <div className="gimagine-styles">{styles.map(x=><button className={style===x?'active':''} key={x} onClick={()=>{setStyle(x);setStyleManuallyChosen(true);setAttempt(0);setReview(null)}}>{x}</button>)}</div>
         <div className="gimagine-ratios">{ratios.map(x=><button className={ratio.label===x.label?'active':''} key={x.label} onClick={()=>{setRatio(x);setRatioManuallyChosen(true)}}>{x.label}</button>)}</div>
@@ -1196,6 +1277,12 @@ export function GrokImaginePanel(){
       </div>
 
       <div className="gimagine-canvas">
+        {rejectedCandidate&&!mainBusy?<div style={{margin:12,border:'1px solid #6f3338',background:'#160d10',borderRadius:14,padding:10,display:'grid',gap:9}}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9,color:'#ff9da5'}}><b>Candidato rejeitado · não salvo</b><span>{rejectedCandidate.provider} / {rejectedCandidate.model}</span></div>
+          <img src={rejectedCandidate.url} alt="Candidato rejeitado pelo gate de identidade" style={{width:'100%',maxHeight:'58vh',objectFit:'contain',borderRadius:10,background:'#08090b'}}/>
+          <ul style={{margin:0,paddingLeft:18,color:'#d8a4a9',fontSize:9}}>{rejectedCandidate.reasons.map((reason,i)=><li key={reason+'-'+i}>{reason}</li>)}</ul>
+          <button type="button" onClick={()=>{setRejectedCandidate(null);void requestImage({regenerate:false})}} disabled={mainBusy} style={{justifySelf:'start',border:'1px solid #5e3438',background:'#241216',color:'#ffd4d8',borderRadius:8,padding:'7px 9px',display:'flex',alignItems:'center',gap:5,fontSize:9}}><RefreshCw size={13}/>Buscar referências e tentar de novo</button>
+        </div>:null}
         {mainBusy?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>{mode==='video'?'O vídeo aparece quando o provider concluir o arquivo real.':'A imagem aparece assim que o arquivo estiver realmente carregado.'}</span></div>:null}
         {generated&&!loading?<div className="gimagine-result">
           <img src={generated} alt={prompt} onError={imageFailed}/>
