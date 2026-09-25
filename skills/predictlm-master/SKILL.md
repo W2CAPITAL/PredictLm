@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.15.1"
+  version: "3.15.2"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.15.1
+# PredictLM Master v3.15.2
 
 ## Regra soberana
 
@@ -1006,3 +1006,22 @@ For ordinary stable questions and simple how-to turns:
 ## Character generation
 
 Named-character generation must send automatic references to a model that really accepts image input. Text-only `flux` cannot be treated as grounded. Semantic image verification uses the multimodal provider mesh rather than depending only on one Gemini key.
+
+
+# Observable Visual Grounding v3.15.2
+
+Character generation must be operationally inspectable.
+
+Pipeline:
+**specific subject → canonical query decomposition → primary search → bounded recovery search → real image download → optional VLM reference screening → image-input generation → independent semantic review → persist/reject**.
+
+Release invariants:
+- one generic search query is insufficient for a multi-character/form scene;
+- search each important identity/form separately and also search the joint scene;
+- only successfully downloaded public references count as usable references;
+- when multimodal review is available, reject clearly unrelated reference candidates before generation;
+- expose found/downloaded/approved/passed counts and generation/review model names in Imagine;
+- do not silently discard a failed candidate: show it as rejected/not saved with visible reasons;
+- rejected candidates never enter Recent;
+- retry is bounded; do not loop indefinitely;
+- manual references remain optional overrides, not routine user work.
