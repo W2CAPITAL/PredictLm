@@ -109,7 +109,7 @@ export function advanceOrganism(
   const isRest=/\b(descans|dorm|cansa|pausa|calma)\b/i.test(prompt);
 
   const drives={
-    energy:clamp(prev.drives.energy-.008-(input.human.neuro?.load||0)*.004+(isRest ? .018 : 0)),
+    energy:clamp(prev.drives.energy-.008-(1-input.human.neuro.energy)*.012+(isRest ? .018 : 0)),
     safety:clamp(prev.drives.safety+(isThreat?-.12:.008)+(input.fly.threat>.6?-.04:0)),
     social:clamp(prev.drives.social+(isSocial ? .035 : -.004)),
     novelty:clamp(prev.drives.novelty+(isNovel ? .055 : -.006)+entropy*.008),
