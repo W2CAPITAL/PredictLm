@@ -460,7 +460,7 @@ test('provider keys work without separate model environment variables',async()=>
     const models=Object.fromEntries((data.providers||[]).map((x:any)=>[x.name,x.model]));
     assert.equal(models.nvidia,'nvidia/nemotron-3.5-lightning-30b-a3b');
     assert.equal(models.gemini,'gemini-3.8-flash');
-    assert.equal(models.deepseek,'deepseek-v4-flash');
+    assert.equal(models.deepseek,'deepseek-flash');
     assert.equal(models.anthropic,'claude-sonnet-5');
     assert.equal(models.groq,'openai/gpt-oss-120b');
     assert.equal(models.openrouter,'openrouter/auto');
@@ -504,7 +504,7 @@ test('clean chat sequentially reaches the next configured API after a provider f
     }
     assert.equal(url,'https://api.deepseek.com/chat/completions');
     const body=JSON.parse(String(init?.body||'{}'));
-    assert.equal(body.model,'deepseek-v4-flash');
+    assert.equal(body.model,'deepseek-flash');
     return new Response(JSON.stringify({
       choices:[{message:{content:'A Lua tem fases porque, ao orbitar a Terra, vemos diferentes porções da metade lunar iluminada pelo Sol.'}}]
     }),{status:200,headers:{'Content-Type':'application/json'}});

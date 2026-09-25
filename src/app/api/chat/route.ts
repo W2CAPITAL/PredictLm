@@ -111,7 +111,7 @@ function providers():Provider[]{
     const base=/^https:\/\/api\.deepseek\.com\/v1$/i.test(configured)
       ? 'https://api.deepseek.com'
       : configured;
-    push({name:'deepseek',base,key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL||'deepseek-v4-flash'});
+    push({name:'deepseek',base,key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL||'deepseek-flash'});
   }
   if(process.env.KIMI_API_KEY&&process.env.KIMI_MODEL){
     push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL});

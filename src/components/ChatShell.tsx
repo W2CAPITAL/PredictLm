@@ -258,6 +258,77 @@ export function ChatShell({onOpenLegal}:Props){
     }
   }
 
+  async function requestStreamingChat(input:{
+    messages:Array<{role:string;content:string}>;
+    language:string;
+    signal:AbortSignal;
+  }){
+    try{
+      const response=await fetch('/api/chat/stream',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({messages:input.messages,language:input.language}),
+        signal:input.signal
+      });
+      if(!response.ok||!response.body)return {ok:false,text:'',provider:'',model:''};
+
+      const reader=response.body.getReader();
+      const decoder=new TextDecoder();
+      let buffer='';
+      let accumulated='';
+      let started=false;
+      let provider='';
+      let model='';
+
+      while(true){
+        const {done,value}=await reader.read();
+        if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        const events=buffer.split('\n\n');
+        buffer=events.pop()||'';
+
+        for(const event of events){
+          const line=event.split(/\r?\n/).find(x=>x.trim().startsWith('data:'));
+          if(!line)continue;
+          const payload=line.trim().slice(5).trim();
+          if(!payload||payload==='[DONE]')continue;
+          let data:any;
+          try{data=JSON.parse(payload)}catch{continue}
+          if(data?.error&&!started)return {ok:false,text:'',provider:'',model:''};
+          if(data?.meta){
+            provider=String(data.meta.provider||provider);
+            model=String(data.meta.model||model);
+          }
+          if(typeof data?.content==='string'&&data.content){
+            accumulated+=data.content;
+            if(!started){
+              started=true;
+              s.addMessage({
+                role:'assistant',
+                content:accumulated,
+                engine:'Predict Auto',
+                status:'partial'
+              });
+            }else{
+              s.updateLastAssistant(accumulated,'partial');
+            }
+            setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
+          }
+          if(data?.done){
+            provider=String(data.provider||provider);
+            model=String(data.model||model);
+          }
+        }
+      }
+
+      if(!started||!accumulated.trim())return {ok:false,text:'',provider,model};
+      s.updateLastAssistant(accumulated,'done');
+      return {ok:true,text:accumulated,provider,model};
+    }catch{
+      return {ok:false,text:'',provider:'',model:''};
+    }
+  }
+
   async function requestPuterChat(input:{
     prompt:string;
     messages:Array<{role:string;content:string}>;
@@ -348,21 +419,6 @@ export function ChatShell({onOpenLegal}:Props){
       }).catch(()=>{});
     }
     s.addMessage({role:'user',content:prompt});
-
-    // Plain conversation should feel like conversation, not an orchestration
-    // report. Greetings, preferences and simple personal statements do not
-    // need a provider round-trip.
-    if(direct&&kind==='casual'&&!s.deepThink&&!needsWeb){
-      s.addMessage({
-        role:'assistant',
-        content:direct,
-        engine:'Predict Auto',
-        status:'done'
-      });
-      setBusy(false);
-      setActivity([]);
-      return;
-    }
 
     if(simulationLaunch){
       try{
@@ -613,6 +669,31 @@ export function ChatShell({onOpenLegal}:Props){
       }
 
       const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
+
+      // Normal Chat follows the proven direct streaming architecture:
+      // history -> API -> SSE tokens. No RAG/skills/gates are inserted before
+      // the model for ordinary conversation. Specialized/deep/current turns
+      // keep the richer PredictLM pipeline below.
+      const directStreamEligible=!s.deepThink&&!needsWeb&&!tutorIntent&&prompt.length<=5000;
+      if(directStreamEligible){
+        setActivity(['Predict Auto · conectando ao modelo']);
+        const streamed=await requestStreamingChat({
+          messages:[...messages,{role:'user',content:prompt}],
+          language,
+          signal:turnController.signal
+        });
+        if(streamed.ok)return;
+        if(direct&&kind==='casual'){
+          s.addMessage({
+            role:'assistant',
+            content:direct,
+            engine:'Predict Auto',
+            status:'done'
+          });
+          return;
+        }
+      }
+
       const factualAnchor=kind==='factual'?stableFactualReply(prompt):null;
       const practicalAnchor=kind==='howto'?practicalHowToReply(prompt):null;
       const answerAnchor=kind==='howto'?(direct||practicalAnchor||''):(factualAnchor||direct||'');
