@@ -101,6 +101,16 @@ export const COGNITIVE_FUNCTIONAL_MAP:CognitiveFunctionNode[]=[
     implementation:'Macaque visual/somatosensory regional hierarchy; provenance remains non-human primate.'
   },
   {
+    id:'macaque-pfc-projectome',label:'Projectome PFC de macaque',domain:'agency',source:'Macaque-cortex-atlas',
+    role:'Fornece prior de projeções de longo alcance do córtex pré-frontal de primata.',
+    implementation:'2,231 reconstructed PFC neurons + 32 projectome subtypes; projection-level proxy, not synapses.'
+  },
+  {
+    id:'macaque-claustrum-connectivity',label:'Conectividade do claustro macaque',domain:'conscious-access',source:'Macaque-cortex-atlas',
+    role:'Fornece prior de integração córtex↔subcórtex do claustro em primata.',
+    implementation:'Tracer-derived 148 cortical + 15 subcortical target sites; not a whole-brain synaptic connectome.'
+  },
+  {
     id:'human-proxy-ledger',label:'Cobertura humano↔macaco',domain:'conscious-access',source:'human-macaque-proxy',
     role:'Distingue medição humana direta, proxy de macaque e regiões ainda sem cobertura.',
     implementation:'Explicit coverage ledger; macaque data never silently relabeled as human.'
