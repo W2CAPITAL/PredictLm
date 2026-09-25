@@ -1,4 +1,4 @@
-export type DossierKind='relatorio-executivo'|'dossie-juridico'|'due-diligence'|'relatorio-tecnico'|'pesquisa'|'generico';
+export type DossierKind='relatorio-executivo'|'relatorio-operacional'|'relatorio-financeiro'|'relatorio-equipe'|'relatorio-tecnico'|'relatorio-incidente'|'relatorio-projeto'|'relatorio-comercial'|'relatorio-marketing'|'relatorio-rh'|'relatorio-risco'|'relatorio-compliance'|'auditoria'|'comparativo'|'dossie-juridico'|'due-diligence'|'pesquisa'|'generico';
 export type DossierClassification='publico'|'interno'|'confidencial'|'restrito';
 export type DossierRole='summary'|'metrics'|'timeline'|'evidence'|'risks'|'options'|'actions'|'sources'|'methodology'|'limitations'|'appendix'|'analysis';
 
@@ -206,11 +206,23 @@ function numberSections(input:{title:string;body:string[];level:2|3}[],maxWords:
 
 export function detectDossierKind(text:string):DossierKind{
   const q=norm(text);
-  if(/\b(due diligence|diligencia|integridade|contraparte)\b/.test(q))return 'due-diligence';
+  if(/\b(due diligence|diligencia|integridade|contraparte|background check)\b/.test(q))return 'due-diligence';
   if(/\b(processo|juridic[oa]?|tribunal|datajud|djen|peticao|sentenca|recurso|advogad[oa]?|contrarrazoes|apelacao)\b/.test(q))return 'dossie-juridico';
-  if(/\b(tecnico|arquitetura|engenharia|incidente|sistema|software)\b/.test(q))return 'relatorio-tecnico';
-  if(/\b(pesquisa|research|estudo|fontes|bibliografia)\b/.test(q))return 'pesquisa';
-  if(/\b(executivo|executiva|diretoria|kpi|indicadores|resultado gerencial)\b/.test(q))return 'relatorio-executivo';
+  if(/\b(auditoria|audit|conformidade de controles|responsabilidade)\b/.test(q))return 'auditoria';
+  if(/\b(compliance|lgpd|privacidade|regulatorio|regulat[oó]rio|conformidade)\b/.test(q))return 'relatorio-compliance';
+  if(/\b(incidente|postmortem|outage|indisponibilidade|falha em producao|falha em produção|root cause|causa raiz)\b/.test(q))return 'relatorio-incidente';
+  if(/\b(financeiro|financeira|receita|despesa|fluxo de caixa|dre|or[cç]amento|budget|margem|faturamento)\b/.test(q))return 'relatorio-financeiro';
+  if(/\b(equipe|time|colaborador|produtividade individual|desempenho da equipe|atendimentos por pessoa|supervisao|supervisão)\b/.test(q))return 'relatorio-equipe';
+  if(/\b(operacional|opera[cç][aã]o|carteira|produtividade|sla|backlog|fila|retornos|encerramentos)\b/.test(q))return 'relatorio-operacional';
+  if(/\b(projeto|roadmap|marco|milestone|entrega|cronograma|sprint|status report)\b/.test(q))return 'relatorio-projeto';
+  if(/\b(vendas|comercial|pipeline|leads|conversao|conversão|ticket medio|ticket médio|receita comercial)\b/.test(q))return 'relatorio-comercial';
+  if(/\b(marketing|campanha|trafego|tráfego|cac|roas|alcance|impressoes|impressões|engajamento)\b/.test(q))return 'relatorio-marketing';
+  if(/\b(recursos humanos|rh\b|turnover|absenteismo|absenteísmo|headcount|recrutamento|people analytics)\b/.test(q))return 'relatorio-rh';
+  if(/\b(risco|riscos|risk assessment|matriz de risco|amea[cç]a|vulnerabilidade)\b/.test(q))return 'relatorio-risco';
+  if(/\b(comparativo|comparacao|comparação|antes e depois|versus|vs\.?\b|benchmark)\b/.test(q))return 'comparativo';
+  if(/\b(tecnico|t[eé]cnico|arquitetura|engenharia|sistema|software|infraestrutura|diagnostico tecnico|diagnóstico técnico)\b/.test(q))return 'relatorio-tecnico';
+  if(/\b(pesquisa|research|estudo|fontes|bibliografia|estado da arte|literatura)\b/.test(q))return 'pesquisa';
+  if(/\b(executivo|executiva|diretoria|kpi|indicadores|resultado gerencial|conselho|board)\b/.test(q))return 'relatorio-executivo';
   return 'generico';
 }
 
@@ -226,7 +238,8 @@ export const REPORT_DOSSIER_CONTRACT=[
   'Use only when the user actually asks for a report/dossier.',
   'Answer-first: open with one explicit line beginning "**Conclusão em uma frase:**".',
   'Then write dossier markdown with one # title and informative ## sections. Each section must answer one question.',
-  'Preferred roles: Sumário executivo, Dados-chave, Cronologia, Evidências, Riscos, Opções/Cenários, Próximos passos, Fontes, Metodologia and Limitações when relevant.',
+  'Infer the report type from the objective and evidence. Do not force every request into a legal/executive template.',
+  'Preferred roles are dynamic: Sumário executivo, Dados-chave, Cronologia, Evidências, Riscos, Opções/Cenários, Próximos passos, Fontes, Metodologia and Limitações only when they answer the report objective.',
   'Evidence markers: [oficial] for public/official records; [fornecida] for user-supplied material; [inferência] for analysis. A relevant factual claim without origin must be [inferência] or omitted.',
   'Risks use Alto/Médio/Baixo qualitatively; never invent percentages.',
   'Actions name an owner even if "a definir", and a deadline only when supported.',
@@ -301,15 +314,27 @@ export function validateDossier(dossier:DossierDocument,options:RenderDossierOpt
   }
 
   const roles=new Set(dossier.sections.map(x=>x.role));
-  const wanted:DossierRole[]=dossier.meta.kind==='dossie-juridico'
-    ? ['summary','timeline','evidence','risks','actions','sources','limitations']
-    : dossier.meta.kind==='due-diligence'
-      ? ['summary','evidence','risks','actions','sources','limitations']
-      : dossier.meta.kind==='relatorio-executivo'
-        ? ['summary','metrics','actions','sources']
-        : dossier.meta.kind==='pesquisa'
-          ? ['summary','methodology','evidence','sources','limitations']
-          : ['summary','actions','sources'];
+  const wantedByKind:Partial<Record<DossierKind,DossierRole[]>>={
+    'dossie-juridico':['summary','timeline','evidence','risks','actions','sources','limitations'],
+    'due-diligence':['summary','evidence','risks','actions','sources','limitations'],
+    'relatorio-executivo':['summary','metrics','risks','actions','sources'],
+    'relatorio-operacional':['summary','metrics','evidence','risks','actions','sources','limitations'],
+    'relatorio-financeiro':['summary','metrics','evidence','risks','actions','sources','limitations'],
+    'relatorio-equipe':['summary','metrics','evidence','actions','sources','limitations'],
+    'relatorio-tecnico':['summary','evidence','risks','actions','sources','limitations'],
+    'relatorio-incidente':['summary','timeline','evidence','risks','actions','sources','limitations'],
+    'relatorio-projeto':['summary','metrics','timeline','risks','actions','sources'],
+    'relatorio-comercial':['summary','metrics','risks','actions','sources'],
+    'relatorio-marketing':['summary','metrics','evidence','actions','sources'],
+    'relatorio-rh':['summary','metrics','evidence','risks','actions','sources','limitations'],
+    'relatorio-risco':['summary','evidence','risks','options','actions','sources','limitations'],
+    'relatorio-compliance':['summary','evidence','risks','actions','sources','limitations'],
+    'auditoria':['summary','evidence','risks','actions','sources','limitations'],
+    'comparativo':['summary','metrics','evidence','options','actions','sources','limitations'],
+    'pesquisa':['summary','methodology','evidence','sources','limitations'],
+    'generico':['summary','evidence','actions','sources']
+  };
+  const wanted:DossierRole[]=wantedByKind[dossier.meta.kind]||wantedByKind.generico!;
   const missing=wanted.filter(x=>!roles.has(x));
   if(missing.length)issues.push(issue('blueprint','tip','Blocos normalmente úteis neste tipo de documento: '+missing.join(', ')+'.'));
 
