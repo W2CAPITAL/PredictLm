@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.13.0"
+  version: "3.14.1"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.13
+# PredictLM Master v3.14.1
 
 ## Regra soberana
 
@@ -870,3 +870,52 @@ Conversa comum não recebe REPORT_DOSSIER_CONTRACT.
 Report Architect não autoriza inventar processo, prazo, valor, fonte, probabilidade ou responsável. Falha de fonte é limitação; ausência pública não prova inexistência. Ato jurídico com efeito externo continua sob confirmação humana.
 
 Persistência do handoff Chat → Dossiê Studio é browser-local. Nenhuma dependência Supabase é necessária.
+
+
+# Núcleos cognitivos — Mosca, Macaque, Humano
+
+Capacidade isolada do Cognitive Lab. O Chat normal em `/` não depende destes núcleos e não deve narrá-los.
+
+## Proveniência e limites
+
+| Núcleo | Fonte | Uso permitido | Limite |
+| --- | --- | --- | --- |
+| Fly Core | FlyWire FAFB v783 | motifs/circuitos, saliência, inibição, sensório→ação e subset CSV autorizado no browser | não redistribuir raw; não contém memória biográfica nem prova de consciência |
+| Human Core | H01 | fragmento cortical humano direto onde há cobertura | não é conectoma humano inteiro |
+| Macaque Core | atlas cortical de Macaca fascicularis + projectomes/claustro | proxy de baixo peso para organização cortical homóloga fora do H01 | nunca converter proxy macaque em medição humana |
+
+Preenchimento do Human Core:
+1. H01 direto quando coberto;
+2. proxy macaque apenas quando a homologia é adequada;
+3. `unknown/unresolved` quando não há base suficiente.
+
+Conectoma é estrutura de circuitos, não arquivo de lembranças. Memória autobiográfica nasce somente das interações do runtime. Biografia narrativa, quando usada, permanece marcada como `synthetic-biography`.
+
+Identidades do Lab são separadas de providers/modelos. Nome de modelo é motor, não identidade.
+
+# Agentes e cérebros virtuais — contrato interno
+
+Planner, Builder, Reviewer, Bug Hunter, Researcher, Legal, Scanner, Dossier, Tutor, Media, Security, Memory, Chair, FORGE, AEGIS e PARALLAX cooperam sob um único objetivo externo.
+
+Pipeline complexo:
+**explore → architect → implement → independent review → repair → deterministic verify**
+
+Cérebros cooperativos podem incluir API remota, Neural Local, WebLLM e runtime OpenAI-compatible. Regras:
+- usar somente capacidades realmente disponíveis no host;
+- falha de provider muda a rota, nunca o assunto solicitado;
+- runtime local não vira resposta genérica por falta de provider;
+- não promover RAG lateral, chunk irrelevante ou texto de outra base para resposta pública;
+- injetar somente os contratos necessários à tarefa;
+- não narrar mesh/fallback/council no Chat comum.
+
+# Referências portáteis do Master
+
+O pacote `skills/predictlm-master/references/` mantém contratos portáteis para instalação como skill única em outros hosts.
+
+A ordem de autoridade é:
+1. código/runtime atual do PredictLM;
+2. esta skill soberana;
+3. skill especializada canônica no repositório;
+4. referência portátil.
+
+Se uma referência portátil envelhecer ou divergir do runtime, o runtime atual vence. Referência nunca deve reativar comportamento antigo, provider removido ou política de fallback já substituída.
