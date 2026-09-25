@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.34.0"
+  version: "1.35.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -888,3 +888,16 @@ Imagine:
 - automatic references must be consumed by an image-input model;
 - reference-sensitive public fallback prefers `kontext`/other reference-capable models, not text-only `flux`;
 - semantic identity review can use the configured multimodal provider mesh.
+
+
+## Multi-query visual grounding diagnostics (2026-09-25)
+
+Imagine now performs two bounded automatic search phases for named-character scenes:
+- primary identity/form queries;
+- one recovery round only when the first round yields too few unique candidates.
+
+Downloaded public references may be inspected by the multimodal provider mesh before generation. The UI surfaces counts for found/downloaded/approved/passed references plus generation/review models and semantic issues.
+
+Rejected character candidates remain inspectable but are never persisted as valid generations.
+
+The runtime does not claim grounding from a URL that could not be downloaded or from an image model that did not receive/accept the reference.
