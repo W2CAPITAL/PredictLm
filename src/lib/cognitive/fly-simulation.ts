@@ -6,6 +6,8 @@ export interface FlySimulationState{
   y:number;
   vx:number;
   vy:number;
+  z:number;
+  vz:number;
   tick:number;
   behavior:'explore'|'inspect'|'avoid'|'hover'|'approach';
   targetLabel:string;
@@ -22,6 +24,8 @@ export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
     y:92,
     vx:1.8,
     vy:.9,
+    z:34,
+    vz:1.2,
     tick:0,
     behavior:'explore',
     targetLabel:'ambiente',
@@ -44,6 +48,8 @@ export function stepFlySimulation(
   const prev=previous?.version===1?previous:createFlySimulationState();
   const width=input.width||640;
   const height=input.height||360;
+  const currentZ=Number.isFinite(prev.z)?prev.z:34;
+  const currentVz=Number.isFinite(prev.vz)?prev.vz:1.2;
   const dx=input.personX-prev.x;
   const dy=input.personY-prev.y;
   const distance=Math.max(1,Math.hypot(dx,dy));
@@ -86,6 +92,9 @@ export function stepFlySimulation(
 
   const vx=clamp(prev.vx*.55+tx*.45,-5,5);
   const vy=clamp(prev.vy*.55+ty*.45,-4,4);
+  const desiredZ=behavior==='avoid'?58:behavior==='inspect'?42:behavior==='hover'?36:48+Math.sin(phase*.82)*10;
+  const vz=clamp(currentVz*.5+(desiredZ-currentZ)*.12,-4,4);
+  const z=clamp(currentZ+vz,20,76);
   let x=prev.x+vx;
   let y=prev.y+vy;
 
@@ -98,6 +107,8 @@ export function stepFlySimulation(
     y,
     vx,
     vy,
+    z,
+    vz,
     tick:prev.tick+1,
     behavior,
     targetLabel:behavior==='approach'||behavior==='inspect'?'Predict':behavior==='avoid'?'distância segura':input.personLocation,
