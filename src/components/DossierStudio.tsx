@@ -57,7 +57,7 @@ export function DossierStudio(){
   const [aiBusy,setAiBusy]=useState(false);
   const [aiStage,setAiStage]=useState('');
   const [aiError,setAiError]=useState('');
-  const [brains,setBrains]=useState<{forge?:boolean;aegis?:boolean;parallax?:boolean;chair?:boolean;repaired?:boolean}|null>(null);
+  const [brains,setBrains]=useState<{forge?:boolean;aegis?:boolean;parallax?:boolean;councilX10?:boolean;chair?:boolean;repaired?:boolean}|null>(null);
   const frame=useRef<HTMLIFrameElement>(null);
 
   useEffect(()=>{
@@ -145,7 +145,13 @@ export function DossierStudio(){
     <section className="ds-ai">
       <div className="ds-ai-head">
         <div><Brain size={16}/><span><b>IA + cérebros</b><small>FORGE estrutura · AEGIS contesta · PARALLAX procura o terceiro lado · CHAIR escreve e corrige</small></span></div>
-        {brains?<span className="ds-brains">{['FORGE','AEGIS','PARALLAX','CHAIR'].map(x=><i key={x}>{x}</i>)}</span>:null}
+        {brains?<span className="ds-brains">{[
+          brains.forge?'FORGE':'',
+          brains.aegis?'AEGIS':'',
+          brains.parallax?'PARALLAX':'',
+          brains.councilX10?'COUNCIL X10':'',
+          brains.chair?'CHAIR':''
+        ].filter(Boolean).map(x=><i key={x}>{x}</i>)}</span>:null}
       </div>
       <div className="ds-ai-grid">
         <label><span>O que o relatório precisa responder?</span><textarea value={aiRequest} onChange={e=>setAiRequest(e.target.value)} placeholder="Ex.: compare agosto e setembro, mostre perda de produtividade, gargalos, riscos e plano de ação."/></label>
