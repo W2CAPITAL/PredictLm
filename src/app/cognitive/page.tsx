@@ -2,9 +2,9 @@ import {CognitiveLab} from '@/components/CognitiveLab';
 
 export const metadata={
   title:'PredictLM Cognitive Lab',
-  description:'Isolated dual-connectome cognitive laboratory using FlyWire and H01-derived control layers.'
+  description:'Frank Stein hybrid cognitive laboratory using human atlases, FlyWire, memory, emotion and virtual neuronal microcircuits.'
 };
 
 export default function CognitivePage(){
-  return <CognitiveLab/>;
+  return <CognitiveLab defaultMode="frank"/>;
 }
