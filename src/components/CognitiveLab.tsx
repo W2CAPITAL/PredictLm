@@ -6,6 +6,8 @@ import {
   advanceCognitiveWorkspace,
   applyCognitiveOutcome,
   applyMappedSubsetEvidence,
+  captureConversationMemory,
+  cognitiveDirectRecall,
   cognitivePromptContext,
   createCognitiveState,
   type CognitiveState
@@ -117,6 +119,22 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     const user:Msg={role:'user',content:prompt,status:'done'};
     setMessages(prev=>[...prev,user]);
     setInput('');
+
+    const directRecall=cognitiveDirectRecall(pre,mode,prompt);
+    if(directRecall){
+      const direct:Msg={role:'assistant',content:directRecall,status:'done'};
+      setMessages(prev=>[...prev,direct]);
+      const post=captureConversationMemory(
+        applyCognitiveOutcome(pre,{prompt,answer:directRecall}),
+        {prompt,answer:directRecall,mode}
+      );
+      setState(post);
+      await saveCognitiveState(post);
+      setProvider('memória local');
+      setNotice('Resposta recuperada da memória persistente do próprio agente.');
+      return;
+    }
+
     setBusy(true);
     setProvider('');
     setNotice('');
@@ -198,7 +216,10 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         });
       }
 
-      const post=applyCognitiveOutcome(pre,{prompt,answer:accumulated});
+      const post=captureConversationMemory(
+        applyCognitiveOutcome(pre,{prompt,answer:accumulated}),
+        {prompt,answer:accumulated,mode}
+      );
       setState(post);
       await saveCognitiveState(post);
     }finally{
