@@ -46,6 +46,22 @@ export const HUMAN_PRIMATE_COVERAGE:HumanPrimateCoverageItem[]=[
     note:'Proxy cortical de primata para regiões humanas ainda não digitalizadas em resolução equivalente.'
   },
   {
+    id:'pfc-long-range-projectome',
+    label:'Projeções de longo alcance do córtex pré-frontal',
+    evidence:'macaque-proxy',
+    source:'Macaque PFC single-neuron projectome',
+    confidence:'moderate',
+    note:'Proxy de primata baseado em 2.231 projectomes de neurônios PFC e 32 subtipos; não contém sinapses humanas.'
+  },
+  {
+    id:'claustrum-brainwide-connectivity',
+    label:'Conectividade do claustro com córtex/subcórtex',
+    evidence:'macaque-proxy',
+    source:'Macaque claustrum connectivity atlas',
+    confidence:'moderate',
+    note:'Proxy de primata baseado em tracer; não equivale a um conectoma humano ou macaque completo.'
+  },
+  {
     id:'whole-brain-synaptic-connectome',
     label:'Conectoma sináptico humano de cérebro inteiro',
     evidence:'unresolved',
@@ -86,7 +102,7 @@ export function humanPrimateBridgeContext(human:HumanCoreState,macaque:MacaqueCo
     'Direct human evidence: '+summary.directHuman.map(x=>x.label).join(', ')+'.',
     'Macaque proxy coverage: '+summary.macaqueProxy.map(x=>x.label).join(', ')+'.',
     'Still unresolved: '+summary.unresolved.map(x=>x.label).join(', ')+'.',
-    'Proxy weight '+Math.round((human.crossSpeciesProxy?.proxyWeight||0)*100)+'%; macaque regional integration '+Math.round(macaque.regionalIntegration*100)+'%.',
+    'Proxy weight '+Math.round((human.crossSpeciesProxy?.proxyWeight||0)*100)+'%; macaque regional integration '+Math.round(macaque.regionalIntegration*100)+'%; PFC projection prior '+Math.round(macaque.pfcProjectionIntegration*100)+'%; claustrum prior '+Math.round(macaque.claustrumIntegration*100)+'%.'
     'Rule: macaque data can fill software priors for homologous cortical organization, but provenance must stay macaque-proxy and must never be presented as direct human measurement.'
   ].join('\n');
 }
