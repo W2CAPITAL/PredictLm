@@ -97,3 +97,21 @@ REQUEST
 → DELIVER FILE
 
 Não declarar “DOCX/PPTX/PDF/XLSX criado” enquanto o arquivo não existir e não tiver sido validado.
+
+
+## Report Architect → Office Artifacts
+
+Quando a origem for um relatório/dossiê do PredictLM:
+
+REPORT CONTENT → DOSSIER MARKDOWN → QUALITY GATE → HTML ESTRUTURADO → CONVERSÃO → REOPEN/VALIDATE → DELIVER.
+
+Antes de gerar PDF ou DOCX:
+- usar a estrutura aprovada do Report Architect como fonte da verdade;
+- exigir validateDossier >=85 e zero erros, salvo pedido explícito de rascunho;
+- preservar conclusão em uma frase, seções, cronologia, evidências, riscos, plano de ação, fontes e limitações;
+- preservar [oficial]/[fornecida]/[inferência] de forma legível no formato final;
+- não criar prazo, fonte, valor ou responsável durante a conversão;
+- manter classificação do documento (público/interno/confidencial/restrito);
+- abrir e validar o arquivo final antes de declarar que está pronto.
+
+A conversão de formato não é uma nova análise e não pode alterar o sentido do dossiê.
