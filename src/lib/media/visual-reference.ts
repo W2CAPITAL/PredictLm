@@ -1,8 +1,9 @@
 import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, matchupReferenceQueries } from './canonical-matchup';
+import {resolveAnimeCharacterCatalog} from './anime-character-catalog';
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
-export type VisualReferenceProvider='firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google'|'duckduckgo-images';
+export type VisualReferenceProvider='anilist-character'|'firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google'|'duckduckgo-images';
 
 export interface VisualReference{
   provider:VisualReferenceProvider;
@@ -20,6 +21,7 @@ export interface VisualReferencePlan{
   warnings:string[];
   candidatesFound:number;
   searchRounds:number;
+  catalogCharacters?:Array<{id:number;name:string;aliases:string[];mediaTitles:string[];siteUrl:string;imageUrl:string}>;
 }
 
 function normalize(input:string){
@@ -314,9 +316,19 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   const matchup=matchupReferenceQueries(input);
   const queries=[...new Set([...matchup,...buildVisualReferenceQueries(input)])].slice(0,8);
   const query=queries.join(' | ');
-  if(!isSpecificVisualPrompt(input))return {query,queries,references:[],warnings:[],candidatesFound:0,searchRounds:0};
+  if(!isSpecificVisualPrompt(input))return {query,queries,references:[],warnings:[],candidatesFound:0,searchRounds:0,catalogCharacters:[]};
 
   const warnings:string[]=[];
+  const catalog=await resolveAnimeCharacterCatalog(input).catch(()=>({terms:[] as string[],hits:[] as any[],warnings:['AniList indisponível nesta tentativa.']}));
+  warnings.push(...catalog.warnings);
+  const catalogRefs:VisualReference[]=catalog.hits.map((hit:any)=>({
+    provider:'anilist-character',
+    title:hit.name+(hit.mediaTitles?.length?' · '+hit.mediaTitles.slice(0,2).join(' / '):''),
+    imageUrl:String(hit.imageUrl||''),
+    sourceUrl:String(hit.siteUrl||''),
+    site:'anilist.co',
+    query:String(hit.name||'')
+  })).filter((ref:VisualReference)=>isSafePublicUrl(ref.imageUrl)&&isSafePublicUrl(ref.sourceUrl));
   const hasFirecrawl=!!String(process.env.FIRECRAWL_API_KEY||'').trim();
   const hasGoogle=!!String(process.env.GOOGLE_IMAGE_SEARCH_API_KEY||'').trim()&&!!String(process.env.GOOGLE_IMAGE_SEARCH_CX||'').trim();
   const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'google,firecrawl,pinterest-firecrawl,duckduckgo,pinterest-google')
@@ -335,8 +347,8 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     }
     return tasks;
   };
-  const merged:VisualReference[]=[];
-  let searchRounds=0;
+  const merged:VisualReference[]=[...catalogRefs];
+  let searchRounds=catalogRefs.length?1:0;
   const executeRound=async(roundQueries:string[])=>{
     if(!roundQueries.length)return;
     searchRounds++;
@@ -359,7 +371,7 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
 
   const seen=new Set<string>();
   const canonicalTerms=normalize(buildVisualReferenceQuery(input)).split(/\s+/).filter(x=>x.length>3);
-  const trustedHosts=/fandom\.com$|wikipedia\.org$|wikimedia\.org$|crunchyroll\.com$|viz\.com$|toei-anim\.co\.jp$|dragon-ball-official\.com$|naruto-official\.com$/i;
+  const trustedHosts=/anilist\.co$|anilist\.cdn$|fandom\.com$|wikipedia\.org$|wikimedia\.org$|crunchyroll\.com$|viz\.com$|toei-anim\.co\.jp$|dragon-ball-official\.com$|naruto-official\.com$/i;
   const ranked=merged.filter(ref=>{
     const key=ref.imageUrl;
     if(!key||seen.has(key))return false;
@@ -369,11 +381,15 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     const score=(ref:VisualReference)=>{
       const hay=normalize(ref.title+' '+ref.site+' '+ref.query);
       const lexical=canonicalTerms.reduce((sum,term)=>sum+(hay.includes(term)?1:0),0);
-      return lexical+(trustedHosts.test(ref.site)?3:0)+(ref.provider==='google-images'?1.5:0);
+      return lexical+(trustedHosts.test(ref.site)?3:0)+(ref.provider==='anilist-character'?6:0)+(ref.provider==='google-images'?1.5:0);
     };
     return score(b)-score(a);
   });
   const references:VisualReference[]=[];
+  for(const catalogRef of ranked.filter(ref=>ref.provider==='anilist-character')){
+    if(references.length>=max)break;
+    references.push(catalogRef);
+  }
   for(const searchQuery of queries){
     const candidate=ranked.find(ref=>ref.query===searchQuery&&!references.some(x=>x.imageUrl===ref.imageUrl));
     if(candidate)references.push(candidate);
@@ -388,7 +404,8 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     query,queries,references,
     warnings:Array.from(new Set(warnings)),
     candidatesFound:ranked.length,
-    searchRounds
+    searchRounds,
+    catalogCharacters:catalog.hits.map((hit:any)=>({id:hit.id,name:hit.name,aliases:hit.aliases,mediaTitles:hit.mediaTitles,siteUrl:hit.siteUrl,imageUrl:hit.imageUrl})).slice(0,5)
   };
 }
 
