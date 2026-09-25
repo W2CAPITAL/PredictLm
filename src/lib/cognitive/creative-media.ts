@@ -30,10 +30,11 @@ export function buildCreativeMediaControl(state:CognitiveState,prompt:string):Cr
     (state.workspace?.inhibition??.5)*.15
   );
   const composition=clamp(
-    (state.human?.recurrentIntegration??.5)*.3+
-    (state.macaque?.visualHierarchy??.5)*.25+
-    (state.macaque?.pfcProjectionIntegration??.5)*.2+
-    (state.organism?.drives?.novelty??.5)*.25
+    (state.human?.recurrentIntegration??.5)*.24+
+    (state.macaque?.visualHierarchy??.5)*.22+
+    (state.macaque?.pfcProjectionIntegration??.5)*.18+
+    (state.macaque?.claustrumIntegration??.5)*.12+
+    (state.organism?.drives?.novelty??.5)*.24
   );
   const sensitive=isIdentitySensitive(prompt);
   const publicBrief=[
@@ -42,6 +43,7 @@ export function buildCreativeMediaControl(state:CognitiveState,prompt:string):Cr
     sensitive
       ? 'Identity-sensitive request: creativity may change only camera, staging, lighting, depth and effects. It must NOT change character identity, canonical anatomy, costume, colors, subject count, requested form or action.'
       : 'Use controlled novelty to improve staging, camera, lighting, depth, visual hierarchy and one meaningful alternative composition without changing the user intent.',
+    'Use the human controller as an execution/fidelity critic, macaque visual hierarchy as a composition prior, and organism novelty only after mandatory identity constraints are satisfied.',
     'Prefer a readable focal subject, coherent silhouettes and visible requested action. Do not add unrelated characters, technology motifs or decorative concepts.'
   ].join('\n');
   return {novelty,fidelity,composition,publicBrief};
