@@ -168,7 +168,7 @@ export function advanceSyntheticMind(
   if(experience&&tick%7===0){
     memories=[...memories,{
       id:state.actor+'-runtime-'+tick,actor:state.actor,lifeStage:'runtime',when:'agora',place:location||'mundo',
-      summary:experience,valence:threat>.6?.25:.62,salience:clamp(.48+curiosity*.28+threat*.2),source:'runtime'
+      summary:experience,valence:threat>.6?.25:.62,salience:clamp(.48+curiosity*.28+threat*.2),source:'runtime' as SyntheticMemorySource
     }].slice(-80);
   }
   return {
