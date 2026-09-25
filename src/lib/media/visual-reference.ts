@@ -27,6 +27,17 @@ function normalize(input:string){
     .trim();
 }
 
+
+function requestsMultiSubjectScene(input:string){
+  const p=normalize(coreVisualIntent(input));
+  if(/\b(vs\.?|versus|contra|lutando|enfrentando|batalha entre|fight(?:ing)?|battle|with opponent|com adversario|com adversário)\b/.test(p))return true;
+  const named=[
+    /\bnaruto\b/.test(p),/\bsasuke\b/.test(p),/\b(?:freeza|frieza)\b/.test(p),
+    /\bgoku\b/.test(p),/\bvegeta\b/.test(p),/\bbroly\b/.test(p)
+  ].filter(Boolean).length;
+  return named>1;
+}
+
 function safeHost(input:string){
   try{return new URL(input).hostname.toLowerCase()}catch{return ''}
 }
@@ -72,6 +83,7 @@ export function buildVisualIdentityLock(input:string){
   }
   if(/\b(freeza|frieza)\b/.test(p)){
     rules.push('Frieza lock: preserve the canonical Dragon Ball Frieza identity — smooth white bio-armor/body with purple plates and dome, sleek alien silhouette, recognizable face and proportions. Never substitute a red/black armored demon, dragon, generic monster or Saiyan.');
+    if(!requestsMultiSubjectScene(input))rules.push('SINGLE SUBJECT LOCK: Frieza is the only primary character. Show exactly one Frieza as the focal subject. Do not add Goku, Vegeta, another Saiyan, a battle opponent, a second alien or a duplicate Frieza. A dramatic pose is allowed, but this is not a versus scene unless the user explicitly asked for one.');
   }
   if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p)){
     rules.push('Dragon Ball Great Ape lock: depict the canonical Saiyan Oozaru/Great Ape — gigantic brown ape-like Saiyan transformation with tail and ferocious face. Never substitute an armored demon, robot ape, ordinary small monkey or unrelated kaiju.');
@@ -99,9 +111,9 @@ export function buildVisualReferenceQuery(input:string){
   if(/\bnaruto\b/.test(p)&&/\bkurama\b/.test(p)&&/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p)){
     return 'Naruto Uzumaki Kurama Chakra Mode vs Sasuke Uchiha Perfect Susanoo anime reference';
   }
-  if(/\bnaruto\b/.test(p)&&/\bkurama\b/.test(p))return 'Naruto Uzumaki Kurama Chakra Mode Nine Tails canonical anime reference';
+  if(/\bnaruto\b/.test(p)&&/\bkurama\b/.test(p))return 'Naruto Uzumaki Kurama Chakra Mode Nine Tails canonical anime reference single subject official design';
   if(/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p))return 'Sasuke Uchiha Perfect Susanoo canonical anime reference';
-  if(/\b(freeza|frieza)\b/.test(p))return 'Frieza Dragon Ball canonical anime character design reference white purple final form';
+  if(/\b(freeza|frieza)\b/.test(p))return 'Frieza Dragon Ball canonical anime character design reference white purple final form solo character no Goku';
   if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p))return 'Dragon Ball Oozaru Great Ape Saiyan canonical anime reference';
   if(/\b(bijuu|besta de caudas|quatro caudas|four tails)\b/.test(p)&&/\b(naruto|anime naruto)\b/.test(p))return 'Naruto Four Tails Son Goku Bijuu canonical tailed beast anime reference';
   if(isLikelyNamedPersonPrompt(raw)){
