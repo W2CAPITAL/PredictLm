@@ -14,6 +14,11 @@
   - Explorer: `https://macaque.digital-brain.cn/spatial-omics`
 - User-supplied BSDC id `1888063966518173697` resolves to a mouse-brain spatial-transcriptome dataset and must not be labeled macaque.
 
+- Digital Brain Macaque PFC Projectome / Cell 2025 — 2.231 projectomes de neurônios individuais do córtex pré-frontal, 32 subtipos de projeção, 19 sítios de injeção em 7 macaques. Usar como prior de projeção de longo alcance de primata, não como sinapses humanas.
+  - Explorer: `https://macaque.digital-brain.cn/projectome/pfc`
+- Digital Brain Monkey Claustrum Connectivity — tracer atlas com 148 sítios corticais, 15 subcorticais e 5 no claustro. Usar como prior de conectividade do claustro em primata, não como conectoma humano completo.
+  - Explorer: `https://macaque.digital-brain.cn/connectivity-atlas/claustrum`
+
 ## Agentes / decisão
 - `FoundationAgents/MetaGPT` — MIT; roles + SOP orchestration.
 - `Sairamg18814/shvayambhu` — Apache-2.0, reference-only: ideias de introspecção/loops podem ser estudadas, mas alegações de consciência não são adotadas como fato.
