@@ -43,4 +43,6 @@ test('approach_object walks toward the object and use_object leaves visible inte
   assert.equal(used.completed,true);
   assert.equal(used.state.objectInteraction?.objectId,'work-pc1');
   assert.match(used.state.objectInteraction?.verb||'',/trabalho|tarefas|produzindo/i);
+  assert.ok((used.state.objectInteraction?.durationMs||0)>=5000);
+  assert.ok((used.state.objectInteraction?.expiresAt||0)>(used.state.objectInteraction?.startedAt||0));
 });
