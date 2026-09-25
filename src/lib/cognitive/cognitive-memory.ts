@@ -28,6 +28,9 @@ function normalizeState(raw:any):CognitiveState{
     human:raw.human?.version===1?raw.human:base.human,
     workspace:{...base.workspace,...(raw.workspace||{})},
     consciousAccess:{...base.consciousAccess,...(raw.consciousAccess||{})},
+    population:raw.population?.version===1&&Array.isArray(raw.population?.agents)
+      ? {...base.population,...raw.population,agents:raw.population.agents.slice(0,8)}
+      : base.population,
     memory:{
       working:Array.isArray(raw.memory?.working)?raw.memory.working.slice(0,8):[],
       episodic:Array.isArray(raw.memory?.episodic)?raw.memory.episodic.slice(-80):[],
