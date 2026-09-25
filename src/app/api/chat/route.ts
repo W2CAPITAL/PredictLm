@@ -105,7 +105,11 @@ function providers():Provider[]{
     push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL});
   }
   if(process.env.DEEPSEEK_API_KEY&&process.env.DEEPSEEK_MODEL){
-    push({name:'deepseek',base:process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com/v1',key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL});
+    const configured=(process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com').replace(/\/$/,'');
+    const base=/^https:\/\/api\.deepseek\.com\/v1$/i.test(configured)
+      ? 'https://api.deepseek.com'
+      : configured;
+    push({name:'deepseek',base,key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL});
   }
   if(process.env.KIMI_API_KEY&&process.env.KIMI_MODEL){
     push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL});
@@ -393,7 +397,10 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
     };
     if(provider.name==='nvidia'){
       body.chat_template_kwargs={enable_thinking:deep};
-      if(deep)body.reasoning_budget=2048;
+      if(deep){
+        body.max_tokens=Math.max(Number(body.max_tokens||0),2048);
+        body.thinking_token_budget=768;
+      }
     }
     if(provider.name==='minimax')body.thinking={type:'disabled'};
 
