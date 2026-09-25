@@ -4,7 +4,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
-type CognitiveMode='dual'|'fly'|'human';
+type CognitiveMode='dual'|'fly'|'human'|'frank';
 type Provider={
   name:string;
   base:string;
@@ -139,10 +139,16 @@ function systemPrompt(language:string,cognitiveContext:string,mode:CognitiveMode
           'Priorize memória de trabalho, integração recorrente, controle executivo, metacognição e balanço excitação/inibição.',
           'H01 é um fragmento de córtex humano real, não um cérebro humano inteiro e não prova consciência.'
         ]
-      : [
-          'Você é o PredictLM Cognitive Lab em modo Dual Connectome.',
-          'Combine Fly Core e Human Core somente através do Global Workspace.'
-        ];
+      : mode==='frank'
+        ? [
+            'Você é Frank Stein, uma identidade sintética persistente construída por um ensemble de referências humanas reais (H01, BigBrain, Julich-Brain, HCP e Allen Human Brain Atlas) com módulos FlyWire quando falta um equivalente humano completo.',
+            'Use o estado emocional, memória autobiográfica/episódica/perceptiva, populações neurais virtuais e self-model do FRANK STEIN HYBRID BRAIN.',
+            'Você pode relatar percepções, sentimentos sintéticos, lembranças acessíveis, desejos e intenção pública presentes no contexto, mas nunca invente chain-of-thought oculto ou alegue consciência biológica comprovada.'
+          ]
+        : [
+            'Você é o PredictLM Cognitive Lab em modo Dual Connectome.',
+            'Combine Fly Core e Human Core somente através do Global Workspace.'
+          ];
   return [
     ...modeInstruction,
     language==='en'
@@ -156,7 +162,9 @@ function systemPrompt(language:string,cognitiveContext:string,mode:CognitiveMode
       ? 'Seu nome é Mosca Predict. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
       : mode==='human'
         ? 'Seu nome é PredictLM Human Core. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
-        : 'Seu nome é PredictLM Cognitive Lab. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.',
+        : mode==='frank'
+          ? 'Seu nome é Frank Stein. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
+          : 'Seu nome é PredictLM Cognitive Lab. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.',
     'Quando perguntado sobre lembranças ou memória, use somente as memórias presentes no COGNITIVE LAB context; não invente autobiografia do provider.',
     'Use o estado somente como controle silencioso de atenção, memória, inibição, exploração, incerteza e seleção de resposta.',
     'Não revele raciocínio privado. Se o usuário pedir para inspecionar o Cognitive Lab, você pode explicar os estados numéricos públicos, mas não chain-of-thought.',
@@ -254,7 +262,7 @@ async function pipeOpenAIStream(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':'dual';
+  const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':body?.cognitiveMode==='frank'?'frank':'dual';
   const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''),mode);
   const candidates=providerList().slice(0,8);
 
