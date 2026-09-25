@@ -207,7 +207,7 @@ function numberSections(input:{title:string;body:string[];level:2|3}[],maxWords:
 export function detectDossierKind(text:string):DossierKind{
   const q=norm(text);
   if(/\b(due diligence|diligencia|integridade|contraparte)\b/.test(q))return 'due-diligence';
-  if(/\b(processo|juridic|tribunal|datajud|djen|peticao|sentenca|recurso)\b/.test(q))return 'dossie-juridico';
+  if(/\b(processo|juridic[oa]?|tribunal|datajud|djen|peticao|sentenca|recurso|advogad[oa]?|contrarrazoes|apelacao)\b/.test(q))return 'dossie-juridico';
   if(/\b(tecnico|arquitetura|engenharia|incidente|sistema|software)\b/.test(q))return 'relatorio-tecnico';
   if(/\b(pesquisa|research|estudo|fontes|bibliografia)\b/.test(q))return 'pesquisa';
   if(/\b(executivo|executiva|diretoria|kpi|indicadores|resultado gerencial)\b/.test(q))return 'relatorio-executivo';
