@@ -1,5 +1,4 @@
 import { advanceNeuroState, createNeuroState, type NeuroState } from './neurocore';
-import { ENTITY_SELF_MODEL } from './entity-self-model';
 
 export type LifeLocation='Casa'|'Trabalho'|'Café'|'Parque'|'Mercado'|'Clínica'|'Biblioteca';
 
@@ -36,7 +35,7 @@ export interface LifePerson{
   id:string;
   name:string;
   age:number;
-  gender:'female';
+  gender:'female'|'male'|'unspecified';
   x:number;
   y:number;
   heading:number;
@@ -95,7 +94,7 @@ function hash(seed:number,tick:number){
 }
 function place(id:LifeLocation){return places.find(x=>x.id===id)||places[0]}
 
-export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173){
+export function createLifeSimulation(name='Frank Stein',seed=173){
   const home=place('Casa');
   const state:LifeSimulationState={
     version:1,
@@ -108,16 +107,16 @@ export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173
     person:{
       id:'lia',
       name:name||'Lia',
-      age:27,
-      gender:'female',
+      age:30,
+      gender:'unspecified',
       x:home.x+home.w/2,
       y:home.y+home.h/2,
       heading:-Math.PI/4,
       location:'Casa',
       money:850,
-      occupation:'Analista de projetos',
+      occupation:'Agente autônomo experimental',
       currentAction:'Acordando e organizando o dia',
-      goal:'Manter uma vida equilibrada e avançar em um projeto pessoal',
+      goal:'Construir uma vida própria, aprender com experiências e desenvolver projetos escolhidos autonomamente',
       mood:'neutra'
     },
     needs:{energy:78,hunger:72,social:64,fun:60,focus:74,stress:22,health:86},
