@@ -2,6 +2,7 @@ import {renderReportHtml,type DossierClassification} from '@/lib/predict-dossier
 import {
   aegisReportPrompt,
   chairReportPrompt,
+  councilReportPrompt,
   forgeReportPrompt,
   inferReportBlueprint,
   parallaxReportPrompt,
@@ -53,6 +54,10 @@ export async function POST(req:Request){
     let forge='';
     let aegis='';
     let parallax='';
+    let council='';
+
+    const highRiskKinds=new Set(['dossie-juridico','due-diligence','auditoria','relatorio-risco','relatorio-compliance','relatorio-incidente']);
+    const useCouncil=body?.council===true||String(body?.depth||'auto')==='deep'||highRiskKinds.has(blueprint.kind)||sourceText.length>12000;
 
     if(providers.length===1){
       const bundlePrompt=[
@@ -73,27 +78,36 @@ export async function POST(req:Request){
         '<<<AEGIS>>>',
         '...',
         '<<<PARALLAX>>>',
-        '...'
+        '...',
+        ...(useCouncil?[
+          '<<<COUNCIL_X10>>>',
+          councilReportPrompt(request,sourceText,blueprint)
+        ]:[])
       ].join('\n');
       const bundle=await runOne(providers[0],bundlePrompt,3600);
       forge=(bundle.match(/<<<FORGE>>>\s*([\s\S]*?)(?=<<<AEGIS>>>|$)/i)?.[1]||bundle).trim();
       aegis=(bundle.match(/<<<AEGIS>>>\s*([\s\S]*?)(?=<<<PARALLAX>>>|$)/i)?.[1]||'').trim();
-      parallax=(bundle.match(/<<<PARALLAX>>>\s*([\s\S]*)$/i)?.[1]||'').trim();
+      parallax=(bundle.match(/<<<PARALLAX>>>\s*([\s\S]*?)(?=<<<COUNCIL_X10>>>|$)/i)?.[1]||'').trim();
+      council=useCouncil?(bundle.match(/<<<COUNCIL_X10>>>\s*([\s\S]*)$/i)?.[1]||'').trim():'';
     }else{
       const jobs=[
         runOne(providers[0],forgeReportPrompt(request,sourceText,blueprint)),
         runOne(providers[1]||providers[0],aegisReportPrompt(request,sourceText,blueprint)),
-        runOne(providers[2]||providers[0],parallaxReportPrompt(request,sourceText,blueprint))
+        runOne(providers[2]||providers[0],parallaxReportPrompt(request,sourceText,blueprint)),
+        ...(useCouncil?[runOne(providers[3]||providers[0],councilReportPrompt(request,sourceText,blueprint),3400)]:[])
       ];
       const settled=await Promise.allSettled(jobs);
       forge=settled[0].status==='fulfilled'?settled[0].value:'FORGE indisponível nesta execução.';
       aegis=settled[1].status==='fulfilled'?settled[1].value:'AEGIS indisponível nesta execução.';
       parallax=settled[2].status==='fulfilled'?settled[2].value:'PARALLAX indisponível nesta execução.';
+      council=useCouncil&&settled[3]
+        ? settled[3].status==='fulfilled'?settled[3].value:'Council X10 indisponível nesta execução.'
+        : '';
     }
 
     const chairProvider=providers[0];
     let markdown=await runOne(chairProvider,chairReportPrompt({
-      request,sourceText,blueprint,forge,aegis,parallax
+      request,sourceText,blueprint,forge,aegis,parallax,council
     }),5200);
     markdown=markdown
       .replace(/^\s*```(?:markdown|md)?\s*/i,'')
@@ -143,6 +157,7 @@ export async function POST(req:Request){
         forge:!!forge,
         aegis:!!aegis,
         parallax:!!parallax,
+        councilX10:!!council,
         chair:true,
         repaired
       }
