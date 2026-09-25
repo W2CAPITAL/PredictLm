@@ -17,6 +17,9 @@ export interface FlySimulationState{
   visible:string[];
   lastUtterance:string;
   silenceTicks:number;
+  wanderTargetX:number;
+  wanderTargetY:number;
+  targetAge:number;
   core:FlyCoreState;
 }
 
@@ -38,6 +41,9 @@ export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
     visible:[],
     lastUtterance:'',
     silenceTicks:0,
+    wanderTargetX:720,
+    wanderTargetY:150,
+    targetAge:0,
     core:core?.version===1?core:createFlyCoreState()
   };
 }
@@ -89,34 +95,53 @@ export function stepFlySimulation(
   else if(bestVisual&&core.salience>.55&&stimulusDistance<105)behavior='inspect';
   else if(core.inhibition>.64&&core.exploration<.52)behavior='hover';
 
-  const phase=(prev.tick+1)*.43;
-  let tx=Math.cos(phase)*2.4;
-  let ty=Math.sin(phase*1.37)*1.8;
+  const seed=((prev.tick+1)*1103515245 + Math.round(prev.x*97) + Math.round(prev.y*193))>>>0;
+  const randA=(seed%10000)/10000;
+  const randB=(((seed>>>8)^0x9e3779b9)%10000)/10000;
+  let wanderTargetX=Number.isFinite(prev.wanderTargetX)?prev.wanderTargetX:720;
+  let wanderTargetY=Number.isFinite(prev.wanderTargetY)?prev.wanderTargetY:150;
+  let targetAge=(Number.isFinite(prev.targetAge)?prev.targetAge:0)+1;
+  const waypointDistance=Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y);
+  const needsNewWaypoint=waypointDistance<34||targetAge>95;
+
+  if(needsNewWaypoint){
+    wanderTargetX=24+randA*Math.max(40,width-48);
+    wanderTargetY=26+randB*Math.max(40,height-54);
+    targetAge=0;
+  }
+
+  let tx=0;
+  let ty=0;
 
   if(behavior==='avoid'){
-    tx+=(-dx/distance)*4.2;
-    ty+=(-dy/distance)*3.3;
+    tx=(-dx/distance)*4.4;
+    ty=(-dy/distance)*3.5;
   }else if(behavior==='inspect'){
     const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
     const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*1.2;
-    ty+=((tyObj-prev.y)/od)*1.0;
+    tx=((txObj-prev.x)/od)*1.15;
+    ty=((tyObj-prev.y)/od)*.95;
   }else if(behavior==='approach'){
     const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
     const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*2.7;
-    ty+=((tyObj-prev.y)/od)*2.2;
+    tx=((txObj-prev.x)/od)*2.8;
+    ty=((tyObj-prev.y)/od)*2.25;
   }else if(behavior==='hover'){
-    tx*=.35;
-    ty*=.35;
+    tx=0;
+    ty=0;
   }else{
-    tx+=Math.cos(phase*.53)*core.exploration*2.4;
-    ty+=Math.sin(phase*.71)*core.exploration*2.0;
+    const wd=Math.max(1,Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y));
+    const jitterX=(randA-.5)*.7;
+    const jitterY=(randB-.5)*.7;
+    tx=((wanderTargetX-prev.x)/wd)*(1.4+core.exploration*2.1)+jitterX;
+    ty=((wanderTargetY-prev.y)/wd)*(1.2+core.exploration*1.8)+jitterY;
   }
 
-  const vx=clamp(prev.vx*.55+tx*.45,-5,5);
-  const vy=clamp(prev.vy*.55+ty*.45,-4,4);
-  const desiredZ=behavior==='avoid'?58:behavior==='inspect'?42:behavior==='hover'?36:48+Math.sin(phase*.82)*10;
+  const inertia=behavior==='hover'?.72:.5;
+  const vx=clamp(prev.vx*inertia+tx*(1-inertia),-5,5);
+  const vy=clamp(prev.vy*inertia+ty*(1-inertia),-4,4);
+  const altitudeJitter=(randA-.5)*8;
+  const desiredZ=behavior==='avoid'?58:behavior==='inspect'?42:behavior==='hover'?36:48+altitudeJitter;
   const vz=clamp(currentVz*.5+(desiredZ-currentZ)*.12,-4,4);
   const z=clamp(currentZ+vz,20,76);
   let x=prev.x+vx;
@@ -156,6 +181,9 @@ export function stepFlySimulation(
     visible:vision.visible.map(x=>x.label).slice(0,8),
     lastUtterance:utterance,
     silenceTicks:utterance?0:(prev.silenceTicks||0)+1,
+    wanderTargetX,
+    wanderTargetY,
+    targetAge,
     core
   };
 }
