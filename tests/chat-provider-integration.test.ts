@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {POST} from '../src/app/api/chat/route';
 import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
 
-const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL'];
+const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','DEEPSEEK_BASE_URL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_BASE_URL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ANTHROPIC_BASE_URL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL','FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL','PREDICTLM_PROVIDER_ORDER'];
 
 function isolateFreeLLM(){
   for(const key of providerEnv)delete process.env[key];
@@ -124,4 +124,147 @@ test('provider failure remains a failure so ChatShell can continue to local/Qwen
     assert.equal(data.code,'NO_CLEAN_ANSWER');
     assert.equal(data.content,null);
   }finally{globalThis.fetch=original}
+});
+
+
+function isolateSingleProvider(name:'nvidia'|'gemini'|'anthropic'|'deepseek'){
+  for(const key of providerEnv)delete process.env[key];
+  if(name==='nvidia'){
+    process.env.NVIDIA_API_KEY='nvidia-test-key';
+    process.env.NVIDIA_BASE_URL='https://integrate.api.nvidia.com/v1';
+    process.env.NVIDIA_MODEL='nvidia/nemotron-3.5-lightning-30b-a3b';
+  }else if(name==='gemini'){
+    process.env.GEMINI_API_KEY='gemini-test-key';
+    process.env.GEMINI_BASE_URL='https://generativelanguage.googleapis.com/v1beta/openai';
+    process.env.GEMINI_MODEL='gemini-3.8-flash';
+  }else if(name==='anthropic'){
+    process.env.ANTHROPIC_API_KEY='anthropic-test-key';
+    process.env.ANTHROPIC_BASE_URL='https://api.anthropic.com/v1';
+    process.env.ANTHROPIC_MODEL='claude-sonnet-4-6';
+  }else{
+    process.env.DEEPSEEK_API_KEY='deepseek-test-key';
+    process.env.DEEPSEEK_BASE_URL='https://api.deepseek.com/v1';
+    process.env.DEEPSEEK_MODEL='deepseek-flash';
+  }
+  process.env.PREDICTLM_PROVIDER_ORDER=name;
+  resetProviderHealthForTests();
+}
+
+function mockOpenAICompatible(spec:{
+  provider:'nvidia'|'gemini'|'deepseek';
+  url:string;
+  key:string;
+  model:string;
+}){
+  const calls:any[]=[];
+  const original=globalThis.fetch;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    const url=String(input);
+    assert.equal(url,spec.url);
+    const headers=init?.headers as Record<string,string>;
+    assert.equal(String(headers?.Authorization||''),'Bearer '+spec.key);
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,spec.model);
+    assert.equal(body.stream,false);
+    assert.ok(Array.isArray(body.messages));
+    if(spec.provider==='nvidia'){
+      assert.deepEqual(body.chat_template_kwargs,{enable_thinking:false});
+    }
+    const prompt=[...body.messages].reverse().find((x:any)=>x.role==='user')?.content||'';
+    calls.push({url,headers,body,prompt});
+    return new Response(JSON.stringify({
+      choices:[{message:{content:'A Lua apresenta fases porque vemos porções diferentes de sua metade iluminada pelo Sol enquanto ela orbita a Terra.'}}]
+    }),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  return {calls,restore:()=>{globalThis.fetch=original}};
+}
+
+function mockAnthropic(){
+  const calls:any[]=[];
+  const original=globalThis.fetch;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    const url=String(input);
+    assert.equal(url,'https://api.anthropic.com/v1/messages');
+    const headers=init?.headers as Record<string,string>;
+    assert.equal(String(headers?.['x-api-key']||''),'anthropic-test-key');
+    assert.equal(String(headers?.['anthropic-version']||''),'2023-06-01');
+    assert.equal(String(headers?.Authorization||''),'');
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,'claude-sonnet-4-6');
+    assert.ok(typeof body.system==='string'&&body.system.length>20);
+    assert.ok(Array.isArray(body.messages));
+    assert.equal(body.messages.some((x:any)=>x.role==='system'),false);
+    calls.push({url,headers,body});
+    return new Response(JSON.stringify({
+      content:[{type:'text',text:'A Lua apresenta fases porque vemos porções diferentes de sua metade iluminada pelo Sol enquanto ela orbita a Terra.'}]
+    }),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  return {calls,restore:()=>{globalThis.fetch=original}};
+}
+
+test('NVIDIA Nemotron adapter uses NVIDIA OpenAI-compatible chat completions',async()=>{
+  isolateSingleProvider('nvidia');
+  const mock=mockOpenAICompatible({
+    provider:'nvidia',
+    url:'https://integrate.api.nvidia.com/v1/chat/completions',
+    key:'nvidia-test-key',
+    model:'nvidia/nemotron-3.5-lightning-30b-a3b'
+  });
+  try{
+    const {response,data}=await ask('Explique por que a Lua tem fases.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'nvidia');
+    assert.equal(data.model,'nvidia/nemotron-3.5-lightning-30b-a3b');
+    assert.match(data.content,/Lua|Sol|Terra/i);
+    assert.equal(mock.calls.length,1);
+  }finally{mock.restore()}
+});
+
+test('Gemini adapter uses Google OpenAI compatibility endpoint',async()=>{
+  isolateSingleProvider('gemini');
+  const mock=mockOpenAICompatible({
+    provider:'gemini',
+    url:'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    key:'gemini-test-key',
+    model:'gemini-3.8-flash'
+  });
+  try{
+    const {response,data}=await ask('Explique por que a Lua tem fases.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'gemini');
+    assert.equal(data.model,'gemini-3.8-flash');
+    assert.match(data.content,/Lua|Sol|Terra/i);
+    assert.equal(mock.calls.length,1);
+  }finally{mock.restore()}
+});
+
+test('DeepSeek adapter uses OpenAI-compatible chat completions',async()=>{
+  isolateSingleProvider('deepseek');
+  const mock=mockOpenAICompatible({
+    provider:'deepseek',
+    url:'https://api.deepseek.com/v1/chat/completions',
+    key:'deepseek-test-key',
+    model:'deepseek-flash'
+  });
+  try{
+    const {response,data}=await ask('Explique por que a Lua tem fases.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'deepseek');
+    assert.equal(data.model,'deepseek-flash');
+    assert.match(data.content,/Lua|Sol|Terra/i);
+    assert.equal(mock.calls.length,1);
+  }finally{mock.restore()}
+});
+
+test('Claude adapter uses Anthropic Messages API contract',async()=>{
+  isolateSingleProvider('anthropic');
+  const mock=mockAnthropic();
+  try{
+    const {response,data}=await ask('Explique por que a Lua tem fases.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'anthropic');
+    assert.equal(data.model,'claude-sonnet-4-6');
+    assert.match(data.content,/Lua|Sol|Terra/i);
+    assert.equal(mock.calls.length,1);
+  }finally{mock.restore()}
 });
