@@ -18,12 +18,12 @@ import {
   parseH01EdgeSubsetCsv,
   summarizeConnectomeEdges
 } from '@/lib/cognitive/connectome-import';
-import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
+import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX,MACAQUE_CORTEX_SPATIAL_ATLAS} from '@/lib/cognitive/connectome-provenance';
 import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
 import {CognitiveBrainInspector} from '@/components/CognitiveBrainInspector';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
-export type CognitiveChatMode='dual'|'fly'|'human';
+export type CognitiveChatMode='dual'|'fly'|'human'|'macaque';
 const chatKey=(mode:CognitiveChatMode)=>'predictlm-cognitive-chat-v2-'+mode;
 
 function loadMessages(mode:CognitiveChatMode):Msg[]{
@@ -69,6 +69,10 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     flyExplore:Math.round(state.fly.exploration*100),
     humanMemory:Math.round(state.human.workingMemory*100),
     humanExecutive:Math.round(state.human.executiveControl*100),
+    macaqueIntegration:Math.round(state.macaque.regionalIntegration*100),
+    macaqueVisual:Math.round(state.macaque.visualHierarchy*100),
+    macaqueSomato:Math.round(state.macaque.somatosensoryHierarchy*100),
+    macaqueL4:Math.round(state.macaque.primateSpecificL4*100),
     uncertainty:Math.round(state.workspace.uncertainty*100),
     confidence:Math.round(state.workspace.confidence*100),
     attention:Math.round((state.consciousAccess?.attention||0)*100),
@@ -94,8 +98,10 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
       const modeInstruction=mode==='fly'
         ? 'Você é a interface conversacional da Mosca Predict, guiada pelo Fly Core derivado do FlyWire FAFB v783. Fale como a agente Mosca quando útil, sem alegar ser uma mosca biológica real ou consciente.'
         : mode==='human'
-          ? 'Você é a interface do Human Core derivado do fragmento cortical H01. Não alegue cérebro humano completo ou consciência.'
-          : 'Você é o PredictLM Cognitive Lab em modo Dual Connectome.';
+          ? 'Você é a interface do Human Core: H01 humano direto + proxy cortical de macaque explicitamente marcado onde o H01 não tem cobertura ampla. Não alegue cérebro humano completo ou consciência.'
+          : mode==='macaque'
+            ? 'Você é a interface do PredictLM Macaque Core, baseada no atlas espacial/transcriptômico cortical de macaque. Não alegue que é um macaco real nem que o atlas é um conectoma sináptico.'
+            : 'Você é o PredictLM Cognitive Lab em modo multiespécies com Human Core, Macaque Core e Fly Core.';
       const call=puter.ai.chat([
         {
           role:'system',
@@ -264,7 +270,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     setMode(next);
     setMessages(loadMessages(next));
     setProvider('');
-    setNotice(next==='fly'?'Chat da Mosca ativo.':next==='human'?'Human Core ativo.':'Modo Dual Connectome ativo.');
+    setNotice(next==='fly'?'Chat da Mosca ativo.':next==='human'?'Human Core híbrido humano↔macaque ativo.':next==='macaque'?'Macaque Core ativo.':'Modo cognitivo multiespécies ativo.');
   }
 
   function openFlySimulation(){
@@ -298,8 +304,8 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Brain size={20}/></div>
           <div>
-            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':'PredictLM Cognitive Lab'}</div>
-            <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 human cortex · chat isolado':'FlyWire FAFB v783 + H01 human cortex · rota isolada'}</div>
+            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':mode==='macaque'?'PredictLM · Macaque Core':'PredictLM Cognitive Lab'}</div>
+            <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 humano + proxy cortical macaque · chat isolado':mode==='macaque'?'143 regiões · 264 tipos celulares · chat isolado':'FlyWire + H01 + atlas cortical macaque · rota isolada'}</div>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -331,7 +337,18 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
             <Metric label="Excitação" value={Math.round(state.human.excitation*100)}/>
             <Metric label="Inibição" value={Math.round(state.human.inhibition*100)}/>
           </div>
-          <p className="mt-3 text-[10px] leading-5 text-zinc-500">H01: ~1 mm³ de córtex humano real, não cérebro humano inteiro.</p>
+          <p className="mt-3 text-[10px] leading-5 text-zinc-500">H01 fornece evidência humana direta em ~1 mm³. Fora dessa cobertura, o app usa apenas priors corticais de macaque com proveniência explícita; lacunas não cobertas continuam como desconhecidas.</p>
+        </section>
+
+        <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.035] p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Brain size={16} className="text-emerald-300"/> Macaque Core</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Metric label="Integração" value={metrics.macaqueIntegration}/>
+            <Metric label="Visual" value={metrics.macaqueVisual}/>
+            <Metric label="Somato" value={metrics.macaqueSomato}/>
+            <Metric label="L4 primata" value={metrics.macaqueL4}/>
+          </div>
+          <p className="mt-3 text-[10px] leading-5 text-zinc-500">{MACAQUE_CORTEX_SPATIAL_ATLAS.regions} regiões corticais · {MACAQUE_CORTEX_SPATIAL_ATLAS.cellTypes} tipos celulares · {(MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells/1000000).toFixed(1)}M células espacialmente anotadas. É atlas cortical, não conectoma sináptico.</p>
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
@@ -356,21 +373,22 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="border-b border-zinc-800 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Human Core Chat':'Dual Connectome Chat'}</div>
+              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Human Core Chat':mode==='macaque'?'Macaque Core Chat':'Multi-Species Cognitive Chat'}</div>
               <div className="mt-1 text-[10px] text-zinc-500">O Chat normal permanece separado em <code>/</code>. Cada modo cognitivo mantém histórico próprio.</div>
             </div>
             <div className="flex rounded-xl border border-zinc-800 bg-zinc-950 p-1 text-[10px]">
               <button onClick={()=>switchMode('fly')} className={'rounded-lg px-3 py-1.5 '+(mode==='fly'?'bg-amber-500/15 text-amber-200':'text-zinc-500')}>Mosca</button>
               <button onClick={()=>switchMode('human')} className={'rounded-lg px-3 py-1.5 '+(mode==='human'?'bg-violet-500/15 text-violet-200':'text-zinc-500')}>Humano</button>
-              <button onClick={()=>switchMode('dual')} className={'rounded-lg px-3 py-1.5 '+(mode==='dual'?'bg-zinc-800 text-zinc-100':'text-zinc-500')}>Dual</button>
+              <button onClick={()=>switchMode('macaque')} className={'rounded-lg px-3 py-1.5 '+(mode==='macaque'?'bg-emerald-500/15 text-emerald-200':'text-zinc-500')}>Macaco</button>
+              <button onClick={()=>switchMode('dual')} className={'rounded-lg px-3 py-1.5 '+(mode==='dual'?'bg-zinc-800 text-zinc-100':'text-zinc-500')}>Híbrido</button>
             </div>
           </div>
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {!messages.length&&<div className="mx-auto max-w-xl py-20 text-center">
             <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Activity/></div>
-            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com o Human Core':'Cérebro humano + mosca'}</h1>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta é controlada prioritariamente pelo Human Core H01: memória de trabalho, recorrência, controle executivo e metacognição.':'Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.'}</p>
+            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com o Human Core':mode==='macaque'?'Converse com o Macaque Core':'Humano + macaque + mosca'}</h1>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta usa H01 como evidência humana direta e o Macaque Core somente como proxy cortical de primata onde a cobertura humana é incompleta.':mode==='macaque'?'A resposta usa o atlas cortical de macaque: organização regional, camadas, tipos celulares e hierarquias visual/somatossensorial.':'Human Core, Macaque Core e Fly Core influenciam atenção, inibição, exploração, integração regional e prediction error com proveniência separada.'}</p>
           </div>}
           {messages.map((m,i)=><div key={i} className={m.role==='user'?'flex justify-end':'flex justify-start'}>
             <div className={m.role==='user'
@@ -387,7 +405,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
               value={input}
               onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send()}}}
-              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com o Human Core...':'Converse com o modo cognitivo...'}
+              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com o Human Core...':mode==='macaque'?'Fale com o Macaque Core...':'Converse com o modo cognitivo...'}
               rows={1}
               className="max-h-40 min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none placeholder:text-zinc-600"
             />
@@ -460,7 +478,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         </section>
 
         <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-[10px] leading-5 text-amber-100/60">
-          Este laboratório usa mapas reais como referência computacional, mas não é uma simulação biológica completa e não demonstra consciência. FlyWire é cérebro inteiro de mosca; H01 é apenas um fragmento cortical humano.
+          Este laboratório usa dados reais como referência computacional, mas não é uma simulação biológica completa e não demonstra consciência. FlyWire é conectoma de cérebro inteiro de mosca; H01 é um fragmento cortical humano; o atlas macaque cobre córtex em escala celular/transcriptômica e entra apenas como proxy de primata, nunca como medição humana.
         </section>
 
         {notice&&<section className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-3 text-xs leading-5 text-violet-200">{notice}</section>}
