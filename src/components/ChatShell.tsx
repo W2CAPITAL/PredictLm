@@ -5,7 +5,7 @@ import { Activity, Eye, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as 
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, isPurchaseLocationIntent, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -639,6 +639,7 @@ export function ChatShell({onOpenLegal}:Props){
       // grounded chance instead of returning a canned template.
       const canAutoResearch=!candidate.ok
         &&!needsWeb
+        &&!isPurchaseLocationIntent(prompt)
         &&kind!=='casual'
         &&kind!=='context'
         &&kind!=='hypothetical'
@@ -733,41 +734,11 @@ export function ChatShell({onOpenLegal}:Props){
 
       if(await tryLocalBrain())return;
 
-      const canBootstrapLite=
-        !currentNeural.loaded
-        &&!currentWebLLM.loaded
-        &&!needsWeb
-        &&kind!=='casual'
-        &&kind!=='context'
-        &&kind!=='current'
-        &&prompt.length<=4000
-        &&(caps.memory===0||caps.memory>=2)
-        &&(caps.cores===0||caps.cores>=2);
-
-      if(canBootstrapLite){
-        setActivity([
-          'NEURAL LOCAL · iniciando Qwen Lite',
-          'CPU/WASM · preparando execução sem Ollama',
-          'PREDICT CORE · preservando o turno'
-        ]);
-        try{
-          setModelError('');
-          setLoadState({tier:'lite',progress:null,status:'Neural Local automático · preparando Qwen Lite'});
-          await loadNeuralModel('lite',progress=>{
-            setLoadState({
-              tier:'lite',
-              progress:progress.progress,
-              status:'Neural Local automático · '+progress.status
-            });
-          },{persistPreference:true,timeoutMs:65000});
-          setLoadState(null);
-          setModelTick(x=>x+1);
-          if(await tryLocalBrain())return;
-        }catch{
-          setLoadState(null);
-          setModelTick(x=>x+1);
-          setModelError('Neural Local automático indisponível neste dispositivo; seguindo pelo fallback interno.');
-        }
+      // Online chat never starts downloading Qwen just because a cloud request
+      // failed. Neural Local remains available when the user explicitly loaded
+      // it from the model/offline controls.
+      if(!currentNeural.loaded&&!currentWebLLM.loaded){
+        setLoadState(null);
       }
 
       if(s.localRuntimeEnabled){
