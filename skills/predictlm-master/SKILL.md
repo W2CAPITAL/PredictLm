@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.14.3"
+  version: "3.15.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.14.3
+# PredictLM Master v3.15.0
 
 ## Regra soberana
 
@@ -957,3 +957,25 @@ Operational rules:
 - a reference-capable fallback receives up to three searched image URLs;
 - automatic grounding does not prove the final image is correct: visible semantic mismatch still fails;
 - if verification is unavailable but automatic references were forwarded, show an unverified/session-only warning rather than falsely claiming identity failure solely due missing manual upload.
+
+
+# Universal Report Intelligence v3.15
+
+Any explicit report request routes to Report Architect before ordinary chat generation.
+
+Pipeline:
+**objective + evidence → dynamic report kind → FORGE → AEGIS → PARALLAX → CHAIR → quality gate → artifact**.
+
+For legal/due-diligence/audit/risk/compliance/incident or large material, insert **Council X10** before CHAIR.
+
+Supported report families include executive, operational, financial, team, technical, incident, project, commercial, marketing, HR, risk, compliance, audit, comparative, legal, due diligence, research and custom reports. The custom path means an unknown report type is structured from the objective instead of rejected.
+
+Rules:
+- internal brains improve analysis but never become evidence;
+- FORGE extracts; AEGIS challenges; PARALLAX finds third-frame variables; Council X10 reviews high-risk/complex work; CHAIR writes;
+- no internal actor names in the final report unless the user explicitly asks for execution diagnostics;
+- every factual claim stays [oficial], [fornecida] or [inferência];
+- quality target >=85 and zero errors; one AI repair pass is allowed without changing supported facts;
+- Dossiê Studio can generate from an objective + pasted material, then remains fully editable;
+- Chat report requests use the same engine and hand off the complete Markdown to Dossiê Studio;
+- Cognitive Lab animal/human/primate simulations are not factual authorities for reports.
