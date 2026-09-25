@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -400,3 +400,39 @@ Required runtime:
 - a named character that visibly fails identity remains rejected, regardless of prompt similarity.
 
 Search reference → image-input model → generated pixels → independent multimodal semantic review.
+
+
+## Multi-query grounding + diagnostics v2.1
+
+Named-character grounding now works as a bounded search/review pipeline rather than one generic query.
+
+For identity-sensitive requests:
+1. split the scene into canonical identity/form queries;
+2. search primary queries first;
+3. if the primary round does not yield enough unique candidates, execute one recovery round with broader identity/scene queries;
+4. download up to eight candidates and keep only public image payloads that can actually be fetched;
+5. when a multimodal VLM is configured, inspect candidate pixels for usefulness before generation;
+6. keep separate references for different named subjects/forms when possible;
+7. send only approved/downloaded references to the generation provider;
+8. run an independent semantic review on the generated pixels.
+
+Example Naruto/Kurama vs Sasuke/Susanoo searches:
+- Naruto Uzumaki Kurama chakra mode;
+- Kurama/Nine-Tails canonical body;
+- Sasuke Uchiha Perfect Susanoo;
+- Perfect Susanoo full-body purple avatar;
+- Naruto vs Sasuke final-battle scene.
+
+The Imagine UI must expose:
+- candidates found;
+- URLs successfully downloaded;
+- references visually reviewed/approved;
+- references actually passed to the generator;
+- generation provider/model;
+- semantic reviewer provider/model;
+- automatic search queries;
+- semantic review issues.
+
+A rejected candidate is not silently discarded. It is shown in a separate **candidate rejected / not saved** panel with concrete visible reasons and a retry button. It never enters Recent until it passes the identity gate.
+
+Manual upload remains optional and outranks automatic references only when the user deliberately supplies it.
