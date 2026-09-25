@@ -11,6 +11,8 @@ import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@
 import { preloadGeneratedImage, reviewSemanticImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
 import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommendedImageStyle, sanitizeLibraryCaption, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
+import {loadCognitiveState} from '@/lib/cognitive/cognitive-memory';
+import {frankMediaPrompt} from '@/lib/cognitive/frank-media';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -80,6 +82,7 @@ export function GrokImaginePanel(){
   const [imageStage,setImageStage]=useState('');
   const [deepThink,setDeepThink]=useState(false);
   const [deepResearch,setDeepResearch]=useState(false);
+  const [frankBrain,setFrankBrain]=useState(false);
   const [directorBrief,setDirectorBrief]=useState('');
   const [researchContext,setResearchContext]=useState('');
   const [generatedRequest,setGeneratedRequest]=useState('');
@@ -162,6 +165,14 @@ export function GrokImaginePanel(){
   async function prepareMediaPrompt(kind:'image'|'video'){
     let research='';
     let brief='';
+    let cognition='';
+    const frankActive=frankBrain||/\b(frank\s*stein|c[eé]rebro|brain|mem[oó]ria|sentimento|emo[cç][aã]o|mosca predict|human core)\b/i.test(prompt);
+    if(frankActive){
+      try{
+        const state=await loadCognitiveState();
+        cognition=frankMediaPrompt(state.frank,kind);
+      }catch{}
+    }
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
     const literalImage=kind==='image'&&(isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
     const useDirector=deepThink||literalImage;
@@ -198,6 +209,7 @@ export function GrokImaginePanel(){
           'PROIBIDO inventar estética de tecnologia/IA sem pedido explícito: não introduza binário, redes neurais, circuitos, drones, hologramas, data streams, cyberpunk, robôs ou fendas dimensionais só porque o produto se chama PredictLM.',
           'Pedido: '+prompt,
           'Estilo: '+style+'. Aspecto: '+ratio.label+'.'+(kind==='video'?' Duração alvo: '+Math.round(duration/1000)+'s.':''),
+          cognition?('FRANK STEIN COGNITIVE VISUAL STATE:\n'+cognition):'',
           research?('Contexto pesquisado:\n'+research):'',
           'Responda apenas com um brief operacional compacto. Não exponha raciocínio privado, etapas internas ou debate.'
         ].filter(Boolean).join('\n\n');
@@ -226,7 +238,7 @@ export function GrokImaginePanel(){
           aspect:ratio.label,
           durationMs:duration,
           directorBrief:brief,
-          researchContext:research
+          researchContext:[research,cognition].filter(Boolean).join('\n\n')
         }),
         brief,
         research
@@ -239,10 +251,12 @@ export function GrokImaginePanel(){
         : [
             buildQualityImagePrompt(prompt,{style,attempt}),
             brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
-            research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
+            research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):'',
+            cognition?('FRANK STEIN COGNITIVE STATE: '+cognition):''
           ].filter(Boolean).join('\n\n'),
       brief,
-      research
+      research,
+      cognition
     };
   }
 
@@ -447,7 +461,7 @@ export function GrokImaginePanel(){
           enhancedPrompt:expandedPrompt,
           seed:nextSeed,
           style:data.style||style,
-          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption,displayTitle:data.displayTitle||buildDisplayTitle(prompt),promptOriginal:prompt}
+          meta:{identityExact:true,identityLocked:true,referenceMode:'persistent-self',parityContract:'grok-imagine-parity',promptMode:data.promptMode,caption,displayTitle:data.displayTitle||buildDisplayTitle(prompt),promptOriginal:prompt,frankBrain}
         });
         return url;
       }
@@ -529,6 +543,7 @@ export function GrokImaginePanel(){
           deepThink,
           deepResearch,
           researchGrounded:!!prepared.research,
+          frankBrain:!!prepared.cognition,
           directorBrief:prepared.brief||null,
           parityContract:'grok-imagine-parity',
           promptOriginal:prompt,
@@ -998,6 +1013,9 @@ export function GrokImaginePanel(){
           </button>
           <button className={deepResearch&&!literalUiMode?'active':''} onClick={()=>setDeepResearch(v=>!v)} type="button" disabled={literalUiMode}>
             <Search size={14}/><span><b>Deep Research</b><small>{literalUiMode?'Referências visuais continuam via Firecrawl sem injetar texto extra.':'Pesquisa referências e evidência visual antes do prompt final. Aumenta a latência para melhorar fidelidade.'}</small></span>
+          </button>
+          <button className={frankBrain?'active':''} onClick={()=>setFrankBrain(v=>!v)} type="button">
+            <BrainCircuit size={14}/><span><b>Frank Brain</b><small>Usa emoção, memória, percepções e estado neural persistente do Frank Stein para compor imagens e vídeos. Ativa automaticamente para pedidos sobre Frank/cérebro/memória/emoções.</small></span>
           </button>
         </div>
 
