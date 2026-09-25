@@ -61,7 +61,7 @@ export interface LifeAgentState{
   knowledge:number;
   skills:{career:number;cooking:number;fitness:number;logic:number;social:number;creativity:number};
   home:{cleanliness:number;comfort:number};
-  autonomy:{enabled:boolean;decisionCount:number;lastDecision:string};
+  autonomy:{enabled:boolean;manualOverride:boolean;decisionCount:number;lastDecision:string};
 }
 
 export interface LifeAgentExecution{
@@ -96,7 +96,7 @@ export function createLifeAgentState():LifeAgentState{
     knowledge:0,
     skills:{career:18,cooking:12,fitness:16,logic:20,social:18,creativity:14},
     home:{cleanliness:76,comfort:72},
-    autonomy:{enabled:false,decisionCount:0,lastDecision:'Aguardando instrução.'}
+    autonomy:{enabled:true,manualOverride:false,decisionCount:0,lastDecision:'Autonomia perceptiva ativa.'}
   };
 }
 
@@ -121,7 +121,8 @@ export function normalizeLifeAgentState(raw:any):LifeAgentState{
       comfort:clamp(Number(raw.home?.comfort??base.home.comfort)||0)
     },
     autonomy:{
-      enabled:Boolean(raw.autonomy?.enabled??base.autonomy.enabled),
+      enabled:Boolean(raw.autonomy?.manualOverride?raw.autonomy?.enabled:true),
+      manualOverride:Boolean(raw.autonomy?.manualOverride),
       decisionCount:Math.max(0,Number(raw.autonomy?.decisionCount??0)||0),
       lastDecision:String(raw.autonomy?.lastDecision||base.autonomy.lastDecision).slice(0,240)
     }
