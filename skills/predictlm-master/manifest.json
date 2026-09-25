@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.15.2",
+  "version": "3.15.3",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -140,6 +140,7 @@
     "semanticVision": "multimodal scene/animal identification before local ImageNet fallback; local weak non-animal guesses abstain",
     "cleanSimpleChat": "simple stable turns do not inject unrelated GitHub/RAG sources; knowledge:false is a hard boundary",
     "characterReferenceRuntime": "named characters use actual image-input models for automatic references and multimodal semantic review",
-    "observableVisualGrounding": "multi-query character search, bounded recovery, real reference download, optional VLM screening, generation/reviewer telemetry, rejected candidates remain inspectable but unsaved"
+    "observableVisualGrounding": "multi-query character search, bounded recovery, real reference download, optional VLM screening, generation/reviewer telemetry, rejected candidates remain inspectable but unsaved",
+    "animeCharacterCatalogGrounding": "AniList character identity resolution precedes web-image search; franchise-aware disambiguation; no streaming/torrent integration"
   }
 }
