@@ -1,6 +1,13 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
+import {
+  advanceCognitivePopulation,
+  cognitivePopulationContext,
+  createCognitivePopulation,
+  reinforceCognitivePopulation,
+  type CognitivePopulationState
+} from './agent-population';
 
 export interface CognitiveEpisode{
   at:number;
@@ -56,6 +63,7 @@ export interface CognitiveState{
     perceptual:CognitiveMemoryTrace[];
   };
   consciousAccess:ConsciousAccessState;
+  population:CognitivePopulationState;
   mappedEvidence:{
     fly?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
     human?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
@@ -118,6 +126,7 @@ export function createCognitiveState():CognitiveState{
       globalBroadcast:.44,
       arousal:.55
     },
+    population:createCognitivePopulation(),
     mappedEvidence:{},
     lastUpdated:Date.now()
   };
@@ -127,6 +136,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const prev=previous?.version===1?previous:createCognitiveState();
   const fly=advanceFlyCore(prev.fly,prompt);
   const human=advanceHumanCore(prev.human,prompt);
+  const population=advanceCognitivePopulation(prev.population,prompt);
 
   const reflex=clamp(fly.salience*.32+fly.actionSelection*.28+fly.threat*.2+fly.centralComplex*.2);
   const deliberate=clamp(human.workingMemory*.24+human.executiveControl*.28+human.metacognition*.22+human.recurrentIntegration*.26);
@@ -172,6 +182,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
       perceptual:(prev.memory?.perceptual||[]).slice(-120)
     },
     consciousAccess,
+    population,
     mappedEvidence:prev.mappedEvidence||{},
     lastUpdated:Date.now()
   };
@@ -189,6 +200,7 @@ export function cognitivePromptContext(state:CognitiveState){
     'Working memory: '+(state.memory.working.slice(0,4).join(' | ')||'empty')+'.',
     'Autobiographical memory: '+((state.memory.autobiographical||[]).slice(-5).map(x=>x.text).join(' | ')||'empty')+'.',
     'Recent episodes: '+((state.memory.episodic||[]).slice(-4).map(x=>x.prompt+' -> '+x.answerPreview).join(' | ')||'empty')+'.',
+    cognitivePopulationContext(state.population),
     'CONSCIOUS ACCESS MAP (functional software state, not proof of biological consciousness): attention '+Math.round(state.consciousAccess.attention*100)+'%; perceptual binding '+Math.round(state.consciousAccess.perceptualBinding*100)+'%; self-model '+Math.round(state.consciousAccess.selfModel*100)+'%; continuity '+Math.round(state.consciousAccess.continuity*100)+'%; memory access '+Math.round(state.consciousAccess.memoryAccess*100)+'%; agency '+Math.round(state.consciousAccess.agency*100)+'%; reportability '+Math.round(state.consciousAccess.reportability*100)+'%; global broadcast '+Math.round(state.consciousAccess.globalBroadcast*100)+'%.',
     state.mappedEvidence.fly
       ? 'Imported FlyWire real-subset evidence: '+state.mappedEvidence.fly.nodes+' nodes, '+state.mappedEvidence.fly.edges+' edges across '+state.mappedEvidence.fly.regions+' regions.'
@@ -233,10 +245,17 @@ export function applyCognitiveOutcome(
     predictionError
   };
 
+  const population=reinforceCognitivePopulation(previous.population,{
+    prompt:input.prompt,
+    answer,
+    reward:directReward
+  });
+
   return {
     ...previous,
     fly,
     human,
+    population,
     workspace:{
       ...previous.workspace,
       confidence:clamp(previous.workspace.confidence*.66+directReward*.34),
@@ -362,11 +381,14 @@ export function captureConversationMemory(
       salience:.78,strength:.92,source:'conversation'
     });
   }
+  const recallLike=/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda|qual (?:e )?seu nome|quem e voce|como voce se chama)\b/i.test(prompt.normalize('NFD').replace(/\p{M}/gu,''));
   next=recordCognitiveMemory(next,{
     kind:'event',actor,
-    text:'Conversa: usuário: '+prompt+' | resposta: '+answer,
-    salience:.58+Math.min(.28,prompt.length/700),
-    strength:.86,
+    text:recallLike
+      ? 'Conversa: usuário perguntou sobre identidade/memória; o estado foi consultado sem regravar a própria resposta como nova lembrança.'
+      : 'Conversa: usuário: '+prompt+' | resposta: '+answer,
+    salience:recallLike?.42:.58+Math.min(.28,prompt.length/700),
+    strength:recallLike?.72:.86,
     source:'conversation'
   });
   return next;
@@ -396,23 +418,41 @@ export function cognitiveDirectRecall(
 ){
   const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
   if(/\b(qual (?:e )?seu nome|quem e voce|quem voce e|como voce se chama)\b/.test(q)){
-    return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
+    return 'Neste laboratório, minha identidade de software é '+cognitiveIdentity(mode)+'. O estado cognitivo e as memórias abaixo são simulados e persistentes; o provider que gera texto não é tratado como identidade.';
   }
-  if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
+  if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda|vida real|experiencia)\b/.test(q))return null;
 
+  const queryWords=new Set(q.split(/[^a-z0-9]+/).filter(x=>x.length>3));
+  const textScore=(text:string)=>{
+    const hay=clean(text,500).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+    let hit=0;
+    queryWords.forEach(word=>{if(hay.includes(word))hit++});
+    return hit/Math.max(1,queryWords.size);
+  };
   const auto=(state.memory?.autobiographical||[])
     .filter(x=>x.actor===mode||x.actor==='user'||x.actor==='world'||x.actor==='dual')
-    .sort((a,b)=>(b.salience*b.strength)-(a.salience*a.strength)||b.at-a.at);
-  const episodes=[...(state.memory?.episodic||[])].reverse();
-  const perceptions=(state.memory?.perceptual||[]).filter(x=>x.actor===mode).slice(-3).reverse();
+    .map(x=>({x,score:textScore(x.text)*.46+x.salience*x.strength*.38+Math.min(.16,1/(1+Math.max(0,Date.now()-x.at)/60000))}))
+    .sort((a,b)=>b.score-a.score);
+  const episodes=[...(state.memory?.episodic||[])]
+    .map(x=>({x,score:textScore(x.prompt+' '+x.answerPreview)*.6+x.reward*.18+(1-x.predictionError)*.12+Math.min(.1,1/(1+Math.max(0,Date.now()-x.at)/60000))}))
+    .sort((a,b)=>b.score-a.score);
+  const perceptions=(state.memory?.perceptual||[])
+    .filter(x=>x.actor===mode)
+    .map(x=>({x,score:textScore(x.text)*.5+x.salience*x.strength*.4+Math.min(.1,1/(1+Math.max(0,Date.now()-x.at)/60000))}))
+    .sort((a,b)=>b.score-a.score);
 
   const rows:string[]=[];
-  for(const item of auto.slice(0,3))rows.push(item.text);
-  for(const item of perceptions.slice(0,2))rows.push('Percepção lembrada: '+item.text);
-  for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
+  for(const item of auto.slice(0,3))rows.push('Memória registrada: '+item.x.text);
+  for(const item of perceptions.slice(0,2))rows.push('Percepção registrada: '+item.x.text);
+  for(const item of episodes.slice(0,2))rows.push('Episódio registrado: '+item.x.prompt+' → '+item.x.answerPreview);
 
+  const population=(state.population?.agents||[]).slice(0,4).map(agent=>agent.name+': '+agent.publicReport);
   if(!rows.length){
-    return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
+    return 'Não há uma "vida real" biológica armazenada aqui. O que existe de verdade neste runtime é estado persistente do software: conversas, percepções da simulação e memórias registradas a partir delas.';
   }
-  return 'Minhas lembranças mais acessíveis agora são:\n- '+rows.join('\n- ');
+  return [
+    'O que está registrado de verdade neste estado de software:',
+    ...rows.map(x=>'- '+x),
+    population.length?'Estados cognitivos simulados atuais:\n'+population.map(x=>'- '+x).join('\n'):''
+  ].filter(Boolean).join('\n');
 }
