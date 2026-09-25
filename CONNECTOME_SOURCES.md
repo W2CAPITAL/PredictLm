@@ -49,3 +49,12 @@ Cognitive Lab does not pretend to run 139,255 fly neurons or 150 million human s
 6. prediction-error feedback after each answer.
 
 This is a brain-inspired software control architecture. It is not evidence of biological consciousness or sentience.
+
+
+## Fly chat and simulation
+
+The Fly Core is exposed directly at `/cognitive/fly`. It has its own conversation history and sends `cognitiveMode: "fly"` to the isolated cognitive streaming route.
+
+The Life Simulation Studio also contains a visible autonomous fly agent. Its movement state is driven by the same `FlyCoreState` fields used by Fly chat (salience, threat, exploration, inhibition, mushroom-body association, central-complex drive and action selection).
+
+The simulation periodically synchronizes its Fly Core back to the Cognitive Lab IndexedDB state, so Fly chat and the simulated fly share one persistent controller state. The normal PredictLM Chat at `/` remains independent.

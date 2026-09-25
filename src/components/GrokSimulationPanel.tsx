@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import { Activity, Brain, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle } from 'lucide-react';
+import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle } from 'lucide-react';
 import {
   applySimulationInstruction,
   createLifeSimulation,
@@ -29,9 +29,12 @@ import {
   type LifeAgentState
 } from '@/lib/life-simulation-agent';
 import { localBrainAdvisory } from '@/lib/browser-brain';
+import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
+import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
+const FLY_STORAGE_KEY='predictlm-life-fly-agent-v1';
 
 function loadState():LifeSimulationState{
   if(typeof window==='undefined')return createLifeSimulation();
@@ -50,6 +53,14 @@ function loadAgentState():LifeAgentState{
   catch{return createLifeAgentState()}
 }
 
+function loadFlyState():FlySimulationState{
+  if(typeof window==='undefined')return createFlySimulationState();
+  try{
+    const raw=JSON.parse(localStorage.getItem(FLY_STORAGE_KEY)||'null');
+    return raw?.version===1?raw:createFlySimulationState();
+  }catch{return createFlySimulationState()}
+}
+
 function needLabel(value:number){return Math.max(0,Math.min(100,Math.round(value)))}
 
 export function GrokSimulationPanel(){
@@ -59,13 +70,24 @@ export function GrokSimulationPanel(){
   const [manualTarget,setManualTarget]=useState<LifeLocation|null>(null);
   const [scenarios,setScenarios]=useState<LifeScenarioResult[]>([]);
   const [agent,setAgent]=useState<LifeAgentState>(()=>createLifeAgentState());
+  const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
-    setState(loadState());
+    const nextState=loadState();
+    setState(nextState);
     setAgent(loadAgentState());
+    const localFly=loadFlyState();
+    setFly(localFly);
+    loadCognitiveState().then(cognitive=>{
+      setFly(prev=>({...prev,core:cognitive.fly}));
+    }).catch(()=>{});
+    try{
+      const focus=sessionStorage.getItem('predictlm:simulation-focus');
+      if(focus==='fly')sessionStorage.removeItem('predictlm:simulation-focus');
+    }catch{}
     setHydrated(true);
   },[]);
 
@@ -78,6 +100,16 @@ export function GrokSimulationPanel(){
     if(!hydrated)return;
     try{localStorage.setItem(AGENT_STORAGE_KEY,JSON.stringify(agent))}catch{}
   },[agent,hydrated]);
+
+  useEffect(()=>{
+    if(!hydrated)return;
+    try{localStorage.setItem(FLY_STORAGE_KEY,JSON.stringify(fly))}catch{}
+    if(fly.tick%4!==0)return;
+    const timer=window.setTimeout(()=>{
+      loadCognitiveState().then(current=>saveCognitiveState({...current,fly:fly.core,lastUpdated:Date.now()})).catch(()=>{});
+    },120);
+    return()=>window.clearTimeout(timer);
+  },[fly,hydrated]);
 
   useEffect(()=>{
     if(!hydrated)return;
@@ -99,6 +131,21 @@ export function GrokSimulationPanel(){
     },650);
     return()=>window.clearInterval(timer);
   },[state.running,state.speed,manualTarget,agent.plan?.status]);
+
+  useEffect(()=>{
+    if(!state.running)return;
+    const timer=window.setInterval(()=>{
+      setFly(prev=>stepFlySimulation(prev,{
+        personX:state.person.x,
+        personY:state.person.y,
+        personAction:state.person.currentAction,
+        personLocation:String(state.person.location),
+        width:640,
+        height:360
+      }));
+    },260);
+    return()=>window.clearInterval(timer);
+  },[state.running,state.person.x,state.person.y,state.person.currentAction,state.person.location]);
 
   useEffect(()=>{
     const runningPlan=agent.plan?.status==='running';
@@ -190,7 +237,36 @@ export function GrokSimulationPanel(){
     ctx.fillStyle='#d8dfec';
     const shown=bubble.length>42?bubble.slice(0,42)+'…':bubble;
     ctx.fillText(shown,bx+11,by+19);
-  },[state,manualTarget]);
+
+    // FlyWire agent: visible simulation body driven by the same FlyCoreState
+    // used by /cognitive/fly.
+    const fx=fly.x*sx,fy=fly.y;
+    ctx.save();
+    ctx.translate(fx,fy);
+    ctx.rotate(Math.atan2(fly.vy,fly.vx||.001));
+    ctx.globalAlpha=.72;
+    ctx.fillStyle='#d9e7ff';
+    ctx.beginPath();ctx.ellipse(-2,-5,7,3,-.35,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(-2,5,7,3,.35,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#1c1b20';
+    ctx.beginPath();ctx.ellipse(0,0,8,4.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#a88cff';
+    ctx.beginPath();ctx.arc(6,-2,2.2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(6,2,2.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#9aa8bf';ctx.lineWidth=1;
+    for(const oy of [-3,0,3]){ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy-5);ctx.stroke();ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy+5);ctx.stroke()}
+    ctx.restore();
+
+    const flyText=flySimulationBubble(fly);
+    ctx.font='9px ui-sans-serif,system-ui';
+    const fw=Math.max(88,ctx.measureText(flyText).width+16);
+    const fbx=Math.max(6,Math.min(width-fw-6,fx-fw/2));
+    const fby=Math.max(6,fy-34);
+    ctx.fillStyle='rgba(18,14,24,.9)';ctx.strokeStyle='#5b477d';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(fbx,fby,fw,24,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#d9c9ff';ctx.fillText(flyText,fbx+8,fby+15);
+  },[state,manualTarget,fly]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
   const relation=state.relationships[0];
@@ -201,7 +277,7 @@ export function GrokSimulationPanel(){
 
   function reset(){
     const next=createLifeSimulation();
-    setState(next);setAgent(createLifeAgentState());setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
+    setState(next);setAgent(createLifeAgentState());setFly(createFlySimulationState());setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
   }
 
   async function applyCommand(override?:string){
@@ -291,7 +367,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Simulação ativa 2D · NeuroCore · memória local · não é consciência biológica</p>
+        <p>Simulação ativa 2D · NeuroCore + FlyWire Agent · memória local · não é consciência biológica</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -332,6 +408,7 @@ export function GrokSimulationPanel(){
         <div className="sim-world-foot">
           <span><MapPin size={12}/>{state.person.location}</span>
           <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
+          <span>Mosca: {fly.behavior} · {fly.targetLabel}</span>
           <b>{state.person.currentAction}</b>
         </div>
 
@@ -401,6 +478,18 @@ export function GrokSimulationPanel(){
           <div className="sim-panel-title"><Brain size={14}/><b>NeuroCore</b><span>Digital Brain</span></div>
           <div className="circuit-list">{circuits.map(([id,value])=><div key={id}><span>{id}</span><i><u style={{width:Math.round(value*100)+'%'}}/></i><b>{Math.round(value*100)}%</b></div>)}</div>
           <small className="sim-note">O cérebro digital permanece ativo fora da simulação; aqui ele também controla saliência, memória, inibição, estado social e ação da personagem.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Bug size={14}/><b>Mosca Predict</b><span>FlyWire FAFB v783</span></div>
+          <div className="circuit-list">
+            <div><span>salience</span><i><u style={{width:Math.round(fly.core.salience*100)+'%'}}/></i><b>{Math.round(fly.core.salience*100)}%</b></div>
+            <div><span>exploration</span><i><u style={{width:Math.round(fly.core.exploration*100)+'%'}}/></i><b>{Math.round(fly.core.exploration*100)}%</b></div>
+            <div><span>threat</span><i><u style={{width:Math.round(fly.core.threat*100)+'%'}}/></i><b>{Math.round(fly.core.threat*100)}%</b></div>
+            <div><span>central complex</span><i><u style={{width:Math.round(fly.core.centralComplex*100)+'%'}}/></i><b>{Math.round(fly.core.centralComplex*100)}%</b></div>
+            <div><span>mushroom body</span><i><u style={{width:Math.round(fly.core.mushroomBody*100)+'%'}}/></i><b>{Math.round(fly.core.mushroomBody*100)}%</b></div>
+          </div>
+          <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
         </section>
 
         <section className="sim-panel memories">
