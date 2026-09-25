@@ -1,6 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
+import {advanceOrganism,createOrganismState,learnOrganismOutcome,organismContext,type OrganismState} from './organism-engine';
 
 export interface CognitiveEpisode{
   at:number;
@@ -56,6 +57,7 @@ export interface CognitiveState{
     perceptual:CognitiveMemoryTrace[];
   };
   consciousAccess:ConsciousAccessState;
+  organism:OrganismState;
   mappedEvidence:{
     fly?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
     human?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
@@ -118,6 +120,7 @@ export function createCognitiveState():CognitiveState{
       globalBroadcast:.44,
       arousal:.55
     },
+    organism:createOrganismState(),
     mappedEvidence:{},
     lastUpdated:Date.now()
   };
@@ -138,6 +141,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const actionReadiness=clamp(fly.actionSelection*.48+human.neuro.circuits.action*.3+human.executiveControl*.22);
   const confidence=clamp((1-uncertainty)*.58+human.neuro.confidence*.32+fly.rewardPrediction*.1);
   const prevAccess=prev.consciousAccess||createCognitiveState().consciousAccess;
+  const organism=advanceOrganism(prev.organism,{prompt,fly,human,workspaceUncertainty:uncertainty});
   const consciousAccess:ConsciousAccessState={
     attention:clamp(prevAccess.attention*.5+salience*.3+human.neuro.circuits.attention*.2),
     perceptualBinding:clamp(prevAccess.perceptualBinding*.52+human.recurrentIntegration*.24+fly.centralComplex*.24),
@@ -172,6 +176,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
       perceptual:(prev.memory?.perceptual||[]).slice(-120)
     },
     consciousAccess,
+    organism,
     mappedEvidence:prev.mappedEvidence||{},
     lastUpdated:Date.now()
   };
@@ -196,6 +201,7 @@ export function cognitivePromptContext(state:CognitiveState){
     state.mappedEvidence.human
       ? 'Imported H01 real-subset evidence: '+state.mappedEvidence.human.nodes+' nodes, '+state.mappedEvidence.human.edges+' edges; excitatory share '+Math.round(state.mappedEvidence.human.excitation*100)+'%.'
       : 'Human core currently uses the published H01-derived cortical structural profile; no raw subset is loaded.',
+    organismContext(state.organism),
     'FUNCTIONAL MAP:\n'+cognitiveFunctionalMapContext(),
     'Use this only to improve attention, continuity, calibration and action selection. Never narrate it unless the user explicitly asks to inspect the Cognitive Lab.'
   ].join('\n\n');
@@ -233,6 +239,8 @@ export function applyCognitiveOutcome(
     predictionError
   };
 
+  const organism=learnOrganismOutcome(previous.organism,{reward:directReward,predictionError,experience:input.prompt+' -> '+answer});
+
   return {
     ...previous,
     fly,
@@ -249,6 +257,7 @@ export function applyCognitiveOutcome(
       semantic:(previous.memory.semantic||[]).slice(-120),
       perceptual:(previous.memory.perceptual||[]).slice(-120)
     },
+    organism,
     consciousAccess:{
       ...previous.consciousAccess,
       continuity:clamp((previous.consciousAccess?.continuity??.5)*.7+.3),
@@ -398,21 +407,31 @@ export function cognitiveDirectRecall(
   if(/\b(qual (?:e )?seu nome|quem e voce|quem voce e|como voce se chama)\b/.test(q)){
     return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
   }
-  if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
+  if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda|vida real)\b/.test(q))return null;
 
+  const asksRealLife=/\b(vida real|vida biologica|vida biologica|experiencia real|experiencias reais)\b/.test(q);
   const auto=(state.memory?.autobiographical||[])
+    .filter(x=>x.source!=='system')
     .filter(x=>x.actor===mode||x.actor==='user'||x.actor==='world'||x.actor==='dual')
+    .filter(x=>!/^Conversa:/i.test(x.text))
     .sort((a,b)=>(b.salience*b.strength)-(a.salience*a.strength)||b.at-a.at);
-  const episodes=[...(state.memory?.episodic||[])].reverse();
-  const perceptions=(state.memory?.perceptual||[]).filter(x=>x.actor===mode).slice(-3).reverse();
+  const episodes=[...(state.memory?.episodic||[])].reverse()
+    .filter(x=>x.answerPreview&&!/^Minhas lembranças mais acessíveis agora/i.test(x.answerPreview));
+  const perceptions=(state.memory?.perceptual||[])
+    .filter(x=>x.actor===mode||mode==='dual')
+    .slice(-4).reverse();
 
   const rows:string[]=[];
+  for(const item of perceptions.slice(0,3))rows.push('Experiência simulada: '+item.text);
   for(const item of auto.slice(0,3))rows.push(item.text);
-  for(const item of perceptions.slice(0,2))rows.push('Percepção lembrada: '+item.text);
-  for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
+  for(const item of episodes.slice(0,2))rows.push('Episódio do runtime: '+item.prompt+' → '+item.answerPreview);
+
+  const prefix=asksRealLife
+    ? 'Eu não tenho uma vida biológica fora do software nem memórias retiradas de um cérebro humano ou de uma mosca real. O que posso lembrar são experiências do meu próprio runtime e da simulação persistente.'
+    : 'Estas são memórias do meu próprio runtime/simulação, não lembranças biológicas importadas.';
 
   if(!rows.length){
-    return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
+    return prefix+' Ainda não há experiências simuladas relevantes registradas para este modo.';
   }
-  return 'Minhas lembranças mais acessíveis agora são:\n- '+rows.join('\n- ');
+  return prefix+'\n\n- '+rows.join('\n- ');
 }
