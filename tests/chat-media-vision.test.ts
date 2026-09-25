@@ -5,6 +5,7 @@ import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
 import {recommendedImageStyle} from '../src/lib/media/media-fidelity';
+import {buildVisualIdentityLock} from '../src/lib/media/visual-reference';
 import {animalResult,validateAnimalFile} from '../src/lib/vision/animal-contract';
 
 for(const prompt of ['como chocar um ovo','como plantar um morango','como cuidar de suculenta','como fazer arroz'])test(prompt,()=>{
@@ -232,4 +233,17 @@ test('common first-person chat stays casual',()=>{
   ]){
     assert.equal(classifyConversation(prompt),'casual',prompt);
   }
+});
+
+
+test('solo Frieza request locks one canonical subject and rejects unrelated Saiyans',()=>{
+  const prompt='crie uma imagem do Freeza';
+  const lock=buildVisualIdentityLock(prompt);
+  const negative=buildDefaultNegativePrompt(prompt);
+  assert.match(lock,/SINGLE SUBJECT LOCK/i);
+  assert.match(lock,/exactly one Frieza/i);
+  assert.match(lock,/Do not add Goku/i);
+  assert.match(negative,/Goku as a second character/i);
+  assert.match(negative,/orange gi/i);
+  assert.match(negative,/duplicate Frieza/i);
 });
