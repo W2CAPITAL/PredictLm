@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.14.2"
+  version: "3.14.3"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.14.2
+# PredictLM Master v3.14.3
 
 ## Regra soberana
 
@@ -941,3 +941,19 @@ Imagine:
 - searched references never outrank a user-uploaded reference.
 
 These gates are stronger than cosmetic polish or provider convenience. Never hide failure by changing only captions, titles or library metadata.
+
+
+# Automatic Visual Grounding v3.14.3
+
+Named-character image generation must not outsource routine grounding work to the user.
+
+Required path:
+**canonical identity query → automatic web image search → reference selection → provider reference input → pixel/semantic verification**.
+
+Operational rules:
+- Google Images when configured; Firecrawl next; no-key DuckDuckGo Images fallback keeps automatic grounding alive without extra paid infrastructure;
+- manual upload is optional override only;
+- never show "send 1–3 references" as the normal solution when the app can search automatically;
+- a reference-capable fallback receives up to three searched image URLs;
+- automatic grounding does not prove the final image is correct: visible semantic mismatch still fails;
+- if verification is unavailable but automatic references were forwarded, show an unverified/session-only warning rather than falsely claiming identity failure solely due missing manual upload.
