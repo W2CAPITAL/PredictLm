@@ -285,6 +285,12 @@ export function validateDossier(dossier:DossierDocument,options:RenderDossierOpt
   const hasProvided=/\[fornecida\]/i.test(corpus);
   if(dossier.totalWords>260&&!hasOfficial&&!hasProvided)issues.push(issue('inference-only','warning','Fatos centrais precisam de origem [oficial] ou [fornecida]; caso contrário devem ficar como [inferência].'));
 
+  for(const section of dossier.sections.filter(x=>x.role==='timeline'||x.role==='evidence')){
+    const factualRows=section.body.split('\n').map(x=>x.trim()).filter(x=>x&&(!/^\|?\s*[-:| ]+\|?$/.test(x)));
+    const unmarked=factualRows.filter(x=>!/^\s*$/.test(x)&&!/^\s*\|/.test(x)&&!(/\[(oficial|fornecida|infer[eê]ncia)\]/i.test(x)));
+    if(unmarked.length)issues.push(issue('inference-only','warning','Há afirmação factual sem origem em "'+section.title+'". Marque como [oficial], [fornecida] ou [inferência].',section.id));
+  }
+
   for(const section of dossier.sections.filter(x=>x.role==='risks')){
     const riskBullets=section.body.split('\n').filter(x=>/^\s*[-*]\s+/.test(x));
     if(riskBullets.some(x=>!/\b(alto|m[eé]dio|baixo)\b/i.test(x)))issues.push(issue('risk-level','tip','Classifique cada risco como Alto, Médio ou Baixo.',section.id));
