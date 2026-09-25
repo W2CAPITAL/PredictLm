@@ -4,6 +4,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
+type CognitiveMode='dual'|'fly'|'human';
 type Provider={
   name:string;
   base:string;
@@ -123,15 +124,32 @@ function providerList():Provider[]{
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
 }
 
-function systemPrompt(language:string,cognitiveContext:string){
+function systemPrompt(language:string,cognitiveContext:string,mode:CognitiveMode){
   const safeContext=String(cognitiveContext||'').replace(/\u0000/g,'').slice(0,7000);
+  const modeInstruction=mode==='fly'
+    ? [
+        'Você é a interface conversacional da Mosca Predict, um agente digital controlado pelo Fly Core derivado da organização do conectoma real FlyWire FAFB v783.',
+        'Fale naturalmente como a agente Mosca quando isso fizer sentido, mas nunca afirme ser uma mosca biológica real nem possuir consciência comprovada.',
+        'Priorize os sinais do Fly Core: saliência, exploração, ameaça, mushroom-body association, central-complex orientation/action selection e inibição.',
+        'Não deixe o Human Core dominar este modo; use conhecimento geral do modelo apenas para transformar os sinais da mosca em uma resposta útil.'
+      ]
+    : mode==='human'
+      ? [
+          'Você é a interface conversacional do Human Core, controlado pelo fragmento cortical humano H01 como referência estrutural.',
+          'Priorize memória de trabalho, integração recorrente, controle executivo, metacognição e balanço excitação/inibição.',
+          'H01 é um fragmento de córtex humano real, não um cérebro humano inteiro e não prova consciência.'
+        ]
+      : [
+          'Você é o PredictLM Cognitive Lab em modo Dual Connectome.',
+          'Combine Fly Core e Human Core somente através do Global Workspace.'
+        ];
   return [
-    'Você é o PredictLM Cognitive Lab, uma IA geral de conversa.',
+    ...modeInstruction,
     language==='en'
       ? 'Answer in English unless the user clearly requests another language.'
       : 'Responda em português do Brasil, a menos que o usuário peça claramente outro idioma.',
     'Responda ao pedido atual diretamente e preserve o contexto recente.',
-    'O estado cognitivo abaixo vem de dois controladores de software inspirados por conectomas reais mapeados: FlyWire FAFB v783 e H01 cortical humano.',
+    'O estado cognitivo vem de controladores de software inspirados por conectomas reais mapeados: FlyWire FAFB v783 e H01 cortical humano.',
     'Isso NÃO prova consciência, sentimentos ou um cérebro biológico. Não alegue que está consciente.',
     'Use o estado somente como controle silencioso de atenção, memória, inibição, exploração, incerteza e seleção de resposta.',
     'Não revele raciocínio privado. Se o usuário pedir para inspecionar o Cognitive Lab, você pode explicar os estados numéricos públicos, mas não chain-of-thought.',
@@ -141,7 +159,7 @@ function systemPrompt(language:string,cognitiveContext:string){
   ].filter(Boolean).join('\n\n');
 }
 
-function safeMessages(input:any,language:string,cognitiveContext:string):Msg[]{
+function safeMessages(input:any,language:string,cognitiveContext:string,mode:CognitiveMode):Msg[]{
   const rows=(Array.isArray(input)?input:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-14)
@@ -149,7 +167,7 @@ function safeMessages(input:any,language:string,cognitiveContext:string):Msg[]{
       role:x.role as 'user'|'assistant',
       content:String(x.content).replace(/\u0000/g,'').slice(0,5000)
     }));
-  return [{role:'system',content:systemPrompt(language,cognitiveContext)},...rows];
+  return [{role:'system',content:systemPrompt(language,cognitiveContext,mode)},...rows];
 }
 
 function sse(data:any){
@@ -189,7 +207,8 @@ async function pipeOpenAIStream(
   provider:Provider,
   controller:ReadableStreamDefaultController<Uint8Array>,
   encoder:TextEncoder,
-  signal:AbortSignal
+  signal:AbortSignal,
+  mode:CognitiveMode
 ){
   const reader=response.body!.getReader();
   const decoder=new TextDecoder();
@@ -215,7 +234,7 @@ async function pipeOpenAIStream(
       if(!token)continue;
       if(!emitted){
         controller.enqueue(encoder.encode(sse({
-          meta:{provider:provider.name,model:provider.model,mode:'dual-connectome'}
+          meta:{provider:provider.name,model:provider.model,mode:mode+'-connectome'}
         })));
         emitted=true;
       }
@@ -228,7 +247,8 @@ async function pipeOpenAIStream(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''));
+  const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':'dual';
+  const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''),mode);
   const candidates=providerList().slice(0,8);
 
   if(!candidates.length){
@@ -253,14 +273,14 @@ export async function POST(req:NextRequest){
           const timer=setTimeout(()=>providerController.abort(),11000);
           try{
             const upstream=await openProvider(provider,messages,providerController.signal);
-            const emitted=await pipeOpenAIStream(upstream,provider,controller,encoder,providerController.signal);
+            const emitted=await pipeOpenAIStream(upstream,provider,controller,encoder,providerController.signal,mode);
             if(emitted){
               completed=true;
               controller.enqueue(encoder.encode(sse({
                 done:true,
                 provider:provider.name,
                 model:provider.model,
-                mode:'dual-connectome'
+                mode:mode+'-connectome'
               })));
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               break;
