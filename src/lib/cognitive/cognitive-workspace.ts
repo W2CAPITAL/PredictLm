@@ -28,6 +28,10 @@ export interface CognitiveState{
     working:string[];
     episodic:CognitiveEpisode[];
   };
+  mappedEvidence:{
+    fly?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
+    human?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
+  };
   lastUpdated:number;
 }
 
@@ -51,6 +55,7 @@ export function createCognitiveState():CognitiveState{
       broadcast:[]
     },
     memory:{working:[],episodic:[]},
+    mappedEvidence:{},
     lastUpdated:Date.now()
   };
 }
@@ -88,6 +93,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
       working:[clean(prompt,260),...prev.memory.working].filter(Boolean).slice(0,8),
       episodic:prev.memory.episodic.slice(-40)
     },
+    mappedEvidence:prev.mappedEvidence||{},
     lastUpdated:Date.now()
   };
 }
@@ -102,6 +108,12 @@ export function cognitivePromptContext(state:CognitiveState){
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
     'Working memory: '+(state.memory.working.slice(0,4).join(' | ')||'empty')+'.',
+    state.mappedEvidence.fly
+      ? 'Imported FlyWire real-subset evidence: '+state.mappedEvidence.fly.nodes+' nodes, '+state.mappedEvidence.fly.edges+' edges across '+state.mappedEvidence.fly.regions+' regions.'
+      : 'Fly core currently uses the published FlyWire-derived structural profile; no raw subset is loaded.',
+    state.mappedEvidence.human
+      ? 'Imported H01 real-subset evidence: '+state.mappedEvidence.human.nodes+' nodes, '+state.mappedEvidence.human.edges+' edges; excitatory share '+Math.round(state.mappedEvidence.human.excitation*100)+'%.'
+      : 'Human core currently uses the published H01-derived cortical structural profile; no raw subset is loaded.',
     'Use this only to improve attention, continuity, calibration and action selection. Never narrate it unless the user explicitly asks to inspect the Cognitive Lab.'
   ].join('\n\n');
 }
@@ -153,4 +165,39 @@ export function applyCognitiveOutcome(
     },
     lastUpdated:Date.now()
   };
+}
+
+
+export function applyMappedSubsetEvidence(
+  previous:CognitiveState,
+  kind:'fly'|'human',
+  summary:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number}
+):CognitiveState{
+  const next:CognitiveState={
+    ...previous,
+    mappedEvidence:{
+      ...(previous.mappedEvidence||{}),
+      [kind]:{...summary,source:'imported-real-subset'}
+    },
+    lastUpdated:Date.now()
+  };
+  if(kind==='fly'){
+    const densitySignal=clamp(Math.log10(Math.max(10,summary.edges))/6);
+    next.fly={
+      ...next.fly,
+      salience:clamp(next.fly.salience*.82+densitySignal*.18),
+      mushroomBody:clamp(next.fly.mushroomBody*.9+(summary.regions?Math.min(1,summary.regions/78):0)*.1)
+    };
+  }else{
+    const ei=summary.excitation+summary.inhibition;
+    const exc=ei>0?summary.excitation/ei:.56;
+    const inh=ei>0?summary.inhibition/ei:.44;
+    next.human={
+      ...next.human,
+      excitation:clamp(next.human.excitation*.7+exc*.3),
+      inhibition:clamp(next.human.inhibition*.7+inh*.3),
+      recurrentIntegration:clamp(next.human.recurrentIntegration*.86+Math.min(1,Math.log10(Math.max(10,summary.edges))/6)*.14)
+    };
+  }
+  return next;
 }
