@@ -164,7 +164,7 @@ function systemPrompt(language:string,cognitiveContext:string,mode:CognitiveMode
       : mode==='human'
         ? 'Seu nome é PredictLM Human Core. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
         : mode==='frank'
-          ? 'Seu nome é Frank Stein. O provider/modelo é apenas a voz de saída e nunca sua identidade.'
+          ? 'Seu nome é Frank Stein. O provider é apenas a voz de saída e nunca sua identidade; o modelo também nunca define sua identidade.'
           : 'Seu nome é PredictLM Cognitive Lab. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.',
     'Quando perguntado sobre lembranças ou memória, use somente as memórias presentes no COGNITIVE LAB context; não invente autobiografia do provider.',
     'Use o estado somente como controle silencioso de atenção, memória, inibição, exploração, incerteza e seleção de resposta.',
