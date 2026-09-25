@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality,isPurchaseLocationIntent} from '../src/lib/chat-intelligence';
+import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality,isPurchaseLocationIntent,directConversationReply} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
@@ -206,4 +206,30 @@ test('blocky follow-up remains a general contextual chat phrase',()=>{
   const prompt='Eu queria ser todo quadradão';
   assert.equal(classifyConversation(prompt),'general');
   assert.equal(shouldSearchConversation('general',true,prompt),false);
+});
+
+
+test('casual preference statements never expose provider internals',()=>{
+  const prompt='Eu gosto de batatas';
+  assert.equal(classifyConversation(prompt),'casual');
+  const direct=directConversationReply(prompt,[],{loaded:false,tier:null});
+  assert.ok(direct);
+  assert.match(direct!,/batata/i);
+  assert.doesNotMatch(direct!,/provider|knowledge|neural|runtime|rag/i);
+
+  const offline=generativeOfflineReply(prompt,'casual');
+  assert.ok(offline);
+  assert.doesNotMatch(offline!,/provider|knowledge|neural|runtime|rag/i);
+});
+
+test('common first-person chat stays casual',()=>{
+  for(const prompt of [
+    'Eu adoro pizza',
+    'Eu prefiro frio',
+    'Eu odeio calor',
+    'Estou cansado',
+    'Tô com sono'
+  ]){
+    assert.equal(classifyConversation(prompt),'casual',prompt);
+  }
 });
