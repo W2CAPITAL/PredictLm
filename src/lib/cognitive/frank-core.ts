@@ -95,3 +95,43 @@ export function frankVisualState(state:FrankSteinState){
     'Render emotion through expression, posture, gaze, light, composition and environmental memory cues; do not render literal HUD/neural overlays unless the user asks.'
   ].join('\n');
 }
+
+
+export interface FrankPublicMentalState{
+  feeling:string;
+  focus:string;
+  want:string;
+  body:string;
+  memoryTone:string;
+  nextTendency:string;
+  confidence:number;
+}
+
+export function frankPublicMentalState(state:FrankSteinState):FrankPublicMentalState{
+  const e=state.emotion;
+  const feeling=e.dominant.slice(0,2).join(' + ')||'neutro';
+  const focus=state.neurons.lastPattern[0]||'pfc';
+  const wants:Array<[string,number]>=[
+    ['segurança',1-e.safety+e.threat],
+    ['conexão social',state.body.socialNeed+e.attachment*.35],
+    ['explorar',e.curiosity+e.novelty*.35],
+    ['resolver conflito',e.conflict+e.frustration*.45],
+    ['descansar',1-state.body.energy+state.body.tension*.25],
+    ['preservar uma memória',state.memoryAffect.lastSalience+Math.abs(state.memoryAffect.lastValence)*.2],
+    ['agir',e.anticipation+state.neurons.regions.pfc.firing*.3]
+  ];
+  wants.sort((a,b)=>b[1]-a[1]);
+  const want=wants[0]?.[0]||'observar';
+  const nextTendency=
+    want==='segurança'?'reduzir risco e procurar estabilidade':
+    want==='conexão social'?'aproximar-se de alguém ou comunicar algo':
+    want==='explorar'?'observar algo novo e testar uma possibilidade':
+    want==='resolver conflito'?'reavaliar o problema antes de agir':
+    want==='descansar'?'reduzir atividade e recuperar energia':
+    want==='preservar uma memória'?'relembrar e consolidar o episódio':
+    'transformar intenção em ação concreta';
+  const body='tensão '+Math.round(state.body.tension*100)+'%, energia '+Math.round(state.body.energy*100)+'%, calma '+Math.round(state.body.calm*100)+'%';
+  const memoryTone=(state.memoryAffect.labels.join(', ')||'neutro')+' · saliência '+Math.round(state.memoryAffect.lastSalience*100)+'%';
+  const confidence=Math.max(0,Math.min(1,(e.appraisal.certainty+e.appraisal.controllability)/2));
+  return {feeling,focus,want,body,memoryTone,nextTendency,confidence};
+}
