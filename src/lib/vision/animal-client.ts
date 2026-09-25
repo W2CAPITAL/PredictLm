@@ -11,6 +11,29 @@ export class AnimalVisionClient{
   async classify(file:File,backend:AnimalBackend,onProgress:(p:VisionProgress)=>void,signal:AbortSignal):Promise<AnimalResult>{
     validateAnimalFile(file);
     signal.throwIfAborted();
+    if(backend==='auto'){
+      onProgress({message:'IA visual · entendendo a cena e o animal…'});
+      try{
+        const form=new FormData();form.set('file',file);
+        const response=await fetch('/api/vision/identify',{method:'POST',body:form,signal});
+        const data=await response.json().catch(()=>({}));
+        if(response.ok&&Array.isArray(data?.predictions)){
+          return animalResult('auto',String(data.model||'multimodal'),data.predictions,data.elapsedMs,{
+            semantic:true,
+            description:String(data.description||''),
+            scientificName:String(data.scientificName||''),
+            broadGroup:String(data.broadGroup||''),
+            confidence:Number(data.confidence||0)
+          });
+        }
+        if(signal.aborted)signal.throwIfAborted();
+        onProgress({message:'IA multimodal indisponível · usando classificador local como fallback…'});
+      }catch(error){
+        if(signal.aborted)throw error;
+        onProgress({message:'IA multimodal indisponível · usando classificador local como fallback…'});
+      }
+      backend='browser';
+    }
     if(backend!=='browser'){
       onProgress({message:'Enviando a foto ao serviço configurado…'});
       const form=new FormData();form.set('file',file);form.set('backend',backend);
