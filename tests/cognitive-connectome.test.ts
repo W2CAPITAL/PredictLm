@@ -16,8 +16,10 @@ import {
 } from '../src/lib/cognitive/connectome-import';
 import {
   FLYWIRE_FAFB_V783,
-  H01_HUMAN_CORTEX
+  H01_HUMAN_CORTEX,
+  MACAQUE_CORTEX_SPATIAL_ATLAS
 } from '../src/lib/cognitive/connectome-provenance';
+import {humanPrimateCoverageSummary} from '../src/lib/cognitive/human-primate-bridge';
 
 test('connectome provenance uses real mapped FlyWire and H01 scales',()=>{
   assert.equal(FLYWIRE_FAFB_V783.release,'v783');
@@ -31,16 +33,19 @@ test('connectome provenance uses real mapped FlyWire and H01 scales',()=>{
   assert.match(H01_HUMAN_CORTEX.scope,/not a whole human brain/i);
 });
 
-test('dual connectome workspace advances fly and human cores independently',()=>{
+test('multi-species workspace advances fly, human and macaque cores independently',()=>{
   const initial=createCognitiveState();
   const next=advanceCognitiveWorkspace(initial,'Verifique este fato e me diga se devo agir agora.');
   assert.equal(next.tick,1);
   assert.equal(next.fly.tick,1);
   assert.equal(next.human.tick,1);
+  assert.equal(next.macaque.tick,1);
   assert.ok(next.workspace.broadcast.length>=3);
   assert.ok(next.workspace.uncertainty>=0&&next.workspace.uncertainty<=1);
   assert.ok(next.fly.mappedSubgraph.neuronScale===139255);
   assert.ok(next.human.mappedFragment.completeHumanBrain===false);
+  assert.equal(next.macaque.mappedAtlas.regions,143);
+  assert.equal(next.macaque.mappedAtlas.cellTypes,264);
 });
 
 test('FlyWire CSV subset is parsed as real weighted connectivity evidence',()=>{
@@ -173,4 +178,36 @@ test('real-life memory question never claims imported biological memories',()=>{
   assert.match(recall,/não tenho uma vida biológica/i);
   assert.match(recall,/runtime|simulação/i);
   assert.doesNotMatch(recall,/memórias retiradas de um cérebro.*como se fossem minhas/i);
+});
+
+
+test('macaque atlas provenance matches the published cortical atlas and is not mislabeled as connectome',()=>{
+  assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.regions,143);
+  assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.cellTypes,264);
+  assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells,42076954);
+  assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.snRnaCells,1493240);
+  assert.match(MACAQUE_CORTEX_SPATIAL_ATLAS.scope,/not a synapse-resolution connectome/i);
+});
+
+test('Human Core uses macaque only as explicit cortical proxy and keeps unresolved gaps',()=>{
+  const state=advanceCognitiveWorkspace(createCognitiveState(),'Analise visão, tato e planejamento cortical.');
+  assert.equal(state.human.crossSpeciesProxy.enabled,true);
+  assert.match(state.human.crossSpeciesProxy.sourceSpecies,/Macaca fascicularis/i);
+  assert.ok(state.human.crossSpeciesProxy.proxyWeight>0);
+  assert.ok(state.human.crossSpeciesProxy.proxyWeight<=.28);
+  assert.ok(state.human.crossSpeciesProxy.unresolved.some(x=>/whole-brain human synaptic connectome/i.test(x)));
+  const coverage=humanPrimateCoverageSummary();
+  assert.ok(coverage.directHuman.length>=1);
+  assert.ok(coverage.macaqueProxy.length>=2);
+  assert.ok(coverage.unresolved.length>=2);
+  const context=cognitivePromptContext(state);
+  assert.match(context,/MACAQUE CORTEX CORE/);
+  assert.match(context,/HUMAN↔MACAQUE CROSS-SPECIES COVERAGE LEDGER/);
+  assert.match(context,/must never be presented as direct human measurement/i);
+});
+
+test('macaque mode has its own stable identity',()=>{
+  const state=createCognitiveState();
+  const identity=cognitiveDirectRecall(state,'macaque','Qual é seu nome?')||'';
+  assert.match(identity,/PredictLM Macaque Core/);
 });
