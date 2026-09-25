@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle } from 'lucide-react';
+import { Activity, Brain, Bug, CheckCircle2, Circle, Clock3, HeartPulse, Loader2, MapPin, Pause, Play, RotateCcw, Send, Sparkles, StepForward, Users, Wallet, XCircle, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
 import {
   applySimulationInstruction,
   createLifeSimulation,
@@ -14,7 +14,7 @@ import {
   type LifeSimulationState
 } from '@/lib/life-simulation-engine';
 import { dominantCircuits } from '@/lib/neurocore';
-import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
+import {cameraForFocus,placeVisual,pointInPolygon,projectedPlacePolygon,projectIsoPoint,type IsoCamera} from '@/lib/life-sim-25d';
 import {
   agentWorldObservation,
   autonomousLifePlan,
@@ -73,6 +73,8 @@ export function GrokSimulationPanel(){
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
+  const [cameraZoom,setCameraZoom]=useState(1);
+  const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
@@ -188,85 +190,204 @@ export function GrokSimulationPanel(){
     const rect=el.getBoundingClientRect();
     const dpr=Math.min(2,window.devicePixelRatio||1);
     const width=Math.max(640,Math.floor(rect.width));
-    const height=360;
+    const height=430;
     el.width=width*dpr;el.height=height*dpr;
     const ctx=el.getContext('2d');
     if(!ctx)return;
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    const sx=width/640;
 
-    ctx.clearRect(0,0,width,height);
-    ctx.fillStyle='#080b11';ctx.fillRect(0,0,width,height);
+    const camera:IsoCamera=cameraFocus==='human'
+      ? cameraForFocus(state.person,width,height,cameraZoom)
+      : cameraFocus==='fly'
+        ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
+        : {zoom:cameraZoom,offsetX:0,offsetY:10};
 
-    ctx.strokeStyle='#171d29';ctx.lineWidth=1;
-    for(let x=0;x<640;x+=32){ctx.beginPath();ctx.moveTo(x*sx,0);ctx.lineTo(x*sx,height);ctx.stroke()}
-    for(let y=0;y<360;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}
-
-    ctx.strokeStyle='#273147';ctx.lineWidth=9;ctx.lineCap='round';
-    const paths=[[[110,95],[320,215],[530,95]],[[110,255],[320,215],[525,255]],[[320,215],[305,320]]];
-    for(const points of paths){
+    const poly=(points:Array<{x:number;y:number}>,fill:string,stroke?:string)=>{
+      if(!points.length)return;
       ctx.beginPath();
-      points.forEach(([x,y],i)=>i?ctx.lineTo(x*sx,y):ctx.moveTo(x*sx,y));
-      ctx.stroke();
+      ctx.moveTo(points[0].x,points[0].y);
+      for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
+      ctx.closePath();
+      ctx.fillStyle=fill;ctx.fill();
+      if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}
+    };
+
+    const line=(a:{x:number;y:number},b:{x:number;y:number},stroke:string,w=1)=>{
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.stroke();
+    };
+
+    const iso=(x:number,y:number,z=0)=>projectIsoPoint(x,y,z,width,height,camera);
+
+    const drawBox=(x:number,y:number,w:number,h:number,z:number,color:string,side:string)=>{
+      const a=iso(x,y,z),b=iso(x+w,y,z),d=iso(x,y+h,z),c1=iso(x+w,y+h,z);
+      const a0=iso(x,y,0),b0=iso(x+w,y,0),d0=iso(x,y+h,0),c0=iso(x+w,y+h,0);
+      poly([a,b,c1,d],color,'rgba(255,255,255,.12)');
+      poly([d,c1,c0,d0],side,'rgba(0,0,0,.18)');
+      poly([b,c1,c0,b0],side,'rgba(0,0,0,.18)');
+    };
+
+    const drawFurniture=(kind:string,p:any)=>{
+      const cx=p.x+p.w*.5,cy=p.y+p.h*.54;
+      if(kind==='home'){
+        drawBox(p.x+p.w*.16,p.y+p.h*.2,p.w*.34,p.h*.24,8,'#d9b7b0','#9f7c77');
+        drawBox(p.x+p.w*.58,p.y+p.h*.54,p.w*.18,p.h*.18,12,'#7a6254','#57463c');
+        drawBox(p.x+p.w*.55,p.y+p.h*.17,p.w*.22,p.h*.17,18,'#6f7781','#4f5660');
+      }else if(kind==='office'){
+        drawBox(p.x+p.w*.2,p.y+p.h*.28,p.w*.28,p.h*.15,10,'#707a88','#4f5863');
+        drawBox(p.x+p.w*.56,p.y+p.h*.5,p.w*.24,p.h*.15,10,'#707a88','#4f5863');
+        drawBox(p.x+p.w*.31,p.y+p.h*.58,p.w*.12,p.h*.12,17,'#586779','#3e4855');
+      }else if(kind==='cafe'){
+        for(const [ox,oy] of [[.28,.32],[.66,.55]]){drawBox(p.x+p.w*ox,p.y+p.h*oy,p.w*.13,p.h*.13,9,'#8b6048','#624333')}
+      }else if(kind==='park'){
+        drawBox(p.x+p.w*.26,p.y+p.h*.58,p.w*.28,p.h*.08,5,'#8a6546','#624732');
+        for(const [ox,oy] of [[.2,.25],[.72,.34],[.58,.7]]){
+          const base=iso(p.x+p.w*ox,p.y+p.h*oy,0);
+          ctx.fillStyle='#42684a';ctx.beginPath();ctx.arc(base.x,base.y-18*camera.zoom,12*camera.zoom,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#6a4f38';ctx.fillRect(base.x-2*camera.zoom,base.y-17*camera.zoom,4*camera.zoom,18*camera.zoom);
+        }
+      }else if(kind==='market'){
+        for(const ox of [.2,.48,.72])drawBox(p.x+p.w*ox,p.y+p.h*.28,p.w*.1,p.h*.48,14,'#8d959d','#626970');
+      }else if(kind==='clinic'){
+        drawBox(p.x+p.w*.2,p.y+p.h*.48,p.w*.34,p.h*.16,10,'#d5e8e8','#93b1b2');
+        drawBox(p.x+p.w*.65,p.y+p.h*.25,p.w*.12,p.h*.32,18,'#a8c6c8','#759597');
+      }else if(kind==='library'){
+        for(const ox of [.17,.68])drawBox(p.x+p.w*ox,p.y+p.h*.16,p.w*.11,p.h*.54,22,'#6c5140','#49372c');
+        drawBox(p.x+p.w*.38,p.y+p.h*.5,p.w*.23,p.h*.15,9,'#856c58','#5d4a3b');
+      }
+      const center=iso(cx,cy,1);
+      ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.ellipse(center.x,center.y,22*camera.zoom,8*camera.zoom,0,0,Math.PI*2);ctx.fill();
+    };
+
+    const sky=ctx.createLinearGradient(0,0,0,height);
+    sky.addColorStop(0,'#31445d');
+    sky.addColorStop(.48,'#1d2b3b');
+    sky.addColorStop(1,'#10161d');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,width,height);
+
+    // Ground lot.
+    const ground=[iso(0,0),iso(640,0),iso(640,360),iso(0,360)];
+    poly(ground,'#456b52','#5d8768');
+
+    // Isometric paving grid.
+    for(let x=0;x<=640;x+=80)line(iso(x,0),iso(x,360),'rgba(220,240,226,.10)');
+    for(let y=0;y<=360;y+=60)line(iso(0,y),iso(640,y),'rgba(220,240,226,.10)');
+
+    // Paths between lots, behind buildings.
+    ctx.lineCap='round';
+    const centers=new Map(state.places.map(p=>[p.id,{x:p.x+p.w/2,y:p.y+p.h/2}]));
+    const routes:Array<[LifeLocation,LifeLocation]>=[
+      ['Casa','Café'],['Café','Trabalho'],['Café','Mercado'],['Parque','Café'],['Clínica','Café'],['Café','Biblioteca']
+    ];
+    for(const [a,b] of routes){
+      const pa=centers.get(a),pb=centers.get(b);if(!pa||!pb)continue;
+      line(iso(pa.x,pa.y),iso(pb.x,pb.y),'rgba(210,198,175,.38)',14*camera.zoom);
+      line(iso(pa.x,pa.y),iso(pb.x,pb.y),'rgba(230,221,203,.28)',7*camera.zoom);
     }
 
-    for(const p of state.places){
+    // Lots/rooms sorted back-to-front for depth.
+    const sorted=[...state.places].sort((a,b)=>(a.x+a.y)-(b.x+b.y));
+    for(const p of sorted){
+      const visual=placeVisual(p.id);
+      const floor=projectedPlacePolygon(p,width,height,camera);
+      const h=visual.height;
       const active=p.id===state.person.location;
       const target=p.id===manualTarget;
-      ctx.fillStyle=active?'#172838':target?'#241f3c':'#10151f';
-      ctx.strokeStyle=active?'#56d7b0':target?'#a88cff':'#293346';
-      ctx.lineWidth=active||target?2:1;
-      ctx.beginPath();
-      ctx.roundRect(p.x*sx,p.y,p.w*sx,p.h,12);
-      ctx.fill();ctx.stroke();
-      ctx.fillStyle='#f4f7fb';ctx.font='600 12px ui-sans-serif,system-ui';
-      ctx.fillText(p.label,(p.x+10)*sx,p.y+20);
-      ctx.fillStyle='#778298';ctx.font='9px ui-sans-serif,system-ui';
-      const text=p.purpose.length>26?p.purpose.slice(0,26)+'…':p.purpose;
-      ctx.fillText(text,(p.x+10)*sx,p.y+36);
+
+      const shadow=floor.map(pt=>({x:pt.x+8*camera.zoom,y:pt.y+12*camera.zoom}));
+      poly(shadow,'rgba(0,0,0,.22)');
+      poly(floor,visual.floor,target?'#d5b8ff':active?'#78ebc6':'rgba(255,255,255,.13)');
+
+      const p1=floor[0],p2=floor[1],p4=floor[3];
+      const p1u=iso(p.x,p.y,h),p2u=iso(p.x+p.w,p.y,h),p4u=iso(p.x,p.y+p.h,h);
+      poly([p1,p2,p2u,p1u],visual.wallLight,'rgba(255,255,255,.18)');
+      poly([p1,p4,p4u,p1u],visual.wallDark,'rgba(255,255,255,.12)');
+
+      drawFurniture(visual.furniture,p);
+
+      const label=iso(p.x+p.w*.5,p.y+p.h*.5,h+4);
+      ctx.textAlign='center';
+      ctx.font=`600 ${Math.max(9,11*camera.zoom)}px ui-sans-serif,system-ui`;
+      ctx.fillStyle=active?'#eafff8':'#f1f4f7';
+      ctx.fillText(p.label,label.x,label.y-6);
+      if(active||target){
+        ctx.fillStyle=target?'#c9a8ff':'#72e0bd';
+        ctx.beginPath();ctx.arc(label.x,label.y+2,3.5*camera.zoom,0,Math.PI*2);ctx.fill();
+      }
     }
 
-    const px=state.person.x*sx,py=state.person.y;
-    const bubble=state.person.currentAction;
-    ctx.font='10px ui-sans-serif,system-ui';
-    const bw=Math.min(250,Math.max(120,ctx.measureText(bubble).width+22));
-    const bx=Math.max(8,Math.min(width-bw-8,px-bw/2));
-    const by=Math.max(8,py-70);
-    ctx.fillStyle='rgba(8,11,17,.92)';ctx.strokeStyle='#343f55';ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(bx,by,bw,31,9);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#d8dfec';
-    const shown=bubble.length>42?bubble.slice(0,42)+'…':bubble;
-    ctx.fillText(shown,bx+11,by+19);
+    // Human character rendered inside the world.
+    const hp=iso(state.person.x,state.person.y,0);
+    ctx.fillStyle='rgba(0,0,0,.34)';
+    ctx.beginPath();ctx.ellipse(hp.x,hp.y+6*camera.zoom,12*camera.zoom,5*camera.zoom,0,0,Math.PI*2);ctx.fill();
 
-    // FlyWire agent: visible simulation body driven by the same FlyCoreState
-    // used by /cognitive/fly.
-    const fx=fly.x*sx,fy=fly.y;
+    const humanScale=camera.zoom;
+    ctx.strokeStyle='#18212b';ctx.lineWidth=4*humanScale;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(hp.x-3*humanScale,hp.y-13*humanScale);ctx.lineTo(hp.x-8*humanScale,hp.y+1*humanScale);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hp.x+3*humanScale,hp.y-13*humanScale);ctx.lineTo(hp.x+8*humanScale,hp.y+1*humanScale);ctx.stroke();
+    ctx.fillStyle='#6e55e7';
+    ctx.beginPath();ctx.roundRect(hp.x-8*humanScale,hp.y-31*humanScale,16*humanScale,22*humanScale,5*humanScale);ctx.fill();
+    ctx.strokeStyle='#d8ad91';ctx.lineWidth=3*humanScale;
+    ctx.beginPath();ctx.moveTo(hp.x-7*humanScale,hp.y-24*humanScale);ctx.lineTo(hp.x-14*humanScale,hp.y-15*humanScale);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(hp.x+7*humanScale,hp.y-24*humanScale);ctx.lineTo(hp.x+14*humanScale,hp.y-15*humanScale);ctx.stroke();
+    ctx.fillStyle='#d8ad91';ctx.beginPath();ctx.arc(hp.x,hp.y-39*humanScale,7*humanScale,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2b2633';ctx.beginPath();ctx.arc(hp.x,hp.y-41*humanScale,7.2*humanScale,Math.PI,Math.PI*2);ctx.fill();
+
+    // Original life-status marker (not copied game art).
+    const markerY=hp.y-64*humanScale;
+    ctx.fillStyle=state.needs.energy<35?'#ff856f':'#6ff0b3';
+    poly([
+      {x:hp.x,y:markerY-8*humanScale},
+      {x:hp.x+6*humanScale,y:markerY},
+      {x:hp.x,y:markerY+8*humanScale},
+      {x:hp.x-6*humanScale,y:markerY}
+    ],ctx.fillStyle as string,'rgba(255,255,255,.55)');
+
+    // Human action bubble.
+    const bubble=state.person.currentAction;
+    ctx.textAlign='left';ctx.font='10px ui-sans-serif,system-ui';
+    const shown=bubble.length>42?bubble.slice(0,42)+'…':bubble;
+    const bw=Math.min(250,Math.max(120,ctx.measureText(shown).width+22));
+    const bx=Math.max(8,Math.min(width-bw-8,hp.x-bw/2));
+    const by=Math.max(8,hp.y-101*humanScale);
+    ctx.fillStyle='rgba(10,13,18,.92)';ctx.strokeStyle='#465164';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(bx,by,bw,29,9);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#e4e9f1';ctx.fillText(shown,bx+11,by+18);
+
+    // FlyWire agent in real 2.5D flight height.
+    const groundFly=iso(fly.x,fly.y,0);
+    const fp=iso(fly.x,fly.y,fly.z||36);
+    ctx.fillStyle='rgba(0,0,0,.24)';
+    ctx.beginPath();ctx.ellipse(groundFly.x,groundFly.y,8*camera.zoom,3*camera.zoom,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(205,190,255,.25)';ctx.setLineDash([3,3]);
+    line(groundFly,fp,'rgba(205,190,255,.28)',1);
+    ctx.setLineDash([]);
+
     ctx.save();
-    ctx.translate(fx,fy);
+    ctx.translate(fp.x,fp.y);
     ctx.rotate(Math.atan2(fly.vy,fly.vx||.001));
-    ctx.globalAlpha=.72;
-    ctx.fillStyle='#d9e7ff';
-    ctx.beginPath();ctx.ellipse(-2,-5,7,3,-.35,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(-2,5,7,3,.35,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
-    ctx.fillStyle='#1c1b20';
-    ctx.beginPath();ctx.ellipse(0,0,8,4.5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#a88cff';
-    ctx.beginPath();ctx.arc(6,-2,2.2,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(6,2,2.2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#9aa8bf';ctx.lineWidth=1;
-    for(const oy of [-3,0,3]){ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy-5);ctx.stroke();ctx.beginPath();ctx.moveTo(-2,oy);ctx.lineTo(-8,oy+5);ctx.stroke()}
+    const fs=Math.max(.8,camera.zoom);
+    ctx.globalAlpha=.76;ctx.fillStyle='#e9f5ff';
+    ctx.beginPath();ctx.ellipse(-3*fs,-5*fs,8*fs,3.2*fs,-.35,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(-3*fs,5*fs,8*fs,3.2*fs,.35,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.fillStyle='#191820';
+    ctx.beginPath();ctx.ellipse(0,0,8*fs,4.5*fs,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#bb8cff';ctx.beginPath();ctx.arc(6*fs,-2*fs,2.3*fs,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(6*fs,2*fs,2.3*fs,0,Math.PI*2);ctx.fill();
     ctx.restore();
 
-    const flyText=flySimulationBubble(fly);
-    ctx.font='9px ui-sans-serif,system-ui';
-    const fw=Math.max(88,ctx.measureText(flyText).width+16);
-    const fbx=Math.max(6,Math.min(width-fw-6,fx-fw/2));
-    const fby=Math.max(6,fy-34);
-    ctx.fillStyle='rgba(18,14,24,.9)';ctx.strokeStyle='#5b477d';ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(fbx,fby,fw,24,8);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#d9c9ff';ctx.fillText(flyText,fbx+8,fby+15);
-  },[state,manualTarget,fly]);
+    const flyText=flySimulationBubble(fly)+' · '+Math.round(fly.z||36)+'cm';
+    ctx.textAlign='left';ctx.font='9px ui-sans-serif,system-ui';
+    const fw=Math.max(96,ctx.measureText(flyText).width+16);
+    const fbx=Math.max(6,Math.min(width-fw-6,fp.x-fw/2));
+    const fby=Math.max(6,fp.y-31);
+    ctx.fillStyle='rgba(22,16,30,.9)';ctx.strokeStyle='#7458a0';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(fbx,fby,fw,23,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#e4d5ff';ctx.fillText(flyText,fbx+8,fby+15);
+
+    // Depth vignette/UI feel.
+    const vignette=ctx.createRadialGradient(width*.5,height*.46,width*.08,width*.5,height*.46,width*.72);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.32)');
+    ctx.fillStyle=vignette;ctx.fillRect(0,0,width,height);
+  },[state,manualTarget,fly,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
   const relation=state.relationships[0];
@@ -346,9 +467,16 @@ export function GrokSimulationPanel(){
   function pickPlace(event:React.MouseEvent<HTMLCanvasElement>){
     const el=canvas.current;if(!el)return;
     const rect=el.getBoundingClientRect();
-    const x=(event.clientX-rect.left)*(640/rect.width);
-    const y=(event.clientY-rect.top)*(360/rect.height);
-    const found=state.places.find(p=>x>=p.x&&x<=p.x+p.w&&y>=p.y&&y<=p.y+p.h);
+    const width=Math.max(640,Math.floor(rect.width));
+    const height=430;
+    const sx=(event.clientX-rect.left)*(width/rect.width);
+    const sy=(event.clientY-rect.top)*(height/rect.height);
+    const camera:IsoCamera=cameraFocus==='human'
+      ? cameraForFocus(state.person,width,height,cameraZoom)
+      : cameraFocus==='fly'
+        ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
+        : {zoom:cameraZoom,offsetX:0,offsetY:10};
+    const found=[...state.places].reverse().find(p=>pointInPolygon({x:sx,y:sy},projectedPlacePolygon(p,width,height,camera)));
     if(found)setManualTarget(found.id);
   }
 
@@ -367,7 +495,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Simulação ativa 2D · NeuroCore + FlyWire Agent · memória local · não é consciência biológica</p>
+        <p>Life-sim 2.5D isométrico · Humano + FlyWire Agent · memória local · otimizado para mobile</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -380,6 +508,10 @@ export function GrokSimulationPanel(){
           <button className="primary" onClick={()=>setState(s=>({...s,running:!s.running}))}>{state.running?<><Pause size={14}/>Pausar</>:<><Play size={14}/>Rodar</>}</button>
           <button onClick={tick}><StepForward size={14}/>Passo</button>
           <button onClick={()=>setManualTarget(null)} className={!manualTarget?'active':''}>Movimento Auto</button>
+          <button onClick={()=>setCameraFocus(cameraFocus==='human'?'world':'human')} className={cameraFocus==='human'?'active':''} title="Seguir humano"><Crosshair size={13}/>Humano</button>
+          <button onClick={()=>setCameraFocus(cameraFocus==='fly'?'world':'fly')} className={cameraFocus==='fly'?'active':''} title="Seguir mosca"><Bug size={13}/>Mosca</button>
+          <button onClick={()=>setCameraZoom(z=>Math.max(.72,Math.round((z-.12)*100)/100))} title="Afastar câmera"><ZoomOut size={13}/></button>
+          <button onClick={()=>setCameraZoom(z=>Math.min(1.5,Math.round((z+.12)*100)/100))} title="Aproximar câmera"><ZoomIn size={13}/></button>
           <button
             onClick={()=>setAgent(prev=>{
               const normalized=normalizeLifeAgentState(prev);
@@ -396,14 +528,12 @@ export function GrokSimulationPanel(){
         </div>
 
         <div className="sim-canvas-wrap">
-          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas"/>
-          <img
-            src={ENTITY_REFERENCE_IMAGE}
-            alt={state.person.name}
-            className="sim-entity-avatar"
-            draggable={false}
-            style={{left:(state.person.x/640*100)+'%',top:(state.person.y/360*100)+'%'}}
-          />
+          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas" aria-label="Simulação isométrica 2.5D com humano e mosca"/>
+          <div className="sim-camera-badge">
+            <span>2.5D</span>
+            <b>{Math.round(cameraZoom*100)}%</b>
+            <em>{cameraFocus==='world'?'mundo':cameraFocus}</em>
+          </div>
         </div>
         <div className="sim-world-foot">
           <span><MapPin size={12}/>{state.person.location}</span>
@@ -507,7 +637,7 @@ export function GrokSimulationPanel(){
       .sim-clock{border:1px solid #242b38;background:#0d1119;border-radius:14px;padding:10px 13px;display:grid;grid-template-columns:auto auto;gap:2px 7px;align-items:center}.sim-clock b{font-size:12px}.sim-clock span{grid-column:2;color:#8290a6;font-size:10px}
       .sim-layout{max-width:1320px;margin:auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.65fr);gap:14px}.sim-world-card,.sim-panel{border:1px solid #202735;background:linear-gradient(180deg,#0e131c,#0a0e15);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.sim-world-card{padding:12px;min-width:0}
       .sim-toolbar{display:flex;gap:7px;align-items:center;margin-bottom:10px}.sim-toolbar button,.sim-toolbar select{border:1px solid #293143;background:#121823;color:#c9d2e2;border-radius:9px;padding:7px 10px;font-size:10px}.sim-toolbar button{display:flex;gap:5px;align-items:center}.sim-toolbar .primary{background:#6e55e7;color:#fff;border-color:#826df2}.sim-toolbar .active{border-color:#5dcaab;color:#76e0c1}.sim-toolbar .reset{margin-left:auto}
-      .sim-canvas-wrap{position:relative;width:100%;height:360px}.sim-canvas{width:100%;height:360px;display:block;border:1px solid #1d2431;border-radius:14px;background:#080b11;cursor:crosshair}.sim-entity-avatar{position:absolute;width:48px;height:48px;object-fit:cover;object-position:center 28%;border-radius:50%;transform:translate(-50%,-52%);border:2px solid #8f7aff;box-shadow:0 0 0 3px rgba(8,11,17,.88),0 0 22px rgba(124,94,255,.45);pointer-events:none;user-select:none}.sim-world-foot{display:grid;grid-template-columns:auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
+      .sim-canvas-wrap{position:relative;width:100%;height:430px;overflow:hidden;border-radius:16px}.sim-canvas{width:100%;height:430px;display:block;border:1px solid #283242;border-radius:16px;background:#182332;cursor:pointer;touch-action:manipulation}.sim-camera-badge{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(8,12,18,.72);backdrop-filter:blur(10px);border-radius:999px;padding:6px 9px;font-size:9px;color:#93a0b5;pointer-events:none}.sim-camera-badge span{color:#76e0c1;font-weight:800}.sim-camera-badge b{color:#eef3f8}.sim-camera-badge em{font-style:normal;color:#b39cff}.sim-world-foot{display:grid;grid-template-columns:auto auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
       .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-spin{animation:simspin .8s linear infinite}@keyframes simspin{to{transform:rotate(360deg)}}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
       .sim-agent{margin-top:10px;border:1px solid #252d3d;border-radius:13px;background:#0a0f17;padding:11px}.sim-agent-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c2432;padding-bottom:8px}.sim-agent-head>div{display:flex;gap:6px;align-items:center}.sim-agent-head b{font-size:10px}.sim-agent-head span{font-size:9px;color:#8290a5}.sim-plan{padding-top:9px;display:grid;gap:7px}.sim-plan>strong{font-size:11px}.sim-plan>small{color:#7c899e;font-size:9px}.sim-plan-steps{display:grid;gap:5px}.sim-plan-steps>div{display:grid;grid-template-columns:16px 145px 1fr;gap:6px;align-items:center;border:1px solid #1c2430;border-radius:8px;padding:6px 7px;color:#778398}.sim-plan-steps>div.done{color:#66cfae}.sim-plan-steps>div.current{border-color:#7560e6;color:#c7bcff;background:#141128}.sim-plan-steps>div.failed{border-color:#a64f62;color:#ff91a6}.sim-plan-steps span{font-size:9px}.sim-plan-steps small{font-size:8px;color:#6f7c90}.sim-agent-error{font-size:9px;color:#ff8ba0}.sim-agent-log{margin-top:8px;color:#8693a8;font-size:9px}.sim-agent-log>div{display:grid;grid-template-columns:34px 70px 1fr;gap:6px;padding:5px 0;border-top:1px solid #171e29}.sim-agent-log b{color:#76d9b7}.sim-agent-log small{color:#778398}
       .sim-side{display:flex;flex-direction:column;gap:12px}.sim-panel{padding:13px}.sim-panel-title{display:grid;grid-template-columns:auto auto 1fr;gap:6px;align-items:center;border-bottom:1px solid #202735;padding-bottom:9px;margin-bottom:10px;color:#9c8cff}.sim-panel-title b{font-size:11px;color:#eef2f8}.sim-panel-title span{text-align:right;color:#7d8799;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -516,7 +646,7 @@ export function GrokSimulationPanel(){
       .sim-agent-vitals{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}.sim-agent-vitals span{display:flex;justify-content:space-between;border:1px solid #1d2532;background:#0b1017;border-radius:7px;padding:5px 7px;font-size:8px;color:#7f8ba0}.sim-agent-vitals b{color:#c9d3e2}.circuit-list{display:flex;flex-direction:column;gap:7px}.circuit-list>div{display:grid;grid-template-columns:92px 1fr 30px;gap:7px;align-items:center;font-size:9px}.circuit-list span{color:#9aa5b7}.circuit-list b{text-align:right;font-size:9px}.circuit-list i{margin:0}.sim-note{display:block;color:#69768a;line-height:1.45;margin-top:10px}
       .memories{max-height:245px;overflow:auto}.memories article{display:grid;grid-template-columns:55px 1fr;gap:4px 7px;padding:8px 0;border-bottom:1px solid #171d27}.memories article b{font-size:8px;text-transform:uppercase;color:#927ff1}.memories article span{font-size:9px;color:#c4cddd}.memories article small{grid-column:2;color:#667286;font-size:8px}
       .sim-debug{max-width:1320px;margin:12px auto 0;border:1px solid #202735;border-radius:12px;background:#0a0e15;padding:8px 11px;color:#8390a4;font-size:10px}.sim-debug pre{white-space:pre-wrap;color:#c7d0df}
-      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:14px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:34px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr}.sim-world-foot b{text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{flex-wrap:wrap}.sim-canvas-wrap,.sim-canvas{height:330px}.sim-entity-avatar{width:42px;height:42px}}
+      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:10px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:31px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr 1fr}.sim-world-foot b{grid-column:1/-1;text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.sim-toolbar button,.sim-toolbar select{flex:0 0 auto}.sim-canvas-wrap,.sim-canvas{height:410px}.sim-world-card{padding:8px;border-radius:14px}.sim-camera-badge{top:8px;right:8px}}
     `}</style>
   </section>;
 }
