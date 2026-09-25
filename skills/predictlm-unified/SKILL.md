@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.35.0"
+  version: "1.36.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -901,3 +901,17 @@ Downloaded public references may be inspected by the multimodal provider mesh be
 Rejected character candidates remain inspectable but are never persisted as valid generations.
 
 The runtime does not claim grounding from a URL that could not be downloaded or from an image model that did not receive/accept the reference.
+
+
+## Anime catalog identity resolver (2026-09-25)
+
+Imagine now has a catalog layer before generic image search.
+
+For anime/franchise prompts:
+- resolve named characters with AniList GraphQL;
+- use aliases and connected media titles to disambiguate identity;
+- prioritize catalog character images before generic web-image references;
+- keep form/scene searches separate (e.g. Kurama mode, Perfect Susanoo, final battle);
+- expose catalog-resolved identities in the Imagine grounding panel.
+
+The integration borrows only the public catalog/tracker pattern observed in Kitsune, Mangayomi, Zenshin and Unyo. Streaming/torrent/scraping functionality is not imported.
