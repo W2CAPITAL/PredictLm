@@ -52,8 +52,11 @@ function providers():Provider[]{
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
-  const gatewayKey=process.env.AI_GATEWAY_API_KEY;
-  const gatewayModel=process.env.AI_GATEWAY_MODEL;
+  // Vercel deployments can authenticate AI Gateway with the platform OIDC
+  // token, so production chat does not depend on a manually copied API key.
+  const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
+  const gatewayModel=process.env.AI_GATEWAY_MODEL
+    ||(process.env.VERCEL_OIDC_TOKEN?'nvidia/nemotron-3.5-lightning':'');
   if(gatewayKey&&gatewayModel){
     push({
       name:'vercel-gateway',

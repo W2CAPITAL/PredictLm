@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality} from '../src/lib/chat-intelligence';
+import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality,isPurchaseLocationIntent} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
@@ -177,4 +177,15 @@ test('unknown topics remain routable as general assistant requests',()=>{
   ]){
     assert.ok(classifyConversation(prompt));
   }
+});
+
+
+test('reported prompts stay out of procedural/retrieval pollution',()=>{
+  const fly='Como uma mosca se comunica?';
+  assert.notEqual(classifyConversation(fly),'howto');
+  assert.equal(shouldSearchConversation(classifyConversation(fly),true,fly),false);
+
+  const mcd='Onde compro um McDonald\'s?';
+  assert.equal(isPurchaseLocationIntent(mcd),true);
+  assert.equal(classifyConversation(mcd),'general');
 });

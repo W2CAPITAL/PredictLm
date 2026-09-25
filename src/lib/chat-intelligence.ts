@@ -12,14 +12,19 @@ export function isHypotheticalPrompt(prompt:string){
 }
 
 export function isGenericHowTo(prompt:string){
-  // "Como seria se..." is an imaginative hypothetical, not a procedural
-  // how-to. Classifying it as how-to made the public answer gate demand
-  // imperative steps and reject perfectly valid API answers as
-  // "missing-procedure".
+  // A procedural "como" normally starts with an action verb. Phrases such as
+  // "como uma mosca se comunica" or "como o coração funciona" are explanatory
+  // questions and must not be forced through the procedural answer gate.
   if(isHypotheticalPrompt(prompt))return false;
   const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
-  return /^(?:como\s+\S+|passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p)
-    && !/^como (?:funciona|voce|se chama|e ser)\b/.test(p);
+  if(/^(?:passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return true;
+  if(/^como\s+(?:(?:eu\s+)?faco|(?:[a-z]+(?:ar|er|ir))|por)\b/.test(p))return true;
+  return false;
+}
+
+export function isPurchaseLocationIntent(prompt:string){
+  const p=clean(prompt);
+  return /\b(?:onde\s+(?:compro|comprar|encontro|acho|vende|tem)|onde\s+posso\s+comprar|quero\s+comprar)\b/.test(p);
 }
 
 export function answerLooksProcedural(text:string){
@@ -591,7 +596,14 @@ export function responseTopicAlignment(prompt:string,content:string){
   let hits=0;
   for(const token of subject){
     const variants=TOPIC_SYNONYMS[token]||[token];
-    if(variants.some(v=>new RegExp('\\b'+v+'\\b').test(c)))hits++;
+    if(variants.some(v=>{
+      const exact=new RegExp('\\b'+v+'\\b');
+      if(exact.test(c))return true;
+      if(v.length<4)return false;
+      // Accept basic Portuguese inflections/plurals without turning topic
+      // alignment into a fuzzy semantic match.
+      return new RegExp('\\b'+v+'(?:s|es|m|am|em|ando|endo|indo)?\\b').test(c);
+    }))hits++;
   }
   const score=hits/subject.length;
   const hypothetical=isHypotheticalPrompt(prompt);
