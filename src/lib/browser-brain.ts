@@ -548,11 +548,12 @@ function knowledgeReply(prompt:string){
 }
 
 export async function answerLocally(prompt:string,messages:{role:string;content:string}[],options?:{preferNative?:boolean;knowledge?:boolean;fallbackText?:string;deep?:boolean;decisionAudit?:boolean;language?:ConversationLanguage;researchContext?:string;onStage?:(stage:'recall'|'plan'|'forge'|'aegis'|'verify')=>void}):Promise<BrainReply>{
-  const context=options?.knowledge===false?'':knowledgeContext(prompt,5);
-  const trained=trainingContext(prompt,5);
+  const knowledgeEnabled=options?.knowledge!==false;
+  const context=knowledgeEnabled?knowledgeContext(prompt,5):'';
+  const trained=knowledgeEnabled?trainingContext(prompt,5):'';
   const deepMode=Boolean(options?.deep)||isScenarioSimulationRequest(prompt);
   const githubTopK=deepMode?5:3;
-  const githubEnabled=useGithubKnowledge(prompt);
+  const githubEnabled=knowledgeEnabled&&useGithubKnowledge(prompt);
   const github=githubEnabled?githubKnowledgeContext(prompt,githubTopK):'';
   const learned=adaptiveContext(prompt,4);
   const instructions=adaptiveInstructionContext(8);
@@ -595,10 +596,10 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   });
   const system=compiled.system;
   const neuralMessages=packed.messages;
-  const sources=[
+  const sources=knowledgeEnabled?[
     ...(githubEnabled?retrieveGitHubKnowledge(prompt,githubTopK):[]).map(x=>({title:x.heading,source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path})),
     ...retrieveKnowledge(prompt,5).map(x=>({title:x.title,source:x.source}))
-  ].filter((x,i,a)=>a.findIndex(y=>y.source===x.source)===i).slice(0,6);
+  ].filter((x,i,a)=>a.findIndex(y=>y.source===x.source)===i).slice(0,6):[];
   let fallbackReason='';
 
   if(typeof window!=='undefined'&&options?.preferNative!==false){
