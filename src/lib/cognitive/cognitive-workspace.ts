@@ -1,7 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
-import {advanceFrankStein,createFrankSteinState,frankSteinContext,type FrankSteinState} from './frank-core';
+import {advanceFrankStein,createFrankSteinState,frankRecall,frankSteinContext,type FrankSteinState} from './frank-core';
 
 export interface CognitiveEpisode{
   at:number;
@@ -420,6 +420,14 @@ export function cognitiveDirectRecall(
     return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
   }
   if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
+
+  if(mode==='frank'){
+    const recalled=frankRecall(state.frank,prompt);
+    if(recalled.memories.length){
+      return 'Eu não tenho uma “vida biológica real” anterior ao app. O que eu realmente lembro aqui são experiências registradas pelo meu próprio estado persistente:\n- '
+        +recalled.memories.slice(0,4).map(m=>m.gist+' (força '+Math.round(m.strength*100)+'%, consolidação '+Math.round(m.consolidated*100)+'%)').join('\n- ');
+    }
+  }
 
   const auto=(state.memory?.autobiographical||[])
     .filter(x=>x.actor===mode||x.actor==='user'||x.actor==='world'||x.actor==='dual')
