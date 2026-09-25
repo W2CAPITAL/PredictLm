@@ -15,7 +15,7 @@ import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
-import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -55,9 +55,8 @@ function providers():Provider[]{
   // Vercel deployments can authenticate AI Gateway with the platform OIDC
   // token, so production chat does not depend on a manually copied API key.
   const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
-  const gatewayModel=process.env.AI_GATEWAY_MODEL
-    ||(process.env.VERCEL_OIDC_TOKEN?'nvidia/nemotron-3.5-lightning':'');
-  if(gatewayKey&&gatewayModel){
+  const gatewayModel=process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning';
+  if(gatewayKey){
     push({
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
@@ -104,15 +103,15 @@ function providers():Provider[]{
   if(process.env.OPENCODE_API_KEY&&process.env.OPENCODE_MODEL){
     push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL});
   }
-  if(process.env.NVIDIA_API_KEY&&process.env.NVIDIA_MODEL){
-    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL});
+  if(process.env.NVIDIA_API_KEY){
+    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL||'nvidia/nemotron-3.5-lightning-30b-a3b'});
   }
-  if(process.env.DEEPSEEK_API_KEY&&process.env.DEEPSEEK_MODEL){
+  if(process.env.DEEPSEEK_API_KEY){
     const configured=(process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com').replace(/\/$/,'');
     const base=/^https:\/\/api\.deepseek\.com\/v1$/i.test(configured)
       ? 'https://api.deepseek.com'
       : configured;
-    push({name:'deepseek',base,key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL});
+    push({name:'deepseek',base,key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL||'deepseek-v4-flash'});
   }
   if(process.env.KIMI_API_KEY&&process.env.KIMI_MODEL){
     push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL});
@@ -123,24 +122,24 @@ function providers():Provider[]{
   if(process.env.MINIMAX_API_KEY&&process.env.MINIMAX_MODEL){
     push({name:'minimax',base:process.env.MINIMAX_BASE_URL||'https://api.minimax.io/v1',key:process.env.MINIMAX_API_KEY,model:process.env.MINIMAX_MODEL});
   }
-  if(process.env.GEMINI_API_KEY&&process.env.GEMINI_MODEL){
-    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL});
+  if(process.env.GEMINI_API_KEY){
+    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL||'gemini-3.8-flash'});
   }
-  if(process.env.ANTHROPIC_API_KEY&&process.env.ANTHROPIC_MODEL){
-    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL,protocol:'anthropic'});
+  if(process.env.ANTHROPIC_API_KEY){
+    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL||'claude-sonnet-5',protocol:'anthropic'});
   }
   if(process.env.ARK_API_KEY&&process.env.ARK_MODEL){
     push({name:'ark',base:process.env.ARK_BASE_URL||'https://ark.cn-beijing.volces.com/api/v3',key:process.env.ARK_API_KEY,model:process.env.ARK_MODEL});
   }
-  if(process.env.GROQ_API_KEY&&process.env.GROQ_MODEL){
-    push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL});
+  if(process.env.GROQ_API_KEY){
+    push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL||'openai/gpt-oss-120b'});
   }
-  if(process.env.OPENROUTER_API_KEY&&process.env.OPENROUTER_MODEL){
+  if(process.env.OPENROUTER_API_KEY){
     push({
       name:'openrouter',
       base:'https://openrouter.ai/api/v1',
       key:process.env.OPENROUTER_API_KEY,
-      model:process.env.OPENROUTER_MODEL,
+      model:process.env.OPENROUTER_MODEL||'openrouter/auto',
       headers:{'X-Title':'PredictLM'}
     });
   }
@@ -401,9 +400,15 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
     if(provider.name==='nvidia'){
       body.chat_template_kwargs={enable_thinking:deep};
       if(deep){
-        body.max_tokens=Math.max(Number(body.max_tokens||0),2048);
-        body.thinking_token_budget=768;
+        body.max_tokens=Math.max(Number(body.max_tokens||0),4096);
+        body.reasoning_budget=1536;
       }
+    }
+    if(provider.name==='vercel-gateway'){
+      body.models=[
+        'google/gemini-3.8-flash',
+        'anthropic/claude-sonnet-5'
+      ];
     }
     if(provider.name==='minimax')body.thinking={type:'disabled'};
 
@@ -483,7 +488,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -495,7 +500,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     },{status:503,headers:{'Cache-Control':'no-store'}});
   }
 
-  const validateCandidate=async(provider:Provider)=>{
+  const validateCandidate=async(provider:Provider,timeoutMs:number)=>{
     const validate=(raw:string)=>{
       const gate=publicAnswerGate(raw,language,prompt);
       if(!gate.ok)throw new Error(gate.reason);
@@ -506,12 +511,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
       return gate.content;
     };
 
-    const raw=await callProvider(provider,messages,false,8500);
+    const raw=await callProvider(provider,messages,false,timeoutMs);
     try{
       return {provider,content:validate(raw)};
     }catch(firstError:any){
-      // Give the same provider one clean self-correction chance instead of
-      // escalating ordinary chat into RAG/skills/local fallback.
       const repaired=await callProvider(provider,[
         {role:'system',content:[
           system,
@@ -522,7 +525,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
         ].join('\n\n')},
         ...recent,
         {role:'user',content:compactText(prompt,1200)}
-      ],false,8500);
+      ],false,Math.min(timeoutMs,4000));
       try{
         return {provider,content:validate(repaired)};
       }catch(secondError:any){
@@ -532,38 +535,27 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   };
 
   const errors:string[]=[];
-  const free=candidates.find(x=>x.name==='freellmapi');
-  if(free){
+  const attempted:string[]=[];
+  const startedAt=Date.now();
+  const cleanBudgetMs=28000;
+
+  for(const provider of candidates){
+    const remaining=cleanBudgetMs-(Date.now()-startedAt);
+    if(remaining<1000)break;
+    attempted.push(provider.name);
     try{
-      const result=await validateCandidate(free);
+      const result=await validateCandidate(provider,Math.min(7000,Math.max(900,remaining)));
       return Response.json({
         content:result.content,
         provider:result.provider.name,
         model:result.provider.model,
         mode:'clean-chat',
         sources:[],
-        apiRace:{attempted:['freellmapi'],winner:'freellmapi',strategy:'freellm-first'}
+        apiRace:{attempted,winner:result.provider.name,strategy:'sequential-failover'}
       },{headers:{'Cache-Control':'no-store'}});
     }catch(error:any){
-      errors.push('freellmapi: '+String(error?.message||error||'failed').slice(0,160));
+      errors.push(provider.name+': '+String(error?.message||error||'failed').slice(0,220));
     }
-  }
-
-  const fallbacks=candidates.filter(x=>x.name!=='freellmapi');
-  const attempts=await Promise.allSettled(fallbacks.map(validateCandidate));
-  for(let i=0;i<attempts.length;i++){
-    const result=attempts[i];
-    if(result.status==='fulfilled'){
-      return Response.json({
-        content:result.value.content,
-        provider:result.value.provider.name,
-        model:result.value.provider.model,
-        mode:'clean-chat',
-        sources:[],
-        apiRace:{attempted:[...(free?['freellmapi']:[]),...fallbacks.map(x=>x.name)],winner:result.value.provider.name,strategy:'freellm-first'}
-      },{headers:{'Cache-Control':'no-store'}});
-    }
-    errors.push(fallbacks[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
   }
 
   return Response.json({
@@ -571,8 +563,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     content:null,
     code:'NO_CLEAN_ANSWER',
     mode:'clean-chat',
-    errors:errors.slice(0,4)
+    attempted,
+    errors:errors.slice(0,8)
   },{status:502,headers:{'Cache-Control':'no-store'}});
+
 }
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
@@ -703,10 +697,22 @@ export async function GET(){
   const all=providers();
   const configured=primaryProviders(all);
   const auxiliary=all.filter(x=>!configured.includes(x));
+  const gatewayAuth=process.env.AI_GATEWAY_API_KEY
+    ? 'api-key'
+    : process.env.VERCEL_OIDC_TOKEN
+      ? 'oidc'
+      : 'missing';
   return Response.json({
     available:configured.length>0,
     providers:configured.map(x=>({name:x.name,model:x.model})),
     count:configured.length,
+    gateway:{
+      auth:gatewayAuth,
+      model:process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning',
+      fallbackModels:['google/gemini-3.8-flash','anthropic/claude-sonnet-5']
+    },
+    health:providerHealthSnapshot(configured),
+    environment:{vercel:Boolean(process.env.VERCEL)},
     auxiliaryLocal:auxiliary.map(x=>({name:x.name,model:x.model}))
   },{headers:{'Cache-Control':'no-store'}});
 }

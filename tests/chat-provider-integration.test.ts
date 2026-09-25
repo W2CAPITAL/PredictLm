@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {POST} from '../src/app/api/chat/route';
+import {GET,POST} from '../src/app/api/chat/route';
 import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
 import {conversationAnswerIssue} from '../src/lib/chat-intelligence';
 
@@ -271,7 +271,7 @@ test('Claude adapter uses Anthropic Messages API contract',async()=>{
 });
 
 
-test('NVIDIA Nemotron DeepThink uses thinking_token_budget with room for visible output',async()=>{
+test('NVIDIA Nemotron DeepThink uses the current reasoning_budget contract',async()=>{
   isolateSingleProvider('nvidia');
   const original=globalThis.fetch;
   let seen=false;
@@ -282,10 +282,10 @@ test('NVIDIA Nemotron DeepThink uses thinking_token_budget with room for visible
     const body=JSON.parse(String(init?.body||'{}'));
     assert.equal(body.model,'nvidia/nemotron-3.5-lightning-30b-a3b');
     assert.deepEqual(body.chat_template_kwargs,{enable_thinking:true});
-    assert.equal(typeof body.thinking_token_budget,'number');
-    assert.ok(body.thinking_token_budget>0);
-    assert.ok(body.max_tokens>body.thinking_token_budget);
-    assert.equal('reasoning_budget' in body,false);
+    assert.equal(typeof body.reasoning_budget,'number');
+    assert.ok(body.reasoning_budget>0);
+    assert.ok(body.max_tokens>body.reasoning_budget);
+    assert.equal('thinking_token_budget' in body,false);
     seen=true;
     return new Response(JSON.stringify({
       choices:[{message:{content:'A Lua apresenta fases porque vemos porções diferentes de sua metade iluminada pelo Sol enquanto ela orbita a Terra.'}}]
@@ -326,6 +326,7 @@ test('Vercel OIDC keeps online chat on an API when no manual provider key exists
     assert.equal(String(headers?.Authorization||''),'Bearer oidc-test-token');
     const body=JSON.parse(String(init?.body||'{}'));
     assert.equal(body.model,'nvidia/nemotron-3.5-lightning');
+    assert.deepEqual(body.models,['google/gemini-3.8-flash','anthropic/claude-sonnet-5']);
     const prompt=[...body.messages].reverse().find((x:any)=>x.role==='user')?.content||'';
     calls.push({body,prompt});
     return new Response(JSON.stringify({
@@ -441,4 +442,86 @@ test('clean chat without server providers returns a real failure instead of fake
   assert.equal(data.code,'NO_REMOTE_PROVIDER');
   assert.equal(data.content,null);
   assert.doesNotMatch(JSON.stringify(data),/knowledge packs|providers externos permanecem opcionais/i);
+});
+
+
+test('provider keys work without separate model environment variables',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  process.env.NVIDIA_API_KEY='nv-key';
+  process.env.GEMINI_API_KEY='gem-key';
+  process.env.DEEPSEEK_API_KEY='ds-key';
+  process.env.ANTHROPIC_API_KEY='ant-key';
+  process.env.GROQ_API_KEY='groq-key';
+  process.env.OPENROUTER_API_KEY='or-key';
+  resetProviderHealthForTests();
+  try{
+    const response=await GET();
+    const data=await response.json();
+    const models=Object.fromEntries((data.providers||[]).map((x:any)=>[x.name,x.model]));
+    assert.equal(models.nvidia,'nvidia/nemotron-3.5-lightning-30b-a3b');
+    assert.equal(models.gemini,'gemini-3.8-flash');
+    assert.equal(models.deepseek,'deepseek-v4-flash');
+    assert.equal(models.anthropic,'claude-sonnet-5');
+    assert.equal(models.groq,'openai/gpt-oss-120b');
+    assert.equal(models.openrouter,'openrouter/auto');
+  }finally{
+    for(const key of providerEnv)delete process.env[key];
+    resetProviderHealthForTests();
+  }
+});
+
+test('AI Gateway API key works even when AI_GATEWAY_MODEL is omitted',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  process.env.AI_GATEWAY_API_KEY='gateway-key';
+  resetProviderHealthForTests();
+  try{
+    const response=await GET();
+    const data=await response.json();
+    const gateway=(data.providers||[]).find((x:any)=>x.name==='vercel-gateway');
+    assert.ok(gateway);
+    assert.equal(gateway.model,'nvidia/nemotron-3.5-lightning');
+    assert.equal(data.gateway.auth,'api-key');
+  }finally{
+    for(const key of providerEnv)delete process.env[key];
+    resetProviderHealthForTests();
+  }
+});
+
+test('clean chat sequentially reaches the next configured API after a provider failure',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  process.env.GEMINI_API_KEY='gem-key';
+  process.env.DEEPSEEK_API_KEY='ds-key';
+  process.env.PREDICTLM_PROVIDER_ORDER='gemini,deepseek';
+  resetProviderHealthForTests();
+
+  const original=globalThis.fetch;
+  const calls:string[]=[];
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    const url=String(input);
+    calls.push(url);
+    if(url==='https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'){
+      return new Response(JSON.stringify({error:'temporary'}),{status:503,headers:{'Content-Type':'application/json'}});
+    }
+    assert.equal(url,'https://api.deepseek.com/chat/completions');
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,'deepseek-v4-flash');
+    return new Response(JSON.stringify({
+      choices:[{message:{content:'A Lua tem fases porque, ao orbitar a Terra, vemos diferentes porções da metade lunar iluminada pelo Sol.'}}]
+    }),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try{
+    const {response,data}=await ask('Explique por que a Lua tem fases.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'deepseek');
+    assert.deepEqual(data.apiRace.attempted,['gemini','deepseek']);
+    assert.equal(data.apiRace.strategy,'sequential-failover');
+    assert.deepEqual(calls,[
+      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      'https://api.deepseek.com/chat/completions'
+    ]);
+  }finally{
+    globalThis.fetch=original;
+    for(const key of providerEnv)delete process.env[key];
+    resetProviderHealthForTests();
+  }
 });
