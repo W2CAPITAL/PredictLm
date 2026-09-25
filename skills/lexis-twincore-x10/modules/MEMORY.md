@@ -26,3 +26,14 @@ Regras:
 - nomes de modelos não são identidade;
 - memórias da simulação devem registrar percepção/ação observável, não chain-of-thought;
 - persistência local via IndexedDB deve migrar estados antigos sem descarte.
+
+
+## Emotional memory tagging
+
+Frank Stein tags experiences with:
+- valence;
+- arousal;
+- emotional salience;
+- dominant feelings.
+
+High-salience experiences receive stronger consolidation/retrieval weight. Emotional tagging is an internal software signal; it is not a biological memory trace copied from a donor.
