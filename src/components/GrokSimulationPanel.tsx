@@ -467,9 +467,16 @@ export function GrokSimulationPanel(){
   function pickPlace(event:React.MouseEvent<HTMLCanvasElement>){
     const el=canvas.current;if(!el)return;
     const rect=el.getBoundingClientRect();
-    const x=(event.clientX-rect.left)*(640/rect.width);
-    const y=(event.clientY-rect.top)*(360/rect.height);
-    const found=state.places.find(p=>x>=p.x&&x<=p.x+p.w&&y>=p.y&&y<=p.y+p.h);
+    const width=Math.max(640,Math.floor(rect.width));
+    const height=430;
+    const sx=(event.clientX-rect.left)*(width/rect.width);
+    const sy=(event.clientY-rect.top)*(height/rect.height);
+    const camera:IsoCamera=cameraFocus==='human'
+      ? cameraForFocus(state.person,width,height,cameraZoom)
+      : cameraFocus==='fly'
+        ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
+        : {zoom:cameraZoom,offsetX:0,offsetY:10};
+    const found=[...state.places].reverse().find(p=>pointInPolygon({x:sx,y:sy},projectedPlacePolygon(p,width,height,camera)));
     if(found)setManualTarget(found.id);
   }
 
@@ -488,7 +495,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Simulação ativa 2D · NeuroCore + FlyWire Agent · memória local · não é consciência biológica</p>
+        <p>Life-sim 2.5D isométrico · Humano + FlyWire Agent · memória local · otimizado para mobile</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -501,6 +508,10 @@ export function GrokSimulationPanel(){
           <button className="primary" onClick={()=>setState(s=>({...s,running:!s.running}))}>{state.running?<><Pause size={14}/>Pausar</>:<><Play size={14}/>Rodar</>}</button>
           <button onClick={tick}><StepForward size={14}/>Passo</button>
           <button onClick={()=>setManualTarget(null)} className={!manualTarget?'active':''}>Movimento Auto</button>
+          <button onClick={()=>setCameraFocus(cameraFocus==='human'?'world':'human')} className={cameraFocus==='human'?'active':''} title="Seguir humano"><Crosshair size={13}/>Humano</button>
+          <button onClick={()=>setCameraFocus(cameraFocus==='fly'?'world':'fly')} className={cameraFocus==='fly'?'active':''} title="Seguir mosca"><Bug size={13}/>Mosca</button>
+          <button onClick={()=>setCameraZoom(z=>Math.max(.72,Math.round((z-.12)*100)/100))} title="Afastar câmera"><ZoomOut size={13}/></button>
+          <button onClick={()=>setCameraZoom(z=>Math.min(1.5,Math.round((z+.12)*100)/100))} title="Aproximar câmera"><ZoomIn size={13}/></button>
           <button
             onClick={()=>setAgent(prev=>{
               const normalized=normalizeLifeAgentState(prev);
@@ -517,14 +528,12 @@ export function GrokSimulationPanel(){
         </div>
 
         <div className="sim-canvas-wrap">
-          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas"/>
-          <img
-            src={ENTITY_REFERENCE_IMAGE}
-            alt={state.person.name}
-            className="sim-entity-avatar"
-            draggable={false}
-            style={{left:(state.person.x/640*100)+'%',top:(state.person.y/360*100)+'%'}}
-          />
+          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas" aria-label="Simulação isométrica 2.5D com humano e mosca"/>
+          <div className="sim-camera-badge">
+            <span>2.5D</span>
+            <b>{Math.round(cameraZoom*100)}%</b>
+            <em>{cameraFocus==='world'?'mundo':cameraFocus}</em>
+          </div>
         </div>
         <div className="sim-world-foot">
           <span><MapPin size={12}/>{state.person.location}</span>
@@ -628,7 +637,7 @@ export function GrokSimulationPanel(){
       .sim-clock{border:1px solid #242b38;background:#0d1119;border-radius:14px;padding:10px 13px;display:grid;grid-template-columns:auto auto;gap:2px 7px;align-items:center}.sim-clock b{font-size:12px}.sim-clock span{grid-column:2;color:#8290a6;font-size:10px}
       .sim-layout{max-width:1320px;margin:auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.65fr);gap:14px}.sim-world-card,.sim-panel{border:1px solid #202735;background:linear-gradient(180deg,#0e131c,#0a0e15);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.sim-world-card{padding:12px;min-width:0}
       .sim-toolbar{display:flex;gap:7px;align-items:center;margin-bottom:10px}.sim-toolbar button,.sim-toolbar select{border:1px solid #293143;background:#121823;color:#c9d2e2;border-radius:9px;padding:7px 10px;font-size:10px}.sim-toolbar button{display:flex;gap:5px;align-items:center}.sim-toolbar .primary{background:#6e55e7;color:#fff;border-color:#826df2}.sim-toolbar .active{border-color:#5dcaab;color:#76e0c1}.sim-toolbar .reset{margin-left:auto}
-      .sim-canvas-wrap{position:relative;width:100%;height:360px}.sim-canvas{width:100%;height:360px;display:block;border:1px solid #1d2431;border-radius:14px;background:#080b11;cursor:crosshair}.sim-entity-avatar{position:absolute;width:48px;height:48px;object-fit:cover;object-position:center 28%;border-radius:50%;transform:translate(-50%,-52%);border:2px solid #8f7aff;box-shadow:0 0 0 3px rgba(8,11,17,.88),0 0 22px rgba(124,94,255,.45);pointer-events:none;user-select:none}.sim-world-foot{display:grid;grid-template-columns:auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
+      .sim-canvas-wrap{position:relative;width:100%;height:430px;overflow:hidden;border-radius:16px}.sim-canvas{width:100%;height:430px;display:block;border:1px solid #283242;border-radius:16px;background:#182332;cursor:pointer;touch-action:manipulation}.sim-camera-badge{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(8,12,18,.72);backdrop-filter:blur(10px);border-radius:999px;padding:6px 9px;font-size:9px;color:#93a0b5;pointer-events:none}.sim-camera-badge span{color:#76e0c1;font-weight:800}.sim-camera-badge b{color:#eef3f8}.sim-camera-badge em{font-style:normal;color:#b39cff}.sim-world-foot{display:grid;grid-template-columns:auto auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
       .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-spin{animation:simspin .8s linear infinite}@keyframes simspin{to{transform:rotate(360deg)}}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
       .sim-agent{margin-top:10px;border:1px solid #252d3d;border-radius:13px;background:#0a0f17;padding:11px}.sim-agent-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c2432;padding-bottom:8px}.sim-agent-head>div{display:flex;gap:6px;align-items:center}.sim-agent-head b{font-size:10px}.sim-agent-head span{font-size:9px;color:#8290a5}.sim-plan{padding-top:9px;display:grid;gap:7px}.sim-plan>strong{font-size:11px}.sim-plan>small{color:#7c899e;font-size:9px}.sim-plan-steps{display:grid;gap:5px}.sim-plan-steps>div{display:grid;grid-template-columns:16px 145px 1fr;gap:6px;align-items:center;border:1px solid #1c2430;border-radius:8px;padding:6px 7px;color:#778398}.sim-plan-steps>div.done{color:#66cfae}.sim-plan-steps>div.current{border-color:#7560e6;color:#c7bcff;background:#141128}.sim-plan-steps>div.failed{border-color:#a64f62;color:#ff91a6}.sim-plan-steps span{font-size:9px}.sim-plan-steps small{font-size:8px;color:#6f7c90}.sim-agent-error{font-size:9px;color:#ff8ba0}.sim-agent-log{margin-top:8px;color:#8693a8;font-size:9px}.sim-agent-log>div{display:grid;grid-template-columns:34px 70px 1fr;gap:6px;padding:5px 0;border-top:1px solid #171e29}.sim-agent-log b{color:#76d9b7}.sim-agent-log small{color:#778398}
       .sim-side{display:flex;flex-direction:column;gap:12px}.sim-panel{padding:13px}.sim-panel-title{display:grid;grid-template-columns:auto auto 1fr;gap:6px;align-items:center;border-bottom:1px solid #202735;padding-bottom:9px;margin-bottom:10px;color:#9c8cff}.sim-panel-title b{font-size:11px;color:#eef2f8}.sim-panel-title span{text-align:right;color:#7d8799;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -637,7 +646,7 @@ export function GrokSimulationPanel(){
       .sim-agent-vitals{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}.sim-agent-vitals span{display:flex;justify-content:space-between;border:1px solid #1d2532;background:#0b1017;border-radius:7px;padding:5px 7px;font-size:8px;color:#7f8ba0}.sim-agent-vitals b{color:#c9d3e2}.circuit-list{display:flex;flex-direction:column;gap:7px}.circuit-list>div{display:grid;grid-template-columns:92px 1fr 30px;gap:7px;align-items:center;font-size:9px}.circuit-list span{color:#9aa5b7}.circuit-list b{text-align:right;font-size:9px}.circuit-list i{margin:0}.sim-note{display:block;color:#69768a;line-height:1.45;margin-top:10px}
       .memories{max-height:245px;overflow:auto}.memories article{display:grid;grid-template-columns:55px 1fr;gap:4px 7px;padding:8px 0;border-bottom:1px solid #171d27}.memories article b{font-size:8px;text-transform:uppercase;color:#927ff1}.memories article span{font-size:9px;color:#c4cddd}.memories article small{grid-column:2;color:#667286;font-size:8px}
       .sim-debug{max-width:1320px;margin:12px auto 0;border:1px solid #202735;border-radius:12px;background:#0a0e15;padding:8px 11px;color:#8390a4;font-size:10px}.sim-debug pre{white-space:pre-wrap;color:#c7d0df}
-      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:14px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:34px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr}.sim-world-foot b{text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{flex-wrap:wrap}.sim-canvas-wrap,.sim-canvas{height:330px}.sim-entity-avatar{width:42px;height:42px}}
+      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:10px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:31px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr 1fr}.sim-world-foot b{grid-column:1/-1;text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.sim-toolbar button,.sim-toolbar select{flex:0 0 auto}.sim-canvas-wrap,.sim-canvas{height:410px}.sim-world-card{padding:8px;border-radius:14px}.sim-camera-badge{top:8px;right:8px}}
     `}</style>
   </section>;
 }
