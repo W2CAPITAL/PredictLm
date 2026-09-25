@@ -109,6 +109,16 @@ export function GrokImaginePanel(){
 
   useEffect(()=>{
     let live=true;
+    try{
+      const prefill=sessionStorage.getItem('predictlm:imagine-prefill');
+      if(prefill){
+        setPrompt(prefill);
+        setPromptMode('literal');
+        setStyle('Cinematic');
+        setStyleManuallyChosen(false);
+        sessionStorage.removeItem('predictlm:imagine-prefill');
+      }
+    }catch{}
     setGallery(loadBrowserMediaLibrary() as MediaItem[]);
     setPersisted(browserMediaLibraryAvailable());
     fetch('/api/media/video',{cache:'no-store'})
