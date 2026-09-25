@@ -55,7 +55,13 @@ function biography(actor:SyntheticLifeActor):SyntheticLifetimeMemory[]{
     memory(actor,'h-09','adulto','24 anos','casa','Começou um projeto pessoal criativo e aprendeu a alternar pesquisa, protótipo e revisão.',.86,.87),
     memory(actor,'h-10','adulto','25 anos','trabalho','Conduziu uma tarefa do início ao fim: entendeu o pedido, dividiu em etapas, executou, conferiu e entregou.',.8,.95),
     memory(actor,'h-11','adulto','26 anos','café','Uma conversa com uma amiga mudou sua opinião sobre um problema importante.',.66,.77),
-    memory(actor,'h-12','presente','27 anos','cidade','Quer continuar aprendendo, criando e construindo uma vida equilibrada sem repetir sempre a mesma rotina.',.76,.92)
+    memory(actor,'h-12','adulto','26 anos','trabalho','Errou uma estimativa de prazo, precisou renegociar a entrega e passou a quebrar projetos em partes observáveis.',.36,.91),
+    memory(actor,'h-13','adulto','26 anos','biblioteca','Começou a manter anotações de ideias incompletas para não perder caminhos criativos que ainda não sabia executar.',.74,.8),
+    memory(actor,'h-14','adulto','26 anos','parque','Percebeu que uma caminhada sem objetivo às vezes produz conexões melhores do que insistir diante da tela.',.82,.77),
+    memory(actor,'h-15','adulto','27 anos','trabalho','Aprendeu a usar quadro, computador, reunião e revisão como partes diferentes do mesmo trabalho, em vez de chamar qualquer tempo no escritório de produtividade.',.71,.94),
+    memory(actor,'h-16','adulto','27 anos','casa','Montou um pequeno espaço para protótipos e passou a testar ideias visuais antes de considerá-las prontas.',.86,.84),
+    memory(actor,'h-17','adulto','27 anos','cidade','Começou a escolher deliberadamente rotas e lugares diferentes para reduzir rotina automática e manter curiosidade.',.79,.73),
+    memory(actor,'h-18','presente','27 anos','cidade','Quer continuar aprendendo, criando e construindo uma vida equilibrada sem repetir sempre a mesma rotina.',.76,.92)
   ];
   if(actor==='macaque')return [
     memory(actor,'m-01','filhote','primeiros meses','grupo arborícola','Aprendeu a reconhecer vozes, rostos e sinais de aproximação do grupo.',.78,.9),
@@ -65,7 +71,12 @@ function biography(actor:SyntheticLifeActor):SyntheticLifetimeMemory[]{
     memory(actor,'m-05','jovem','4 anos','riacho','Aprendeu a usar água, pedras e galhos como partes do ambiente, não como decoração.',.71,.8),
     memory(actor,'m-06','adulto jovem','5 anos','bosque','Passou a explorar objetos novos por aproximações curtas: olhar, tocar, recuar e tentar de novo.',.67,.93),
     memory(actor,'m-07','adulto','6 anos','grupo','O grooming reforçou vínculos e mostrou que interação social também resolve tensão.',.82,.85),
-    memory(actor,'m-08','presente','adulto','parque-habitat','Mantém curiosidade por ferramentas, comida, rotas elevadas e comportamentos dos outros agentes.',.75,.94)
+    memory(actor,'m-08','adulto','6 anos','bosque','Descobriu que um galho servia de apoio para alcançar algo e passou a testar objetos pelo que permitem fazer.',.75,.91),
+    memory(actor,'m-09','adulto','7 anos','área de observação','Aprendeu que objetos semelhantes podem ter resultados diferentes e passou a tocar, cheirar e comparar antes de insistir.',.69,.86),
+    memory(actor,'m-10','adulto','7 anos','grupo','Viu outro indivíduo resolver uma tarefa por uma rota diferente e incorporou a alternativa ao repertório.',.8,.9),
+    memory(actor,'m-11','adulto','8 anos','árvores','Criou rotas preferidas em altura, mas abandonava o caminho quando um obstáculo mudava.',.72,.82),
+    memory(actor,'m-12','adulto','8 anos','forrageio','Aprendeu a equilibrar alimento imediato com segurança e esforço de deslocamento.',.71,.88),
+    memory(actor,'m-13','presente','adulto','parque-habitat','Mantém curiosidade por ferramentas, comida, rotas elevadas e comportamentos dos outros agentes.',.75,.94)
   ];
   return [
     memory(actor,'f-01','larva','início da vida','substrato alimentar','Associou cheiro intenso a alimento antes de aprender a voar.',.65,.8),
@@ -74,7 +85,11 @@ function biography(actor:SyntheticLifeActor):SyntheticLifetimeMemory[]{
     memory(actor,'f-04','adulto','exploração','cozinha','Descobriu que odores de fruta e açúcar são pistas mais úteis que objetos visualmente grandes.',.74,.9),
     memory(actor,'f-05','adulto','ameaça','ambiente humano','Uma aproximação brusca ensinou a manter rotas de fuga e não pairar no mesmo ponto por muito tempo.',.2,.95),
     memory(actor,'f-06','adulto','exploração','parque','Luz, flores, água e matéria orgânica criaram um mapa de saliências diferente do ambiente interno.',.76,.86),
-    memory(actor,'f-07','presente','agora','mundo simulado','Explora por trajetórias curtas, revisa alvos e alterna aproximação, inspeção, fuga e pausa.',.7,.96)
+    memory(actor,'f-07','adulto','exploração','janela','Aprendeu que uma fonte luminosa forte nem sempre é uma rota aberta e passou a corrigir direção pelo fluxo visual.',.45,.88),
+    memory(actor,'f-08','adulto','alimentação','fruta madura','Associou combinações específicas de odor e contraste a alimento melhor do que brilho isolado.',.78,.91),
+    memory(actor,'f-09','adulto','ameaça','mesa','Uma tentativa de pouso interrompida reforçou mudanças rápidas de altitude e direção.',.22,.93),
+    memory(actor,'f-10','adulto','repouso','parede sombreada','Descobriu que ficar imóvel por instantes melhora a escolha do próximo alvo quando muitos estímulos competem.',.58,.76),
+    memory(actor,'f-11','presente','agora','mundo simulado','Explora por trajetórias curtas, revisa alvos e alterna aproximação, inspeção, fuga e pausa.',.7,.96)
   ];
 }
 
