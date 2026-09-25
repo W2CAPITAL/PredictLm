@@ -374,6 +374,7 @@ export function GrokSimulationPanel(){
     const drawWorldObject=(obj:(typeof WORLD_OBJECTS)[number])=>{
       const p=iso(obj.x,obj.y,0);
       const s=Math.max(.72,camera.zoom);
+      const activeInteraction=state.objectInteraction?.objectId===obj.id;
       if(obj.kind==='tree'||obj.kind==='fruit_tree'){
         ctx.fillStyle='#6b4c32';ctx.fillRect(p.x-2*s,p.y-24*s,4*s,24*s);
         ctx.fillStyle='#4f8b5d';ctx.beginPath();ctx.arc(p.x,p.y-30*s,14*s,0,Math.PI*2);ctx.fill();
@@ -404,12 +405,18 @@ export function GrokSimulationPanel(){
       const [top,side]=colors[obj.kind]||['#777','#555'];
       drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
       if(obj.kind==='computer'){
-        const sp=iso(obj.x,obj.y,obj.z+10);ctx.fillStyle='#79b7ff';ctx.fillRect(sp.x-7*s,sp.y-6*s,14*s,8*s);
+        const sp=iso(obj.x,obj.y,obj.z+10);ctx.fillStyle=activeInteraction?'#c8f5ff':'#79b7ff';ctx.fillRect(sp.x-7*s,sp.y-6*s,14*s,8*s);
+        if(activeInteraction){ctx.fillStyle='#376d86';ctx.fillRect(sp.x-5*s,sp.y-4*s,9*s,1.3*s);ctx.fillRect(sp.x-5*s,sp.y-1*s,7*s,1.3*s);}
       }else if(obj.kind==='phone'){
         const sp=iso(obj.x,obj.y,obj.z+2);ctx.fillStyle='#9ae7ff';ctx.fillRect(sp.x-2*s,sp.y-4*s,4*s,7*s);
       }else if(obj.kind==='plant'){
         const sp=iso(obj.x,obj.y,obj.z+8);ctx.fillStyle='#67a76d';ctx.beginPath();ctx.arc(sp.x,sp.y-6*s,7*s,0,Math.PI*2);ctx.fill();
+      }else if(activeInteraction&&obj.kind==='printer'){
+        const paper=iso(obj.x,obj.y,obj.z+11);ctx.fillStyle='#f5f3df';ctx.fillRect(paper.x-7*s,paper.y-10*s,14*s,9*s);ctx.strokeStyle='#789';ctx.lineWidth=1;ctx.strokeRect(paper.x-7*s,paper.y-10*s,14*s,9*s);
+      }else if(activeInteraction&&obj.kind==='whiteboard'){
+        const board=iso(obj.x,obj.y,obj.z+12);ctx.strokeStyle='#5e74a8';ctx.lineWidth=1.4*s;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(board.x-8*s,board.y+(i-2)*3*s);ctx.lineTo(board.x+7*s,board.y+(i-2)*3*s);ctx.stroke()}
       }
+      if(activeInteraction){ctx.strokeStyle='rgba(255,229,138,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,11*s,0,Math.PI*2);ctx.stroke()}
     };
 
     const sky=ctx.createLinearGradient(0,0,0,height);
@@ -514,6 +521,14 @@ export function GrokSimulationPanel(){
     ctx.fillStyle='#d8ad91';ctx.beginPath();ctx.arc(hp.x,hp.y-39*humanScale,7*humanScale,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#2b2633';ctx.beginPath();ctx.arc(hp.x,hp.y-41*humanScale,7.2*humanScale,Math.PI,Math.PI*2);ctx.fill();
 
+    if(activeObject){
+      const target=iso(activeObject.x,activeObject.y,Math.max(5,activeObject.z*.55));
+      ctx.strokeStyle='#ffe58a';ctx.lineWidth=2*humanScale;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(hp.x+8*humanScale,hp.y-20*humanScale);ctx.lineTo(target.x,target.y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#ffe58a';ctx.beginPath();ctx.arc(target.x,target.y,3*humanScale,0,Math.PI*2);ctx.fill();
+    }
+
     // Original life-status marker (not copied game art).
     const markerY=hp.y-64*humanScale;
     ctx.fillStyle=state.needs.energy<35?'#ff856f':'#6ff0b3';
@@ -545,6 +560,12 @@ export function GrokSimulationPanel(){
     ctx.beginPath();ctx.moveTo(mp.x+6*ms,mp.y-17*ms);ctx.lineTo(mp.x+14*ms,mp.y-8*ms);ctx.stroke();
     ctx.strokeStyle='#9c7353';ctx.lineWidth=2*ms;ctx.beginPath();ctx.arc(mp.x+7*ms,mp.y-14*ms,11*ms,-1.5,1.15);ctx.stroke();
     ctx.font='9px ui-sans-serif,system-ui';ctx.textAlign='center';ctx.fillStyle='#f2d6bd';ctx.fillText('Auri · '+macaque.behavior,mp.x,mp.y-42*ms);
+    const macaqueTarget=WORLD_OBJECTS.find(obj=>obj.label===macaque.targetLabel);
+    if(macaqueTarget&&(macaque.behavior==='inspect'||macaque.behavior==='forage'||macaque.behavior==='climb')){
+      const mt=iso(macaqueTarget.x,macaqueTarget.y,Math.max(5,macaqueTarget.z*.5));
+      ctx.strokeStyle='#e4ad74';ctx.lineWidth=1.6*ms;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(mp.x,mp.y-14*ms);ctx.lineTo(mt.x,mt.y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='#e4ad74';ctx.beginPath();ctx.arc(mt.x,mt.y,3*ms,0,Math.PI*2);ctx.fill();
+    }
 
     // FlyWire agent in real 2.5D flight height.
     const groundFly=iso(fly.x,fly.y,0);
@@ -594,6 +615,8 @@ export function GrokSimulationPanel(){
     macaque.x,macaque.y,macaque.heading,state.person.x,state.person.y,fly.x,fly.y
   ]);
   const relation=state.relationships[0];
+  const macaqueTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.label===macaque.targetLabel)||null,[macaque.targetLabel]);
+  const flyTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.label===fly.targetLabel)||null,[fly.targetLabel]);
   const povAgents=useMemo<PovOtherAgent[]>(()=>[
     {id:'human',label:state.person.name,actor:'human',x:state.person.x,y:state.person.y,z:18},
     {id:'fly',label:'Mosca',actor:'fly',x:fly.x,y:fly.y,z:fly.z||36},
@@ -777,6 +800,7 @@ export function GrokSimulationPanel(){
               fovDeg={135} range={245}
               thought={minds.macaque.publicThought}
               action={macaque.behavior+' · '+macaque.targetLabel}
+              interactionObjectId={macaqueTargetObject?.id||null}
               otherAgents={povAgents.filter(x=>x.id!=='macaque')}
             />
             <LifeFirstPersonViewport
@@ -787,6 +811,7 @@ export function GrokSimulationPanel(){
               fovDeg={150} peripheralFovDeg={330} range={235}
               thought={minds.fly.publicThought}
               action={fly.behavior+' · '+fly.targetLabel}
+              interactionObjectId={flyTargetObject?.id||null}
               otherAgents={povAgents.filter(x=>x.id!=='fly')}
             />
           </div>
