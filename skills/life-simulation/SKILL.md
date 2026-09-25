@@ -196,3 +196,26 @@ Além das necessidades e memórias, o agente mantém:
 - `DewingShen88/sims4-immersive-controls`: reference-only; usar autonomia, pesos de interação, memória e reversibilidade em alto nível.
 - `francot514/FreeSims`: MPL-2.0, reference-only; casa/trabalho/comunidade e engine independente de assets proprietários.
 - repositórios de desbloqueio/DLC: **quarentena; não usar no código, corpus ou runtime**.
+
+
+## Organismos não-NPC v2.1
+
+Agentes da simulação não devem executar órbitas, rotas circulares ou filas fixas apenas para parecer ativos.
+
+Cada decisão deve combinar:
+- estado corporal/drive;
+- percepção local;
+- memória espacial/episódica;
+- curiosidade/novidade;
+- segurança;
+- contexto social;
+- objetivo;
+- uma fonte determinística de variação;
+- ação alternativa.
+
+Padrão:
+**SENSE → UPDATE DRIVES → RECALL → FORM HYPOTHESES → SCORE AFFORDANCES → CHOOSE + ALTERNATIVE → ACT → VERIFY → CONSOLIDATE MEMORY**.
+
+O humano e a mosca podem ficar parados, descansar, observar, investigar, mudar de ideia, evitar estímulos, buscar interação ou abandonar um objetivo. Movimento constante é considerado bug de simulação.
+
+O Cognitive Lab também expõe múltiplos cérebros humanos simulados para comparação de hipóteses. Eles não são pessoas reais e não devem ser apresentados como mentes reais digitalizadas.
