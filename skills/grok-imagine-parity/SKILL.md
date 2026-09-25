@@ -289,3 +289,15 @@ Padrões aprovados para adaptação, sem transformar serviços de terceiros em d
 - `apimart-API-Gateway/grok-image-api`: referência documental para adapter e contratos de imagem; licença do repositório não autoriza copiar implementação. Usar somente padrões de interface/documentação ou endpoint autorizado configurado pelo usuário.
 
 Para visualizações do Cognitive Lab, o Imagine pode receber um prefill conceitual via `sessionStorage`; isso não transforma telemetria simulada em “imagem do pensamento real”.
+
+
+## Character Fidelity Gate vNext
+
+Pedidos de personagem/franquia específica são identity-sensitive e usam Literal por padrão.
+
+- personagem único deve receber **subject-count lock**; se o usuário pediu apenas Freeza/Frieza, não adicionar Goku, Vegeta, outro adversário ou um segundo Freeza;
+- referências visuais servem para identidade, anatomia, traje, cores, símbolos e forma canônica; composição pode variar;
+- o Cognitive Creative Brain pode alterar câmera, staging, iluminação, profundidade e hierarquia, mas nunca identidade, número de personagens, forma/poder/traje ou ação obrigatória;
+- revisão semântica pode acionar tentativas extras **limitadas** de recuperação de identidade; nunca loop infinito;
+- uma imagem de personagem específico que continua `semanticReview.status=failed` pode ser mostrada com aviso, mas não deve entrar em `Gerações recentes` como se estivesse aprovada;
+- fallback textual/público continua explicitamente `fidelityLimited`; não mascarar baixa fidelidade como sucesso verificado.
