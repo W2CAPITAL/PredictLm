@@ -561,56 +561,95 @@ export function ChatShell({onOpenLegal}:Props){
         'VERIFY · validando aderência ao pedido'
       ]);
 
-      try{
-        const local=await answerLocally(prompt,messages,{
-          deep:s.deepThink,
-          language,
-          researchContext,
-          fallbackText:localFallback||undefined,
-          onStage:(stage)=>{
-            const labels:Record<string,string>={
-              recall:'RECALL · recuperando contexto',
-              plan:'PLAN · estruturando resposta',
-              forge:'FORGE · gerando resposta',
-              aegis:'AEGIS · revisando resposta',
-              verify:'VERIFY · validando resposta'
-            };
-            setActivity([labels[stage]||'PREDICT CORE · processando']);
-          }
-        });
-        const gate=publicAnswerGate(local.content,language,prompt);
-        const publicText=gate.ok?gate.content:sanitizePublicAnswer(local.content,prompt);
-        const aligned=responseTopicAlignment(prompt,publicText||local.content);
-        const weak=signalsKnowledgeGap(publicText||local.content)
-          ||/não tenho (?:contexto|evidência)|nao tenho (?:contexto|evidencia)/i.test(publicText||local.content);
-        const minQuality=kind==='howto'?2:kind==='factual'?0:-1;
-        if(publicText&&aligned.relevant&&!weak&&answerQuality(prompt,publicText)>=minQuality){
-          const localSources=filterDisplayedSources(prompt,local.sources||[],8);
-          s.addMessage({
-            role:'assistant',
-            content:publicText,
-            engine:'Predict Auto',
-            sources:localSources,
-            reasoningSummary:buildReasoningSummary({
-              kind,
-              webCount:localSources.length,
-              localBrain:true,
-              anchor:!!localFallback,
-              deep:s.deepThink
-            }),
-            actions:[
-              'PredictLM Core executou a resposta',
-              local.engine==='webllm'?'WebLLM local utilizado':
-                local.engine==='neural-lite'||local.engine==='neural-smart'?'Neural Local utilizado':
-                  local.engine==='native'?'Modelo nativo do navegador utilizado':'Knowledge/memória interna utilizada',
-              ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
-              'Resposta validada antes de exibir'
-            ],
-            status:'done'
+      const tryLocalBrain=async()=>{
+        try{
+          const local=await answerLocally(prompt,messages,{
+            deep:s.deepThink,
+            language,
+            researchContext,
+            fallbackText:localFallback||undefined,
+            onStage:(stage)=>{
+              const labels:Record<string,string>={
+                recall:'RECALL · recuperando contexto',
+                plan:'PLAN · estruturando resposta',
+                forge:'FORGE · gerando resposta',
+                aegis:'AEGIS · revisando resposta',
+                verify:'VERIFY · validando resposta'
+              };
+              setActivity([labels[stage]||'PREDICT CORE · processando']);
+            }
           });
-          return;
+          const gate=publicAnswerGate(local.content,language,prompt);
+          const publicText=gate.ok?gate.content:sanitizePublicAnswer(local.content,prompt);
+          const aligned=responseTopicAlignment(prompt,publicText||local.content);
+          const weak=signalsKnowledgeGap(publicText||local.content)
+            ||/não tenho (?:contexto|evidência)|nao tenho (?:contexto|evidencia)/i.test(publicText||local.content);
+          const minQuality=kind==='howto'?2:kind==='factual'?0:-1;
+          if(publicText&&aligned.relevant&&!weak&&answerQuality(prompt,publicText)>=minQuality){
+            const localSources=filterDisplayedSources(prompt,local.sources||[],8);
+            s.addMessage({
+              role:'assistant',
+              content:publicText,
+              engine:'Predict Auto',
+              sources:localSources,
+              reasoningSummary:buildReasoningSummary({
+                kind,
+                webCount:localSources.length,
+                localBrain:true,
+                anchor:!!localFallback,
+                deep:s.deepThink
+              }),
+              actions:[
+                'PredictLM Core executou a resposta',
+                local.engine==='webllm'?'WebLLM local utilizado':
+                  local.engine==='neural-lite'||local.engine==='neural-smart'?'Neural Local utilizado':
+                    local.engine==='native'?'Modelo nativo do navegador utilizado':'Knowledge/memória interna utilizada',
+                ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
+                'Resposta validada antes de exibir'
+              ],
+              status:'done'
+            });
+            return true;
+          }
+        }catch{}
+        return false;
+      };
+
+      if(await tryLocalBrain())return;
+
+      const canBootstrapLite=
+        !currentNeural.loaded
+        &&!currentWebLLM.loaded
+        &&!localFallback
+        &&!needsWeb
+        &&kind!=='casual'
+        &&kind!=='context'
+        &&kind!=='current'
+        &&prompt.length<=1400
+        &&(caps.memory===0||caps.memory>=2)
+        &&(caps.cores===0||caps.cores>=2);
+
+      if(canBootstrapLite){
+        setActivity(['NEURAL LOCAL · iniciando Qwen Lite','CPU/WASM · preparando execução sem Ollama','PREDICT CORE · preservando o turno']);
+        try{
+          setModelError('');
+          setLoadState({tier:'lite',progress:null,status:'Neural Local automático · preparando Qwen Lite'});
+          await loadNeuralModel('lite',progress=>{
+            setLoadState({
+              tier:'lite',
+              progress:progress.progress,
+              status:'Neural Local automático · '+progress.status
+            });
+          },{persistPreference:true,timeoutMs:65000});
+          setLoadState(null);
+          setModelTick(x=>x+1);
+          if(await tryLocalBrain())return;
+        }catch(error:any){
+          setLoadState(null);
+          setModelTick(x=>x+1);
+          setModelError('Neural Local automático indisponível neste dispositivo; seguindo pelas outras rotas do PredictLM.');
         }
-      }catch{}
+      }
 
       if(s.localRuntimeEnabled){
         setActivity(['PREDICT CORE · tentando runtime local configurado','VERIFY · validando resposta local']);
