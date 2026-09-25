@@ -1,6 +1,7 @@
 import {advanceFrankEmotion,createFrankEmotionState,emotionMemoryTag,frankEmotionContext,type FrankEmotionState} from './frank-emotion';
 import {createFrankNeuronMesh,frankNeuronContext,stepFrankNeuronMesh,type FrankNeuronMeshSummary,type FrankNeuronRegion} from './frank-neurons';
 import {frankSourceContext} from './frank-sources';
+import {consolidateFrankMemory,createFrankHippocampus,encodeFrankEpisode,hippocampusContext,recallFrankMemory,type FrankHippocampusState} from './frank-hippocampus';
 
 export interface FrankSteinState{
   version:1;
@@ -8,6 +9,7 @@ export interface FrankSteinState{
   identity:'Frank Stein';
   emotion:FrankEmotionState;
   neurons:FrankNeuronMeshSummary;
+  hippocampus:FrankHippocampusState;
   memoryAffect:{
     lastValence:number;
     lastArousal:number;
@@ -28,7 +30,7 @@ const clamp=(v:number,min=0,max=1)=>Math.max(min,Math.min(max,v));
 export function createFrankSteinState():FrankSteinState{
   const emotion=createFrankEmotionState();
   return {
-    version:1,tick:0,identity:'Frank Stein',emotion,neurons:createFrankNeuronMesh(),
+    version:1,tick:0,identity:'Frank Stein',emotion,neurons:createFrankNeuronMesh(),hippocampus:createFrankHippocampus(),
     memoryAffect:{lastValence:emotion.valence,lastArousal:emotion.arousal,lastSalience:.4,labels:emotion.dominant},
     body:{tension:.18,energy:.66,calm:.68,socialNeed:.38},
     lastExperience:'Inicialização do núcleo híbrido.'
@@ -60,12 +62,22 @@ export function advanceFrankStein(
     reward:emotion.reward,
     predictionError:input?.predictionError??.3
   });
+  const encoded=encodeFrankEpisode(prev.hippocampus,{
+    cue:experience,
+    gist:String(experience||'').replace(/\s+/g,' ').trim().slice(0,320),
+    context:'tick '+prev.tick+' | feelings '+emotion.dominant.join(', '),
+    emotion:[emotion.valence,emotion.arousal,emotion.attachment,emotion.fear,emotion.joy,emotion.sadness,emotion.anger,emotion.empathy],
+    salience:tag.emotionalSalience
+  });
+  const hippocampus=(emotion.arousal<.34&&emotion.safety>.55)
+    ? consolidateFrankMemory(encoded,.55)
+    : encoded;
   const tension=clamp(prev.body.tension*.65+emotion.arousal*.12+emotion.threat*.16+emotion.frustration*.12-emotion.safety*.08);
   const energy=clamp(prev.body.energy*.72+emotion.arousal*.1+emotion.joy*.06-emotion.sadness*.05-tension*.06);
   const calm=clamp(prev.body.calm*.68+emotion.safety*.16+emotion.relief*.1-emotion.threat*.12);
   const socialNeed=clamp(prev.body.socialNeed*.76+emotion.loneliness*.12+emotion.attachment*.06-emotion.trust*.04);
   return {
-    version:1,tick:prev.tick+1,identity:'Frank Stein',emotion,neurons,
+    version:1,tick:prev.tick+1,identity:'Frank Stein',emotion,neurons,hippocampus,
     memoryAffect:{lastValence:emotion.valence,lastArousal:emotion.arousal,lastSalience:tag.emotionalSalience,labels:tag.labels},
     body:{tension,energy,calm,socialNeed},
     lastExperience:String(experience||'').replace(/\s+/g,' ').trim().slice(0,420)
@@ -78,6 +90,7 @@ export function frankSteinContext(state:FrankSteinState){
     'Identity: Frank Stein. This is a software cognitive architecture; never claim donor memories, donor thoughts or biological consciousness.',
     frankEmotionContext(state.emotion),
     frankNeuronContext(state.neurons),
+    hippocampusContext(state.hippocampus),
     'BODY/INTEROCEPTION: tension '+state.body.tension.toFixed(2)+', energy '+state.body.energy.toFixed(2)+', calm '+state.body.calm.toFixed(2)+', social need '+state.body.socialNeed.toFixed(2)+'.',
     'BRAIN SOURCES:',
     frankSourceContext()
@@ -134,4 +147,9 @@ export function frankPublicMentalState(state:FrankSteinState):FrankPublicMentalS
   const memoryTone=(state.memoryAffect.labels.join(', ')||'neutro')+' · saliência '+Math.round(state.memoryAffect.lastSalience*100)+'%';
   const confidence=Math.max(0,Math.min(1,(e.appraisal.certainty+e.appraisal.controllability)/2));
   return {feeling,focus,want,body,memoryTone,nextTendency,confidence};
+}
+
+
+export function frankRecall(state:FrankSteinState,cue:string){
+  return recallFrankMemory(state.hippocampus,cue);
 }
