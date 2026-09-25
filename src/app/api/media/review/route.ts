@@ -5,6 +5,41 @@ export const dynamic='force-dynamic';
 
 const unavailable=()=>Response.json({status:'unavailable',issues:[],retryPrompt:''},{headers:{'Cache-Control':'no-store'}});
 
+function normalize(input:string){
+  return String(input||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function specificIdentityChecklist(prompt:string){
+  const p=normalize(prompt);
+  const rules:string[]=[];
+  const multi=/\b(vs\.?|versus|contra|lutando|enfrentando|batalha|fight|battle)\b/.test(p);
+  if(/\b(freeza|frieza)\b/.test(p)){
+    rules.push(
+      'FRIEZA/FREEZA: must visibly read as Dragon Ball Frieza: smooth mostly white alien body/bio-armor, purple dome/plates, sleek non-Saiyan silhouette and recognizable Frieza face. Fail a black-haired Saiyan, orange-gi fighter, generic horned demon, dragon or unrelated alien.'
+    );
+    if(!multi)rules.push('FRIEZA SINGLE SUBJECT: exactly one primary Frieza; fail if Goku/Vegeta/Saiyan opponent or a duplicate primary character is visibly added.');
+  }
+  if(/\bnaruto\b/.test(p)){
+    rules.push('NARUTO: must visibly read as Naruto Uzumaki, not merely a generic blond anime fighter. Look for Naruto-defining facial/hair cues and the requested costume/form.');
+  }
+  if(/\bkurama\b/.test(p)){
+    rules.push('KURAMA: if requested, require a fox/Nine-Tails identity with clearly fox-like anatomy and multiple tails; fail generic blue spirit, dragon, wolf or unrelated aura monster.');
+  }
+  if(/\bsasuke\b/.test(p)){
+    rules.push('SASUKE: must visibly read as Sasuke Uchiha, not a generic black-haired ninja or Naruto clone.');
+  }
+  if(/\bsusanoo\b/.test(p)){
+    rules.push('SUSANOO: if Perfect Susanoo is requested, require a large complete purple/violet armored humanoid chakra avatar; fail a vague blue ghost, ordinary aura, animal spirit or generic robot.');
+  }
+  if(/\b(oozaru|great ape)\b/.test(p)){
+    rules.push('OOZARU: require a gigantic brown ape-like Saiyan transformation with a tail; fail ordinary small monkey, robot ape or unrelated kaiju.');
+  }
+  if(/\b(quatro caudas|four tails|bijuu)\b/.test(p)&&/\bnaruto\b/.test(p)){
+    rules.push('NARUTO FOUR-TAILS BIJUU: require the requested Naruto tailed-beast identity and exactly four visible tails when the prompt says Four-Tails; do not confuse with human Goku from Dragon Ball.');
+  }
+  return rules.join('\n');
+}
+
 function genericReview(value:any){
   const status=value?.status==='passed'?'passed':value?.status==='failed'?'failed':'unavailable';
   const issues=Array.isArray(value?.issues)
@@ -58,6 +93,8 @@ export async function POST(req:Request){
           'Compare the image to the user request. Check concrete requested facts: subject identity/category, number of subjects, important visible attributes/colors/clothing/forms, action/relationship, composition constraints, setting, requested objects and explicit exclusions.',
           'Do not fail for subjective style preferences that the user did not request. Do not invent requirements.',
           'If a named or specific subject is clearly replaced by a generic lookalike, wrong species/category, wrong count or contradictory defining attribute, mark failed.',
+          specificIdentityChecklist(prompt),
+          'When an identity checklist is present, it is a material requirement. Do not pass a visually different character merely because pose/style is similar.',
           'Return JSON only: {"status":"passed|failed","issues":["short concrete visible discrepancy"],"retryPrompt":"compact positive correction instructions for the next image generation"}.',
           'Use passed only when no clear material mismatch is visible. Limit issues to the most important 6.',
           'Requested scene: '+prompt
