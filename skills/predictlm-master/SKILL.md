@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.13.0"
+  version: "3.14.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.13
+# PredictLM Master v3.14
 
 ## Regra soberana
 
@@ -850,3 +850,17 @@ The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approve
 - run visual QA after generation and make only bounded repairs from concrete visible defects;
 - do not treat bundled reference photos/products as training material;
 - Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
+
+## Cognitive Lab v4 — população e observabilidade
+
+Quando a rota for cognitive-lab, carregar NeuroCore v4 + Life Simulation v2.1.
+
+- O Chat normal em / permanece independente dos históricos /cognitive, /cognitive/human e /cognitive/fly.
+- A população multi-humana é uma simulação de software; nunca descrevê-la como humanos reais digitalizados.
+- H01 e FlyWire informam arquitetura/controle, nunca memórias biográficas importadas.
+- Recall consulta memória persistida e não regrava a própria resposta de recall como uma nova lembrança.
+- Autonomia humana usa intenção persistente, novidade, repetição, urgência e escolha reproduzível; Fly Core usa alvos persistentes e interrupção por ameaça.
+- /cognitive/observatory pode mostrar relatório público de objetivo, foco, memória evocada, ação, confiança e incerteza.
+- Relatório público não é chain-of-thought; não alegar leitura de mente.
+- Persistência cognitiva continua browser-local/IndexedDB. Supabase não faz parte do Cognitive Lab.
+- Vercel pode hospedar a aplicação e adapters server-side opcionais, mas não é banco obrigatório do estado cognitivo.
