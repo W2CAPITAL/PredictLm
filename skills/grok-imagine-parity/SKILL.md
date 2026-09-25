@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -358,3 +358,30 @@ Semantic review should use concrete franchise cues when known. Examples:
 - Naruto Four-Tails: correct tailed-beast identity and four tails when requested.
 
 Review pixels, not prompt text. Prompt similarity is not visual fidelity.
+
+
+## Automatic visual search v1.9
+
+Manual reference upload is an override, never a prerequisite for ordinary named-character generation.
+
+Default character flow:
+
+**IDENTIFY SUBJECT → BUILD CANONICAL QUERY → AUTO IMAGE SEARCH → RANK REFERENCES → DOWNLOAD PUBLIC IMAGES → PASS REFERENCES TO IMAGE MODEL → GENERATE → SEMANTIC REVIEW**
+
+Search order:
+1. Google Images API when configured;
+2. Firecrawl Images;
+3. Pinterest via Firecrawl/Google when available;
+4. DuckDuckGo Images no-key fallback.
+
+Rules:
+- lack of Google credentials must not degrade immediately to text-only identity lock;
+- automatic search must still run through the free fallback;
+- retrieved image URLs are forwarded to reference-capable image providers;
+- user-uploaded references still outrank searched references when the user chooses to provide them;
+- the UI must say upload is optional;
+- the identity rejection message must never instruct the user to upload references when automatic references were already found and forwarded;
+- an automatically grounded but semantically unverified candidate may be inspected in-session with a warning, but stays out of Recent until approved;
+- a visibly wrong character still fails the semantic gate.
+
+The public fallback renderer forwards up to three searched reference URLs through the image-reference field supported by compatible image endpoints. Provider support remains model-dependent and must be reported truthfully.
