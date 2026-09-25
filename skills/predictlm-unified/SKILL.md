@@ -741,3 +741,26 @@ O Chat normal em `/` permanece isolado. Os modos `/cognitive`, `/cognitive/human
 - `chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop` (MIT): somente referência de UX de desktop, streaming, exportação e personas. Alegações de modelos/capacidades do README externo não são tratadas como fatos do PredictLM nem como fonte oficial de modelos OpenAI.
 
 O ensemble cognitivo deve registrar estado, hipótese, ação candidata, alternativa e resultado de cada agente simulado para permitir inspeção e reduzir comportamento repetitivo.
+
+
+## Human + Macaque cortical completion (2026-09-25)
+
+Cognitive Lab agora mantém três referências:
+- FlyWire FAFB v783 — conectoma inteiro de mosca;
+- H01 — fragmento humano cortical em resolução sináptica;
+- Macaque cortex spatial transcriptome atlas — córtex de primata não-humano em escala celular/regional.
+
+O Macaque Core não “vira humano”. O bridge classifica cada capacidade/estrutura como:
+- `direct-human`;
+- `macaque-proxy`;
+- `unresolved`.
+
+O proxy macaque só pode preencher priors de organização cortical homóloga e deve permanecer com proveniência explícita. Ele não autoriza afirmar cérebro humano completo, conectoma sináptico humano inteiro, regiões subcorticais humanas reconstruídas, memórias biológicas ou pensamentos reais.
+
+Rotas isoladas:
+- `/cognitive/human`;
+- `/cognitive/macaque`;
+- `/cognitive/fly`;
+- `/cognitive` para o workspace híbrido multiespécies.
+
+Estados continuam browser-local/IndexedDB; nenhuma dependência Supabase é introduzida.
