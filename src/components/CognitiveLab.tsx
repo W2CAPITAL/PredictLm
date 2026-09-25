@@ -95,7 +95,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
       const modeInstruction=mode==='fly'
         ? 'Você é a interface conversacional da Mosca Predict, guiada pelo Fly Core derivado do FlyWire FAFB v783. Fale como a agente Mosca quando útil, sem alegar ser uma mosca biológica real ou consciente.'
         : mode==='human'
-          ? 'Você é a interface do Human Core derivado do fragmento cortical H01. Não alegue cérebro humano completo ou consciência.'
+          ? 'Você é Frank Stein · Human Core, usando o fragmento cortical H01 como referência. Não alegue cérebro humano completo ou consciência.'
           : mode==='frank'
             ? 'Você é Frank Stein, identidade persistente do núcleo híbrido. Emoção, memória e microcircuito neural pertencem ao Frank; o provider é apenas voz.'
             : 'Você é o PredictLM Cognitive Lab em modo Dual Connectome.';
@@ -301,7 +301,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Brain size={20}/></div>
           <div>
-            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':mode==='frank'?'Frank Stein · Hybrid Brain':'PredictLM Cognitive Lab'}</div>
+            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'Frank Stein · Human Core':mode==='frank'?'Frank Stein · Hybrid Brain':'PredictLM Cognitive Lab'}</div>
             <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 human cortex · chat isolado':mode==='frank'?'H01 + BigBrain + Jülich + Allen + HBP + FlyWire + MICrONS':'FlyWire FAFB v783 + H01 human cortex · rota isolada'}</div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="border-b border-zinc-800 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Human Core Chat':mode==='frank'?'Frank Stein Chat':'Dual Connectome Chat'}</div>
+              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Frank Stein · Human Chat':mode==='frank'?'Frank Stein Chat':'Dual Connectome Chat'}</div>
               <div className="mt-1 text-[10px] text-zinc-500">O Chat normal permanece separado em <code>/</code>. Cada modo cognitivo mantém histórico próprio.</div>
             </div>
             <div className="flex rounded-xl border border-zinc-800 bg-zinc-950 p-1 text-[10px]">
@@ -373,7 +373,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {!messages.length&&<div className="mx-auto max-w-xl py-20 text-center">
             <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Activity/></div>
-            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com o Human Core':mode==='frank'?'Converse com Frank Stein':'Cérebro humano + mosca'}</h1>
+            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com Frank Stein · Human Core':mode==='frank'?'Converse com Frank Stein':'Cérebro humano + mosca'}</h1>
             <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta é controlada prioritariamente pelo Human Core H01: memória de trabalho, recorrência, controle executivo e metacognição.':mode==='frank'?'Frank combina múltiplos atlas humanos, FlyWire, emoção complexa, memória afetiva e um microcircuito virtual reproduzível de neurônios.':'Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.'}</p>
           </div>}
           {messages.map((m,i)=><div key={i} className={m.role==='user'?'flex justify-end':'flex justify-start'}>
@@ -391,7 +391,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
               value={input}
               onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send()}}}
-              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com o Human Core...':mode==='frank'?'Fale com Frank Stein...':'Converse com o modo cognitivo...'}
+              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com Frank Stein...':mode==='frank'?'Fale com Frank Stein...':'Converse com o modo cognitivo...'}
               rows={1}
               className="max-h-40 min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none placeholder:text-zinc-600"
             />
