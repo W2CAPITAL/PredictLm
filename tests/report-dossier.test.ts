@@ -127,3 +127,28 @@ test('evidence and timeline facts without provenance are flagged',()=>{
   assert.ok(quality.issues.some(x=>x.code==='inference-only'&&x.sectionId==='cronologia'));
   assert.ok(quality.issues.some(x=>x.code==='inference-only'&&x.sectionId==='evidencias'));
 });
+
+
+test('structured dossier top-level blocks become typed sections and numbers are renderer-owned',()=>{
+  const dossier=coerceDossier({
+    title:'Relatório executivo — carteira',
+    bottomLine:'Há duas ações prioritárias.',
+    meta:{kind:'relatorio-executivo',classification:'interno'},
+    sections:[
+      {title:'Sumário executivo',body:'Carteira revisada [fornecida].',number:'99'}
+    ],
+    metrics:[{label:'Casos',value:'12'}],
+    timeline:[{date:'25/09/2026',title:'Base recebida',origin:'provided',source:'planilha'}],
+    risks:[{level:'high',title:'Prazo próximo',mitigation:'revisar agenda'}],
+    actions:[{action:'Revisar agenda',owner:'Equipe',deadline:'26/09/2026',priority:'urgente'}],
+    sources:[{title:'Planilha',origin:'provided'}],
+    limitations:['Dados dependem da planilha recebida.']
+  });
+  assert.equal(dossier.sections[0].number,'1');
+  assert.ok(dossier.sections.some(x=>x.role==='metrics'));
+  assert.ok(dossier.sections.some(x=>x.role==='timeline'&&x.body.includes('[fornecida]')));
+  assert.ok(dossier.sections.some(x=>x.role==='risks'&&/\*\*Alto\*\*/.test(x.body)));
+  assert.ok(dossier.sections.some(x=>x.role==='actions'&&/responsável: Equipe/i.test(x.body)));
+  assert.ok(dossier.sections.some(x=>x.role==='sources'));
+  assert.ok(dossier.sections.some(x=>x.role==='limitations'));
+});
