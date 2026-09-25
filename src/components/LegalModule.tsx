@@ -14,7 +14,7 @@ const formatDate=(v?:string)=>{
   return Number.isNaN(d.getTime())?v:d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:v.includes('T')?'short':undefined});
 };
 
-export function LegalModule({onBack,onOpenBuild,initialNumber=''}:{onBack:()=>void;onOpenBuild?:()=>void;initialNumber?:string}){
+export function LegalModule({onBack,initialNumber=''}:{onBack?:()=>void;initialNumber?:string}={}){
   const [query,setQuery]=useState(initialNumber);
   const [result,setResult]=useState<LegalProcessBundle|null>(null);
   const [loading,setLoading]=useState(false);
@@ -65,9 +65,14 @@ export function LegalModule({onBack,onOpenBuild,initialNumber=''}:{onBack:()=>vo
     djen:result?.djen.ok?'online':result?'erro':'aguardando'
   }),[result]);
 
+  const goBack=()=>{
+    if(onBack){onBack();return;}
+    window.location.assign('/');
+  };
+
   return <div className="legal-shell">
     <aside className="legal-side">
-      <div className="legal-side-head"><button onClick={onBack}><ArrowLeft size={16}/></button><div><span className="legal-mark"><Scale size={16}/></span><b>Processos</b></div></div>
+      <div className="legal-side-head"><button onClick={goBack}><ArrowLeft size={16}/></button><div><span className="legal-mark"><Scale size={16}/></span><b>Processos</b></div></div>
       <button className="legal-new" onClick={()=>{setResult(null);setQuery('');setError('')}}><FileSearch size={15}/>Nova consulta</button>
       <span className="legal-side-label">Recentes</span>
       <div className="legal-history">{history.length?history.map(n=><button key={n} onClick={()=>{setQuery(n);search(n)}}>{n}</button>):<small>Nenhuma consulta ainda.</small>}</div>
@@ -75,18 +80,18 @@ export function LegalModule({onBack,onOpenBuild,initialNumber=''}:{onBack:()=>vo
         <div><i className={sourceState.datajud}/><span><b>DataJud</b><small>capa + movimentos</small></span></div>
         <div><i className={sourceState.djen}/><span><b>DJEN</b><small>publicações + prazos</small></span></div>
       </div>
-      <div className="legal-side-note">Módulo Lexis integrado ao produto. Dados públicos; confirme os autos antes de decisões sobre prazo ou mérito.</div>
+      <div className="legal-side-note">Consulta processual. Sem CRM, carteira de clientes ou gestão comercial. Dados públicos; confirme os autos antes de decisões sobre prazo ou mérito.</div>
     </aside>
 
     <main className="legal-main">
       <header className="legal-top">
-        <div><span>PredictLM / Processos</span><h1>DataJud + DJEN</h1></div>
-        <div className="legal-top-actions">{onOpenBuild&&<button onClick={onOpenBuild}>Abrir no Build</button>}{result&&<button onClick={downloadDossier}><Download size={14}/>Dossiê HTML</button>}</div>
+        <div><span>PredictLM / Processos</span><h1>Consulta de Processos</h1></div>
+        <div className="legal-top-actions">{result&&<button onClick={downloadDossier}><Download size={14}/>Dossiê HTML</button>}</div>
       </header>
 
       <section className="legal-query">
         <div className="legal-query-box"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')search()}} placeholder="Número CNJ — ex.: 4000338-89.2026.8.26.0002"/><button onClick={()=>search()} disabled={loading||!query.trim()}>{loading?<RefreshCw className="spin" size={17}/>:<Search size={17}/>}Consultar</button></div>
-        <p>Consulta oficial em duas camadas: DataJud para metadados/movimentos e DJEN para comunicações publicadas.</p>
+        <p>Consulte um processo pelo número CNJ. O PredictLM cruza DataJud e DJEN e organiza os dados em uma única leitura.</p>
       </section>
 
       {error&&<div className="legal-error"><ShieldAlert size={17}/><div><b>Consulta não concluída</b><span>{error}</span></div></div>}
