@@ -58,6 +58,14 @@ export interface LifeWorldPlace{
   purpose:string;
 }
 
+export interface LifeAutonomyState{
+  destination:LifeLocation;
+  commitmentTicks:number;
+  decisionReason:string;
+  recentLocations:LifeLocation[];
+  reconsiderations:number;
+}
+
 export interface LifeSimulationState{
   version:1;
   seed:number;
@@ -73,6 +81,7 @@ export interface LifeSimulationState{
   neuro:NeuroState;
   places:LifeWorldPlace[];
   lastEvent:string;
+  autonomy?:LifeAutonomyState;
 }
 
 const places:LifeWorldPlace[]=[
@@ -92,6 +101,19 @@ function hash(seed:number,tick:number){
   let x=(seed^(tick*2654435761))>>>0;
   x^=x<<13;x^=x>>>17;x^=x<<5;
   return (x>>>0)/4294967295;
+}
+function hashSalt(seed:number,tick:number,salt:string){
+  let x=(seed^(tick*2654435761))>>>0;
+  for(let i=0;i<salt.length;i++){
+    x^=salt.charCodeAt(i);
+    x=Math.imul(x,16777619);
+  }
+  x^=x<<13;x^=x>>>17;x^=x<<5;
+  return (x>>>0)/4294967295;
+}
+function gumbel(seed:number,tick:number,salt:string){
+  const u=Math.max(1e-6,Math.min(.999999,hashSalt(seed,tick,salt)));
+  return -Math.log(-Math.log(u));
 }
 function place(id:LifeLocation){return places.find(x=>x.id===id)||places[0]}
 
@@ -130,7 +152,14 @@ export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173
     }],
     neuro:createNeuroState(),
     places:[...places],
-    lastEvent:'Novo dia iniciado.'
+    lastEvent:'Novo dia iniciado.',
+    autonomy:{
+      destination:'Casa',
+      commitmentTicks:0,
+      decisionReason:'observando o começo do dia antes de escolher uma atividade',
+      recentLocations:['Casa'],
+      reconsiderations:0
+    }
   };
   return state;
 }
@@ -141,30 +170,118 @@ function formatTime(minute:number){
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
 }
 
-function chooseDestination(state:LifeSimulationState):LifeLocation{
+function chooseDestination(state:LifeSimulationState){
   const {needs,person,minute}=state;
   const hour=minute/60;
-  const options:Array<{id:LifeLocation;score:number}>=[
-    {id:'Casa',score:(100-needs.energy)*1.15+(100-needs.hunger)*.95+(hour>=22||hour<6?42:0)},
-    {id:'Trabalho',score:(hour>=8&&hour<=17?42:4)+needs.focus*.36+(person.money<450?20:0)},
-    {id:'Café',score:(100-needs.social)*.72+(100-needs.fun)*.32+(hour>=11&&hour<=20?10:0)},
-    {id:'Parque',score:(100-needs.fun)*.5+needs.stress*.72+(100-needs.health)*.3},
-    {id:'Mercado',score:(100-needs.hunger)*.58+(person.money>30?8:-30)},
-    {id:'Clínica',score:(100-needs.health)*1.8+needs.stress*.35},
-    {id:'Biblioteca',score:(100-needs.focus)*.16+state.neuro.curiosity*42+(person.goal?15:0)}
+  const prior=state.autonomy||{
+    destination:person.location,
+    commitmentTicks:0,
+    decisionReason:'estado legado sem decisão registrada',
+    recentLocations:[person.location],
+    reconsiderations:0
+  };
+  const urgentHealth=needs.health<38;
+  const urgentEnergy=needs.energy<24;
+  const urgentHunger=needs.hunger<22;
+  const interrupted=urgentHealth||urgentEnergy||urgentHunger;
+
+  if(prior.commitmentTicks>0&&!interrupted){
+    return {
+      destination:prior.destination,
+      reason:'mantendo a intenção anterior por mais '+prior.commitmentTicks+' ciclo(s), em vez de trocar de tarefa a cada tick',
+      commitmentTicks:prior.commitmentTicks-1,
+      reconsidered:false
+    };
+  }
+
+  const options:Array<{id:LifeLocation;score:number;reason:string}>=[
+    {id:'Casa',score:(100-needs.energy)*1.02+(100-needs.hunger)*.72+(hour>=22||hour<6?38:0),reason:'descanso, alimentação e recuperação'},
+    {id:'Trabalho',score:(hour>=8&&hour<=17?34:3)+needs.focus*.30+(person.money<450?22:0),reason:'foco, renda e continuidade de projeto'},
+    {id:'Café',score:(100-needs.social)*.62+(100-needs.fun)*.24+(hour>=11&&hour<=20?8:0),reason:'contato social, pausa e observação'},
+    {id:'Parque',score:(100-needs.fun)*.42+needs.stress*.58+(100-needs.health)*.20,reason:'novidade, movimento e redução de estresse'},
+    {id:'Mercado',score:(100-needs.hunger)*.52+(person.money>30?6:-28),reason:'resolver alimentação e recursos práticos'},
+    {id:'Clínica',score:(100-needs.health)*1.62+needs.stress*.25,reason:'recuperar saúde quando o estado corporal exige'},
+    {id:'Biblioteca',score:(100-needs.focus)*.10+state.neuro.curiosity*36+(person.goal?12:0),reason:'aprender, criar e avançar o objetivo'}
   ];
-  options.sort((a,b)=>b.score-a.score);
-  return options[0]?.id||'Casa';
+
+  const recent=prior.recentLocations||[];
+  const curiosity=Math.max(0,Math.min(1,state.neuro.curiosity||0));
+  for(const option of options){
+    const repeats=recent.filter(x=>x===option.id).length;
+    option.score-=repeats*8.5;
+    if(repeats===0)option.score+=curiosity*8;
+    if(option.id===person.location)option.score+=9;
+    if(option.id===prior.destination)option.score+=6;
+    if(urgentHealth&&option.id==='Clínica')option.score+=80;
+    if(urgentEnergy&&option.id==='Casa')option.score+=62;
+    if(urgentHunger&&(option.id==='Casa'||option.id==='Mercado'))option.score+=42;
+  }
+
+  const temperature=6+curiosity*7;
+  const ranked=options
+    .map(option=>({...option,choiceScore:option.score+gumbel(state.seed,state.tick,'dest:'+option.id)*temperature}))
+    .sort((a,b)=>b.choiceScore-a.choiceScore);
+  const chosen=ranked[0]||{id:'Casa' as LifeLocation,score:0,choiceScore:0,reason:'recuperação básica'};
+  const commitmentTicks=chosen.id===person.location
+    ? 1+Math.floor(hashSalt(state.seed,state.tick,'stay:'+chosen.id)*3)
+    : 2+Math.floor(hashSalt(state.seed,state.tick,'commit:'+chosen.id)*5);
+  const reason=(interrupted?'interrompeu o plano anterior; ':'')+chosen.reason+
+    (recent.includes(chosen.id)?'; aceitou repetir o local porque a utilidade atual compensou a repetição':'; favoreceu uma opção menos repetida');
+
+  return {destination:chosen.id,reason,commitmentTicks,reconsidered:true};
 }
 
-function destinationAction(location:LifeLocation){
-  if(location==='Casa')return 'Cuidando de si e recuperando energia';
-  if(location==='Trabalho')return 'Trabalhando com foco em uma tarefa importante';
-  if(location==='Café')return 'Conversando e observando o ambiente';
-  if(location==='Parque')return 'Caminhando e reduzindo a tensão';
-  if(location==='Mercado')return 'Resolvendo compras e necessidades práticas';
-  if(location==='Clínica')return 'Cuidando da saúde';
-  return 'Estudando e organizando novas ideias';
+const ACTIONS:Record<LifeLocation,string[]>={
+  Casa:[
+    'Preparando algo para comer e reorganizando a cozinha',
+    'Descansando sem iniciar uma nova tarefa imediatamente',
+    'Usando o computador no projeto pessoal',
+    'Arrumando a casa e pensando no próximo passo',
+    'Lendo mensagens e escolhendo quais merecem resposta'
+  ],
+  Trabalho:[
+    'Trabalhando com foco em uma tarefa importante',
+    'Revisando o que já foi feito antes de continuar',
+    'Fazendo uma pausa curta para reduzir erro e fadiga',
+    'Organizando prioridades e bloqueios do projeto'
+  ],
+  Café:[
+    'Conversando e observando o ambiente',
+    'Fazendo uma pausa em silêncio e olhando ao redor',
+    'Respondendo uma mensagem enquanto toma algo',
+    'Anotando uma ideia que surgiu durante a pausa'
+  ],
+  Parque:[
+    'Caminhando sem rota rígida e prestando atenção ao ambiente',
+    'Sentando por alguns minutos para descansar',
+    'Observando uma área diferente do parque',
+    'Refletindo sobre o objetivo enquanto caminha'
+  ],
+  Mercado:[
+    'Comparando o que realmente precisa comprar',
+    'Resolvendo compras de alimentação',
+    'Mudando a lista depois de verificar o que está disponível'
+  ],
+  Clínica:[
+    'Cuidando da saúde e aguardando observação',
+    'Reavaliando sintomas e nível de cansaço',
+    'Descansando enquanto acompanha a recuperação'
+  ],
+  Biblioteca:[
+    'Estudando um assunto ligado ao objetivo atual',
+    'Explorando uma estante por curiosidade',
+    'Organizando novas ideias no computador',
+    'Lendo antes de decidir a próxima atividade'
+  ]
+};
+
+function destinationAction(location:LifeLocation,state:LifeSimulationState){
+  const variants=ACTIONS[location]||['Observando o ambiente antes de agir'];
+  const recent=state.person.currentAction;
+  const filtered=variants.filter(x=>x!==recent);
+  const pool=filtered.length?filtered:variants;
+  const idx=Math.floor(hashSalt(state.seed,state.tick,'action:'+location)*pool.length);
+  return pool[Math.max(0,Math.min(pool.length-1,idx))];
 }
 
 function moveToward(state:LifeSimulationState,target:LifeWorldPlace){
@@ -265,17 +382,43 @@ export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDe
     relationships:input.relationships.map(x=>({...x})),
     memories:[...input.memories],
     places:[...input.places],
-    neuro:{...input.neuro,circuits:{...input.neuro.circuits}}
+    neuro:{...input.neuro,circuits:{...input.neuro.circuits}},
+    autonomy:input.autonomy?{...input.autonomy,recentLocations:[...input.autonomy.recentLocations]}:undefined
   };
 
   if(state.minute>=24*60){state.minute-=24*60;state.day+=1}
-  const destination=forcedDestination||chooseDestination(state);
+  const autonomous=forcedDestination
+    ? {
+        destination:forcedDestination,
+        reason:'seguindo uma instrução externa explícita até o destino solicitado',
+        commitmentTicks:Math.max(2,state.autonomy?.commitmentTicks||0),
+        reconsidered:false
+      }
+    : chooseDestination(state);
+  const destination=autonomous.destination;
   const target=place(destination);
   const moved=moveToward(state,target);
   state.person.x=moved.x;state.person.y=moved.y;state.person.heading=moved.heading;
   if(moved.reached)state.person.location=destination;
-  state.person.currentAction=moved.reached?destinationAction(destination):'Indo para '+destination;
+  state.person.currentAction=moved.reached?destinationAction(destination,state):'Indo para '+destination;
   state.needs=updateNeeds(state,destination,moved.reached);
+  const priorAutonomy=state.autonomy||{
+    destination:input.person.location,
+    commitmentTicks:0,
+    decisionReason:'estado legado',
+    recentLocations:[input.person.location],
+    reconsiderations:0
+  };
+  state.autonomy={
+    destination,
+    commitmentTicks:autonomous.commitmentTicks,
+    decisionReason:autonomous.reason,
+    recentLocations:(moved.reached
+      ? [...priorAutonomy.recentLocations.filter((_,i,all)=>i>=Math.max(0,all.length-5)),destination]
+      : priorAutonomy.recentLocations
+    ).slice(-6),
+    reconsiderations:priorAutonomy.reconsiderations+(autonomous.reconsidered?1:0)
+  };
 
   if(moved.reached&&destination==='Trabalho'){
     state.person.money+=7;
@@ -332,7 +475,8 @@ export function simulationSummary(state:LifeSimulationState){
     'Objetivo: '+state.person.goal,
     'Energia '+state.needs.energy+' · Fome '+state.needs.hunger+' · Social '+state.needs.social+' · Diversão '+state.needs.fun+' · Foco '+state.needs.focus+' · Estresse '+state.needs.stress+' · Saúde '+state.needs.health,
     'Dinheiro: R$ '+state.person.money.toFixed(0),
-    'Evento: '+state.lastEvent
+    'Evento: '+state.lastEvent,
+    'Decisão autônoma: '+(state.autonomy?.decisionReason||'não registrada')
   ].join('\n');
 }
 
