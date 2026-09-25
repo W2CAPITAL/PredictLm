@@ -29,7 +29,7 @@ export function isPurchaseLocationIntent(prompt:string){
 
 export function answerLooksProcedural(text:string){
   const normalized=clean(text);
-  if(/\b(primeiro|depois|passos?|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|defina|projete|monte|fabrique|conecte|teste|verifique|dimensione|adquira|first|then|place|use|water|keep|install|select|mix|define|design|build|assemble|test|check)\b/.test(normalized))return true;
+  if(/\b(primeiro|depois|passos?|faca|comece|crie|construa|desenvolva|trabalhe|organize|implemente|ajuste|invista|desbloqueie|use|utilize|coloque|prepare|plante|regue|mantenha|deixe|retire|corte|adicione|espere|vire|confira|escolha|instale|execute|abra|configure|misture|selecione|evite|defina|projete|monte|fabrique|conecte|teste|verifique|dimensione|adquira|first|then|place|use|water|keep|install|select|mix|define|design|build|assemble|test|check)\b/.test(normalized))return true;
   if(/(?:^|\n)\s*(?:\d+[.)]|[-*•])\s+\S+/m.test(String(text||'')))return true;
   return String(text||'').trim().length>=220&&/[.;:]/.test(text);
 }
