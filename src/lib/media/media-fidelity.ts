@@ -174,7 +174,15 @@ export function buildSpecificNegativePrompt(originalPrompt:string,userNegative='
       'wrong alien',
       'wrong purple placement',
       'Saiyan hair',
-      'Goku face'
+      'Goku face',
+      'Goku as a second character',
+      'Vegeta as a second character',
+      'Saiyan opponent',
+      'orange gi',
+      'spiky black Saiyan hair',
+      'versus composition unless requested',
+      'two-character battle unless requested',
+      'duplicate Frieza'
     );
   }
   if(/\b(oozaru|great ape|macaco de dragon ball|macaco do dragon ball)\b/.test(p)){
