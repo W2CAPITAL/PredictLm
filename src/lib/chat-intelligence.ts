@@ -173,7 +173,20 @@ export function practicalHowToReply(prompt:string){
   if(/\bcuidar\b/.test(p)&&/\bsuculentas?\b/.test(p))return 'Para cuidar de uma suculenta:\n\n1. Use vaso com furos e substrato bem drenado.\n2. Deixe em lugar muito claro e adapte ao sol aos poucos; a necessidade varia pela espécie.\n3. Regue bem somente quando o substrato estiver seco, deixando a água escorrer.\n4. Evite água parada e retire folhas mortas. Folhas moles e solo úmido por muitos dias sugerem excesso de água.';
   if(/\b(fazer|cozinhar)\b/.test(p)&&/\barroz\b/.test(p)&&!/\b(integral|japones|risoto)\b/.test(p))return 'Para fazer arroz branco comum:\n\n1. Aqueça um pouco de óleo e refogue alho ou cebola, se quiser.\n2. Adicione 1 xícara de arroz e mexa rapidamente.\n3. Coloque cerca de 2 xícaras de água quente e sal a gosto.\n4. Quando ferver, reduza o fogo e cozinhe com a panela parcialmente tampada até a água secar e o grão ficar macio. Se ainda estiver duro, acrescente um pouco de água.\n5. Desligue, deixe descansar tampado por cerca de 5 minutos e solte com um garfo. A quantidade de água pode variar conforme o arroz.';
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
-  if(/\b(carro|automovel|automóvel|veiculo|veículo|trator|caminhao|caminhão)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
+  if(/\btrator\b/.test(p)&&/(criar|fazer|faco|faça|montar|construir|do zero)/.test(p))return [
+    '**Construir um trator do zero exige tratar transmissão, tração, hidráulica, freios e estrutura como um conjunto.** Para um primeiro projeto, prefira um protótipo de baixa potência e uso controlado.',
+    '',
+    '1. **Defina a função do trator.** Carga, implementos, terreno, velocidade máxima e potência necessária.',
+    '2. **Dimensione o chassi e os eixos.** Considere peso do motor, operador, implementos e esforços no engate.',
+    '3. **Escolha motor e transmissão.** Relações curtas e alto torque são mais importantes que velocidade final.',
+    '4. **Projete direção, freios e tração.** Esses sistemas precisam ser dimensionados para o peso total e para terreno irregular.',
+    '5. **Integre o sistema hidráulico**, se houver implementos com levante, cilindros ou tomada de força.',
+    '6. **Monte proteções e elétrica.** Fusíveis, corte de emergência, proteção de partes móveis e isolamento térmico são essenciais.',
+    '7. **Teste em área fechada e baixa velocidade.** Verifique frenagem, temperatura, soldas, folgas, estabilidade e resposta da direção antes de aumentar carga.',
+    '',
+    'Para transformar isso em projeto real, o próximo passo é definir potência, peso-alvo, tipo de tração e implemento principal.'
+  ].join('\n');
+  if(/\b(carro|automovel|automóvel|veiculo|veículo|caminhao|caminhão)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
   if(/\btamandua\b/.test(p)&&/\b(robo|robot)\b/.test(p)&&/(criar|crie|fazer|faco|faca|montar|construir)/.test(p))return [
     '**Trate um tamanduá-robô como um projeto de robótica + design biomimético**, não como um brinquedo improvisado.',
     '',
@@ -288,9 +301,9 @@ export function answerQuality(prompt:string,content:string){
   if(text.length>=180)score+=2; else if(text.length>=90)score+=1;
   if(/\n|\d+\.|- |\*\*/.test(text))score+=1;
   if(/como|passo|agora|fa[cç]a|primeiro|depois|pr[oó]ximo/.test(clean(text)))score+=1;
-  if(/^como\b/.test(p)&&text.length<140)score-=2;
-  if(/^como\b/.test(p)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
-  if(/^como\b/.test(p)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
+  if(isGenericHowTo(prompt)&&text.length<140)score-=2;
+  if(isGenericHowTo(prompt)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
+  if(isGenericHowTo(prompt)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
   if(/nao tenho contexto|não tenho contexto|ative neural|ative o neural|fallback/i.test(text))score-=3;
   const stableFactual=/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
     && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|patrimônio|preco|preço|ranking)\b/.test(p);
@@ -542,6 +555,7 @@ const TOPIC_SYNONYMS:Record<string,string[]>={
   carro:['carro','veiculo','automovel','chassi','motor','suspensao','freios'],
   veiculo:['veiculo','carro','automovel','chassi','motor'],
   automovel:['automovel','carro','veiculo','chassi','motor'],
+  trator:['trator','tracao','transmissao','motor','chassi','hidraulico','hidraulica','implemento'],
   empresa:['empresa','negocio','cnpj','sociedade','mei','empresarial'],
   aplicativo:['aplicativo','app','software','sistema'],
   app:['app','aplicativo','software','sistema'],
@@ -554,6 +568,13 @@ const TOPIC_SYNONYMS:Record<string,string[]>={
 export function responseTopicAlignment(prompt:string,content:string){
   const p=clean(prompt);
   const c=clean(content);
+  if(!c)return {relevant:false,score:0,subject:[] as string[]};
+
+  // Generative/transformative requests often produce correct outputs without
+  // repeating command words or even the original topic literally.
+  const generative=/^(?:escreva|redija|crie|gere|invente|imagine|traduza|reescreva|reformule|resuma|corrija|melhore|transforme|continue|complete|fa[cç]a)\b/.test(p);
+  if(generative&&c.length>=20)return {relevant:true,score:1,subject:[] as string[]};
+
   const subject=p.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!TOPIC_STOPWORDS.has(x));
   if(!subject.length)return {relevant:true,score:1,subject:[] as string[]};
   let hits=0;
@@ -563,5 +584,9 @@ export function responseTopicAlignment(prompt:string,content:string){
   }
   const score=hits/subject.length;
   const hypothetical=isHypotheticalPrompt(prompt);
-  return {relevant:hits>=1&&(hypothetical||subject.length===1||score>=0.34),score,subject};
+  return {
+    relevant:hits>=1&&(hypothetical||subject.length===1||score>=0.25),
+    score,
+    subject
+  };
 }

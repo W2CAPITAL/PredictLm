@@ -229,10 +229,10 @@ export function ChatShell({onOpenLegal}:Props){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          ...(input.clean?{mode:'clean-chat',useHistory:false}:{}),
+          ...(input.clean?{mode:'clean-chat',useHistory:true}:{}),
           prompt:input.prompt,
           language:input.language,
-          messages:input.clean?[]:input.messages,
+          messages:input.messages,
           researchContext:input.researchContext,
           localAdvisory:input.localAdvisory,
           answerAnchor:input.answerAnchor,
@@ -559,9 +559,40 @@ export function ChatShell({onOpenLegal}:Props){
         kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
       );
 
+      const deliverProviderCandidate=(result:any)=>{
+        if(!result.ok)return false;
+        const apiSources=filterDisplayedSources(prompt,[
+          ...web.sources,
+          ...(Array.isArray(result.data?.sources)?result.data.sources:[])
+        ],8);
+        s.addMessage({
+          role:'assistant',
+          content:result.text,
+          engine:'Predict Auto',
+          sources:apiSources,
+          reasoningSummary:buildReasoningSummary({
+            kind,
+            webCount:apiSources.length,
+            provider:true,
+            anchor:!!answerAnchor,
+            deep:s.deepThink
+          }),
+          actions:[
+            result.data?.provider==='freellmapi'
+              ? 'FreeLLMAPI respondeu como provider padrão'
+              : 'Provider mesh respondeu após a tentativa do FreeLLMAPI',
+            'PredictLM aplicou histórico, contexto, skills e validação',
+            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
+            'Resposta final validada antes de exibir'
+          ],
+          status:'done'
+        });
+        return true;
+      };
+
       setActivity([
         'FREELLM FIRST · consultando provider padrão',
-        'PREDICT CORE · aplicando contexto e validações',
+        'PREDICT CORE · aplicando histórico, contexto e validações',
         ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
         'VERIFY · validando aderência ao pedido'
       ]);
@@ -580,38 +611,70 @@ export function ChatShell({onOpenLegal}:Props){
         signal:turnController.signal
       });
 
-      if(candidate.ok){
-        const apiSources=filterDisplayedSources(prompt,[
-          ...web.sources,
-          ...(Array.isArray(candidate.data?.sources)?candidate.data.sources:[])
-        ],8);
-        s.addMessage({
-          role:'assistant',
-          content:candidate.text,
-          engine:'Predict Auto',
-          sources:apiSources,
-          reasoningSummary:buildReasoningSummary({
-            kind,
-            webCount:apiSources.length,
-            provider:true,
-            anchor:!!answerAnchor,
-            deep:s.deepThink
-          }),
-          actions:[
-            candidate.data?.provider==='freellmapi'?'FreeLLMAPI respondeu como provider padrão':'Provider mesh respondeu após a tentativa do FreeLLMAPI',
-            'PredictLM aplicou contexto, skills e validação',
-            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
-            'Resposta final validada antes de exibir'
-          ],
-          status:'done'
+      // Fast chat is only the first attempt. If it is too shallow, retry the
+      // complete PredictLM prompt stack before any local/template fallback.
+      if(!candidate.ok&&cleanEligible){
+        setActivity([
+          'FREELLM FIRST · resposta rápida insuficiente',
+          'PREDICT CORE · ampliando histórico, skills e contexto',
+          'VERIFY · tentando resposta completa'
+        ]);
+        candidate=await requestApiAnswer({
+          prompt,
+          language,
+          kind,
+          messages,
+          researchContext,
+          localAdvisory:'',
+          answerAnchor,
+          brainContext,
+          deep:s.deepThink,
+          clean:false,
+          signal:turnController.signal
         });
-        return;
       }
 
+      // Open-domain knowledge recovery: if the provider cannot answer a normal
+      // substantive request, research first and give the provider another
+      // grounded chance instead of returning a canned template.
+      const canAutoResearch=!candidate.ok
+        &&!needsWeb
+        &&kind!=='casual'
+        &&kind!=='context'
+        &&kind!=='hypothetical'
+        &&prompt.length<=4000;
+      if(canAutoResearch){
+        setActivity([
+          'KNOWLEDGE GAP · resposta insuficiente detectada',
+          'RESEARCH · buscando contexto relevante',
+          'FREELLM FIRST · respondendo novamente com evidência'
+        ]);
+        web=await webContext(prompt,turnController.signal);
+        research=web.items.length?synthesizeResearch(prompt,web.items):null;
+        researchContext=web.text;
+        if(researchContext){
+          candidate=await requestApiAnswer({
+            prompt,
+            language,
+            kind,
+            messages,
+            researchContext,
+            localAdvisory:'',
+            answerAnchor,
+            brainContext,
+            deep:s.deepThink,
+            clean:false,
+            signal:turnController.signal
+          });
+        }
+      }
+
+      if(deliverProviderCandidate(candidate))return;
+
       setActivity([
-        'FREELLM FIRST · resposta indisponível ou rejeitada',
-        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · tentando rota local']:['KNOWLEDGE · tentando rota interna']),
-        'VERIFY · preservando o pedido'
+        'PROVIDER MESH · APIs não concluíram o turno',
+        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · tentando geração local']:['PREDICT CORE · tentando conhecimento local']),
+        'VERIFY · preservando o pedido original'
       ]);
 
       const tryLocalBrain=async()=>{
@@ -653,7 +716,7 @@ export function ChatShell({onOpenLegal}:Props){
                 deep:s.deepThink
               }),
               actions:[
-                'PredictLM Core executou a resposta',
+                'PredictLM Core executou a resposta local',
                 local.engine==='webllm'?'WebLLM local utilizado':
                   local.engine==='neural-lite'||local.engine==='neural-smart'?'Neural Local utilizado':
                     local.engine==='native'?'Modelo nativo do navegador utilizado':'Knowledge/memória interna utilizada',
@@ -673,17 +736,20 @@ export function ChatShell({onOpenLegal}:Props){
       const canBootstrapLite=
         !currentNeural.loaded
         &&!currentWebLLM.loaded
-        &&!localFallback
         &&!needsWeb
         &&kind!=='casual'
         &&kind!=='context'
         &&kind!=='current'
-        &&prompt.length<=1400
+        &&prompt.length<=4000
         &&(caps.memory===0||caps.memory>=2)
         &&(caps.cores===0||caps.cores>=2);
 
       if(canBootstrapLite){
-        setActivity(['NEURAL LOCAL · iniciando Qwen Lite','CPU/WASM · preparando execução sem Ollama','PREDICT CORE · preservando o turno']);
+        setActivity([
+          'NEURAL LOCAL · iniciando Qwen Lite',
+          'CPU/WASM · preparando execução sem Ollama',
+          'PREDICT CORE · preservando o turno'
+        ]);
         try{
           setModelError('');
           setLoadState({tier:'lite',progress:null,status:'Neural Local automático · preparando Qwen Lite'});
@@ -697,10 +763,10 @@ export function ChatShell({onOpenLegal}:Props){
           setLoadState(null);
           setModelTick(x=>x+1);
           if(await tryLocalBrain())return;
-        }catch(error:any){
+        }catch{
           setLoadState(null);
           setModelTick(x=>x+1);
-          setModelError('Neural Local automático indisponível neste dispositivo; seguindo pelas outras rotas do PredictLM.');
+          setModelError('Neural Local automático indisponível neste dispositivo; seguindo pelo fallback interno.');
         }
       }
 
@@ -728,101 +794,13 @@ export function ChatShell({onOpenLegal}:Props){
               actions:[
                 'PredictLM Core executou o runtime local',
                 'Resposta final passou pelo Prompt OS, memória, skills e gate público',
-                'Nenhum provider remoto foi necessário'
+                'Provider remoto não foi necessário nesta etapa'
               ],
               status:'done'
             });
             return;
           }
         }catch{}
-      }
-
-      const advisoryText='';
-
-      setActivity([
-        'PREDICT ROUTER · consultando providers opcionais',
-        'PREDICT CORE · mantendo skills e contratos relevantes',
-        ...(advisoryText?['PREDICT CONTEXT · contexto local adicional']:[]),
-        ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
-        'VERIFY · bloqueando resposta fora do pedido'
-      ]);
-
-      // A clean route is intentionally minimal. If the task needs more depth,
-      // retry once through the full API agent/skill mesh before researching.
-      if(!candidate.ok&&cleanEligible){
-        setActivity(['FREELLM FIRST · rota limpa insuficiente','PREDICT ROUTER · tentando rota completa','VERIFY · segunda tentativa']);
-        candidate=await requestApiAnswer({
-          prompt,
-          language,
-          kind,
-          messages,
-          researchContext,
-          localAdvisory:advisoryText,
-          answerAnchor,
-          brainContext,
-          deep:s.deepThink,
-          clean:false,
-          signal:turnController.signal
-        });
-      }
-
-      // If the APIs genuinely do not know enough, learn on demand: search,
-      // filter by relevance, and ask the API again with grounded evidence.
-      const canAutoResearch=!needsWeb
-        && kind!=='casual'
-        && kind!=='context'
-        && kind!=='hypothetical'
-        && prompt.length<=2200;
-      if(!candidate.ok&&canAutoResearch){
-        setActivity(['KNOWLEDGE GAP · resposta insuficiente detectada','RESEARCH · buscando fontes relevantes','PREDICT ROUTER · tentando provider opcional com evidência']);
-        web=await webContext(prompt,turnController.signal);
-        research=web.items.length?synthesizeResearch(prompt,web.items):null;
-        researchContext=web.text;
-        if(researchContext){
-          candidate=await requestApiAnswer({
-            prompt,
-            language,
-            kind,
-            messages,
-            researchContext,
-            localAdvisory:advisoryText,
-            answerAnchor,
-            brainContext,
-            deep:s.deepThink,
-            clean:false,
-            signal:turnController.signal
-          });
-        }
-      }
-
-      if(candidate.ok){
-        const apiSources=filterDisplayedSources(prompt,[
-          ...web.sources,
-          ...(Array.isArray(candidate.data?.sources)?candidate.data.sources:[])
-        ],8);
-        s.addMessage({
-          role:'assistant',
-          content:candidate.text,
-          engine:'Predict Auto',
-          sources:apiSources,
-          reasoningSummary:buildReasoningSummary({
-            kind,
-            webCount:apiSources.length,
-            localBrain:!!advisoryText,
-            provider:true,
-            anchor:!!answerAnchor,
-            deep:s.deepThink
-          }),
-          actions:[
-            'API/provider executou a resposta final',
-            'Agent/skills selecionados no servidor',
-            ...(advisoryText?['Contexto local adicional considerado pelo PredictLM']:[]),
-            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
-            'Resposta final validada antes de exibir'
-          ],
-          status:'done'
-        });
-        return;
       }
 
       // Último caminho interno: o chat não quebra só porque nenhum provider
