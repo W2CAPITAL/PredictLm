@@ -118,6 +118,8 @@ test('provider identity never replaces the cognitive agent identity',()=>{
   assert.doesNotMatch(identity,/Meu nome é Nemotron/i);
   const flyIdentity=cognitiveDirectRecall(state,'fly','Qual é seu nome?')||'';
   assert.match(flyIdentity,/Mosca Predict/);
+  const humanIdentity=cognitiveDirectRecall(state,'human','Qual seu nome real?')||'';
+  assert.match(humanIdentity,/Frank Stein/);
 });
 
 test('memory questions recall persistent autobiographical and episodic state',()=>{
@@ -145,4 +147,13 @@ test('functional conscious-access map combines human and fly-derived controls',(
   assert.match(context,/CONSCIOUS ACCESS MAP/);
   assert.match(context,/Memória associativa|associative/i);
   assert.match(context,/FlyWire-whole-fly/);
+});
+
+
+test('biological donor memories are never presented as the agent real life',()=>{
+  const state=advanceCognitiveWorkspace(createCognitiveState(),'primeira experiência no app');
+  const fly=cognitiveDirectRecall(state,'fly','Quais são suas lembranças reais da mosca real?')||'';
+  assert.match(fly,/não herdei lembranças da mosca biológica/i);
+  const human=cognitiveDirectRecall(state,'human','O que você lembra da sua vida real antes do app?')||'';
+  assert.match(human,/não herdei lembranças, pensamentos ou identidade de nenhum doador humano/i);
 });
