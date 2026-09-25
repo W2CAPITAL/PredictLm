@@ -3,9 +3,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, Eye, Brain, ChevronDown, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
-import { browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, localBrainAdvisory, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
+import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -547,31 +547,105 @@ export function ChatShell({onOpenLegal}:Props){
       let research=web.items.length?synthesizeResearch(prompt,web.items):null;
       let researchContext=web.text;
 
-      // Local engines are auxiliary critics only. They never become the public
-      // answer in Predict Auto; the remote provider remains responsible.
-      const localAdvice:string[]=[];
-      if(currentNeural.loaded||currentWebLLM.loaded){
-        try{
-          const browserAdvice=await localBrainAdvisory(prompt,messages,{language,researchContext});
-          if(browserAdvice?.content)localAdvice.push('Browser local critic: '+browserAdvice.content);
-        }catch{}
-      }
+      // PredictLM-first: local/browser intelligence is allowed to author the
+      // public answer. Remote providers are optional accelerators, never a
+      // prerequisite for completing a normal chat turn.
+      const offlineAnchor=generativeOfflineReply(prompt,kind);
+      const localFallback=direct||practicalAnchor||factualAnchor||
+        ((kind==='hypothetical'||kind==='howto')?offlineAnchor:null);
+
+      setActivity([
+        'PREDICT CORE · preparando contexto',
+        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · gerando resposta']:['KNOWLEDGE · verificando resposta interna']),
+        ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
+        'VERIFY · validando aderência ao pedido'
+      ]);
+
+      try{
+        const local=await answerLocally(prompt,messages,{
+          deep:s.deepThink,
+          language,
+          researchContext,
+          fallbackText:localFallback||undefined,
+          onStage:(stage)=>{
+            const labels:Record<string,string>={
+              recall:'RECALL · recuperando contexto',
+              plan:'PLAN · estruturando resposta',
+              forge:'FORGE · gerando resposta',
+              aegis:'AEGIS · revisando resposta',
+              verify:'VERIFY · validando resposta'
+            };
+            setActivity([labels[stage]||'PREDICT CORE · processando']);
+          }
+        });
+        const gate=publicAnswerGate(local.content,language,prompt);
+        const publicText=gate.ok?gate.content:sanitizePublicAnswer(local.content,prompt);
+        const aligned=responseTopicAlignment(prompt,publicText||local.content);
+        const weak=signalsKnowledgeGap(publicText||local.content)
+          ||/não tenho (?:contexto|evidência)|nao tenho (?:contexto|evidencia)/i.test(publicText||local.content);
+        const minQuality=kind==='howto'?2:kind==='factual'?0:-1;
+        if(publicText&&aligned.relevant&&!weak&&answerQuality(prompt,publicText)>=minQuality){
+          const localSources=filterDisplayedSources(prompt,local.sources||[],8);
+          s.addMessage({
+            role:'assistant',
+            content:publicText,
+            engine:'Predict Auto',
+            sources:localSources,
+            reasoningSummary:buildReasoningSummary({
+              kind,
+              webCount:localSources.length,
+              localBrain:true,
+              anchor:!!localFallback,
+              deep:s.deepThink
+            }),
+            actions:[
+              'PredictLM Core executou a resposta',
+              local.engine==='webllm'?'WebLLM local utilizado':
+                local.engine==='neural-lite'||local.engine==='neural-smart'?'Neural Local utilizado':
+                  local.engine==='native'?'Modelo nativo do navegador utilizado':'Knowledge/memória interna utilizada',
+              ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
+              'Resposta validada antes de exibir'
+            ],
+            status:'done'
+          });
+          return;
+        }
+      }catch{}
+
       if(s.localRuntimeEnabled){
-        setActivity(['API FIRST · preparando provider principal','LOCAL ASSIST · coletando segunda opinião','VERIFY · mantendo o pedido como fonte da verdade']);
+        setActivity(['PREDICT CORE · tentando runtime local configurado','VERIFY · validando resposta local']);
         try{
-          const runtimeAdvice=await answerViaLocalRuntime(prompt,messages,{
-            deep:false,
+          const runtimeReply=await answerViaLocalRuntime(prompt,messages,{
+            deep:s.deepThink,
             preferred:'auto',
             language,
             researchContext,
             signal:turnController.signal,
-            advisoryOnly:true
+            advisoryOnly:false
           });
-          setLocalRuntimeLabel(runtimeAdvice.label.replace(/ · \d+$/,''));
-          if(runtimeAdvice.content)localAdvice.push('Local runtime critic: '+runtimeAdvice.content);
+          setLocalRuntimeLabel(runtimeReply.label.replace(/ · \d+$/,''));
+          const gate=publicAnswerGate(runtimeReply.content,language,prompt);
+          const publicText=gate.ok?gate.content:sanitizePublicAnswer(runtimeReply.content,prompt);
+          if(publicText&&responseTopicAlignment(prompt,publicText).relevant&&!signalsKnowledgeGap(publicText)){
+            s.addMessage({
+              role:'assistant',
+              content:publicText,
+              engine:'Predict Auto',
+              sources:filterDisplayedSources(prompt,runtimeReply.sources||[],8),
+              reasoningSummary:buildReasoningSummary({kind,webCount:runtimeReply.sources?.length||0,localBrain:true,deep:s.deepThink}),
+              actions:[
+                'PredictLM Core executou o runtime local',
+                'Resposta final passou pelo Prompt OS, memória, skills e gate público',
+                'Nenhum provider remoto foi necessário'
+              ],
+              status:'done'
+            });
+            return;
+          }
         }catch{}
       }
-      const advisoryText=localAdvice.join('\n\n').slice(0,3200);
+
+      const advisoryText='';
 
       const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
       const cleanEligible=!needsWeb&&prompt.length<=900&&(
@@ -579,8 +653,8 @@ export function ChatShell({onOpenLegal}:Props){
       );
 
       setActivity([
-        'API FIRST · selecionando provider',
-        'AGENT/SKILL API · carregando somente contratos relevantes',
+        'PREDICT ROUTER · consultando providers opcionais',
+        'PREDICT CORE · mantendo skills e contratos relevantes',
         ...(advisoryText?['LOCAL ASSIST · segunda opinião pronta']:[]),
         ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
         'VERIFY · bloqueando resposta fora do pedido'
@@ -603,7 +677,7 @@ export function ChatShell({onOpenLegal}:Props){
       // A clean route is intentionally minimal. If the task needs more depth,
       // retry once through the full API agent/skill mesh before researching.
       if(!candidate.ok&&cleanEligible){
-        setActivity(['API FIRST · rota limpa insuficiente','AGENT/SKILL API · ampliando contexto relevante','VERIFY · segunda tentativa']);
+        setActivity(['PREDICT ROUTER · rota remota limpa insuficiente','PREDICT CORE · ampliando contexto relevante','VERIFY · segunda tentativa']);
         candidate=await requestApiAnswer({
           prompt,
           language,
@@ -627,7 +701,7 @@ export function ChatShell({onOpenLegal}:Props){
         && kind!=='hypothetical'
         && prompt.length<=2200;
       if(!candidate.ok&&canAutoResearch){
-        setActivity(['KNOWLEDGE GAP · resposta insuficiente detectada','RESEARCH · buscando fontes relevantes','API FIRST · respondendo de novo com evidência']);
+        setActivity(['KNOWLEDGE GAP · resposta insuficiente detectada','RESEARCH · buscando fontes relevantes','PREDICT ROUTER · tentando provider opcional com evidência']);
         web=await webContext(prompt,turnController.signal);
         research=web.items.length?synthesizeResearch(prompt,web.items):null;
         researchContext=web.text;
@@ -678,23 +752,24 @@ export function ChatShell({onOpenLegal}:Props){
         return;
       }
 
-      // Never fill a provider failure with unrelated RAG. A small deterministic
-      // anchor is allowed only for questions we explicitly know how to answer.
-      const safeFallbacks=[practicalAnchor,factualAnchor,direct,research?.content]
+      // Último caminho interno: o chat não quebra só porque nenhum provider
+      // remoto respondeu. Mantemos o pedido dentro do PredictLM.
+      const safeFallbacks=[practicalAnchor,factualAnchor,direct,research?.content,offlineAnchor]
         .filter(Boolean) as string[];
       for(const fallback of safeFallbacks){
         const gate=publicAnswerGate(fallback,language,prompt);
-        if(gate.ok&&responseTopicAlignment(prompt,gate.content).relevant&&!signalsKnowledgeGap(gate.content)){
+        const publicText=gate.ok?gate.content:sanitizePublicAnswer(fallback,prompt);
+        if(publicText&&responseTopicAlignment(prompt,publicText).relevant&&!signalsKnowledgeGap(publicText)){
           s.addMessage({
             role:'assistant',
-            content:gate.content,
+            content:publicText,
             engine:'Predict Auto',
             sources:research?.sources||[],
             reasoningSummary:buildReasoningSummary({kind,webCount:research?.sources?.length||0,anchor:true}),
             actions:[
-              'Providers não concluíram o turno',
-              'Fallback interno restrito ao mesmo pedido',
-              'Nenhum conteúdo lateral foi usado'
+              'Providers opcionais não concluíram o turno',
+              'PredictLM usou resposta interna compatível com o mesmo pedido',
+              'Nenhuma dependência de Grok, Claude ou ChatGPT'
             ],
             status:'done'
           });
@@ -702,7 +777,21 @@ export function ChatShell({onOpenLegal}:Props){
         }
       }
 
-      throw new Error('Os providers não produziram uma resposta válida, e a pesquisa automática não encontrou evidência suficiente.');
+      const rescue=generativeOfflineReply(prompt,kind)||[
+        'O PredictLM manteve o turno ativo, mas não encontrou base local específica o bastante para detalhar a resposta com segurança.',
+        '',
+        '**Pedido recebido:** '+prompt.trim().slice(0,320),
+        '',
+        'Carregue o Neural Local/WebLLM ou habilite pesquisa quando o assunto exigir conhecimento que não esteja nos knowledge packs. APIs externas continuam opcionais.'
+      ].join('\n');
+      s.addMessage({
+        role:'assistant',
+        content:sanitizePublicAnswer(rescue,prompt)||rescue,
+        engine:'Predict Auto',
+        actions:['PredictLM Core preservou o turno','Sem falha dura de provider','Providers externos permanecem opcionais'],
+        status:'done'
+      });
+      return;
     }catch(err:any){
       if(turnController.signal.aborted)return;
       const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
@@ -737,7 +826,7 @@ export function ChatShell({onOpenLegal}:Props){
     if(local||web){
       setLoadState(null);
       setModelTick(x=>x+1);
-      setModelError('Carregamento local cancelado. O Predict Auto continua pelo servidor/pesquisa.');
+      setModelError('Carregamento local cancelado. O Predict Auto continua por knowledge, pesquisa e providers configurados.');
     }
   }
 
@@ -949,14 +1038,14 @@ function Composer(props:any){
         <div className="grok-model-wrap">
           <button className="predict-auto-trigger" onClick={()=>setModelMenu((v:boolean)=>!v)}><Zap size={13}/>{modeLabel}</button>
           {modelMenu&&<div className="grok-model-menu grok-auto-menu">
-            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>APIs respondem; pesquisa, agents e skills entram no servidor quando úteis. O runtime local atua apenas como crítico auxiliar.</span></div></div>
+            <div className="grok-auto-head"><span className="grok-auto-orb"><Sparkles size={15}/></span><div><b>Predict Auto</b><span>PredictLM Core responde por Neural Local, WebLLM, knowledge e memória; pesquisa e providers configurados entram apenas quando úteis.</span></div></div>
             <div className="grok-auto-status">
-              <span><i className="online"/> Provider Mesh · resposta principal</span>
-              <span><i className={localReady?'online':''}/> {localReady?'Auxiliar local pronto':'Auxiliar local sob demanda'}</span>
+              <span><i className="online"/> PredictLM Core · resposta principal</span>
+              <span><i className={localReady?'online':''}/> {localReady?'Neural Local pronto':'Neural Local sob demanda'}</span>
               <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
-            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar auxiliar local</b><span>Baixa o motor econômico apenas para crítica e segunda opinião. A resposta final continua sendo das APIs.</span></button>}
-            {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua pelo servidor e pesquisa.</span></button>}
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Baixa o motor econômico para responder diretamente dentro do PredictLM, sem exigir API externa.</span></button>}
+            {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua por knowledge, pesquisa e providers configurados.</span></button>}
           </div>}
         </div>
         <button className="grok-send" onClick={busy?cancelTurn:send} disabled={!busy&&!value.trim()} title={busy?'Parar execução':'Enviar'}>{busy?<X size={17}/>:<Send size={17}/>}</button>
