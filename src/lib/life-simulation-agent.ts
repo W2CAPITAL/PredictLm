@@ -153,7 +153,7 @@ export function sanitizeAgentActions(raw:any[]):LifeAgentAction[]{
       type,
       ...(target?{target}:{}),
       ...(row?.objectId?{objectId:String(row.objectId).slice(0,80)}:{}),
-      ...(type==='wait'||type==='rest'||type==='work'||type==='study'||type==='socialize'||type==='exercise'||type==='healthcare'||type==='cook'||type==='clean_home'||type==='shower'||type==='create'||type==='wander'?{minutes}:{}),
+      ...(type==='wait'||type==='rest'||type==='work'||type==='study'||type==='socialize'||type==='exercise'||type==='healthcare'||type==='cook'||type==='clean_home'||type==='shower'||type==='create'||type==='wander'||type==='use_object'?{minutes}:{}),
       ...(row?.text?{text:String(row.text).slice(0,220)}:{}),
       ...(row?.reason?{reason:String(row.reason).slice(0,180)}:{})
     });
@@ -272,13 +272,8 @@ export function autonomousLifePlan(
   const visibleObjects=vision.visible.map(v=>worldObject(v.id)).filter(Boolean) as NonNullable<ReturnType<typeof worldObject>>[];
   const localObjects=objectsAt(state.person.location);
   const candidateMap=new Map<string,NonNullable<ReturnType<typeof worldObject>>>();
+  for(const obj of WORLD_OBJECTS)candidateMap.set(obj.id,obj);
   for(const obj of [...visibleObjects,...localObjects])candidateMap.set(obj.id,obj);
-
-  // If the current view has nothing useful, use remembered world knowledge to
-  // choose a destination, then visual perception takes over again after travel.
-  if(candidateMap.size<3){
-    for(const obj of WORLD_OBJECTS)candidateMap.set(obj.id,obj);
-  }
 
   const ranked=[...candidateMap.values()]
     .map(obj=>({
@@ -548,6 +543,9 @@ export function executeLifeAgentAction(
       if(affords.has('health')||affords.has('shower')){state.needs.health=clamp(state.needs.health+7);state.needs.stress=clamp(state.needs.stress-5)}
       if(affords.has('create')){agent.skills.creativity=clamp(agent.skills.creativity+3);state.needs.fun=clamp(state.needs.fun+5)}
       state=runMinutes(state,minutes,obj.location);
+      state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,obj.x-10));
+      state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,obj.y+8));
+      state.person.heading=Math.atan2(obj.y-state.person.y,obj.x-state.person.x);
       message='Interagiu com '+obj.label+' por '+minutes+' min.';
     }
   }else if(action.type==='wander'){
