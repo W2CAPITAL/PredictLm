@@ -99,6 +99,9 @@ function buildReasoningSummary(input:{
 }
 
 function filterDisplayedSources(prompt:string,sources:{title:string;source:string}[],limit=8){
+  const sourceKind=classifyConversation(prompt,[]);
+  const sourceRelevant=shouldSearchConversation(sourceKind,true,prompt)||sourceKind==='technical';
+  if(!sourceRelevant)return [];
   const seen=new Set<string>();
   const rows=sources.filter(src=>{
     const key=src.source||src.title;
@@ -939,6 +942,7 @@ export function ChatShell({onOpenLegal}:Props){
             deep:s.deepThink,
             language,
             researchContext,
+            knowledge:needsWeb||kind==='technical'||reportIntent.wantsReport||!!processNumber,
             fallbackText:localFallback||undefined,
             onStage:(stage)=>{
               const labels:Record<string,string>={
