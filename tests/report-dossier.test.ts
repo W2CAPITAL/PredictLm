@@ -94,3 +94,36 @@ test('structured dossier JSON is normalized instead of trusting arbitrary roles'
   assert.equal(dossier.sections[0].role,'summary');
   assert.equal(dossier.sections[1].role,'sources');
 });
+
+
+test('evidence and timeline facts without provenance are flagged',()=>{
+  const markdown=[
+    '# Dossiê jurídico — teste de origem',
+    '',
+    '**Conclusão em uma frase:** Há um fato que ainda precisa de classificação de origem.',
+    '',
+    '## Sumário executivo',
+    'Síntese preliminar [inferência].',
+    '',
+    '## Cronologia',
+    '- 15/03/2023 — A ação foi distribuída',
+    '',
+    '## Evidências',
+    '- Existe um contrato assinado',
+    '',
+    '## Riscos',
+    '- **Baixo** — Classificação incompleta da origem. Mitigação: revisar a fonte.',
+    '',
+    '## Próximos passos',
+    '- Classificar as fontes (responsável: a definir) — prioridade alta',
+    '',
+    '## Fontes',
+    '- Material ainda em revisão [fornecida]',
+    '',
+    '## Limitações',
+    'Origem de dois fatos ainda não foi classificada [inferência].'
+  ].join('\n');
+  const quality=validateDossier(parseDossierMarkdown(markdown));
+  assert.ok(quality.issues.some(x=>x.code==='inference-only'&&x.sectionId==='cronologia'));
+  assert.ok(quality.issues.some(x=>x.code==='inference-only'&&x.sectionId==='evidencias'));
+});
