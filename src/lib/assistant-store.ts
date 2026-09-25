@@ -35,6 +35,7 @@ interface AssistantState {
   createChat():void;
   setActive(id:string):void;
   addMessage(message:Omit<AssistantMessage,'id'|'createdAt'>):void;
+  updateLastAssistant(content:string,status?:AssistantMessage['status']):void;
   clearActive():void;
   deleteSession(id:string):void;
   setWebEnabled(v:boolean):void;
@@ -73,6 +74,27 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
       return {...chat,title:first.slice(0,42),messages,updatedAt:Date.now()};
     })};
   }),
+  updateLastAssistant:(content,status='partial')=>set(s=>({
+    sessions:s.sessions.map(chat=>{
+      if(chat.id!==s.activeId)return chat;
+      const messages=[...chat.messages];
+      let index=-1;
+      for(let i=messages.length-1;i>=0;i--){
+        if(messages[i].role==='assistant'){index=i;break}
+      }
+      if(index<0)return chat;
+      let nextContent=content;
+      if(status==='done'){
+        const sanitized=sanitizePublicAnswer(content);
+        if(sanitized&&!looksLikeOperationalMonologue(sanitized))nextContent=sanitized;
+        else if(hasInternalReasoningLeak(content)||looksLikeOperationalMonologue(content)){
+          nextContent='A resposta gerada continha conteúdo interno em vez da resposta final. Tente novamente.';
+        }
+      }
+      messages[index]={...messages[index],content:nextContent,status};
+      return {...chat,messages,updatedAt:Date.now()};
+    })
+  })),
   clearActive:()=>set(s=>({sessions:s.sessions.map(chat=>chat.id===s.activeId?{...chat,messages:[],title:'Nova conversa',updatedAt:Date.now()}:chat)})),
   deleteSession:(sessionId)=>set(s=>{
     const rest=s.sessions.filter(x=>x.id!==sessionId);
