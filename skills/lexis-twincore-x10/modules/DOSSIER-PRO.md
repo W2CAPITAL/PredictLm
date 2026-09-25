@@ -45,3 +45,23 @@ Quando não houver documento suplementar, exibir “lacuna de evidência” em v
 - citações só entram se o texto original foi fornecido;
 - modo agressivo não dispensa evidência;
 - nenhuma seção deve transformar opinião do modelo em fato.
+
+
+## Report Architect — camada comum
+
+O Dossier Pro continua responsável pela investigação e análise jurídica: DataJud/DJEN, documentos, cronologia, balanço de forças, Council/Chair, riscos e estratégia.
+
+A apresentação final deve preferir o módulo comum Report Architect quando o pedido for relatório/dossiê exportável:
+
+EVIDÊNCIA JURÍDICA → DOSSIER MARKDOWN → validateDossier → HTML/JSON → artefato.
+
+Regras:
+- cada afirmação relevante recebe [oficial], [fornecida] ou [inferência];
+- falha de DataJud/DJEN entra em Limitações e não vira prova de inexistência;
+- risco permanece Alto/Médio/Baixo, sem porcentagem inventada;
+- ação só recebe prazo/responsável quando houver base; caso contrário usar responsável: a definir e omitir prazo;
+- meta de entrega do documento: qualidade >=85 e nenhum erro;
+- numeração, âncoras, quebra de seções, HTML e impressão pertencem a src/lib/predict-dossier-html.ts;
+- se houver ato com efeito jurídico (protocolo, assinatura, acordo ou pagamento), exigir confirmação humana.
+
+O renderer jurídico legado pode continuar para telas específicas de processo, mas novos relatórios genéricos e exportações devem compartilhar o contrato Report Architect para evitar dois padrões incompatíveis.
