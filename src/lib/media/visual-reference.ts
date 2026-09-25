@@ -322,23 +322,36 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   const order=String(process.env.PREDICTLM_VISUAL_REFERENCE_PROVIDER_ORDER||'google,firecrawl,pinterest-firecrawl,duckduckgo,pinterest-google')
     .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 
-  const tasks:{label:string;query:string;run:Promise<VisualReference[]>}[]=[];
-  for(const searchQuery of queries){
-  for(const id of order){
-    if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',query:searchQuery,run:firecrawlImageSearch(searchQuery,max,false)});
-    if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',query:searchQuery,run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
-    if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',query:searchQuery,run:googleImageSearch(searchQuery,max,false)});
-    if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',query:searchQuery,run:googleImageSearch(searchQuery,Math.min(3,max),true)});
-    if(id==='duckduckgo'||id==='duckduckgo-images')tasks.push({label:'DuckDuckGo Images',query:searchQuery,run:duckDuckGoImageSearch(searchQuery,max)});
-  }
-
-  }
-  const settled=await Promise.allSettled(tasks.map(x=>x.run));
+  const buildTasks=(roundQueries:string[])=>{
+    const tasks:{label:string;query:string;run:Promise<VisualReference[]>}[]=[];
+    for(const searchQuery of roundQueries){
+      for(const id of order){
+        if(id==='firecrawl'&&hasFirecrawl)tasks.push({label:'Firecrawl Images',query:searchQuery,run:firecrawlImageSearch(searchQuery,max,false)});
+        if((id==='pinterest-firecrawl'||id==='pinterest-via-firecrawl')&&hasFirecrawl)tasks.push({label:'Pinterest via Firecrawl',query:searchQuery,run:firecrawlImageSearch(searchQuery,Math.min(3,max),true)});
+        if((id==='google'||id==='google-images')&&hasGoogle)tasks.push({label:'Google Images',query:searchQuery,run:googleImageSearch(searchQuery,max,false)});
+        if((id==='pinterest-google'||id==='pinterest-via-google')&&hasGoogle)tasks.push({label:'Pinterest via Google Images',query:searchQuery,run:googleImageSearch(searchQuery,Math.min(3,max),true)});
+        if(id==='duckduckgo'||id==='duckduckgo-images')tasks.push({label:'DuckDuckGo Images',query:searchQuery,run:duckDuckGoImageSearch(searchQuery,max)});
+      }
+    }
+    return tasks;
+  };
   const merged:VisualReference[]=[];
-  settled.forEach((task,index)=>{
-    if(task.status==='fulfilled')merged.push(...task.value);
-    else warnings.push(tasks[index].label+' · '+tasks[index].query+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
-  });
+  let searchRounds=0;
+  const executeRound=async(roundQueries:string[])=>{
+    if(!roundQueries.length)return;
+    searchRounds++;
+    const tasks=buildTasks(roundQueries);
+    const settled=await Promise.allSettled(tasks.map(x=>x.run));
+    settled.forEach((task,index)=>{
+      if(task.status==='fulfilled')merged.push(...task.value);
+      else warnings.push(tasks[index].label+' · '+tasks[index].query+' indisponível: '+String((task.reason as any)?.message||task.reason||'erro'));
+    });
+  };
+  const primaryQueries=queries.slice(0,Math.min(3,queries.length));
+  const recoveryQueries=queries.slice(primaryQueries.length);
+  await executeRound(primaryQueries);
+  const primaryUnique=new Set(merged.map(x=>x.imageUrl)).size;
+  if(primaryUnique<max&&recoveryQueries.length)await executeRound(recoveryQueries);
 
   if(!hasGoogle){
     warnings.push('Google Images API não configurada; a busca visual automática continua por Firecrawl/DuckDuckGo quando disponíveis.');
@@ -375,7 +388,7 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
     query,queries,references,
     warnings:Array.from(new Set(warnings)),
     candidatesFound:ranked.length,
-    searchRounds:queries.length>1?2:1
+    searchRounds
   };
 }
 
