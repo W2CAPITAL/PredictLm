@@ -22,6 +22,9 @@ export interface SyntheticMindState{
   values:string[];
   currentGoal:string;
   publicThought:string;
+  candidateIntentions:string[];
+  decision:string;
+  thoughtHistory:{tick:number;text:string;decision:string}[];
   creativity:number;
   memories:SyntheticLifetimeMemory[];
   lastExperience:string;
@@ -91,6 +94,9 @@ export function createSyntheticMind(actor:SyntheticLifeActor,identity?:string):S
     version:1,actor,identity:identity||names[actor],biographyLabel:'synthetic',tick:0,
     values:[...values[actor]],currentGoal:goals[actor],
     publicThought:actor==='human'?'Quero entender o ambiente antes de escolher a próxima tarefa.':actor==='macaque'?'Vou observar o que muda e testar o ambiente com cuidado.':'Há sinais novos; vou escolher um alvo e manter uma rota de fuga.',
+    candidateIntentions:actor==='human'?['trabalhar em algo concreto','explorar o ambiente','criar algo novo']:actor==='macaque'?['explorar','forragear','observar o grupo']:['aproximar','inspecionar','mudar de rota'],
+    decision:'observar primeiro',
+    thoughtHistory:[],
     creativity:actor==='human'?.68:actor==='macaque'?.56:.32,
     memories:biography(actor),lastExperience:''
   };
@@ -102,7 +108,10 @@ export function normalizeSyntheticMind(raw:any,actor:SyntheticLifeActor,identity
   return {
     ...base,...raw,actor,identity:String(raw.identity||base.identity).slice(0,80),biographyLabel:'synthetic',
     values:Array.isArray(raw.values)?raw.values.map(String).slice(0,8):base.values,
-    memories:Array.isArray(raw.memories)?raw.memories.slice(-80):base.memories,
+    memories:Array.isArray(raw.memories)?raw.memories.slice(-120):base.memories,
+    candidateIntentions:Array.isArray(raw.candidateIntentions)?raw.candidateIntentions.map(String).slice(0,5):base.candidateIntentions,
+    decision:String(raw.decision||base.decision).slice(0,140),
+    thoughtHistory:Array.isArray(raw.thoughtHistory)?raw.thoughtHistory.slice(-40):[],
     tick:Math.max(0,Number(raw.tick||0)),
     creativity:clamp(Number(raw.creativity??base.creativity))
   };
@@ -149,20 +158,35 @@ export function advanceSyntheticMind(
   const perception=clean(input.perception,240);
   const action=clean(input.action,160);
   const location=clean(input.location,80);
-  const remembered=recallSyntheticMemories(state,perception+' '+action,1)[0];
+  const recalled=recallSyntheticMemories(state,perception+' '+action,3);
+  const remembered=recalled[0];
   const threat=clamp(Number(input.threat||0));
   const curiosity=clamp(Number(input.curiosity||0));
+  const memoryCue=remembered?(' Lembro de '+clean(remembered.summary,88).toLowerCase()):'';
+  const phase=Math.abs(Math.sin((tick+1)*(state.actor==='human'?1.731:state.actor==='macaque'?2.317:3.119)));
+  let candidateIntentions:string[]=[];
+  if(state.actor==='human'){
+    candidateIntentions=/trabalh|computador|quadro|reuni/i.test(action+' '+perception)
+      ? ['entender a tarefa e o resultado esperado','produzir uma parte verificável','revisar antes de considerar concluído']
+      : /parque|trilha|arvore|banco/i.test(action+' '+perception)
+        ? ['explorar uma rota diferente','observar algo específico','parar e reorganizar ideias']
+        : ['seguir o objetivo atual','investigar a novidade','criar uma alternativa própria'];
+  }else if(state.actor==='macaque'){
+    candidateIntentions=['aproximar e testar o objeto','buscar uma rota elevada','comparar com uma experiência lembrada','observar outro agente'];
+  }else{
+    candidateIntentions=['seguir a maior saliência','mudar de altitude e rota','pairar para reavaliar','manter rota de fuga'];
+  }
+  const pickIndex=Math.min(candidateIntentions.length-1,Math.floor(phase*candidateIntentions.length));
+  const decision=threat>.58?'recuar e reavaliar':candidateIntentions[pickIndex]||'observar';
   let thought='';
-  if(threat>.58)thought='Algo parece arriscado. Vou preservar uma saída e observar antes de insistir.';
-  if(!thought&&state.actor==='fly')thought=curiosity>.58?'Esse contraste/odor parece mais relevante. Vou mudar a rota e verificar.':'Vou reduzir a velocidade, manter o campo visual aberto e esperar um estímulo melhor.';
-  if(!thought&&state.actor==='macaque')thought=curiosity>.58?'Esse objeto merece um teste curto: aproximar, tocar e comparar com o que já conheço.':'Vou observar o grupo e o espaço antes de escolher onde subir ou forragear.';
+  if(threat>.58)thought='Algo parece arriscado. Vou preservar uma saída e observar antes de insistir.'+memoryCue;
+  if(!thought&&state.actor==='fly')thought=(curiosity>.58?'O padrão visual/odor mudou; quero testar outra aproximação. ':'Vou desacelerar e comparar os sinais antes de escolher outro alvo. ')+memoryCue+' Decisão: '+decision+'.';
+  if(!thought&&state.actor==='macaque')thought=(curiosity>.58?'Esse ambiente oferece mais de uma possibilidade; não preciso repetir a última ação. ':'Vou comparar espaço, objeto e presença dos outros antes de agir. ')+memoryCue+' Decisão: '+decision+'.';
   if(!thought&&state.actor==='human')thought=/trabalh|computador|quadro|reuni/i.test(action+' '+perception)
-    ? 'Trabalho não é só ocupar um lugar: preciso entender a tarefa, produzir algo verificável e conferir o resultado.'
+    ? 'Preciso transformar esta atividade em resultado: entender, produzir, conferir e decidir o próximo passo.'+memoryCue+' Decisão: '+decision+'.'
     : /parque|trilha|arvore|banco/i.test(action+' '+perception)
-      ? 'No parque posso explorar, caminhar, observar ou descansar; vou escolher pelo que preciso agora.'
-      : curiosity>.62
-        ? 'Há algo novo aqui. Posso testar uma ação pequena, observar o efeito e ajustar.'
-        : 'Vou escolher uma ação concreta em vez de repetir uma rotina automática.';
+      ? 'Posso usar o parque para explorar, observar, descansar ou ter uma ideia nova; vou evitar a mesma rotina.'+memoryCue+' Decisão: '+decision+'.'
+      : 'Quero uma ação concreta, mas posso mudar de ideia se o ambiente ou uma lembrança sugerirem opção melhor.'+memoryCue+' Decisão: '+decision+'.';
   const experience=clean([location,action,perception].filter(Boolean).join(' · '),260);
   let memories=state.memories;
   if(experience&&tick%7===0){
@@ -171,8 +195,10 @@ export function advanceSyntheticMind(
       summary:experience,valence:threat>.6?.25:.62,salience:clamp(.48+curiosity*.28+threat*.2),source:'runtime' as SyntheticMemorySource
     }].slice(-80);
   }
+  const thoughtHistory=[...state.thoughtHistory,{tick,text:thought,decision}].slice(-40);
   return {
     ...state,tick,currentGoal:clean(input.goal||state.currentGoal,180),publicThought:thought,
-    creativity:clamp(state.creativity*.96+curiosity*.04),memories,lastExperience:experience
+    candidateIntentions,decision,thoughtHistory,
+    creativity:clamp(state.creativity*.94+curiosity*.04+(decision.includes('criar')?.02:0)),memories,lastExperience:experience
   };
 }
