@@ -7,6 +7,12 @@ export interface ConnectomeEdge{
   sign?:'excitatory'|'inhibitory'|'unknown';
 }
 
+function connectionSign(value:string):ConnectomeEdge['sign']{
+  if(/gaba|inhib/i.test(value))return 'inhibitory';
+  if(/acetylcholine|ach|glutamate|excit/i.test(value))return 'excitatory';
+  return 'unknown';
+}
+
 function csvRows(text:string){
   const lines=text.replace(/\r/g,'').split('\n').filter(Boolean);
   if(!lines.length)return [] as Record<string,string>[];
@@ -24,7 +30,7 @@ export function parseFlyWireConnectionsCsv(text:string,limit=5000):ConnectomeEdg
     weight:Number(row.syn_count||row.weight||1)||1,
     region:row.neuropil||row.region||undefined,
     transmitter:row.nt_type||row.neurotransmitter||undefined,
-    sign:/gaba/i.test(row.nt_type||'')?'inhibitory':/acetylcholine|ach|glutamate/i.test(row.nt_type||'')?'excitatory':'unknown'
+    sign:connectionSign(row.nt_type||row.neurotransmitter||'')
   })).filter(x=>x.pre&&x.post);
 }
 
@@ -35,7 +41,7 @@ export function parseH01EdgeSubsetCsv(text:string,limit=5000):ConnectomeEdge[]{
     weight:Number(row.syn_count||row.weight||row.count||1)||1,
     region:row.layer||row.region||undefined,
     transmitter:row.type||row.synapse_type||undefined,
-    sign:/inhib/i.test(row.type||row.synapse_type||'')?'inhibitory':/excit/i.test(row.type||row.synapse_type||'')?'excitatory':'unknown'
+    sign:connectionSign(row.type||row.synapse_type||'')
   })).filter(x=>x.pre&&x.post);
 }
 
