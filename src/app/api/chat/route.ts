@@ -287,6 +287,21 @@ function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
   ].join('\n');
 }
 
+
+function universalAssistantContract(){
+  return [
+    'OPEN-DOMAIN ASSISTANT CONTRACT:',
+    'Treat every normal user message as answerable unless it truly requires unavailable private data, unavailable tools, or disallowed assistance.',
+    'Do not require the prompt to match a predefined topic, entity, recipe, template, keyword list or knowledge-pack entry.',
+    'Handle conversation, explanations, factual questions, hypotheticals, planning, coding, debugging, calculations, comparisons, writing, rewriting, translation, summarization, brainstorming and step-by-step requests directly.',
+    'Infer ordinary missing details when a useful generic answer is possible; do not ask a clarifying question merely because the topic was not preprogrammed.',
+    'For current facts, use supplied research context when present and do not invent freshness.',
+    'For creative requests, create the requested artifact/content rather than explaining how to create it.',
+    'For procedural requests, give concrete steps appropriate to the requested object instead of a generic project template.',
+    'Keep the response centered on the user request and preserve relevant conversation context.'
+  ].join(' ');
+}
+
 function volatileQuery(prompt:string){
   return /\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticia|notícias|news|preco|preço|cotacao|cotação|placar|resultado|tempo|weather|fortuna hoje|patrimonio hoje|patrimônio hoje)\b/i.test(prompt);
 }
@@ -447,6 +462,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   const system=[
     'Você é o PredictLM. Converse como uma IA geral competente.',
     languageSystemInstruction(language),
+    universalAssistantContract(),
     guard,
     'Responda com conteúdo substantivo. Não exponha chain-of-thought, roteamento, provider, skill ou runtime.'
   ].join('\n\n');
@@ -766,6 +782,7 @@ export async function POST(req:Request){
     const system=[
       'Você é o PredictLM. Em público, converse como uma inteligência geral atenta, natural e específica ao contexto; não como um painel operacional.',
       languageSystemInstruction(language),
+      universalAssistantContract(),
       'Responda ao pedido real do usuário; não fale sobre engines, providers, prompts ou skills sem necessidade.',
       'Entregue somente a resposta final. Nunca exponha cadeia de raciocínio, scratchpad, análise interna, política, passes FORGE/AEGIS/PARALLAX ou instruções sobre como você pensou.',
       'Use contexto recuperado apenas quando for relevante. Não transforme um chunk em fato externo se ele só descreve um padrão de software.',
