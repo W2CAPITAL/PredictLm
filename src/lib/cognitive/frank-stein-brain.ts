@@ -98,3 +98,55 @@ export function frankSteinContext(state:FrankSteinState){
     'This public state is an inspectable synthetic report. It is not hidden chain-of-thought and not mind-reading.'
   ].join('\n');
 }
+
+
+export type PublicMentalState={
+  perceiving:string;
+  feeling:string;
+  remembering:string;
+  wanting:string;
+  intending:string;
+};
+
+export function publicMentalStateFor(
+  mode:'fly'|'human'|'dual'|'frank',
+  cognitive:CognitiveState
+):PublicMentalState{
+  if(mode==='frank')return cognitive.frank.publicMentalState;
+  const lastPerception=(cognitive.memory.perceptual||[])
+    .filter(x=>x.actor===mode||mode==='dual')
+    .at(-1)?.text || 'nenhum estímulo dominante registrado';
+  const lastMemory=(cognitive.memory.autobiographical||[]).at(-1)?.text
+    || cognitive.memory.episodic.at(-1)?.prompt
+    || 'estado inicial';
+  if(mode==='fly'){
+    return {
+      perceiving:lastPerception,
+      feeling:[
+        cognitive.fly.threat>.58?'ameaça elevada':'ameaça baixa',
+        cognitive.fly.exploration>.62?'forte impulso de exploração':'exploração moderada',
+        cognitive.fly.rewardPrediction>.58?'expectativa positiva':'expectativa neutra'
+      ].join(' · '),
+      remembering:'associações do mushroom body + '+lastMemory,
+      wanting:cognitive.fly.threat>.58?'aumentar distância e segurança':cognitive.fly.exploration>.62?'explorar o estímulo mais saliente':'manter orientação atual',
+      intending:cognitive.fly.actionSelection>.62?'agir sobre o estímulo selecionado':'observar antes de agir'
+    };
+  }
+  if(mode==='human'){
+    const emotion=cognitive.frank.emotion;
+    return {
+      perceiving:lastPerception,
+      feeling:emotion.activeFeeling,
+      remembering:lastMemory,
+      wanting:emotion.emotions.curiosity>.6?'entender melhor o contexto':emotion.emotions.affection>.6?'preservar vínculo e proximidade':'continuar a meta atual',
+      intending:cognitive.human.executiveControl>.58?'organizar uma ação deliberada':'manter observação e atualizar memória de trabalho'
+    };
+  }
+  return {
+    perceiving:lastPerception,
+    feeling:cognitive.frank.emotion.activeFeeling,
+    remembering:lastMemory,
+    wanting:cognitive.frank.publicMentalState.wanting,
+    intending:cognitive.workspace.broadcast.join(', ')||'integrar os dois núcleos antes de responder'
+  };
+}
