@@ -26,7 +26,20 @@ function normalizeState(raw:any):CognitiveState{
     ...raw,
     fly:raw.fly?.version===1?raw.fly:base.fly,
     human:raw.human?.version===1?raw.human:base.human,
-    frank:raw.frank?.version===1?raw.frank:base.frank,
+    frank:raw.frank?.version===1?{
+      ...base.frank,
+      ...raw.frank,
+      emotion:{
+        ...base.frank.emotion,
+        ...(raw.frank.emotion||{}),
+        neuromodulators:{...base.frank.emotion.neuromodulators,...(raw.frank.emotion?.neuromodulators||{})},
+        appraisal:{...base.frank.emotion.appraisal,...(raw.frank.emotion?.appraisal||{})}
+      },
+      neurons:raw.frank.neurons?.version===1?raw.frank.neurons:base.frank.neurons,
+      hippocampus:raw.frank.hippocampus?.version===1?raw.frank.hippocampus:base.frank.hippocampus,
+      body:{...base.frank.body,...(raw.frank.body||{})},
+      memoryAffect:{...base.frank.memoryAffect,...(raw.frank.memoryAffect||{})}
+    }:base.frank,
     workspace:{...base.workspace,...(raw.workspace||{})},
     consciousAccess:{...base.consciousAccess,...(raw.consciousAccess||{})},
     memory:{
