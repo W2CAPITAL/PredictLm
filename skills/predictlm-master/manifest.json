@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.15.0",
+  "version": "3.15.1",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -136,6 +136,9 @@
     "simulationLiveness": "macaque/fly timers, cooldowns, anti-stall, real object registry, multi-tick actions",
     "characterFidelity": "user references first; semantic failure or unverified limited fallback cannot become valid final character art",
     "automaticVisualGrounding": "named characters auto-search Google/Firecrawl and no-key image fallback; manual upload optional",
-    "universalReportIntelligence": "dynamic report taxonomy; FORGE + AEGIS + PARALLAX + CHAIR; Council X10 auto-escalation for complex reports; quality >=85"
+    "universalReportIntelligence": "dynamic report taxonomy; FORGE + AEGIS + PARALLAX + CHAIR; Council X10 auto-escalation for complex reports; quality >=85",
+    "semanticVision": "multimodal scene/animal identification before local ImageNet fallback; local weak non-animal guesses abstain",
+    "cleanSimpleChat": "simple stable turns do not inject unrelated GitHub/RAG sources; knowledge:false is a hard boundary",
+    "characterReferenceRuntime": "named characters use actual image-input models for automatic references and multimodal semantic review"
   }
 }
