@@ -122,3 +122,45 @@ test('cognitive stream returns isolated 503 when no provider exists',async()=>{
   const data=await response.json();
   assert.equal(data.code,'NO_COGNITIVE_STREAM_PROVIDER');
 });
+
+
+test('fly chat mode identifies itself as the FlyWire-controlled agent and streams normally',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  const original=globalThis.fetch;
+  let seen:any=null;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    assert.equal(String(input),'https://api.groq.com/openai/v1/chat/completions');
+    seen=JSON.parse(String(init?.body||'{}'));
+    return upstream(['Bzz. ','Estou explorando o ambiente e prestando atenção no que mudou.']);
+  };
+  try{
+    const req=new Request('http://predictlm.test/api/chat/cognitive-stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        language:'pt-BR',
+        cognitiveMode:'fly',
+        cognitiveContext:'FLY CONNECTOME CORE — FlyWire FAFB v783\nSalience 71%; exploration 82%.',
+        messages:[
+          {role:'user',content:'Oi mosca'},
+          {role:'assistant',content:'Bzz, oi.'},
+          {role:'user',content:'O que você está fazendo?'}
+        ]
+      })
+    }) as any;
+    const response=await POST(req);
+    assert.equal(response.status,200);
+    const text=await response.text();
+    assert.match(text,/"mode":"fly-connectome"/);
+    assert.match(text,/Estou explorando/);
+    const system=seen.messages.find((x:any)=>x.role==='system')?.content||'';
+    assert.match(system,/Mosca Predict/);
+    assert.match(system,/FlyWire FAFB v783/);
+    assert.match(system,/Não deixe o Human Core dominar/i);
+    assert.ok(seen.messages.some((x:any)=>x.role==='assistant'&&x.content==='Bzz, oi.'));
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
