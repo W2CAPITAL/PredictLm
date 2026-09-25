@@ -71,6 +71,11 @@ export async function POST(req:Request){
         '',
         '=== PARALLAX ===',
         parallaxReportPrompt(request,sourceText,blueprint),
+        ...(useCouncil?[
+          '',
+          '=== COUNCIL X10 ===',
+          councilReportPrompt(request,sourceText,blueprint)
+        ]:[]),
         '',
         'Responda exatamente com os marcadores:',
         '<<<FORGE>>>',
@@ -81,7 +86,7 @@ export async function POST(req:Request){
         '...',
         ...(useCouncil?[
           '<<<COUNCIL_X10>>>',
-          councilReportPrompt(request,sourceText,blueprint)
+          '...'
         ]:[])
       ].join('\n');
       const bundle=await runOne(providers[0],bundlePrompt,3600);
