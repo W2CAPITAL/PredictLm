@@ -1,4 +1,4 @@
-import type {LegalProcessBundle} from './types';
+import type {LegalProcessBundle,LegalSearchCase} from './types';
 
 export type LegalRisk='low'|'medium'|'high'|'critical';
 export type LegalPortfolioStatus='active'|'attention'|'silent'|'closed'|'unknown';
@@ -119,5 +119,47 @@ export function portfolioFromBundle(bundle:LegalProcessBundle,meta:LegalPortfoli
     meta,
     bundle,
     snapshotKey:[bundle.digits,bundle.datajud.lastUpdate||'',bundle.summary.movementCount,bundle.summary.publicationCount].join(':')
+  };
+}
+
+
+export function portfolioFromSearchCase(item:LegalSearchCase,meta:LegalPortfolioMeta={}):LegalPortfolioCase{
+  const latestAt=item.latestMovement?.date||item.lastUpdate;
+  const days=daysSince(latestAt);
+  const status=statusFromSignals(days,item.latestMovement?.name||'');
+  const risk=riskFromSignals({
+    daysSilent:days,
+    latestMovement:item.latestMovement?.name,
+    nextReturn:meta.nextReturn
+  });
+  return {
+    processNumber:item.processNumber,
+    digits:item.digits,
+    tribunal:item.tribunal,
+    degree:item.degree,
+    className:item.class?.name,
+    subject:item.subjects?.[0]?.name,
+    court:item.court?.name,
+    filedAt:item.filedAt,
+    lastUpdate:item.lastUpdate,
+    latestMovement:item.latestMovement?.name,
+    latestMovementAt:latestAt,
+    movementCount:item.movementCount,
+    djenCount:0,
+    confidentiality:item.confidentiality,
+    daysSilent:days,
+    risk,status,
+    source:'DataJud',
+    meta,
+    snapshotKey:[item.digits,item.lastUpdate||'',item.movementCount,item.latestMovement?.date||''].join(':')
+  };
+}
+
+export function mergePortfolioCase(previous:LegalPortfolioCase|undefined,next:LegalPortfolioCase){
+  if(!previous)return next;
+  return {
+    ...next,
+    meta:{...previous.meta,...next.meta,tasks:next.meta.tasks||previous.meta.tasks},
+    bundle:next.bundle||previous.bundle
   };
 }
