@@ -591,7 +591,25 @@ export function GrokImaginePanel(){
       const semanticFailedSpecific=specificRequest&&semanticReview?.status==='failed';
       const unverifiedSpecific=specificRequest&&semanticReview?.status!=='passed';
       const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed';
+      const hardRejectSpecific=semanticFailedSpecific||unverifiedLimitedSpecific;
       const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
+
+      if(hardRejectSpecific){
+        const reasons=semanticReview?.status==='failed'
+          ? semanticReview.issues.slice(0,3).join('; ')
+          : 'o provider disponível é de fidelidade limitada e não houve verificação semântica aprovada';
+        setGenerated('');
+        setGeneratedPrompt('');
+        setGeneratedRequest(prompt);
+        setGeneratedCaption('');
+        setProvider(String(data.provider||''));
+        setPersisted(false);
+        const rejectMessage='Geração rejeitada pelo gate de identidade: '+reasons+'. Envie 1–3 imagens de referência ou use um provider multimodal configurado; o app não vai apresentar este candidato como personagem correto.';
+        setImageProviderWarning(rejectMessage);
+        setError(rejectMessage);
+        return '';
+      }
+
       const upscaled=blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
@@ -608,11 +626,9 @@ export function GrokImaginePanel(){
         setPersisted(false);
         data.providerWarning=[
           data.providerWarning,
-          semanticFailedSpecific
-            ? 'Esta geração específica falhou no gate de identidade e não foi adicionada às Gerações recentes.'
-            : unverifiedSpecific
-              ? 'Personagem específico sem verificação semântica aprovada: a imagem foi mantida apenas na sessão atual e não entrou nas Gerações recentes.'
-              : 'Fallback de fidelidade limitada sem aprovação semântica: a imagem não foi adicionada às Gerações recentes.'
+          unverifiedSpecific
+            ? 'Personagem específico sem verificação semântica aprovada: a imagem pode ser inspecionada nesta sessão, mas não entra em Gerações recentes.'
+            : 'A imagem não atingiu o gate para persistência.'
         ].filter(Boolean).join(' ');
         setImageProviderWarning(data.providerWarning);
       }else await saveLibrary({
