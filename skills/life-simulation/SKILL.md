@@ -2,7 +2,7 @@
 name: life-simulation
 description: Cria, executa e exporta simulações 2.5D isométricas ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "2.0.0"
+  version: "3.1.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -16,7 +16,8 @@ SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS →
 
 ## Padrão visual
 - 2.5D isométrico leve em Canvas, browser-first e mobile-first;
-- câmera com zoom e foco Mundo/Humano/Mosca;
+- câmera com zoom e foco Mundo/Humano/Mosca/Macaque;
+- POV voxel/perspectiva separado para Humano, Macaque e Mosca;
 - personagem feminina usa por padrão o self-model visual persistente da entidade quando a simulação é dela;
 - mundo ampliado, locais clicáveis e objetos físicos com affordances;
 - ação atual visível;
@@ -245,3 +246,42 @@ Humano, macaque e mosca podem possuir biografias sintéticas longas para continu
 - `zardoy/minecraft-web-client` — MIT: referência arquitetural para mundo browser em primeira pessoa, render/câmera/input separados; não copiar assets do Minecraft.
 - `zardoy/mcraft-arwes` — package metadata MIT: referência para render loop, câmera e lifecycle de chunks/scene.
 - `JEFFY1234599/block-craft-browser-edition` — no estado inspecionado havia README, sem implementação/licença verificável no repositório; usar somente ideias gerais, sem copiar código/assets.
+
+
+## Voxel POV + Free Agency v3.1
+
+A simulação não pode declarar uma ação física sem tornar seu efeito observável.
+
+- cada agente possui câmera própria com posição, heading, altura, range e FOV;
+- Humano usa POV frontal direcional;
+- Macaque usa POV direcional próprio e ações de inspeção/forrageio/escalada;
+- Mosca usa POV frontal amplo + percepção periférica panorâmica de ~330°, com mudanças reais de altitude e waypoint;
+- uso de objetos deve permanecer visível por alguns segundos e produzir animação coerente: tela em uso, impressão, escrita no quadro, porta/luz de geladeira, vapor, água, manipulação de plantas etc.;
+- mãos/membros/proximidade devem indicar fisicamente qual objeto está sendo usado;
+- texto de log nunca substitui uma interação visual quando o objeto está no campo de visão.
+
+### Deliberação pública simulada
+
+Cada agente mantém, no runtime local:
+- `publicThought` curto;
+- alternativas/candidate intentions;
+- decisão selecionada;
+- histórico público de decisões;
+- lembranças biográficas sintéticas;
+- experiências reais apenas do próprio runtime.
+
+Isso é estado de software deliberadamente inspecionável, não chain-of-thought de provider nem leitura de mente.
+
+### Memórias de vida inteira
+
+Biografias podem cobrir infância/desenvolvimento, aprendizagem, falhas, trabalho, relações, exploração e hábitos. Todas continuam marcadas `source: synthetic-biography`.
+
+A biografia serve para variar decisões e permitir recall contextual. Nunca converter ficção biográfica em alegação de experiência biológica real.
+
+### Referências voxel/browser
+
+- `zardoy/minecraft-web-client` — MIT: referência de arquitetura browser-first, câmera/renderer/input/scene; não copiar assets, texturas, nomes ou conteúdo proprietário de Minecraft.
+- `zardoy/mcraft-arwes` — package metadata MIT: referência de Three.js/render loop/câmera.
+- `JEFFY1234599/block-craft-browser-edition` — o README inspecionado declara MIT e descreve um sandbox voxel browser; usar somente padrões gerais confirmáveis, sem assumir como implementadas todas as alegações promocionais do README.
+
+PredictLM deve manter identidade visual própria e assets originais; “tipo Minecraft web” significa navegação/voxel/POV/interação, não redistribuir arte do Minecraft.
