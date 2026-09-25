@@ -62,20 +62,20 @@ function providers():Provider[]{
       model:gatewayModel
     });
   }
-  if(process.env.OPENAI_API_KEY){
+  if(process.env.OPENAI_API_KEY&&process.env.OPENAI_MODEL){
     push({
       name:'openai',
       base:process.env.OPENAI_BASE_URL||'https://api.openai.com/v1',
       key:process.env.OPENAI_API_KEY,
-      model:process.env.OPENAI_MODEL||'gpt-5.6-luna'
+      model:process.env.OPENAI_MODEL
     });
   }
-  if(process.env.XAI_API_KEY){
+  if(process.env.XAI_API_KEY&&process.env.XAI_MODEL){
     push({
       name:'xai',
       base:process.env.XAI_BASE_URL||'https://api.x.ai/v1',
       key:process.env.XAI_API_KEY,
-      model:process.env.XAI_MODEL||'grok-4.7'
+      model:process.env.XAI_MODEL
     });
   }
   if(process.env.FREELLMAPI_BASE_URL&&process.env.FREELLMAPI_API_KEY){
@@ -98,29 +98,29 @@ function providers():Provider[]{
       model:process.env.OLLAMA_MODEL
     });
   }
-  if(process.env.OPENCODE_API_KEY){
-    push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL||'nemotron-3.5-lightning-free'});
+  if(process.env.OPENCODE_API_KEY&&process.env.OPENCODE_MODEL){
+    push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL});
   }
-  if(process.env.NVIDIA_API_KEY){
-    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL||'nvidia/nemotron-3.5-lightning-30b-a3b'});
+  if(process.env.NVIDIA_API_KEY&&process.env.NVIDIA_MODEL){
+    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL});
   }
-  if(process.env.DEEPSEEK_API_KEY){
-    push({name:'deepseek',base:process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com/v1',key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL||'deepseek-flash'});
+  if(process.env.DEEPSEEK_API_KEY&&process.env.DEEPSEEK_MODEL){
+    push({name:'deepseek',base:process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com/v1',key:process.env.DEEPSEEK_API_KEY,model:process.env.DEEPSEEK_MODEL});
   }
-  if(process.env.KIMI_API_KEY){
-    push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL||'kimi-k2.5'});
+  if(process.env.KIMI_API_KEY&&process.env.KIMI_MODEL){
+    push({name:'kimi',base:process.env.KIMI_BASE_URL||'https://api.moonshot.ai/v1',key:process.env.KIMI_API_KEY,model:process.env.KIMI_MODEL});
   }
-  if(process.env.ZAI_API_KEY){
-    push({name:'zai',base:process.env.ZAI_BASE_URL||'https://api.z.ai/api/paas/v4',key:process.env.ZAI_API_KEY,model:process.env.ZAI_MODEL||'glm-4.6'});
+  if(process.env.ZAI_API_KEY&&process.env.ZAI_MODEL){
+    push({name:'zai',base:process.env.ZAI_BASE_URL||'https://api.z.ai/api/paas/v4',key:process.env.ZAI_API_KEY,model:process.env.ZAI_MODEL});
   }
-  if(process.env.MINIMAX_API_KEY){
-    push({name:'minimax',base:process.env.MINIMAX_BASE_URL||'https://api.minimax.io/v1',key:process.env.MINIMAX_API_KEY,model:process.env.MINIMAX_MODEL||'MiniMax-M3'});
+  if(process.env.MINIMAX_API_KEY&&process.env.MINIMAX_MODEL){
+    push({name:'minimax',base:process.env.MINIMAX_BASE_URL||'https://api.minimax.io/v1',key:process.env.MINIMAX_API_KEY,model:process.env.MINIMAX_MODEL});
   }
-  if(process.env.GEMINI_API_KEY){
-    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL||'gemini-3.8-flash'});
+  if(process.env.GEMINI_API_KEY&&process.env.GEMINI_MODEL){
+    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL});
   }
-  if(process.env.ANTHROPIC_API_KEY){
-    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL||'claude-sonnet-4-6',protocol:'anthropic'});
+  if(process.env.ANTHROPIC_API_KEY&&process.env.ANTHROPIC_MODEL){
+    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL,protocol:'anthropic'});
   }
   if(process.env.ARK_API_KEY&&process.env.ARK_MODEL){
     push({name:'ark',base:process.env.ARK_BASE_URL||'https://ark.cn-beijing.volces.com/api/v3',key:process.env.ARK_API_KEY,model:process.env.ARK_MODEL});
