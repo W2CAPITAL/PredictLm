@@ -69,3 +69,22 @@ test('fly exploration uses changing waypoints instead of a permanent circular or
   const ys=visited.map(v=>Math.round(v[1]/20));
   assert.ok(new Set(xs).size>=3||new Set(ys).size>=3);
 });
+
+
+test('fly samples the park lamp then puts it on cooldown instead of sticking there',()=>{
+  let fly=createFlySimulationState();
+  fly={
+    ...fly,
+    x:676,y:246,z:48,vx:1,vy:0,
+    targetId:'world-lamp',
+    targetLabel:'Poste de luz',
+    targetDwellTicks:5,
+    core:{...fly.core,threat:.1,inhibition:.3,exploration:.7}
+  };
+  const next=stepFlySimulation(fly,{
+    personX:120,personY:480,personAction:'parado',personLocation:'Casa'
+  });
+  assert.equal(next.avoidTargetId,'world-lamp');
+  assert.ok(next.avoidUntilTick>next.tick);
+  assert.notEqual(next.targetId,'world-lamp');
+});
