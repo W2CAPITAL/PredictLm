@@ -196,3 +196,25 @@ Além das necessidades e memórias, o agente mantém:
 - `DewingShen88/sims4-immersive-controls`: reference-only; usar autonomia, pesos de interação, memória e reversibilidade em alto nível.
 - `francot514/FreeSims`: MPL-2.0, reference-only; casa/trabalho/comunidade e engine independente de assets proprietários.
 - repositórios de desbloqueio/DLC: **quarentena; não usar no código, corpus ou runtime**.
+
+
+## Anti-NPC continuity
+
+The simulation must not move the human merely because time advanced.
+
+- Passive time changes clock/needs/events only.
+- Spatial movement requires a selected goal/destination.
+- Frank keeps persistent boredom, habits, object/place preferences, goals and recent choices.
+- Repeating the same object/action receives a boredom/repetition penalty.
+- Public mental state must expose **want, focus and public thought** that actually feed action selection.
+- The fly must maintain a spatial target and recent-target memory; do not use sinusoidal/circular roaming as the primary locomotion policy.
+
+### Environmental reality
+The world includes doors, windows and dynamic stimuli such as daylight, artificial light, food smell, notifications, ambient sound and air movement. Perception is local and bounded.
+
+### Tools
+When Frank deliberately uses a computer/phone for learning:
+- Internet research may call the existing `/api/research` surface.
+- Own-code introspection may call `/api/simulation/code`.
+- Code access is read-only, allowlisted, public source only; never expose secrets/environment variables.
+- Learned results become agent knowledge + episodic memory instead of decorative UI.
