@@ -46,6 +46,15 @@ export const HUMAN_BRAIN_ENSEMBLE:HumanBrainDatasetProfile[]=[
     licenseNote:'open-access and restricted tiers exist; only public aggregate priors are embedded'
   },
   {
+    id:'hbp-ebrains',
+    label:'Human Brain Project / EBRAINS',
+    people:0,
+    scale:'multiscale models, brain atlases, consciousness/cognition, neurorobotics and neuromorphic models',
+    contribution:['brain-state dynamics','embodied cognitive architectures','hippocampal/cerebellar/basal-ganglia models','multiscale simulation priors'],
+    sourceUrl:'https://www.humanbrainproject.eu/en/',
+    licenseNote:'models/datasets have resource-specific terms; Frank embeds only derived architectural priors unless a compatible dataset is explicitly imported'
+  },
+  {
     id:'allen-human',
     label:'Allen Human Brain Atlas',
     people:6,
