@@ -172,6 +172,12 @@ export function objectUtility(
   if(obj.affordances.includes('health'))score+=(100-n.health)*.62;
   if(obj.affordances.includes('observe')||obj.affordances.includes('relax'))score+=(100-n.fun)*.22+n.stress*.25;
   if(obj.affordances.includes('create'))score+=state.neuro.curiosity*20;
-  const jitter=((Math.sin((tick+1)*(obj.id.length+3)*12.9898)+1)/2)*11;
+  let h=(state.seed^(tick*2654435761))>>>0;
+  for(let i=0;i<obj.id.length;i++){
+    h^=obj.id.charCodeAt(i);
+    h=Math.imul(h,16777619);
+  }
+  h^=h<<13;h^=h>>>17;h^=h<<5;
+  const jitter=((h>>>0)/4294967295)*11;
   return score+jitter;
 }
