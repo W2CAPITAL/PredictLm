@@ -396,6 +396,27 @@ export function ChatShell({onOpenLegal}:Props){
     }
   }
 
+  async function requestBrainReport(prompt:string,sourceText:string,signal:AbortSignal){
+    try{
+      const response=await fetchWithTimeout('/api/report-dossier/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          request:prompt,
+          sourceText,
+          classification:'confidencial',
+          theme:'auto',
+          maxWordsPerSection:420
+        })
+      },88000,signal);
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data?.markdown)return {ok:false,data,error:String(data?.error||'Report Architect indisponível.')};
+      return {ok:true,data,error:''};
+    }catch(error:any){
+      return {ok:false,data:null,error:String(error?.message||'Report Architect indisponível.')};
+    }
+  }
+
   function prepareReportArtifact(prompt:string,content:string){
     const intent=detectReportIntent(prompt);
     if(!intent.wantsReport)return null;
@@ -500,6 +521,45 @@ export function ChatShell({onOpenLegal}:Props){
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(reportIntent.wantsReport&&!processNumber){
+        setActivity([
+          'REPORT ARCHITECT · detectando o tipo e objetivo',
+          'FORGE · extraindo fatos, métricas e padrões',
+          'AEGIS · procurando contradições e lacunas',
+          'PARALLAX · testando terceiro enquadramento',
+          'CHAIR · redigindo e aplicando quality gate'
+        ]);
+        const context=history.slice(-10)
+          .filter(m=>m.role==='user'||m.role==='assistant')
+          .map(m=>(m.role==='user'?'USUÁRIO: ':'ASSISTENTE: ')+safeHistoricalContent(m.content))
+          .join('\n\n')
+          .slice(0,42000);
+        const brainReport=await requestBrainReport(prompt,context,turnController.signal);
+        if(brainReport.ok){
+          const markdown=String(brainReport.data.markdown||'');
+          const report=prepareReportArtifact(prompt,markdown);
+          const brainNames=['FORGE','AEGIS','PARALLAX','CHAIR'];
+          s.addMessage({
+            role:'assistant',
+            content:report?.content||markdown,
+            engine:'PredictLM · Report Architect',
+            ...(report?.media?.length?{media:report.media}:{}),
+            actions:[
+              'Tipo detectado · '+String(brainReport.data?.blueprint?.label||brainReport.data?.blueprint?.kind||'relatório personalizado'),
+              'Cérebros usados · '+brainNames.join(' · '),
+              'Quality Gate · '+String(brainReport.data?.quality?.score??report?.quality?.score??'—')+'/100',
+              ...(brainReport.data?.brains?.repaired?['CHAIR executou uma rodada adicional de reparo']:[]),
+              'Conteúdo completo enviado ao Dossiê Studio'
+            ],
+            status:'done'
+          });
+          return;
+        }
+        // If the dedicated orchestrator is unavailable, continue through the
+        // normal PredictLM answer path with the report contract already active.
+        setActivity(['Report Architect avançado indisponível · usando rota normal com contrato de relatório']);
+      }
+
       if(fraudIntent&&!processNumber){
         setActivity(['Classificando sinais de fraude','Verificando links, credenciais e pagamento']);
         const assessment=assessFraudRisk({texts:[prompt]});
