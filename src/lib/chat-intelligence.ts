@@ -39,6 +39,7 @@ export function conversationAnswerIssue(prompt:string,content:string){
   const p=clean(prompt),out=clean(content);
   if(!out)return 'empty';
   if(/nao tenho contexto local suficiente|nao tenho contexto suficiente|ative (?:o )?neural|^fallback\b/.test(out))return 'weak-local';
+  if(/(?:^|\n)\s*relacionado:\s*|predictlm\s+[a-z0-9 -]*\s+skill\b|cross-engine agents|github knowledge engine|api agent \+ skills/i.test(String(content||'')))return 'internal-context-leak';
   if(isGenericHowTo(prompt)&&!answerLooksProcedural(content))return 'missing-procedure';
   if(isHypotheticalPrompt(prompt)){
     const topical=responseTopicAlignment(prompt,content);
