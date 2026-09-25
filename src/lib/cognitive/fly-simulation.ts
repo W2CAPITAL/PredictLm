@@ -102,7 +102,7 @@ export function stepFlySimulation(
   let wanderTargetY=Number.isFinite(prev.wanderTargetY)?prev.wanderTargetY:150;
   let targetAge=(Number.isFinite(prev.targetAge)?prev.targetAge:0)+1;
   const waypointDistance=Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y);
-  const needsNewWaypoint=waypointDistance<34||targetAge>95;
+  const needsNewWaypoint=waypointDistance<30||targetAge>58;
 
   if(needsNewWaypoint){
     wanderTargetX=24+randA*Math.max(40,width-48);
@@ -119,13 +119,13 @@ export function stepFlySimulation(
   }else if(behavior==='inspect'){
     const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
     const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx=((txObj-prev.x)/od)*1.15;
-    ty=((tyObj-prev.y)/od)*.95;
+    tx=((txObj-prev.x)/od)*2.2;
+    ty=((tyObj-prev.y)/od)*1.9;
   }else if(behavior==='approach'){
     const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
     const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx=((txObj-prev.x)/od)*2.8;
-    ty=((tyObj-prev.y)/od)*2.25;
+    tx=((txObj-prev.x)/od)*4.4;
+    ty=((tyObj-prev.y)/od)*3.8;
   }else if(behavior==='hover'){
     tx=0;
     ty=0;
@@ -133,13 +133,13 @@ export function stepFlySimulation(
     const wd=Math.max(1,Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y));
     const jitterX=(randA-.5)*.7;
     const jitterY=(randB-.5)*.7;
-    tx=((wanderTargetX-prev.x)/wd)*(1.4+core.exploration*2.1)+jitterX;
-    ty=((wanderTargetY-prev.y)/wd)*(1.2+core.exploration*1.8)+jitterY;
+    tx=((wanderTargetX-prev.x)/wd)*(2.6+core.exploration*3.1)+jitterX;
+    ty=((wanderTargetY-prev.y)/wd)*(2.2+core.exploration*2.8)+jitterY;
   }
 
-  const inertia=behavior==='hover' ? .72 : .5;
-  const vx=clamp(prev.vx*inertia+tx*(1-inertia),-5,5);
-  const vy=clamp(prev.vy*inertia+ty*(1-inertia),-4,4);
+  const inertia=behavior==='hover' ? .72 : .38;
+  const vx=clamp(prev.vx*inertia+tx*(1-inertia),-8,8);
+  const vy=clamp(prev.vy*inertia+ty*(1-inertia),-7,7);
   const altitudeJitter=(randA-.5)*8;
   const desiredZ=behavior==='avoid'?58:behavior==='inspect'?42:behavior==='hover'?36:48+altitudeJitter;
   const vz=clamp(currentVz*.5+(desiredZ-currentZ)*.12,-4,4);

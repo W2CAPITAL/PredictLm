@@ -13,6 +13,7 @@ import {
   WORLD_OBJECTS,
   objectUtility,
   objectsAt,
+  objectActivityLabel,
   perceiveHumanWorld,
   worldObject
 } from './life-world-open';
@@ -68,6 +69,7 @@ export interface LifeAgentExecution{
   state:LifeSimulationState;
   agent:LifeAgentState;
   record:LifeActionRecord;
+  completed:boolean;
 }
 
 function clamp(v:number,min=0,max=100){return Math.max(min,Math.min(max,v))}
@@ -196,15 +198,19 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
   }
   if(wantsWork){
     pushMove(actions,'Trabalho','o trabalho ocorre no local de trabalho');
-    actions.push({id:actionId(actions.length),type:'work',minutes:60,reason:'executar trabalho e gerar renda'});
+    actions.push({id:actionId(actions.length),type:'approach_object',objectId:'work-pc1',reason:'chegar fisicamente ao posto de trabalho'});
+    actions.push({id:actionId(actions.length),type:'use_object',objectId:'work-pc1',minutes:45,reason:'analisar tarefas e produzir uma entrega verificável'});
+    actions.push({id:actionId(actions.length),type:'approach_object',objectId:'work-board',reason:'revisar prioridades depois da execução'});
+    actions.push({id:actionId(actions.length),type:'use_object',objectId:'work-board',minutes:15,reason:'planejar e registrar próximos passos'});
   }
   if(wantsSocial){
     pushMove(actions,'Café','ambiente social');
     actions.push({id:actionId(actions.length),type:'socialize',minutes:40,reason:'fortalecer relações'});
   }
   if(wantsExercise){
-    pushMove(actions,'Parque','atividade física no parque');
-    actions.push({id:actionId(actions.length),type:'exercise',minutes:35,reason:'saúde e estresse'});
+    pushMove(actions,'Parque','atividade física e exploração acontecem no parque');
+    actions.push({id:actionId(actions.length),type:'approach_object',objectId:'park-trail',reason:'entrar na trilha em vez de apenas marcar o parque como destino'});
+    actions.push({id:actionId(actions.length),type:'use_object',objectId:'park-trail',minutes:35,reason:'caminhar, observar e reduzir estresse'});
   }
   if(wantsHealth){
     pushMove(actions,'Clínica','cuidado de saúde');
@@ -212,7 +218,8 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
   }
   if(wantsStudy){
     pushMove(actions,'Biblioteca','ambiente de estudo');
-    actions.push({id:actionId(actions.length),type:'study',minutes:50,reason:'aumentar conhecimento'});
+    actions.push({id:actionId(actions.length),type:'approach_object',objectId:'library-books1',reason:'chegar a uma fonte concreta de informação'});
+    actions.push({id:actionId(actions.length),type:'use_object',objectId:'library-books1',minutes:50,reason:'ler, comparar e aprender'});
   }
   if(wantsHome){
     pushMove(actions,'Casa','retornar para casa');
@@ -236,8 +243,10 @@ export function deterministicLifePlan(instruction:string,state:LifeSimulationSta
   }
   if(wantsCreate){
     const target:LifeLocation=state.person.location==='Casa'?'Casa':'Biblioteca';
+    const objectId=target==='Casa'?'home-pc':'library-pc';
     pushMove(actions,target,'atividade criativa precisa de um local estável');
-    actions.push({id:actionId(actions.length),type:'create',minutes:45,reason:'avançar criatividade e projeto pessoal'});
+    actions.push({id:actionId(actions.length),type:'approach_object',objectId,reason:'usar uma ferramenta concreta para criar'});
+    actions.push({id:actionId(actions.length),type:'use_object',objectId,minutes:45,reason:'produzir, revisar e salvar algo novo'});
   }
   if(wantsMessage){
     actions.push({id:actionId(actions.length),type:'message_friend',text:'Enviar uma mensagem breve para uma relação próxima.',reason:'manter vínculo social'});
@@ -410,14 +419,16 @@ export function executeLifeAgentAction(
   const agent=normalizeLifeAgentState(agentInput);
   const before=observation(state,agent);
   let ok=true;
+  let completed=true;
   let message='Ação executada.';
 
   if(action.type==='move'){
     if(!action.target){ok=false;message='Destino ausente.'}
     else{
-      state=travel(state,action.target);
-      ok=state.person.location===action.target;
-      message=ok?'Chegou a '+action.target+'.':'Não conseguiu chegar a '+action.target+'.';
+      state=stepLifeSimulation(state,5,action.target);
+      completed=state.person.location===action.target;
+      ok=true;
+      message=completed?'Chegou a '+action.target+'.':'Caminhando para '+action.target+'…';
     }
   }else if(action.type==='buy_food'){
     if(state.person.location!=='Mercado'){ok=false;message='Precisa estar no Mercado para comprar comida.'}
@@ -516,15 +527,26 @@ export function executeLifeAgentAction(
   }else if(action.type==='approach_object'){
     const obj=worldObject(String(action.objectId||''));
     if(!obj){ok=false;message='Objeto não encontrado no mundo.'}
-    else{
-      if(state.person.location!==obj.location)state=travel(state,obj.location);
+    else if(state.person.location!==obj.location){
+      state=stepLifeSimulation(state,5,obj.location);
+      completed=false;
+      state.person.currentAction='Caminhando até '+obj.label;
+      message='Indo até a área de '+obj.label+'…';
+    }else{
       const dx=obj.x-state.person.x,dy=obj.y-state.person.y;
+      const distance=Math.hypot(dx,dy);
       state.person.heading=Math.atan2(dy,dx);
-      state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,obj.x-10));
-      state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,obj.y+8));
-      state.person.location=obj.location;
-      state.person.currentAction='Aproximando-se de '+obj.label;
-      message='Chegou perto de '+obj.label+'.';
+      if(distance>18){
+        const step=Math.min(24,distance-14);
+        state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,state.person.x+(dx/Math.max(1,distance))*step));
+        state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,state.person.y+(dy/Math.max(1,distance))*step));
+        state.person.currentAction='Caminhando até '+obj.label;
+        completed=false;
+        message='Aproximando-se de '+obj.label+' · '+Math.round(distance)+' → '+Math.round(Math.max(0,distance-step))+' px.';
+      }else{
+        state.person.currentAction='Diante de '+obj.label;
+        message='Chegou perto de '+obj.label+'.';
+      }
     }
   }else if(action.type==='use_object'){
     const obj=worldObject(String(action.objectId||''));
@@ -533,7 +555,7 @@ export function executeLifeAgentAction(
     else{
       const minutes=action.minutes||25;
       const affords=new Set(obj.affordances);
-      state.person.currentAction='Usando '+obj.label;
+      const activity=objectActivityLabel(obj,'human');
       if(affords.has('rest')||affords.has('sleep')){state.needs.energy=clamp(state.needs.energy+18);state.needs.stress=clamp(state.needs.stress-10)}
       if(affords.has('food')||affords.has('eat'))state.needs.hunger=clamp(state.needs.hunger+16);
       if(affords.has('cook')){agent.skills.cooking=clamp(agent.skills.cooking+2);state.needs.hunger=clamp(state.needs.hunger+12)}
@@ -543,11 +565,13 @@ export function executeLifeAgentAction(
       if(affords.has('observe')||affords.has('relax')||affords.has('watch')){state.needs.fun=clamp(state.needs.fun+10);state.needs.stress=clamp(state.needs.stress-7)}
       if(affords.has('health')||affords.has('shower')){state.needs.health=clamp(state.needs.health+7);state.needs.stress=clamp(state.needs.stress-5)}
       if(affords.has('create')){agent.skills.creativity=clamp(agent.skills.creativity+3);state.needs.fun=clamp(state.needs.fun+5)}
-      state=runMinutes(state,minutes,obj.location);
+      state=runMinutes(state,Math.min(10,minutes),obj.location);
+      state.person.currentAction=activity;
+      state.objectInteraction={objectId:obj.id,actor:'human',verb:activity,tick:state.tick,startedAt:Date.now()};
       state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,obj.x-10));
       state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,obj.y+8));
       state.person.heading=Math.atan2(obj.y-state.person.y,obj.x-state.person.x);
-      message='Interagiu com '+obj.label+' por '+minutes+' min.';
+      message=activity+' · '+minutes+' min planejados.';
     }
   }else if(action.type==='wander'){
     const visible=perceiveHumanWorld(state).visible;
@@ -636,16 +660,16 @@ export function executeLifeAgentAction(
 
   state.person.mood=state.needs.stress>72?'sobrecarregada':state.needs.energy<35?'cansada':'estável';
   state.neuro=stepLifeSimulation(state,0,state.person.location).neuro;
-  if(ok)remember(state,message,action.type==='set_goal'?'goal':'routine',action.type==='set_goal' ? .86 : .58);
-  else state=beforeState;
+  if(ok&&completed)remember(state,message,action.type==='set_goal'?'goal':'routine',action.type==='set_goal' ? .86 : .58);
+  else if(!ok)state=beforeState;
 
   const after=observation(state,agent);
   const record:LifeActionRecord={
     id:'r-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),
     tick:state.tick,action,ok,before,after,message
   };
-  agent.history=[...agent.history,record].slice(-60);
-  return {state,agent,record};
+  if(completed||!ok)agent.history=[...agent.history,record].slice(-60);
+  return {state,agent,record,completed};
 }
 
 function requiredLocation(type:LifeAgentActionType,objectId?:string):LifeLocation|undefined{
@@ -750,11 +774,11 @@ export function executeNextLifeAgentAction(
     return {state,agent,record};
   }
   const result=executeLifeAgentAction(state,agent,action);
-  const nextCursor=plan.cursor+1;
+  const nextCursor=result.completed?plan.cursor+1:plan.cursor;
   result.agent.plan={
     ...plan,
     cursor:nextCursor,
-    status:result.record.ok?(nextCursor>=plan.actions.length?'done':'running'):'failed'
+    status:result.record.ok?(result.completed&&nextCursor>=plan.actions.length?'done':'running'):'failed'
   };
   return result;
 }
@@ -789,7 +813,7 @@ export function simulationPlannerPrompt(
     '{"objective":"...","summary":"...","actions":[{"type":"move","target":"Mercado","reason":"..."},{"type":"buy_food","reason":"..."},{"type":"move","target":"Casa"},{"type":"eat"}]}',
     'Tipos permitidos: move, buy_food, eat, rest, work, study, socialize, exercise, healthcare, wait, set_goal, speak, cook, clean_home, shower, create, message_friend, approach_object, use_object, wander.',
     'Destinos permitidos: Casa, Trabalho, Café, Parque, Mercado, Clínica, Biblioteca.',
-    'Regras físicas: comprar comida exige Mercado; comer/cozinhar em casa exige comida; estudar exige Biblioteca; trabalhar exige Trabalho; descansar/limpar/tomar banho exigem Casa; exercício exige Parque; cuidados exigem Clínica; criar exige Casa ou Biblioteca.',
+    'Regras físicas: ações têm de acontecer perto de objetos concretos quando houver objeto disponível. Trabalho usa PC/quadro/impressora/mesa; parque usa trilha/banco/árvores/área de exercícios; estudo usa livros/computador; criar usa computador. approach_object deve preceder use_object.',
     'Planeje no máximo 10 ações. Não faça um roteiro linear desnecessário: observe primeiro, escolha entre alternativas e fale apenas quando houver motivo social/perceptivo.',
     'Não inclua chain-of-thought. reason é apenas justificativa curta da ação.',
     '',

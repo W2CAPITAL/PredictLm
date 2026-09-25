@@ -58,6 +58,14 @@ export interface LifeWorldPlace{
   purpose:string;
 }
 
+export interface LifeObjectInteraction{
+  objectId:string;
+  actor:'human'|'macaque';
+  verb:string;
+  tick:number;
+  startedAt:number;
+}
+
 export interface LifeSimulationState{
   version:1;
   seed:number;
@@ -72,6 +80,7 @@ export interface LifeSimulationState{
   memories:LifeMemory[];
   neuro:NeuroState;
   places:LifeWorldPlace[];
+  objectInteraction:LifeObjectInteraction|null;
   lastEvent:string;
 }
 
@@ -130,6 +139,7 @@ export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173
     }],
     neuro:createNeuroState(),
     places:[...places],
+    objectInteraction:null,
     lastEvent:'Novo dia iniciado.'
   };
   return state;

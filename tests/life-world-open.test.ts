@@ -7,7 +7,8 @@ import {
   LIFE_WORLD_WIDTH,
   WORLD_OBJECTS,
   perceiveFlyWorld,
-  perceiveHumanWorld
+  perceiveHumanWorld,
+  perceiveMacaqueWorld
 } from '../src/lib/life-world-open';
 import {createFlySimulationState,stepFlySimulation} from '../src/lib/cognitive/fly-simulation';
 
@@ -42,7 +43,7 @@ test('fly sees a wide local field but not the entire world',()=>{
   let fly=createFlySimulationState();
   fly={...fly,x:150,y:130,vx:1,vy:0};
   const vision=perceiveFlyWorld(fly,state);
-  assert.equal(vision.fovDeg,320);
+  assert.equal(vision.fovDeg,330);
   assert.ok(vision.visible.length>0);
   assert.ok(vision.visible.length<WORLD_OBJECTS.length);
 });
@@ -87,4 +88,26 @@ test('fly chooses visible stimuli and may speak or stay silent autonomously',()=
   assert.ok(fly.visible.length>0);
   assert.ok(sawSilence);
   assert.ok(sawUtterance||fly.silenceTicks>0);
+});
+
+
+test('work and park expose concrete semantic objects instead of location-only actions',()=>{
+  const ids=new Set(WORLD_OBJECTS.map(x=>x.id));
+  for(const id of ['work-pc1','work-board','work-printer','work-meeting','park-trail','park-playground','macaque-fruit-tree','macaque-climb']){
+    assert.ok(ids.has(id),id);
+  }
+  const work=WORLD_OBJECTS.find(x=>x.id==='work-board')!;
+  const trail=WORLD_OBJECTS.find(x=>x.id==='park-trail')!;
+  assert.ok(work.affordances.includes('plan'));
+  assert.ok(trail.affordances.includes('walk'));
+});
+
+test('macaque has its own directional primate vision',()=>{
+  const state=createLifeSimulation();
+  const macaque={x:170,y:155,heading:0};
+  const first=perceiveMacaqueWorld(macaque,state,{x:180,y:150});
+  assert.equal(first.actor,'macaque');
+  assert.equal(first.fovDeg,165);
+  assert.ok(first.visible.length>0);
+  assert.ok(first.visible.length<WORLD_OBJECTS.length);
 });
