@@ -36,7 +36,7 @@ export function matchupReferenceQueries(input:string){
   return ['Naruto Kurama full chakra avatar reference','Sasuke Perfect Susanoo full body reference',
     ...(requestsValleyOfTheEnd(input)?['Valley of the End Hashirama Madara statues reference']:[])];
 }
-export type SemanticImageReview={status:'passed'|'failed'|'unavailable';issues:string[];retryPrompt:string};
+export type SemanticImageReview={status:'passed'|'failed'|'unavailable';issues:string[];retryPrompt:string;reviewProvider?:string;reviewModel?:string};
 const ISSUE_REPAIRS:Record<string,string>={
   'missing-kurama':'Show the complete golden nine-tailed Kurama avatar clearly on the left.',
   'missing-susanoo':'Show the complete purple armored winged Perfect Susanoo clearly on the right.',
