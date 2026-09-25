@@ -575,6 +575,17 @@ export function responseTopicAlignment(prompt:string,content:string){
   const generative=/^(?:escreva|redija|crie|gere|invente|imagine|traduza|reescreva|reformule|resuma|corrija|melhore|transforme|continue|complete|fa[cç]a)\b/.test(p);
   if(generative&&c.length>=20)return {relevant:true,score:1,subject:[] as string[]};
 
+  // Direct Q&A and arithmetic may be correct precisely because the answer
+  // replaces the subject instead of repeating it ("Paris", "391", "1969").
+  const arithmetic=/^[\s\d.,()+\-*/%^=x×÷]+\??$/.test(String(prompt).trim())
+    || /\b(quanto|calcule|calcular|resultado|soma|subtra|multiplica|divid|porcent|percentual)\b/.test(p);
+  if(arithmetic&&/[\d]/.test(c))return {relevant:true,score:1,subject:[] as string[]};
+
+  const conciseQuestion=/^(?:qual|quais|quanto|quantos|quantas|onde|quando|quem|o que|como se chama)\b/.test(p);
+  if(conciseQuestion&&c.length>=2&&c.length<=800&&!signalsKnowledgeGap(content)){
+    return {relevant:true,score:0.5,subject:[] as string[]};
+  }
+
   const subject=p.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!TOPIC_STOPWORDS.has(x));
   if(!subject.length)return {relevant:true,score:1,subject:[] as string[]};
   let hits=0;
