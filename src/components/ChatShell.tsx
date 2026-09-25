@@ -655,7 +655,7 @@ export function ChatShell({onOpenLegal}:Props){
       setActivity([
         'PREDICT ROUTER · consultando providers opcionais',
         'PREDICT CORE · mantendo skills e contratos relevantes',
-        ...(advisoryText?['LOCAL ASSIST · segunda opinião pronta']:[]),
+        ...(advisoryText?['PREDICT CONTEXT · contexto local adicional']:[]),
         ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
         'VERIFY · bloqueando resposta fora do pedido'
       ]);
@@ -743,7 +743,7 @@ export function ChatShell({onOpenLegal}:Props){
           actions:[
             'API/provider executou a resposta final',
             'Agent/skills selecionados no servidor',
-            ...(advisoryText?['Motor local usado apenas como crítico auxiliar']:[]),
+            ...(advisoryText?['Contexto local adicional considerado pelo PredictLM']:[]),
             ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
             'Resposta final validada antes de exibir'
           ],
@@ -992,7 +992,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>API-first · local assist</small></span></div>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>PredictLM-first · local + knowledge</small></span></div>
       </div>
     </aside>
     {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
