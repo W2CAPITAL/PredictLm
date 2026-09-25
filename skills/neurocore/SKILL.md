@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.0.0"
+  version: "3.2.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v2
+# PredictLM Digital Brain / NeuroCore v3.2
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -131,3 +131,33 @@ Perguntas sobre “vida real” devem distinguir:
 3. dados de conectoma — referência estrutural, não memória biográfica.
 
 Respostas anteriores nunca devem ser recursivamente regravadas como lembranças reais apenas por terem sido produzidas pelo modelo.
+
+
+## Macaque Core / Human-Primate Bridge v3.2
+
+O Cognitive Lab incorpora um terceiro núcleo biológico de referência: **Macaque Core**, derivado do atlas cortical de `Macaca fascicularis` publicado em Cell (2023).
+
+Proveniência:
+- 143 regiões corticais;
+- 264 tipos celulares definidos por transcriptoma;
+- 42.076.954 células corticais espacialmente anotadas;
+- 1.493.240 células usadas na taxonomia snRNA-seq;
+- atlas de córtex cerebral, **não** conectoma sináptico de cérebro inteiro.
+
+Arquivos:
+- `src/lib/cognitive/macaque-core.ts`;
+- `src/lib/cognitive/human-primate-bridge.ts`;
+- `src/lib/cognitive/connectome-provenance.ts`.
+
+### Regra de preenchimento humano
+
+O Human Core usa:
+1. **H01 humano direto** onde existe cobertura real;
+2. **proxy cortical macaque** de baixo peso para organização cortical homóloga fora do fragmento H01;
+3. **unknown/unresolved** quando nem H01 nem o atlas macaque fornecem evidência adequada.
+
+Nunca transformar proxy macaque em “medição humana”. Não inventar sinapses humanas, regiões subcorticais, conectoma humano inteiro, memórias biológicas ou pensamentos.
+
+O Macaque Core tem chat próprio em `/cognitive/macaque`, histórico próprio e identidade `PredictLM Macaque Core`.
+
+O modo híbrido do Cognitive Lab usa Human + Macaque + Fly com proveniência separada.
