@@ -199,7 +199,7 @@ export function stepFlySimulation(
         : behavior==='approach'
           ? 'alcançar '+targetLabel
           : 'procurar um estímulo novo em '+targetLabel,
-    boredom:clamp((prev.boredom??.18)*.82+(reachedTarget?.12:0)-(chosen&&!recent.has(chosen.id)?.08:0),0,1),
+    boredom:clamp((prev.boredom??.18)*.82+(reachedTarget ? .12 : 0)-(chosen&&!recent.has(chosen.id) ? .08 : 0),0,1),
     lastTargets:reachedTarget&&chosen
       ? [chosen.id,...(prev.lastTargets||[]).filter(x=>x!==chosen!.id)].slice(0,8)
       : (prev.lastTargets||[]).slice(0,8),
