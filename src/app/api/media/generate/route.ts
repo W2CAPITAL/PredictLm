@@ -134,6 +134,9 @@ export async function POST(req:Request){
       referencePlan.references.slice(0,Math.max(0,3-userInline.length)).map(ref=>fetchReferenceInlineData(ref))
     )).filter(Boolean) as {mimeType:string;data:string}[];
     const inlineReferences=[...userInline,...searchedInline].slice(0,3);
+    const providerPrompt=groundedPrompt+(userInline.length
+      ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
+      : '');
 
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
@@ -170,13 +173,13 @@ export async function POST(req:Request){
           contents:[{
             parts:[
               ...inlineReferences.map(x=>({inlineData:{mimeType:x.mimeType,data:x.data}})),
-              {text:groundedPrompt}
+              {text:providerPrompt}
             ]
           }],
           generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}
         }:{
           model:provider.model,
-          prompt:groundedPrompt,
+          prompt:providerPrompt,
           size:providerImageSize(width,height,provider.nano),
           n:1,
           quality:'high',
@@ -223,9 +226,11 @@ export async function POST(req:Request){
             referenceQuery:referencePlan.query||null,
             referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
             referenceImagesPassed,
+            userReferenceCount:userInline.length,
+            searchedReferenceCount:searchedInline.length,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
-            expandedPrompt:groundedPrompt,
+            expandedPrompt:providerPrompt,
             caption:buildSafeCaptionPtBr(sourcePrompt),
             displayTitle:buildDisplayTitle(sourcePrompt),
             parityContract:'grok-imagine-parity',
@@ -245,7 +250,7 @@ export async function POST(req:Request){
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
     return Response.json({
-      url:localRenderUrl(groundedPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal'),
+      url:localRenderUrl(providerPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal'),
       provider:'pollinations-proxy',
       model:requestedModel,
       width,
@@ -255,9 +260,11 @@ export async function POST(req:Request){
       referenceQuery:referencePlan.query||null,
       referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
       referenceImagesPassed:0,
+      userReferenceCount:userInline.length,
+      searchedReferenceCount:searchedInline.length,
       referenceWarnings:referencePlan.warnings,
       originalPrompt:sourcePrompt,
-      expandedPrompt:groundedPrompt,
+      expandedPrompt:providerPrompt,
       caption:buildSafeCaptionPtBr(sourcePrompt),
       displayTitle:buildDisplayTitle(sourcePrompt),
       parityContract:'grok-imagine-parity',
