@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -315,3 +315,46 @@ Para pedido identity-sensitive, `Gerações recentes` é uma galeria de resultad
 - reparos de identidade continuam limitados; não gerar infinitamente.
 
 O Cognitive Creative Brain pode melhorar composição e criatividade, mas nunca substituir o semantic fidelity gate.
+
+
+## Character Fidelity Gate v1.8
+
+For a named/specific character, "similar anime character" is a failed result.
+
+### User references
+
+Imagine must expose an upload control for up to 3 PNG/JPEG/WebP reference images.
+
+- resize/compress in the browser before upload;
+- never persist the base64 reference blobs in Media Library metadata;
+- user-supplied references have higher identity priority than searched references;
+- a multimodal provider receives uploaded references as real image inputs when its API supports them;
+- searched Firecrawl/Google/Pinterest references are secondary evidence.
+
+Generation hierarchy:
+
+**USER REFERENCE → CANONICAL IDENTITY LOCK → SEARCHED REFERENCE → COMPOSITION/STYLE**
+
+Style and creativity never override the first three layers.
+
+### Rejection instead of pretending success
+
+For identity-sensitive prompts:
+- semantic review `failed` → reject candidate from the primary result;
+- fidelity-limited fallback without `semanticReview=passed` → reject candidate from the primary result;
+- semantic review unavailable on a stronger/reference-capable provider → candidate may be inspected with an explicit unverified warning, but it does not enter Recent;
+- rejected candidate never receives a misleading title such as "Freeza" while visibly depicting Goku or another character;
+- do not upscale/persist a rejected candidate.
+
+### Explicit visual checklists
+
+Semantic review should use concrete franchise cues when known. Examples:
+- Frieza/Freeza: mostly white smooth alien/bio-armor body, purple dome/plates, Frieza face/silhouette; reject orange-gi Saiyan, black-haired fighter or generic demon;
+- Naruto: Naruto-defining hair/face/costume/form cues, not generic blond shonen;
+- Kurama: fox/Nine-Tails identity, not generic spirit/dragon/wolf;
+- Sasuke: Sasuke/Uchiha identity, not generic black-haired ninja;
+- Perfect Susanoo: complete large violet/purple armored humanoid chakra avatar;
+- Oozaru: gigantic brown tailed Saiyan ape;
+- Naruto Four-Tails: correct tailed-beast identity and four tails when requested.
+
+Review pixels, not prompt text. Prompt similarity is not visual fidelity.
