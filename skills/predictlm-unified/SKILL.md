@@ -781,3 +781,23 @@ Estado novo permanece local:
 Imagine consome apenas um resumo público do Cognitive Creative Brain para criatividade de composição. Em pedidos de identidade específica, esse cérebro não pode reescrever identidade canônica.
 
 Persistência continua browser-local/IndexedDB/localStorage. Nenhuma dependência Supabase é adicionada.
+
+
+## Free Embodied Agents + Verified Imagine (2026-09-25)
+
+Life Simulation consolidada:
+- mapa geral 2.5D + três POVs voxel 3D independentes;
+- Humano, Macaque e Mosca possuem visão local distinta;
+- mosca usa front view ampla + panorama periférico ~330°, maior mobilidade horizontal/vertical e troca frequente de waypoint;
+- ações físicas em objetos permanecem visualmente animadas, não apenas registradas em texto;
+- trabalho usa PC/quadro/impressora/reunião como affordances concretas;
+- parque usa trilha, árvores, banco, flores, água, exercícios e escalada;
+- cada mente sintética mantém alternativas, decisão, pensamento público e biografia persistente rotulada como ficção.
+
+Referências browser voxel MIT (`minecraft-web-client`, `mcraft-arwes`) orientam arquitetura somente. PredictLM não incorpora assets proprietários do Minecraft.
+
+Imagine:
+- personagem/franquia específica entra em Recent somente após aprovação semântica, salvo asset exato persistente;
+- gerações antigas identity-sensitive não verificadas são filtradas da galeria;
+- Cognitive Creative Brain melhora composição/novidade apenas dentro do identity lock;
+- nenhuma dependência Supabase foi adicionada; persistência continua local/IndexedDB/localStorage.
