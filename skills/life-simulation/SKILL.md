@@ -2,7 +2,7 @@
 name: life-simulation
 description: Cria, executa e exporta simulações 2.5D isométricas ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -196,3 +196,22 @@ Além das necessidades e memórias, o agente mantém:
 - `DewingShen88/sims4-immersive-controls`: reference-only; usar autonomia, pesos de interação, memória e reversibilidade em alto nível.
 - `francot514/FreeSims`: MPL-2.0, reference-only; casa/trabalho/comunidade e engine independente de assets proprietários.
 - repositórios de desbloqueio/DLC: **quarentena; não usar no código, corpus ou runtime**.
+
+## Anti-NPC autonomy v2.1
+
+Movimento visual não pode ser um seno/cosseno periódico disfarçado de autonomia, e escolha humana não pode ser apenas um argmax de necessidades a cada tick.
+
+### Humano
+A decisão autônoma usa urgências reais do estado, objetivo atual, curiosidade, utilidade contextual, memória de locais recentes, penalidade por repetição, bônus de novidade, inércia/compromisso de intenção por vários ticks e escolha estocástica determinística para variedade reproduzível.
+
+Depois de escolher um destino/atividade, o agente mantém o compromisso por uma janela curta. Ele reavalia antes apenas quando saúde, energia, fome ou outra evidência relevante interrompe o plano.
+
+Cada local possui várias ações possíveis; chegar ao mesmo local não implica repetir a mesma frase/tarefa para sempre.
+
+O estado público mantém destination, commitmentTicks, decisionReason, recentLocations e reconsiderations.
+
+### Mosca
+Fly Core mantém alvo espacial e duração de compromisso: ameaça pode interromper qualquer objetivo; objetos visíveis competem por saliência + atração + distância + novidade; objetos visitados recentemente recebem penalidade; exploração escolhe nova área por amostragem reproduzível; pairar é ação válida; fala é opcional; movimento não usa órbita/fase periódica como controlador principal.
+
+### Observabilidade
+A interface pode mostrar **por que a política escolheu uma ação** usando sinais públicos compactos. Isso é explicação do controlador da simulação, não transcrição de raciocínio privado de um LLM.
