@@ -1,4 +1,4 @@
-import { classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -505,7 +505,8 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
       if(!gate.ok)throw new Error(gate.reason);
       const issue=conversationAnswerIssue(prompt,gate.content);
       const alignment=responseTopicAlignment(prompt,gate.content);
-      if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
+      const proceduralEnough=isGenericHowTo(prompt)&&answerLooksProcedural(gate.content);
+      if(issue||(!alignment.relevant&&!proceduralEnough))throw new Error(issue||'off-topic');
       return gate.content;
     };
 
