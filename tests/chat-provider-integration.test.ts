@@ -431,3 +431,14 @@ test('normal chat rejects internal context leakage',()=>{
   const leak='Relacionado: Tasks\nPredictLM Life Simulation Skill\nCross-Engine Agents';
   assert.equal(conversationAnswerIssue('Como posso criar um jogo',leak),'internal-context-leak');
 });
+
+
+test('clean chat without server providers returns a real failure instead of fake internal success',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  resetProviderHealthForTests();
+  const {response,data}=await ask('Eu gosto de batatas');
+  assert.equal(response.status,503);
+  assert.equal(data.code,'NO_REMOTE_PROVIDER');
+  assert.equal(data.content,null);
+  assert.doesNotMatch(JSON.stringify(data),/knowledge packs|providers externos permanecem opcionais/i);
+});
