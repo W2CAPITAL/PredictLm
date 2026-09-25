@@ -11,10 +11,10 @@ const STATE_TRIBUNALS:Record<string,{alias:string;label:string}> = {
 };
 
 const TRE:Record<string,string> = {
-  '01':'tre-ac','02':'tre-al','03':'tre-ap','04':'tre-am','05':'tre-ba','06':'tre-ce','07':'tre-dft',
-  '08':'tre-es','09':'tre-go','10':'tre-ma','11':'tre-mt','12':'tre-ms','13':'tre-mg','14':'tre-pa',
-  '15':'tre-pb','16':'tre-pr','17':'tre-pe','18':'tre-pi','19':'tre-rj','20':'tre-rn','21':'tre-rs',
-  '22':'tre-ro','23':'tre-rr','24':'tre-sc','25':'tre-se','26':'tre-sp','27':'tre-to'
+  '01':'treac','02':'treal','03':'treap','04':'tream','05':'treba','06':'trece','07':'tredf',
+  '08':'trees','09':'trego','10':'trema','11':'tremt','12':'trems','13':'tremg','14':'trepa',
+  '15':'trepb','16':'trepr','17':'trepe','18':'trepi','19':'trerj','20':'trern','21':'trers',
+  '22':'trero','23':'trerr','24':'tresc','25':'trese','26':'tresp','27':'treto'
 };
 
 export function cnjDigits(value:string){
@@ -56,7 +56,9 @@ export function datajudTribunal(value:string){
   const branch=d.slice(13,14);
   const tr=d.slice(14,16);
   if(branch==='8')return STATE_TRIBUNALS[tr]||null;
+  if(branch==='1'&&tr==='00')return {alias:'stf',label:'STF'};
   if(branch==='4'&&/^0[1-6]$/.test(tr))return {alias:'trf'+Number(tr),label:'TRF'+Number(tr)};
+  if(branch==='5'&&tr==='00')return {alias:'tst',label:'TST'};
   if(branch==='5'&&Number(tr)>=1&&Number(tr)<=24)return {alias:'trt'+Number(tr),label:'TRT'+Number(tr)};
   if(branch==='6'){
     if(tr==='00')return {alias:'tse',label:'TSE'};
