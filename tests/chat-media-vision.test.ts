@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply} from '../src/lib/chat-intelligence';
+import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
@@ -153,4 +153,28 @@ test('como faço um tamanduá robo uses the specific robot plan',()=>{
 test('generic robot request is not mistaken for tamandua robot',()=>{
   const answer=practicalHowToReply('Como faço um robô simples');
   assert.ok(!answer||!/tamanduá-robô/i.test(answer));
+});
+
+
+test('open-domain gates accept explanatory and creative answers without topic templates',()=>{
+  const explainPrompt='Como funciona a fotossíntese?';
+  const explainAnswer='A fotossíntese converte energia luminosa em energia química. Plantas usam luz, água e dióxido de carbono para formar açúcares, liberando oxigênio como subproduto.';
+  assert.equal(classifyConversation(explainPrompt),'factual');
+  assert.equal(conversationAnswerIssue(explainPrompt,explainAnswer),'');
+  assert.ok(answerQuality(explainPrompt,explainAnswer)>=0);
+
+  const creativePrompt='Escreva um poema curto sobre saudade';
+  const creativeAnswer='A casa guarda o eco dos passos que partiram; na janela, a tarde espera um nome que não volta.';
+  assert.equal(responseTopicAlignment(creativePrompt,creativeAnswer).relevant,true);
+});
+
+test('unknown topics remain routable as general assistant requests',()=>{
+  for(const prompt of [
+    'Explique o paradoxo do navio de Teseu',
+    'Compare três formas de organizar uma biblioteca pessoal',
+    'Invente uma criatura que viva em nuvens de metano',
+    'Ajude a depurar uma função recursiva que entra em loop'
+  ]){
+    assert.ok(classifyConversation(prompt));
+  }
 });
