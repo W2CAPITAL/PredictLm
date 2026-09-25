@@ -538,7 +538,11 @@ export function ChatShell({onOpenLegal}:Props){
         if(brainReport.ok){
           const markdown=String(brainReport.data.markdown||'');
           const report=prepareReportArtifact(prompt,markdown);
-          const brainNames=['FORGE','AEGIS','PARALLAX','CHAIR'];
+          const brainNames=[
+            'FORGE','AEGIS','PARALLAX',
+            ...(brainReport.data?.brains?.councilX10?['COUNCIL X10']:[]),
+            'CHAIR'
+          ];
           s.addMessage({
             role:'assistant',
             content:report?.content||markdown,
