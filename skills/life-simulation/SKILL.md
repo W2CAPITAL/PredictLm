@@ -219,3 +219,29 @@ Padrão:
 O humano e a mosca podem ficar parados, descansar, observar, investigar, mudar de ideia, evitar estímulos, buscar interação ou abandonar um objetivo. Movimento constante é considerado bug de simulação.
 
 O Cognitive Lab também expõe múltiplos cérebros humanos simulados para comparação de hipóteses. Eles não são pessoas reais e não devem ser apresentados como mentes reais digitalizadas.
+
+
+## Embodied Voxel World / Free Agents v3.0
+
+A Life Simulation deve ser um mundo físico inspecionável, não uma fila de strings de NPC.
+
+- movimento humano até locais e objetos é **progressivo**; `move`/`approach_object` não podem teletransportar o agente;
+- trabalho usa affordances concretas: PC, quadro de planejamento, impressora e mesa de reunião;
+- parque usa trilha, banco, árvores, flores, área de exercícios, água e estruturas escaláveis;
+- `use_object` deixa `objectInteraction` observável para o renderer destacar o objeto realmente usado;
+- Humano, Macaque e Mosca possuem POV próprios em perspectiva/voxel no navegador; a mosca mantém campo periférico amplo mesmo quando o viewport visual usa FOV projetável menor;
+- Macaque é agente separado, com Macaque Core, visão direcional, forrageio, escalada, inspeção, descanso e interação social;
+- Fly agent deve mudar waypoint, aproximar/evitar/alvo e manter velocidade compatível com a escala do mapa; órbita circular permanente é bug;
+- autonomia pode escolher ações e abandonar/replanejar objetivos conforme necessidades/percepção; ela não autoriza ações externas ao mundo simulado.
+
+### Pensamento público e memória
+
+Cada agente pode expor um **pensamento público resumido** produzido pelo controlador do simulador. Isso serve para depuração/observabilidade e não é chain-of-thought privado nem leitura de mente.
+
+Humano, macaque e mosca podem possuir biografias sintéticas longas para continuidade. Essas memórias devem carregar `source: synthetic-biography` e ser mostradas como **ficção do simulador**. Memória sintética nunca deve ser descrita como memória biológica recuperada de H01, FlyWire ou datasets macaque.
+
+### Referências browser voxel
+
+- `zardoy/minecraft-web-client` — MIT: referência arquitetural para mundo browser em primeira pessoa, render/câmera/input separados; não copiar assets do Minecraft.
+- `zardoy/mcraft-arwes` — package metadata MIT: referência para render loop, câmera e lifecycle de chunks/scene.
+- `JEFFY1234599/block-craft-browser-edition` — no estado inspecionado havia README, sem implementação/licença verificável no repositório; usar somente ideias gerais, sem copiar código/assets.
