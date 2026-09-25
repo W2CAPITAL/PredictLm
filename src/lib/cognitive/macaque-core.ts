@@ -1,4 +1,4 @@
-import {MACAQUE_CORTEX_SPATIAL_ATLAS} from './connectome-provenance';
+import {MACAQUE_CORTEX_SPATIAL_ATLAS,MACAQUE_PFC_PROJECTOME,MACAQUE_CLAUSTRUM_CONNECTIVITY} from './connectome-provenance';
 
 export interface MacaqueCoreState{
   version:1;
@@ -21,6 +21,8 @@ export interface MacaqueCoreState{
   somatosensoryHierarchy:number;
   primateSpecificL4:number;
   regionalIntegration:number;
+  pfcProjectionIntegration:number;
+  claustrumIntegration:number;
   uncertainty:number;
   mappedAtlas:{
     dataset:string;
@@ -29,6 +31,10 @@ export interface MacaqueCoreState{
     cellTypes:number;
     spatialCells:number;
     snRnaCells:number;
+    pfcProjectomeNeurons:number;
+    pfcProjectionSubtypes:number;
+    claustrumCorticalSites:number;
+    claustrumSubcorticalSites:number;
     synapseConnectome:false;
   };
 }
@@ -50,6 +56,8 @@ export function createMacaqueCoreState():MacaqueCoreState{
     somatosensoryHierarchy:.5,
     primateSpecificL4:.52,
     regionalIntegration:.47,
+    pfcProjectionIntegration:.46,
+    claustrumIntegration:.4,
     uncertainty:.34,
     mappedAtlas:{
       dataset:MACAQUE_CORTEX_SPATIAL_ATLAS.dataset,
@@ -58,6 +66,10 @@ export function createMacaqueCoreState():MacaqueCoreState{
       cellTypes:MACAQUE_CORTEX_SPATIAL_ATLAS.cellTypes,
       spatialCells:MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells,
       snRnaCells:MACAQUE_CORTEX_SPATIAL_ATLAS.snRnaCells,
+      pfcProjectomeNeurons:MACAQUE_PFC_PROJECTOME.neurons||0,
+      pfcProjectionSubtypes:MACAQUE_PFC_PROJECTOME.projectionSubtypes||0,
+      claustrumCorticalSites:MACAQUE_CLAUSTRUM_CONNECTIVITY.corticalInjectionSites||0,
+      claustrumSubcorticalSites:MACAQUE_CLAUSTRUM_CONNECTIVITY.subcorticalInjectionSites||0,
       synapseConnectome:false
     }
   };
@@ -76,7 +88,9 @@ export function advanceMacaqueCore(previous:MacaqueCoreState|undefined,prompt:st
 
   const visualHierarchy=clamp(prev.visualHierarchy*.72+visual*.2+novelty*.08);
   const somatosensoryHierarchy=clamp(prev.somatosensoryHierarchy*.72+somato*.22+planning*.06);
-  const regionalIntegration=clamp(prev.regionalIntegration*.66+planning*.1+social*.08+memory*.08+Math.max(visual,somato,auditory)*.08);
+  const pfcProjectionIntegration=clamp(prev.pfcProjectionIntegration*.68+planning*.16+memory*.08+social*.08);
+  const claustrumIntegration=clamp(prev.claustrumIntegration*.72+Math.max(visual,somato,auditory)*.12+social*.08+novelty*.08);
+  const regionalIntegration=clamp(prev.regionalIntegration*.6+planning*.08+social*.07+memory*.07+Math.max(visual,somato,auditory)*.07+pfcProjectionIntegration*.06+claustrumIntegration*.05);
   const primateSpecificL4=clamp(prev.primateSpecificL4*.84+Math.max(visual,somato)*.1+novelty*.06);
   const uncertainty=clamp(prev.uncertainty*.78+(q.length < 4 ? .08 : .02)+(1-Math.max(visual,somato,planning,social,auditory,memory,novelty))*.08);
 
@@ -111,6 +125,8 @@ export function advanceMacaqueCore(previous:MacaqueCoreState|undefined,prompt:st
     somatosensoryHierarchy,
     primateSpecificL4,
     regionalIntegration,
+    pfcProjectionIntegration,
+    claustrumIntegration,
     uncertainty
   };
 }
@@ -121,7 +137,8 @@ export function macaqueCoreContext(state:MacaqueCoreState){
     'Atlas scope: 143 cortical regions, 264 transcriptome-defined cell types, 42,076,954 spatially annotated cortical cells and 1,493,240 snRNA-seq cells.',
     'This is a cortical cellular/spatial atlas, not a synapse-resolution connectome.',
     'Visual hierarchy '+Math.round(state.visualHierarchy*100)+'%; somatosensory hierarchy '+Math.round(state.somatosensoryHierarchy*100)+'%; regional integration '+Math.round(state.regionalIntegration*100)+'%; primate-specific L4 prior '+Math.round(state.primateSpecificL4*100)+'%.',
-    'Use it only as a non-human-primate proxy for broader cortical organization where H01 has no direct human coverage.',
+    'PFC long-range projection prior '+Math.round(state.pfcProjectionIntegration*100)+'% from '+state.mappedAtlas.pfcProjectomeNeurons+' reconstructed neurons / '+state.mappedAtlas.pfcProjectionSubtypes+' projection subtypes; claustrum connectivity prior '+Math.round(state.claustrumIntegration*100)+'% from '+state.mappedAtlas.claustrumCorticalSites+' cortical and '+state.mappedAtlas.claustrumSubcorticalSites+' subcortical tracer sites.',
+    'Use these only as non-human-primate proxies for broader cortical and long-range organization where H01 has no direct human coverage.',
     'Never relabel macaque-derived proxy values as measured human anatomy, human memories, human thoughts or a completed human connectome.'
   ].join('\n');
 }
