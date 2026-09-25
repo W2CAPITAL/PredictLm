@@ -405,7 +405,7 @@ export function recordPerceptionMemory(
 
 export function cognitiveIdentity(mode:'fly'|'human'|'dual'|'frank'){
   if(mode==='fly')return 'Mosca Predict';
-  if(mode==='human')return 'PredictLM Human Core';
+  if(mode==='human')return 'Frank Stein · Human Core';
   if(mode==='frank')return 'Frank Stein';
   return 'PredictLM Cognitive Lab';
 }
@@ -421,10 +421,17 @@ export function cognitiveDirectRecall(
   }
   if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
 
+  const asksBiologicalLife=/\b(vida real|lembrancas reais|memorias reais|biologic|antes do app|antes de existir|da mosca real|do humano real)\b/.test(q);
+  const biologicalPrefix=asksBiologicalLife
+    ? (mode==='fly'
+      ? 'Eu não herdei lembranças da mosca biológica usada para construir o connectoma FlyWire; um connectoma descreve estrutura/conexões, não autobiografia recuperável. '
+      : 'Eu não herdei lembranças, pensamentos ou identidade de nenhum doador humano real. Os atlas/conectomas servem como referência estrutural e funcional, não como memória pessoal. ')
+    : '';
+
   if(mode==='frank'){
     const recalled=frankRecall(state.frank,prompt);
     if(recalled.memories.length){
-      return 'Eu não tenho uma “vida biológica real” anterior ao app. O que eu realmente lembro aqui são experiências registradas pelo meu próprio estado persistente:\n- '
+      return biologicalPrefix+'Eu não tenho uma “vida biológica real” anterior ao app. O que eu realmente lembro aqui são experiências registradas pelo meu próprio estado persistente:\n- '
         +recalled.memories.slice(0,4).map(m=>m.gist+' (força '+Math.round(m.strength*100)+'%, consolidação '+Math.round(m.consolidated*100)+'%)').join('\n- ');
     }
   }
@@ -441,7 +448,7 @@ export function cognitiveDirectRecall(
   for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
 
   if(!rows.length){
-    return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
+    return biologicalPrefix+'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
   }
-  return 'Minhas lembranças mais acessíveis agora são:\n- '+rows.join('\n- ');
+  return biologicalPrefix+'Minhas lembranças mais acessíveis agora são experiências do próprio app:\n- '+rows.join('\n- ');
 }
