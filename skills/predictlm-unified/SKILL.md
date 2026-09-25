@@ -731,3 +731,13 @@ A arquitetura unificada incorpora `organism-engine` ao Cognitive Lab:
 Invariante: conectomas reais podem informar estrutura e dinâmica, mas não fornecem memórias pessoais, pensamentos atuais ou consciência de humanos/moscas reais.
 
 O Chat normal em `/` permanece isolado. Os modos `/cognitive`, `/cognitive/human` e `/cognitive/fly` mantêm histórico próprio e usam o novo estado apenas dentro do laboratório cognitivo.
+
+
+## Multi-agent observability references (2026-09-25)
+
+- `Agent-Deployment-Co/argus` (MIT): adotar a ideia de registrar sessões/tarefas/resultados, deduplicar eventos e expor métricas de falha/repetição; no PredictLM isso deve permanecer browser-local ou em storage explicitamente configurado, sem conta obrigatória.
+- `mco-org/mco`: referência de orquestração multiagente/workspaces; usar padrões abstratos de coordenação, revisão independente e isolamento de agentes, sem importar código cuja licença não tenha sido verificada no ponto de uso.
+- `peters/horizon` (MIT): referência de workspace visual/infinite-canvas e múltiplas sessões observáveis; útil para futura visualização de cérebros/agentes, não como runtime obrigatório.
+- `chatgpt56freeGPT/ChatGPT-5.6-Free-Desktop` (MIT): somente referência de UX de desktop, streaming, exportação e personas. Alegações de modelos/capacidades do README externo não são tratadas como fatos do PredictLM nem como fonte oficial de modelos OpenAI.
+
+O ensemble cognitivo deve registrar estado, hipótese, ação candidata, alternativa e resultado de cada agente simulado para permitir inspeção e reduzir comportamento repetitivo.
