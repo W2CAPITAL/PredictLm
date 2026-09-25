@@ -73,6 +73,8 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     macaqueVisual:Math.round(state.macaque.visualHierarchy*100),
     macaqueSomato:Math.round(state.macaque.somatosensoryHierarchy*100),
     macaqueL4:Math.round(state.macaque.primateSpecificL4*100),
+    macaquePfc:Math.round(state.macaque.pfcProjectionIntegration*100),
+    macaqueClaustrum:Math.round(state.macaque.claustrumIntegration*100),
     uncertainty:Math.round(state.workspace.uncertainty*100),
     confidence:Math.round(state.workspace.confidence*100),
     attention:Math.round((state.consciousAccess?.attention||0)*100),
@@ -344,11 +346,11 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Brain size={16} className="text-emerald-300"/> Macaque Core</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <Metric label="Integração" value={metrics.macaqueIntegration}/>
-            <Metric label="Visual" value={metrics.macaqueVisual}/>
-            <Metric label="Somato" value={metrics.macaqueSomato}/>
+            <Metric label="PFC proj." value={metrics.macaquePfc}/>
+            <Metric label="Claustro" value={metrics.macaqueClaustrum}/>
             <Metric label="L4 primata" value={metrics.macaqueL4}/>
           </div>
-          <p className="mt-3 text-[10px] leading-5 text-zinc-500">{MACAQUE_CORTEX_SPATIAL_ATLAS.regions} regiões corticais · {MACAQUE_CORTEX_SPATIAL_ATLAS.cellTypes} tipos celulares · {(MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells/1000000).toFixed(1)}M células espacialmente anotadas. É atlas cortical, não conectoma sináptico.</p>
+          <p className="mt-3 text-[10px] leading-5 text-zinc-500">{MACAQUE_CORTEX_SPATIAL_ATLAS.regions} regiões · {MACAQUE_CORTEX_SPATIAL_ATLAS.cellTypes} tipos celulares · {(MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells/1000000).toFixed(1)}M células. Também usa 2.231 projectomes PFC / 32 subtipos e conectividade do claustro como priors de primata; nenhum deles é conectoma sináptico humano.</p>
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
