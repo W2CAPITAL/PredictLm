@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap} from '../src/lib/chat-intelligence';
+import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
 import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
@@ -114,4 +114,26 @@ test('como seria uma mosca falante is hypothetical, not how-to',()=>{
   assert.equal(classifyConversation(prompt),'hypothetical');
   assert.equal(conversationAnswerIssue(prompt,answer),'');
   assert.equal(publicAnswerGate(answer,'pt-BR',prompt).ok,true);
+});
+
+
+test('offline PredictLM answers representative prompts without remote providers',()=>{
+  for(const prompt of [
+    'Como seria uma mosca falante',
+    'Como criar um trator do zero passo a passo',
+    'Como criar um tamanduá robô'
+  ]){
+    const kind=classifyConversation(prompt);
+    const answer=generativeOfflineReply(prompt,kind);
+    assert.ok(answer, prompt);
+    assert.equal(signalsKnowledgeGap(answer!),false);
+    assert.equal(responseTopicAlignment(prompt,answer!).relevant,true);
+  }
+});
+
+test('generic offline path never emits the old provider failure',()=>{
+  const prompt='Explique uma ideia curiosa sobre robótica';
+  const answer=generativeOfflineReply(prompt,classifyConversation(prompt));
+  assert.ok(answer);
+  assert.doesNotMatch(answer!,/providers não produziram|pesquisa automática não encontrou/i);
 });
