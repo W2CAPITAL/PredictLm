@@ -277,3 +277,16 @@ Patterns incorporated from the MIT-licensed `krusemediallc/arcads-claude-code` s
 - Repair is bounded. Regenerate only from concrete visible defects and preserve the accepted identity/reference; do not restart creatively from scratch.
 - External API pricing, model names, limits and availability from the Arcads repository are **volatile examples**, not permanent PredictLM facts. Verify before execution.
 - Bundled influencer/product photos are assets, not training material; PredictLM does not ingest them into its knowledge index.
+
+
+## Frank Brain visual grounding
+
+Imagine/Video exposes a **Frank Brain** toggle.
+
+When active, media generation reads the persistent Frank state and supplies:
+- dominant feelings;
+- valence/arousal/attachment/threat/empathy;
+- neural firing/synchrony and dominant circuit;
+- memory/emotional salience.
+
+This must influence expression, posture, gaze, lighting, pacing, camera tension and environmental memory cues. It must **not** inject literal brain HUDs, neural networks or cyberpunk aesthetics unless the user's prompt asks for them.
