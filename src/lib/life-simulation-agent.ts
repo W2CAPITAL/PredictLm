@@ -30,6 +30,7 @@ export interface LifeAgentAction{
   target?:LifeLocation;
   objectId?:string;
   minutes?:number;
+  progress?:number;
   text?:string;
   reason?:string;
 }
@@ -157,6 +158,7 @@ export function sanitizeAgentActions(raw:any[]):LifeAgentAction[]{
       ...(target?{target}:{}),
       ...(row?.objectId?{objectId:String(row.objectId).slice(0,80)}:{}),
       ...(type==='wait'||type==='rest'||type==='work'||type==='study'||type==='socialize'||type==='exercise'||type==='healthcare'||type==='cook'||type==='clean_home'||type==='shower'||type==='create'||type==='wander'||type==='use_object'?{minutes}:{}),
+      ...(type==='use_object'&&Number.isFinite(Number(row?.progress))?{progress:Math.max(0,Math.min(1,Number(row.progress)))}:{}),
       ...(row?.text?{text:String(row.text).slice(0,220)}:{}),
       ...(row?.reason?{reason:String(row.reason).slice(0,180)}:{})
     });
@@ -556,23 +558,42 @@ export function executeLifeAgentAction(
       const minutes=action.minutes||25;
       const affords=new Set(obj.affordances);
       const activity=objectActivityLabel(obj,'human');
-      if(affords.has('rest')||affords.has('sleep')){state.needs.energy=clamp(state.needs.energy+18);state.needs.stress=clamp(state.needs.stress-10)}
-      if(affords.has('food')||affords.has('eat'))state.needs.hunger=clamp(state.needs.hunger+16);
-      if(affords.has('cook')){agent.skills.cooking=clamp(agent.skills.cooking+2);state.needs.hunger=clamp(state.needs.hunger+12)}
-      if(affords.has('work')){agent.skills.career=clamp(agent.skills.career+2);state.person.money+=Math.max(8,Math.round(minutes*.28));state.needs.focus=clamp(state.needs.focus-3)}
-      if(affords.has('study')||affords.has('research')||affords.has('read')){agent.knowledge=clamp(agent.knowledge+4);agent.skills.logic=clamp(agent.skills.logic+2);state.needs.focus=clamp(state.needs.focus+5)}
-      if(affords.has('message')||affords.has('talk')){state.needs.social=clamp(state.needs.social+10);agent.skills.social=clamp(agent.skills.social+1)}
-      if(affords.has('observe')||affords.has('relax')||affords.has('watch')){state.needs.fun=clamp(state.needs.fun+10);state.needs.stress=clamp(state.needs.stress-7)}
-      if(affords.has('health')||affords.has('shower')){state.needs.health=clamp(state.needs.health+7);state.needs.stress=clamp(state.needs.stress-5)}
-      if(affords.has('create')){agent.skills.creativity=clamp(agent.skills.creativity+3);state.needs.fun=clamp(state.needs.fun+5)}
-      state=runMinutes(state,Math.min(10,minutes),obj.location);
-      state.person.currentAction=activity;
-      const interactionMs=Math.max(5000,Math.min(30000,minutes*420));
-      state.objectInteraction={objectId:obj.id,actor:'human',verb:activity,tick:state.tick,startedAt:Date.now(),durationMs:interactionMs,expiresAt:Date.now()+interactionMs};
+      const totalSteps=Math.max(3,Math.min(9,Math.ceil(minutes/8)));
+      const previousProgress=Math.max(0,Math.min(1,Number(action.progress||0)));
+      const previousStep=Math.round(previousProgress*totalSteps);
+      const currentStep=Math.min(totalSteps,previousStep+1);
+      const fraction=1/totalSteps;
+      action.progress=currentStep/totalSteps;
+      completed=currentStep>=totalSteps;
+
+      if(affords.has('rest')||affords.has('sleep')){state.needs.energy=clamp(state.needs.energy+18*fraction);state.needs.stress=clamp(state.needs.stress-10*fraction)}
+      if(affords.has('food')||affords.has('eat'))state.needs.hunger=clamp(state.needs.hunger+16*fraction);
+      if(affords.has('cook')){agent.skills.cooking=clamp(agent.skills.cooking+2*fraction);state.needs.hunger=clamp(state.needs.hunger+12*fraction)}
+      if(affords.has('work')){agent.skills.career=clamp(agent.skills.career+2*fraction);state.person.money+=Math.max(.5,(minutes*.28)/totalSteps);state.needs.focus=clamp(state.needs.focus-3*fraction)}
+      if(affords.has('study')||affords.has('research')||affords.has('read')){agent.knowledge=clamp(agent.knowledge+4*fraction);agent.skills.logic=clamp(agent.skills.logic+2*fraction);state.needs.focus=clamp(state.needs.focus+5*fraction)}
+      if(affords.has('message')||affords.has('talk')){state.needs.social=clamp(state.needs.social+10*fraction);agent.skills.social=clamp(agent.skills.social+1*fraction)}
+      if(affords.has('observe')||affords.has('relax')||affords.has('watch')){state.needs.fun=clamp(state.needs.fun+10*fraction);state.needs.stress=clamp(state.needs.stress-7*fraction)}
+      if(affords.has('health')||affords.has('shower')){state.needs.health=clamp(state.needs.health+7*fraction);state.needs.stress=clamp(state.needs.stress-5*fraction)}
+      if(affords.has('create')){agent.skills.creativity=clamp(agent.skills.creativity+3*fraction);state.needs.fun=clamp(state.needs.fun+5*fraction)}
+
+      state=runMinutes(state,Math.max(2,Math.ceil(minutes/totalSteps)),obj.location);
+      const progressPct=Math.round((action.progress||0)*100);
+      state.person.currentAction=activity+' · '+progressPct+'%';
+      const interactionMs=Math.max(2400,Math.min(9000,totalSteps*700));
+      const startedAt=state.objectInteraction?.objectId===obj.id
+        ? state.objectInteraction.startedAt
+        : Date.now();
+      state.objectInteraction={
+        objectId:obj.id,actor:'human',
+        verb:activity+' · '+progressPct+'%',
+        tick:state.tick,startedAt,durationMs:interactionMs,expiresAt:Date.now()+interactionMs
+      };
       state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,obj.x-10));
       state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,obj.y+8));
       state.person.heading=Math.atan2(obj.y-state.person.y,obj.x-state.person.x);
-      message=activity+' · '+minutes+' min planejados.';
+      message=completed
+        ? activity+' concluído · '+minutes+' min simulados.'
+        : activity+' em execução · '+progressPct+'% ('+currentStep+'/'+totalSteps+').';
     }
   }else if(action.type==='wander'){
     const visible=perceiveHumanWorld(state).visible;
