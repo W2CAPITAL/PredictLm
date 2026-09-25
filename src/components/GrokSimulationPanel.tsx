@@ -20,7 +20,8 @@ import {
   LIFE_WORLD_WIDTH,
   WORLD_OBJECTS,
   perceiveFlyWorld,
-  perceiveHumanWorld
+  perceiveHumanWorld,
+  perceiveMacaqueWorld
 } from '@/lib/life-world-open';
 import {
   agentWorldObservation,
@@ -39,10 +40,15 @@ import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
 import {advanceCognitiveWorkspace,recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
+import {createMacaqueSimulationState,macaqueSimulationBubble,stepMacaqueSimulation,type MacaqueSimulationState} from '@/lib/cognitive/macaque-simulation';
+import {advanceSyntheticMind,createSyntheticMindBundle,normalizeSyntheticMindBundle,type SyntheticMindBundle} from '@/lib/synthetic-life-memory';
+import {LifeFirstPersonViewport,type PovOtherAgent} from '@/components/LifeFirstPersonViewport';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
 const FLY_STORAGE_KEY='predictlm-life-fly-agent-v1';
+const MACAQUE_STORAGE_KEY='predictlm-life-macaque-agent-v1';
+const MINDS_STORAGE_KEY='predictlm-life-synthetic-minds-v1';
 
 function loadState():LifeSimulationState{
   if(typeof window==='undefined')return createLifeSimulation();
@@ -50,8 +56,9 @@ function loadState():LifeSimulationState{
     const explicitStart=sessionStorage.getItem('predictlm:simulation-explicit-start')==='1';
     if(explicitStart)sessionStorage.removeItem('predictlm:simulation-explicit-start');
     const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    const base=raw?.version===1?raw:createLifeSimulation();
-    return {...base,running:explicitStart};
+    const fresh=createLifeSimulation();
+    const base=raw?.version===1?raw:fresh;
+    return {...fresh,...base,objectInteraction:base?.objectInteraction||null,running:explicitStart};
   }catch{return createLifeSimulation()}
 }
 
@@ -69,6 +76,20 @@ function loadFlyState():FlySimulationState{
   }catch{return createFlySimulationState()}
 }
 
+function loadMacaqueState():MacaqueSimulationState{
+  if(typeof window==='undefined')return createMacaqueSimulationState();
+  try{
+    const raw=JSON.parse(localStorage.getItem(MACAQUE_STORAGE_KEY)||'null');
+    return raw?.version===1?raw:createMacaqueSimulationState();
+  }catch{return createMacaqueSimulationState()}
+}
+
+function loadSyntheticMinds(humanIdentity:string):SyntheticMindBundle{
+  if(typeof window==='undefined')return createSyntheticMindBundle(humanIdentity);
+  try{return normalizeSyntheticMindBundle(JSON.parse(localStorage.getItem(MINDS_STORAGE_KEY)||'null'),humanIdentity)}
+  catch{return createSyntheticMindBundle(humanIdentity)}
+}
+
 function needLabel(value:number){return Math.max(0,Math.min(100,Math.round(value)))}
 
 export function GrokSimulationPanel(){
@@ -79,10 +100,12 @@ export function GrokSimulationPanel(){
   const [scenarios,setScenarios]=useState<LifeScenarioResult[]>([]);
   const [agent,setAgent]=useState<LifeAgentState>(()=>createLifeAgentState());
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
+  const [macaque,setMacaque]=useState<MacaqueSimulationState>(()=>createMacaqueSimulationState());
+  const [minds,setMinds]=useState<SyntheticMindBundle>(()=>createSyntheticMindBundle());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
   const [cameraZoom,setCameraZoom]=useState(1);
-  const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'>('world');
+  const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'|'macaque'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
 
   useEffect(()=>{
@@ -90,9 +113,13 @@ export function GrokSimulationPanel(){
     setState(nextState);
     setAgent(loadAgentState());
     const localFly=loadFlyState();
+    const localMacaque=loadMacaqueState();
     setFly(localFly);
+    setMacaque(localMacaque);
+    setMinds(loadSyntheticMinds(nextState.person.name));
     loadCognitiveState().then(cognitive=>{
       setFly(prev=>({...prev,core:cognitive.fly}));
+      setMacaque(prev=>({...prev,core:cognitive.macaque}));
     }).catch(()=>{});
     try{
       const focus=sessionStorage.getItem('predictlm:simulation-focus');
@@ -120,6 +147,16 @@ export function GrokSimulationPanel(){
     },120);
     return()=>window.clearTimeout(timer);
   },[fly,hydrated]);
+
+  useEffect(()=>{
+    if(!hydrated)return;
+    try{localStorage.setItem(MACAQUE_STORAGE_KEY,JSON.stringify(macaque))}catch{}
+  },[macaque,hydrated]);
+
+  useEffect(()=>{
+    if(!hydrated)return;
+    try{localStorage.setItem(MINDS_STORAGE_KEY,JSON.stringify(minds))}catch{}
+  },[minds,hydrated]);
 
   useEffect(()=>{
     if(!hydrated)return;
@@ -159,6 +196,14 @@ export function GrokSimulationPanel(){
   },[state.running,state.person.x,state.person.y,state.person.currentAction,state.person.location]);
 
   useEffect(()=>{
+    if(!state.running)return;
+    const timer=window.setInterval(()=>{
+      setMacaque(prev=>stepMacaqueSimulation(prev,{worldState:state,fly}));
+    },390);
+    return()=>window.clearInterval(timer);
+  },[state.running,state.person.x,state.person.y,state.person.currentAction,state.person.location,fly.x,fly.y]);
+
+  useEffect(()=>{
     const runningPlan=agent.plan?.status==='running';
     if(!runningPlan||agentBusy)return;
     const timer=window.setTimeout(()=>{
@@ -194,9 +239,44 @@ export function GrokSimulationPanel(){
   },[hydrated,state,agent.plan?.status,agent.autonomy.enabled,agentBusy,fly.x,fly.y]);
 
   useEffect(()=>{
+    if(!hydrated||!state.running||fly.tick===0||fly.tick%4!==0)return;
+    const humanSnapshot=perceiveHumanWorld(state,fly);
+    const flySnapshot=perceiveFlyWorld(fly,state);
+    const macaqueSnapshot=perceiveMacaqueWorld(macaque,state,fly);
+    setMinds(prev=>{
+      const base=normalizeSyntheticMindBundle(prev,state.person.name);
+      return {
+        human:advanceSyntheticMind(base.human,{
+          perception:humanSnapshot.summary,
+          action:state.person.currentAction,
+          location:String(state.person.location),
+          curiosity:state.neuro.curiosity,
+          threat:state.neuro.circuits.threat,
+          goal:state.person.goal
+        }),
+        fly:advanceSyntheticMind(base.fly,{
+          perception:flySnapshot.summary,
+          action:fly.behavior+' · '+fly.targetLabel,
+          location:fly.targetLabel||'mundo',
+          curiosity:fly.core.exploration,
+          threat:fly.core.threat
+        }),
+        macaque:advanceSyntheticMind(base.macaque,{
+          perception:macaqueSnapshot.summary,
+          action:macaque.behavior+' · '+macaque.targetLabel,
+          location:'Parque / mundo aberto',
+          curiosity:macaque.core.regionalIntegration,
+          threat:macaque.core.uncertainty
+        })
+      };
+    });
+  },[hydrated,state.running,fly.tick,state.person.currentAction,state.person.location,state.person.goal,state.neuro.curiosity,state.neuro.circuits.threat,macaque.tick]);
+
+  useEffect(()=>{
     if(!hydrated||state.tick===0||state.tick%6!==0)return;
     const humanSnapshot=perceiveHumanWorld(state,fly);
     const flySnapshot=perceiveFlyWorld(fly,state);
+    const macaqueSnapshot=perceiveMacaqueWorld(macaque,state,fly);
     const timer=window.setTimeout(()=>{
       loadCognitiveState().then(current=>{
         let next=advanceCognitiveWorkspace(current,[
@@ -205,14 +285,15 @@ export function GrokSimulationPanel(){
           'Ação humana: '+state.person.currentAction,
           'Humor: '+state.person.mood
         ].join(' · '));
-        next={...next,fly:fly.core,lastUpdated:Date.now()};
+        next={...next,fly:fly.core,macaque:macaque.core,lastUpdated:Date.now()};
         next=recordPerceptionMemory(next,'human',humanSnapshot.summary+' Ação: '+state.person.currentAction,.7);
         next=recordPerceptionMemory(next,'fly',flySnapshot.summary+' Comportamento: '+fly.behavior,.72);
+        next=recordPerceptionMemory(next,'macaque',macaqueSnapshot.summary+' Comportamento: '+macaque.behavior,.72);
         return saveCognitiveState(next);
       }).catch(()=>{});
     },150);
     return()=>window.clearTimeout(timer);
-  },[hydrated,state.tick,state.person.x,state.person.y,state.person.heading,fly.x,fly.y,fly.vx,fly.vy]);
+  },[hydrated,state.tick,state.person.x,state.person.y,state.person.heading,fly.x,fly.y,fly.vx,fly.vy,macaque.x,macaque.y,macaque.heading,macaque.behavior]);
 
   useEffect(()=>{
     const el=canvas.current;
@@ -230,7 +311,9 @@ export function GrokSimulationPanel(){
       ? cameraForFocus(state.person,width,height,cameraZoom)
       : cameraFocus==='fly'
         ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
-        : {zoom:cameraZoom,offsetX:0,offsetY:10};
+        : cameraFocus==='macaque'
+          ? cameraForFocus({x:macaque.x,y:macaque.y,z:macaque.z||10},width,height,cameraZoom)
+          : {zoom:cameraZoom,offsetX:0,offsetY:10};
 
     const poly=(points:Array<{x:number;y:number}>,fill:string,stroke?:string)=>{
       if(!points.length)return;
@@ -291,10 +374,14 @@ export function GrokSimulationPanel(){
     const drawWorldObject=(obj:(typeof WORLD_OBJECTS)[number])=>{
       const p=iso(obj.x,obj.y,0);
       const s=Math.max(.72,camera.zoom);
-      if(obj.kind==='tree'){
+      if(obj.kind==='tree'||obj.kind==='fruit_tree'){
         ctx.fillStyle='#6b4c32';ctx.fillRect(p.x-2*s,p.y-24*s,4*s,24*s);
         ctx.fillStyle='#4f8b5d';ctx.beginPath();ctx.arc(p.x,p.y-30*s,14*s,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#6ba873';ctx.beginPath();ctx.arc(p.x-7*s,p.y-35*s,8*s,0,Math.PI*2);ctx.fill();
+        if(obj.kind==='fruit_tree'){
+          ctx.fillStyle='#f0a35c';
+          for(const [ox,oy] of [[-7,-33],[5,-38],[8,-27]]){ctx.beginPath();ctx.arc(p.x+ox*s,p.y+oy*s,2.3*s,0,Math.PI*2);ctx.fill()}
+        }
         return;
       }
       if(obj.kind==='lamp'){
@@ -312,7 +399,7 @@ export function GrokSimulationPanel(){
         bench:['#8a6546','#60462f'],bookshelf:['#6c5140','#49362b'],table:['#87664e','#604736'],
         coffee:['#9a6850','#6c4838'],shelf:['#8f969c','#62686d'],treadmill:['#555d65','#343a40'],
         clinic_bed:['#c7dddd','#88aaac'],plant:['#4f8658','#31583a'],art:['#9a79ad','#644c72'],
-        trash:['#555b60','#373b3f'],door:['#77543e','#52392b']
+        trash:['#555b60','#373b3f'],door:['#77543e','#52392b'],printer:['#87939f','#59616b'],whiteboard:['#dce8e7','#85999a'],meeting_table:['#8a654b','#5f4635'],trail:['#817567','#5d554b'],playground:['#657d89','#43545d'],flower:['#855c91','#573e61'],fruit_tree:['#4f8658','#31583a'],climbing_frame:['#768895','#4e5a62'],water:['#4e93aa','#316276']
       };
       const [top,side]=colors[obj.kind]||['#777','#555'];
       drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
@@ -386,7 +473,16 @@ export function GrokSimulationPanel(){
     // They are also the same objects used by the human/fly vision systems.
     for(const obj of [...WORLD_OBJECTS].sort((a,b)=>(a.x+a.y)-(b.x+b.y)))drawWorldObject(obj);
 
-    // Perception fields: human cone + fly panoramic sensing.
+    const activeObject=state.objectInteraction?WORLD_OBJECTS.find(obj=>obj.id===state.objectInteraction?.objectId):null;
+    if(activeObject){
+      const ap=iso(activeObject.x,activeObject.y,Math.max(8,activeObject.z+8));
+      ctx.strokeStyle='#ffe58a';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(ap.x,ap.y,13*camera.zoom,0,Math.PI*2);ctx.stroke();
+      ctx.font='600 9px ui-sans-serif,system-ui';ctx.textAlign='center';ctx.fillStyle='#fff1a8';
+      ctx.fillText(state.objectInteraction?.verb.slice(0,46)||'interação',ap.x,ap.y-17*camera.zoom);
+    }
+
+    // Perception fields: human cone + fly + macaque sensing.
     const hpGround=iso(state.person.x,state.person.y,0);
     const humanHeading=state.person.heading||0;
     const ray=(angle:number,range:number)=>iso(
@@ -439,6 +535,17 @@ export function GrokSimulationPanel(){
     ctx.beginPath();ctx.roundRect(bx,by,bw,29,9);ctx.fill();ctx.stroke();
     ctx.fillStyle='#e4e9f1';ctx.fillText(shown,bx+11,by+18);
 
+    // Macaque embodied agent.
+    const mp=iso(macaque.x,macaque.y,macaque.z||10);
+    const ms=Math.max(.82,camera.zoom);
+    ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(mp.x,mp.y+5*ms,10*ms,4*ms,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#7c583b';ctx.beginPath();ctx.roundRect(mp.x-7*ms,mp.y-24*ms,14*ms,18*ms,5*ms);ctx.fill();
+    ctx.fillStyle='#b88a66';ctx.beginPath();ctx.arc(mp.x,mp.y-30*ms,6.5*ms,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#7c583b';ctx.lineWidth=3*ms;ctx.beginPath();ctx.moveTo(mp.x-6*ms,mp.y-17*ms);ctx.lineTo(mp.x-14*ms,mp.y-8*ms);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mp.x+6*ms,mp.y-17*ms);ctx.lineTo(mp.x+14*ms,mp.y-8*ms);ctx.stroke();
+    ctx.strokeStyle='#9c7353';ctx.lineWidth=2*ms;ctx.beginPath();ctx.arc(mp.x+7*ms,mp.y-14*ms,11*ms,-1.5,1.15);ctx.stroke();
+    ctx.font='9px ui-sans-serif,system-ui';ctx.textAlign='center';ctx.fillStyle='#f2d6bd';ctx.fillText('Auri · '+macaque.behavior,mp.x,mp.y-42*ms);
+
     // FlyWire agent in real 2.5D flight height.
     const groundFly=iso(fly.x,fly.y,0);
     const fp=iso(fly.x,fly.y,fly.z||36);
@@ -473,7 +580,7 @@ export function GrokSimulationPanel(){
     const vignette=ctx.createRadialGradient(width*.5,height*.46,width*.08,width*.5,height*.46,width*.72);
     vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.32)');
     ctx.fillStyle=vignette;ctx.fillRect(0,0,width,height);
-  },[state,manualTarget,fly,cameraZoom,cameraFocus]);
+  },[state,manualTarget,fly,macaque,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
   const humanVision=useMemo(()=>perceiveHumanWorld(state,fly),[
@@ -483,7 +590,15 @@ export function GrokSimulationPanel(){
   const flyVision=useMemo(()=>perceiveFlyWorld(fly,state),[
     fly.x,fly.y,fly.vx,fly.vy,state.person.x,state.person.y,state.person.heading
   ]);
+  const macaqueVision=useMemo(()=>perceiveMacaqueWorld(macaque,state,fly),[
+    macaque.x,macaque.y,macaque.heading,state.person.x,state.person.y,fly.x,fly.y
+  ]);
   const relation=state.relationships[0];
+  const povAgents=useMemo<PovOtherAgent[]>(()=>[
+    {id:'human',label:state.person.name,actor:'human',x:state.person.x,y:state.person.y,z:18},
+    {id:'fly',label:'Mosca',actor:'fly',x:fly.x,y:fly.y,z:fly.z||36},
+    {id:'macaque',label:'Auri',actor:'macaque',x:macaque.x,y:macaque.y,z:(macaque.z||10)+12}
+  ],[state.person.name,state.person.x,state.person.y,fly.x,fly.y,fly.z,macaque.x,macaque.y,macaque.z]);
 
   function tick(){
     setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
@@ -491,7 +606,7 @@ export function GrokSimulationPanel(){
 
   function reset(){
     const next=createLifeSimulation();
-    setState(next);setAgent(createLifeAgentState());setFly(createFlySimulationState());setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
+    setState(next);setAgent(createLifeAgentState());setFly(createFlySimulationState());setMacaque(createMacaqueSimulationState());setMinds(createSyntheticMindBundle(next.person.name));setManualTarget(null);setCommand('');setScenarios([]);setAgentError('');
   }
 
   async function applyCommand(override?:string){
@@ -568,7 +683,9 @@ export function GrokSimulationPanel(){
       ? cameraForFocus(state.person,width,height,cameraZoom)
       : cameraFocus==='fly'
         ? cameraForFocus({x:fly.x,y:fly.y,z:fly.z||36},width,height,cameraZoom)
-        : {zoom:cameraZoom,offsetX:0,offsetY:10};
+        : cameraFocus==='macaque'
+          ? cameraForFocus({x:macaque.x,y:macaque.y,z:macaque.z||10},width,height,cameraZoom)
+          : {zoom:cameraZoom,offsetX:0,offsetY:10};
     const found=[...state.places].reverse().find(p=>pointInPolygon({x:sx,y:sy},projectedPlacePolygon(p,width,height,camera)));
     if(found)setManualTarget(found.id);
   }
@@ -588,7 +705,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Life-sim 2.5D open world · Humano + FlyWire Agent · visão local · memória persistente</p>
+        <p>Voxel life world · Humano + Macaque Core + FlyWire · POV 3D próprio · objetos físicos · memória persistente</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -603,6 +720,7 @@ export function GrokSimulationPanel(){
           <button onClick={()=>setManualTarget(null)} className={!manualTarget?'active':''}>Movimento Auto</button>
           <button onClick={()=>setCameraFocus(cameraFocus==='human'?'world':'human')} className={cameraFocus==='human'?'active':''} title="Seguir humano"><Crosshair size={13}/>Humano</button>
           <button onClick={()=>setCameraFocus(cameraFocus==='fly'?'world':'fly')} className={cameraFocus==='fly'?'active':''} title="Seguir mosca"><Bug size={13}/>Mosca</button>
+          <button onClick={()=>setCameraFocus(cameraFocus==='macaque'?'world':'macaque')} className={cameraFocus==='macaque'?'active':''} title="Seguir macaco"><Brain size={13}/>Macaco</button>
           <button onClick={()=>setCameraZoom(z=>Math.max(.72,Math.round((z-.12)*100)/100))} title="Afastar câmera"><ZoomOut size={13}/></button>
           <button onClick={()=>setCameraZoom(z=>Math.min(1.5,Math.round((z+.12)*100)/100))} title="Aproximar câmera"><ZoomIn size={13}/></button>
           <button
@@ -621,7 +739,7 @@ export function GrokSimulationPanel(){
         </div>
 
         <div className="sim-canvas-wrap">
-          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas" aria-label="Simulação isométrica 2.5D com humano e mosca"/>
+          <canvas ref={canvas} onClick={pickPlace} className="sim-canvas" aria-label="Simulação isométrica 2.5D com humano, macaco e mosca"/>
           <div className="sim-camera-badge">
             <span>2.5D</span>
             <b>{Math.round(cameraZoom*100)}%</b>
@@ -632,9 +750,48 @@ export function GrokSimulationPanel(){
           <span><MapPin size={12}/>{state.person.location}</span>
           <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
           <span>Mosca: {fly.behavior} · {fly.targetLabel}</span>
-          <span>Visão: {humanVision.visible.length} humano · {flyVision.visible.length} mosca</span>
+          <span>Macaco: {macaque.behavior} · {macaque.targetLabel}</span>
+          <span>Visão: {humanVision.visible.length} humano · {macaqueVision.visible.length} macaco · {flyVision.visible.length} mosca</span>
           <b>{state.person.currentAction}</b>
         </div>
+
+        <section className="sim-pov-section">
+          <div className="sim-pov-head"><Brain size={13}/><b>Visão 3D própria dos agentes</b><span>mundo voxel leve no navegador</span></div>
+          <div className="sim-pov-grid">
+            <LifeFirstPersonViewport
+              title={state.person.name+' · humano'}
+              actor="human"
+              x={state.person.x} y={state.person.y} z={18}
+              heading={state.person.heading||0}
+              fovDeg={105} range={270}
+              thought={minds.human.publicThought}
+              action={state.person.currentAction}
+              interactionObjectId={state.objectInteraction?.actor==='human'?state.objectInteraction.objectId:null}
+              otherAgents={povAgents.filter(x=>x.id!=='human')}
+            />
+            <LifeFirstPersonViewport
+              title="Auri · Macaque"
+              actor="macaque"
+              x={macaque.x} y={macaque.y} z={(macaque.z||10)+15}
+              heading={macaque.heading||0}
+              fovDeg={135} range={245}
+              thought={minds.macaque.publicThought}
+              action={macaque.behavior+' · '+macaque.targetLabel}
+              otherAgents={povAgents.filter(x=>x.id!=='macaque')}
+            />
+            <LifeFirstPersonViewport
+              title="Mosca Predict"
+              actor="fly"
+              x={fly.x} y={fly.y} z={fly.z||36}
+              heading={Math.atan2(fly.vy,fly.vx||.001)}
+              fovDeg={150} peripheralFovDeg={330} range={235}
+              thought={minds.fly.publicThought}
+              action={fly.behavior+' · '+fly.targetLabel}
+              otherAgents={povAgents.filter(x=>x.id!=='fly')}
+            />
+          </div>
+          <small className="sim-note">O texto de “pensamento público” é um estado resumido do simulador para inspeção. Não é chain-of-thought privado nem leitura de uma mente biológica.</small>
+        </section>
 
         <div className="sim-command">
           <Sparkles size={16}/>
@@ -717,13 +874,47 @@ export function GrokSimulationPanel(){
         </section>
 
         <section className="sim-panel">
+          <div className="sim-panel-title"><Brain size={14}/><b>Auri · Macaque</b><span>Macaque Core</span></div>
+          <div className="circuit-list">
+            <div><span>integração</span><i><u style={{width:Math.round(macaque.core.regionalIntegration*100)+'%'}}/></i><b>{Math.round(macaque.core.regionalIntegration*100)}%</b></div>
+            <div><span>PFC proj.</span><i><u style={{width:Math.round(macaque.core.pfcProjectionIntegration*100)+'%'}}/></i><b>{Math.round(macaque.core.pfcProjectionIntegration*100)}%</b></div>
+            <div><span>claustro</span><i><u style={{width:Math.round(macaque.core.claustrumIntegration*100)+'%'}}/></i><b>{Math.round(macaque.core.claustrumIntegration*100)}%</b></div>
+            <div><span>visual</span><i><u style={{width:Math.round(macaque.core.visualHierarchy*100)+'%'}}/></i><b>{Math.round(macaque.core.visualHierarchy*100)}%</b></div>
+          </div>
+          <small className="sim-note">Comportamento: {macaque.behavior}. O macaco é um agente simulado separado; dados de macaque orientam o controlador, não representam um animal real.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Sparkles size={14}/><b>Pensamentos públicos</b><span>estado inspecionável</span></div>
+          <div className="sim-thoughts">
+            <article><b>{state.person.name}</b><span>{minds.human.publicThought}</span></article>
+            <article><b>Auri</b><span>{minds.macaque.publicThought}</span></article>
+            <article><b>Mosca</b><span>{minds.fly.publicThought}</span></article>
+          </div>
+          <small className="sim-note">São resumos deliberadamente públicos do estado de decisão, não raciocínio privado do modelo.</small>
+        </section>
+
+        <section className="sim-panel">
           <div className="sim-panel-title"><Activity size={14}/><b>Percepção</b><span>visão local</span></div>
           <small className="sim-note"><b>Humano:</b> {humanVision.summary}</small>
+          <small className="sim-note"><b>Macaco:</b> {macaqueVision.summary}</small>
           <small className="sim-note"><b>Mosca:</b> {flyVision.summary}</small>
           <div className="sim-metrics">
             {humanVision.visible.slice(0,4).map(item=><span key={'h-'+item.id}>{item.label} · {Math.round(item.distance)}</span>)}
-            {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>🪰 {item.label}</span>)}
+            {macaqueVision.visible.slice(0,4).map(item=><span key={'m-'+item.id}>Macaco · {item.label}</span>)}
+            {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>Mosca · {item.label}</span>)}
           </div>
+        </section>
+
+        <section className="sim-panel sim-bios">
+          <div className="sim-panel-title"><Brain size={14}/><b>Biografias sintéticas</b><span>ficção persistente</span></div>
+          {(['human','macaque','fly'] as const).map(actor=><details key={actor}>
+            <summary>{minds[actor].identity} · {minds[actor].memories.length} lembranças</summary>
+            {minds[actor].memories.slice(-5).reverse().map(memory=><article key={memory.id}>
+              <b>{memory.lifeStage}</b><span>{memory.summary}</span><small>{memory.source==='synthetic-biography'?'memória biográfica sintética':'experiência do runtime'}</small>
+            </article>)}
+          </details>)}
+          <small className="sim-note">Essas “memórias de uma vida inteira” são ficção do simulador, criada para dar continuidade e personalidade. Não foram extraídas de humanos, macacos ou moscas reais.</small>
         </section>
 
         <section className="sim-panel memories">
@@ -742,15 +933,17 @@ export function GrokSimulationPanel(){
       .sim-layout{max-width:1320px;margin:auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.65fr);gap:14px}.sim-world-card,.sim-panel{border:1px solid #202735;background:linear-gradient(180deg,#0e131c,#0a0e15);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.sim-world-card{padding:12px;min-width:0}
       .sim-toolbar{display:flex;gap:7px;align-items:center;margin-bottom:10px}.sim-toolbar button,.sim-toolbar select{border:1px solid #293143;background:#121823;color:#c9d2e2;border-radius:9px;padding:7px 10px;font-size:10px}.sim-toolbar button{display:flex;gap:5px;align-items:center}.sim-toolbar .primary{background:#6e55e7;color:#fff;border-color:#826df2}.sim-toolbar .active{border-color:#5dcaab;color:#76e0c1}.sim-toolbar .reset{margin-left:auto}
       .sim-canvas-wrap{position:relative;width:100%;height:430px;overflow:hidden;border-radius:16px}.sim-canvas{width:100%;height:430px;display:block;border:1px solid #283242;border-radius:16px;background:#182332;cursor:pointer;touch-action:manipulation}.sim-camera-badge{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(8,12,18,.72);backdrop-filter:blur(10px);border-radius:999px;padding:6px 9px;font-size:9px;color:#93a0b5;pointer-events:none}.sim-camera-badge span{color:#76e0c1;font-weight:800}.sim-camera-badge b{color:#eef3f8}.sim-camera-badge em{font-style:normal;color:#b39cff}.sim-world-foot{display:grid;grid-template-columns:auto auto auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
+      .sim-pov-section{margin-top:10px;border:1px solid #252d3d;border-radius:14px;background:#090e15;padding:10px}.sim-pov-head{display:flex;gap:6px;align-items:center;margin-bottom:9px}.sim-pov-head b{font-size:10px}.sim-pov-head span{margin-left:auto;color:#76849a;font-size:8px}.sim-pov-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
       .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-spin{animation:simspin .8s linear infinite}@keyframes simspin{to{transform:rotate(360deg)}}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
       .sim-agent{margin-top:10px;border:1px solid #252d3d;border-radius:13px;background:#0a0f17;padding:11px}.sim-agent-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c2432;padding-bottom:8px}.sim-agent-head>div{display:flex;gap:6px;align-items:center}.sim-agent-head b{font-size:10px}.sim-agent-head span{font-size:9px;color:#8290a5}.sim-plan{padding-top:9px;display:grid;gap:7px}.sim-plan>strong{font-size:11px}.sim-plan>small{color:#7c899e;font-size:9px}.sim-plan-steps{display:grid;gap:5px}.sim-plan-steps>div{display:grid;grid-template-columns:16px 145px 1fr;gap:6px;align-items:center;border:1px solid #1c2430;border-radius:8px;padding:6px 7px;color:#778398}.sim-plan-steps>div.done{color:#66cfae}.sim-plan-steps>div.current{border-color:#7560e6;color:#c7bcff;background:#141128}.sim-plan-steps>div.failed{border-color:#a64f62;color:#ff91a6}.sim-plan-steps span{font-size:9px}.sim-plan-steps small{font-size:8px;color:#6f7c90}.sim-agent-error{font-size:9px;color:#ff8ba0}.sim-agent-log{margin-top:8px;color:#8693a8;font-size:9px}.sim-agent-log>div{display:grid;grid-template-columns:34px 70px 1fr;gap:6px;padding:5px 0;border-top:1px solid #171e29}.sim-agent-log b{color:#76d9b7}.sim-agent-log small{color:#778398}
       .sim-side{display:flex;flex-direction:column;gap:12px}.sim-panel{padding:13px}.sim-panel-title{display:grid;grid-template-columns:auto auto 1fr;gap:6px;align-items:center;border-bottom:1px solid #202735;padding-bottom:9px;margin-bottom:10px;color:#9c8cff}.sim-panel-title b{font-size:11px;color:#eef2f8}.sim-panel-title span{text-align:right;color:#7d8799;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .need-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.need-grid>div span{display:flex;justify-content:space-between;font-size:9px;color:#8a95a8}.need-grid em{font-style:normal;color:#cbd3e1}.need-grid i,.circuit-list i{height:5px;background:#181f2b;border-radius:999px;display:block;overflow:hidden;margin-top:4px}.need-grid u,.circuit-list u{height:100%;display:block;background:linear-gradient(90deg,#5e58dc,#65d2ad);border-radius:inherit}.need-grid .stress u{background:linear-gradient(90deg,#ffb15d,#ef5d72)}
       .sim-metrics{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}.sim-metrics span{display:flex;align-items:center;gap:5px;border:1px solid #242c3a;background:#0c1119;border-radius:8px;padding:6px 8px;font-size:9px;color:#9da8ba}
       .sim-agent-vitals{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}.sim-agent-vitals span{display:flex;justify-content:space-between;border:1px solid #1d2532;background:#0b1017;border-radius:7px;padding:5px 7px;font-size:8px;color:#7f8ba0}.sim-agent-vitals b{color:#c9d3e2}.circuit-list{display:flex;flex-direction:column;gap:7px}.circuit-list>div{display:grid;grid-template-columns:92px 1fr 30px;gap:7px;align-items:center;font-size:9px}.circuit-list span{color:#9aa5b7}.circuit-list b{text-align:right;font-size:9px}.circuit-list i{margin:0}.sim-note{display:block;color:#69768a;line-height:1.45;margin-top:10px}
+      .sim-thoughts{display:grid;gap:7px}.sim-thoughts article{border:1px solid #1c2533;background:#090e15;border-radius:8px;padding:7px;display:grid;gap:3px}.sim-thoughts b{font-size:9px;color:#c9bdff}.sim-thoughts span{font-size:9px;line-height:1.35;color:#aab5c6}.sim-bios details{border-top:1px solid #171e28;padding:6px 0}.sim-bios summary{cursor:pointer;font-size:9px;color:#b8c1cf}.sim-bios article{display:grid;grid-template-columns:62px 1fr;gap:3px 6px;padding:6px 0}.sim-bios article b{font-size:8px;color:#d0a675}.sim-bios article span{font-size:8px;color:#aab5c5}.sim-bios article small{grid-column:2;font-size:7px;color:#687588}
       .memories{max-height:245px;overflow:auto}.memories article{display:grid;grid-template-columns:55px 1fr;gap:4px 7px;padding:8px 0;border-bottom:1px solid #171d27}.memories article b{font-size:8px;text-transform:uppercase;color:#927ff1}.memories article span{font-size:9px;color:#c4cddd}.memories article small{grid-column:2;color:#667286;font-size:8px}
       .sim-debug{max-width:1320px;margin:12px auto 0;border:1px solid #202735;border-radius:12px;background:#0a0e15;padding:8px 11px;color:#8390a4;font-size:10px}.sim-debug pre{white-space:pre-wrap;color:#c7d0df}
-      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:10px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:31px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr 1fr}.sim-world-foot b{grid-column:1/-1;text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.sim-toolbar button,.sim-toolbar select{flex:0 0 auto}.sim-canvas-wrap,.sim-canvas{height:410px}.sim-world-card{padding:8px;border-radius:14px}.sim-camera-badge{top:8px;right:8px}}
+      @media(max-width:980px){.sim-layout{grid-template-columns:1fr}.sim-side{display:grid;grid-template-columns:1fr 1fr}.memories{grid-column:1/-1}.sim-pov-grid{grid-template-columns:1fr}}@media(max-width:640px){.sim-scenario-grid{grid-template-columns:1fr}.sim-shell{padding:10px}.sim-head{align-items:flex-start;flex-direction:column}.sim-head h1{font-size:31px}.sim-layout{display:block}.sim-side{display:flex;margin-top:12px}.sim-world-foot{grid-template-columns:1fr 1fr}.sim-world-foot b{grid-column:1/-1;text-align:left}.need-grid{grid-template-columns:1fr}.sim-toolbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.sim-toolbar button,.sim-toolbar select{flex:0 0 auto}.sim-canvas-wrap,.sim-canvas{height:410px}.sim-world-card{padding:8px;border-radius:14px}.sim-camera-badge{top:8px;right:8px}}
     `}</style>
   </section>;
 }
