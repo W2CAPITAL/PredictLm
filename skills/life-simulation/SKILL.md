@@ -1,8 +1,8 @@
 ---
 name: life-simulation
-description: Cria, executa e exporta simulações 2D ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
+description: Cria, executa e exporta simulações 2.5D isométricas ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
 metadata:
-  version: "1.3.0"
+  version: "2.0.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -15,10 +15,10 @@ Gerar uma simulação ativa e persistente **somente quando o usuário mandar abr
 SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS → EVENT LOOP → OBSERVE → PRIORITIZE → ACT → UPDATE → PERSIST → VERIFY.
 
 ## Padrão visual
-- 2D leve, browser-first;
-- câmera fixa ou mapa compacto;
+- 2.5D isométrico leve em Canvas, browser-first e mobile-first;
+- câmera com zoom e foco Mundo/Humano/Mosca;
 - personagem feminina usa por padrão o self-model visual persistente da entidade quando a simulação é dela;
-- locais clicáveis;
+- mundo ampliado, locais clicáveis e objetos físicos com affordances;
 - ação atual visível;
 - relógio/dia/velocidade;
 - necessidades e relações observáveis;
@@ -38,9 +38,12 @@ SIMULATION SPEC → WORLD → AGENT STATE → NEEDS → MEMORY → RELATIONS →
 - Digital Brain/NeuroCore da personagem.
 
 ## Autonomia
-A personagem pode escolher entre destinos/ações com base em necessidades, horário, objetivos, memória e estado NeuroCore.
+A simulação só abre por comando/clique explícito, mas **dentro do mundo aberto** a autonomia perceptiva vem ativa por padrão, salvo override manual persistente do usuário.
 
-Autonomia significa política local da simulação. A simulação nunca inicia por inferência ou curiosidade interna: exige comando/clique explícito.
+A personagem não segue uma fila fixa de necessidades. O ciclo é:
+**PERCEIVE → REMEMBER → SCORE AFFORDANCES → CHOOSE → MOVE/USE/SPEAK-OR-SILENCE → VERIFY → MEMORY → RECONSIDER**.
+
+A escolha pondera visão atual, memória espacial, necessidades, objetivo, curiosidade, distância, saliência e variação interna determinística. Falar é opcional. A Mosca Predict usa o mesmo princípio com Fly Core, campo visual amplo e atração/saliência de estímulos.
 
 ## Ativação manual
 - estado inicial: pausado;
@@ -155,24 +158,25 @@ Pedidos da simulação usam um modo estruturado separado do Chat geral. O planne
 
 A saída é JSON validado. Se APIs falharem, o plano determinístico local continua executável.
 
-## Autonomia opt-in
+## Autonomia perceptiva
 
-A autonomia só fica ativa após comando/botão explícito.
+A simulação permanece manual para **abrir/iniciar**, mas a personagem pode viver autonomamente depois de iniciada.
 
-Gatilhos aceitos incluem “decida o que fazer”, “aja sozinha”, “viva sua vida” e “faça o que achar melhor”.
+Não usar ranking rígido saúde → energia → fome → dinheiro. A política deve comparar várias affordances possíveis do mundo a cada decisão. O usuário pode alternar **IA Auto / Manual**; esse override fica persistido.
 
-Com autonomia ativa, quando um plano termina o agente observa novamente o mundo e cria uma nova prioridade baseada em:
-1. saúde;
-2. energia;
-3. fome/comida;
-4. ambiente doméstico;
-5. dinheiro;
-6. social;
-7. estresse;
-8. conhecimento/habilidades;
-9. objetivo pessoal.
+Ações adicionais:
+- `approach_object`;
+- `use_object`;
+- `wander`.
 
-Comandos “modo manual”, “desative autonomia” ou equivalentes interrompem esse ciclo.
+Objetos do mundo incluem, entre outros: cama, sofá, TV, geladeira, fogão, chuveiro, computador, celular, árvores, bancos, fonte, estantes e prateleiras.
+
+### Percepção
+- Humano: visão direcional local (~125°), alcance limitado e heading persistente.
+- Mosca: campo amplo local (~320°), saliência e atração de estímulos.
+- Nenhum agente recebe visão onisciente como percepção imediata.
+- Memória espacial pode sugerir um lugar/objeto não visível; ao chegar, o agente volta a decidir pela percepção local.
+- Percepções relevantes alimentam memória perceptiva do Cognitive Lab.
 
 A autonomia permanece **somente dentro da simulação**; não chama ferramentas externas, não mexe em contas e não executa ações no computador do usuário.
 

@@ -39,6 +39,7 @@ export interface LifePerson{
   gender:'female';
   x:number;
   y:number;
+  heading:number;
   location:LifeLocation;
   money:number;
   occupation:string;
@@ -75,13 +76,13 @@ export interface LifeSimulationState{
 }
 
 const places:LifeWorldPlace[]=[
-  {id:'Casa',x:50,y:210,w:120,h:90,label:'Casa',purpose:'descanso, alimentação e memória'},
-  {id:'Trabalho',x:465,y:48,w:135,h:95,label:'Trabalho',purpose:'foco, renda e metas'},
-  {id:'Café',x:270,y:180,w:105,h:70,label:'Café',purpose:'socialização e pausa'},
-  {id:'Parque',x:55,y:48,w:145,h:100,label:'Parque',purpose:'lazer, saúde e redução de estresse'},
-  {id:'Mercado',x:465,y:215,w:120,h:80,label:'Mercado',purpose:'compras e necessidades práticas'},
-  {id:'Clínica',x:255,y:45,w:110,h:80,label:'Clínica',purpose:'saúde e recuperação'},
-  {id:'Biblioteca',x:230,y:285,w:155,h:62,label:'Biblioteca',purpose:'aprendizado, foco e curiosidade'}
+  {id:'Casa',x:42,y:360,w:260,h:170,label:'Casa',purpose:'descanso, alimentação, computador, celular e memória'},
+  {id:'Trabalho',x:700,y:58,w:220,h:160,label:'Trabalho',purpose:'foco, renda, computadores e metas'},
+  {id:'Café',x:410,y:245,w:180,h:125,label:'Café',purpose:'socialização, comida, conversa e pausa'},
+  {id:'Parque',x:38,y:42,w:285,h:205,label:'Parque',purpose:'árvores, bancos, exploração e redução de estresse'},
+  {id:'Mercado',x:735,y:365,w:205,h:150,label:'Mercado',purpose:'compras, prateleiras e necessidades práticas'},
+  {id:'Clínica',x:385,y:45,w:205,h:145,label:'Clínica',purpose:'saúde, observação e recuperação'},
+  {id:'Biblioteca',x:365,y:455,w:255,h:120,label:'Biblioteca',purpose:'livros, computador, aprendizado e criação'}
 ];
 
 function clamp(v:number,min=0,max=100){return Math.max(min,Math.min(max,v))}
@@ -111,6 +112,7 @@ export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173
       gender:'female',
       x:home.x+home.w/2,
       y:home.y+home.h/2,
+      heading:-Math.PI/4,
       location:'Casa',
       money:850,
       occupation:'Analista de projetos',
@@ -169,11 +171,12 @@ function moveToward(state:LifeSimulationState,target:LifeWorldPlace){
   const cx=target.x+target.w/2,cy=target.y+target.h/2;
   const dx=cx-state.person.x,dy=cy-state.person.y;
   const dist=Math.max(1,Math.hypot(dx,dy));
-  const step=Math.min(22,dist);
+  const step=Math.min(26,dist);
   const x=state.person.x+(dx/dist)*step;
   const y=state.person.y+(dy/dist)*step;
-  const reached=dist<=24;
-  return {x,y,reached};
+  const reached=dist<=28;
+  const heading=Math.atan2(dy,dx);
+  return {x,y,reached,heading};
 }
 
 function updateNeeds(state:LifeSimulationState,location:LifeLocation,reached:boolean){
@@ -269,7 +272,7 @@ export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDe
   const destination=forcedDestination||chooseDestination(state);
   const target=place(destination);
   const moved=moveToward(state,target);
-  state.person.x=moved.x;state.person.y=moved.y;
+  state.person.x=moved.x;state.person.y=moved.y;state.person.heading=moved.heading;
   if(moved.reached)state.person.location=destination;
   state.person.currentAction=moved.reached?destinationAction(destination):'Indo para '+destination;
   state.needs=updateNeeds(state,destination,moved.reached);

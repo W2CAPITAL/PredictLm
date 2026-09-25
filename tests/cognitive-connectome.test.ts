@@ -4,6 +4,8 @@ import {
   advanceCognitiveWorkspace,
   applyCognitiveOutcome,
   applyMappedSubsetEvidence,
+  captureConversationMemory,
+  cognitiveDirectRecall,
   cognitivePromptContext,
   createCognitiveState
 } from '../src/lib/cognitive/cognitive-workspace';
@@ -99,4 +101,48 @@ test('answer outcome feeds prediction error and episodic memory',()=>{
   });
   assert.equal(bad.memory.episodic.length,2);
   assert.ok(bad.memory.episodic[1].predictionError>=bad.memory.episodic[1].reward);
+});
+
+
+test('provider identity never replaces the cognitive agent identity',()=>{
+  let state=createCognitiveState();
+  state=captureConversationMemory(
+    applyCognitiveOutcome(state,{
+      prompt:'Eu gosto de batatas',
+      answer:'Boa. Batatas podem ser preparadas de várias formas.'
+    }),
+    {prompt:'Eu gosto de batatas',answer:'Boa. Batatas podem ser preparadas de várias formas.',mode:'dual'}
+  );
+  const identity=cognitiveDirectRecall(state,'dual','Quem é você?')||'';
+  assert.match(identity,/PredictLM Cognitive Lab/);
+  assert.doesNotMatch(identity,/Meu nome é Nemotron/i);
+  const flyIdentity=cognitiveDirectRecall(state,'fly','Qual é seu nome?')||'';
+  assert.match(flyIdentity,/Mosca Predict/);
+});
+
+test('memory questions recall persistent autobiographical and episodic state',()=>{
+  let state=createCognitiveState();
+  state=captureConversationMemory(
+    applyCognitiveOutcome(state,{
+      prompt:'Meu nome é Davi e eu gosto de macacos',
+      answer:'Vou lembrar disso.'
+    }),
+    {prompt:'Meu nome é Davi e eu gosto de macacos',answer:'Vou lembrar disso.',mode:'dual'}
+  );
+  const recall=cognitiveDirectRecall(state,'dual','Qual sua lembrança?')||'';
+  assert.match(recall,/Davi/i);
+  assert.match(recall,/Episódio|Conversa/i);
+  assert.ok(state.memory.autobiographical.length>=2);
+  assert.ok(state.consciousAccess.memoryAccess>0);
+});
+
+test('functional conscious-access map combines human and fly-derived controls',()=>{
+  const state=advanceCognitiveWorkspace(createCognitiveState(),'Estou vendo algo novo e preciso decidir o que fazer.');
+  for(const value of Object.values(state.consciousAccess)){
+    assert.ok(value>=0&&value<=1);
+  }
+  const context=cognitivePromptContext(state);
+  assert.match(context,/CONSCIOUS ACCESS MAP/);
+  assert.match(context,/Memória associativa|associative/i);
+  assert.match(context,/FlyWire-whole-fly/);
 });

@@ -1,5 +1,6 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
+import {cognitiveFunctionalMapContext} from './functional-map';
 
 export interface CognitiveEpisode{
   at:number;
@@ -7,6 +8,29 @@ export interface CognitiveEpisode{
   answerPreview:string;
   reward:number;
   predictionError:number;
+}
+
+export interface CognitiveMemoryTrace{
+  id:string;
+  at:number;
+  kind:'identity'|'preference'|'event'|'semantic'|'perceptual'|'association';
+  actor:'user'|'fly'|'human'|'dual'|'world';
+  text:string;
+  salience:number;
+  strength:number;
+  source:'conversation'|'simulation'|'connectome'|'system';
+}
+
+export interface ConsciousAccessState{
+  attention:number;
+  perceptualBinding:number;
+  selfModel:number;
+  continuity:number;
+  memoryAccess:number;
+  agency:number;
+  reportability:number;
+  globalBroadcast:number;
+  arousal:number;
 }
 
 export interface CognitiveState{
@@ -27,7 +51,11 @@ export interface CognitiveState{
   memory:{
     working:string[];
     episodic:CognitiveEpisode[];
+    autobiographical:CognitiveMemoryTrace[];
+    semantic:CognitiveMemoryTrace[];
+    perceptual:CognitiveMemoryTrace[];
   };
+  consciousAccess:ConsciousAccessState;
   mappedEvidence:{
     fly?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
     human?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
@@ -54,7 +82,42 @@ export function createCognitiveState():CognitiveState{
       actionReadiness:.42,
       broadcast:[]
     },
-    memory:{working:[],episodic:[]},
+    memory:{
+      working:[],
+      episodic:[],
+      autobiographical:[{
+        id:'self-origin',
+        at:Date.now(),
+        kind:'identity',
+        actor:'dual',
+        text:'O PredictLM Cognitive Lab iniciou um estado persistente próprio; nomes de providers/modelos não são sua identidade.',
+        salience:.94,
+        strength:1,
+        source:'system'
+      }],
+      semantic:[{
+        id:'memory-map-fly',
+        at:Date.now(),
+        kind:'semantic',
+        actor:'fly',
+        text:'A memória associativa da Mosca Predict usa o mushroom body do Fly Core como referência funcional derivada do connectoma FlyWire.',
+        salience:.82,
+        strength:.9,
+        source:'connectome'
+      }],
+      perceptual:[]
+    },
+    consciousAccess:{
+      attention:.48,
+      perceptualBinding:.42,
+      selfModel:.6,
+      continuity:.5,
+      memoryAccess:.46,
+      agency:.45,
+      reportability:.52,
+      globalBroadcast:.44,
+      arousal:.55
+    },
     mappedEvidence:{},
     lastUpdated:Date.now()
   };
@@ -74,6 +137,18 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const exploration=clamp(fly.exploration*.55+human.neuro.curiosity*.45);
   const actionReadiness=clamp(fly.actionSelection*.48+human.neuro.circuits.action*.3+human.executiveControl*.22);
   const confidence=clamp((1-uncertainty)*.58+human.neuro.confidence*.32+fly.rewardPrediction*.1);
+  const prevAccess=prev.consciousAccess||createCognitiveState().consciousAccess;
+  const consciousAccess:ConsciousAccessState={
+    attention:clamp(prevAccess.attention*.5+salience*.3+human.neuro.circuits.attention*.2),
+    perceptualBinding:clamp(prevAccess.perceptualBinding*.52+human.recurrentIntegration*.24+fly.centralComplex*.24),
+    selfModel:clamp(prevAccess.selfModel*.7+human.metacognition*.18+confidence*.12),
+    continuity:clamp(prevAccess.continuity*.72+Math.min(1,(prev.memory?.episodic?.length||0)/12)*.18+human.workingMemory*.1),
+    memoryAccess:clamp(prevAccess.memoryAccess*.52+human.workingMemory*.24+fly.mushroomBody*.24),
+    agency:clamp(prevAccess.agency*.55+actionReadiness*.28+human.executiveControl*.17),
+    reportability:clamp(prevAccess.reportability*.6+human.metacognition*.2+confidence*.2),
+    globalBroadcast:clamp(prevAccess.globalBroadcast*.48+salience*.2+deliberate*.2+reflex*.12),
+    arousal:clamp(prevAccess.arousal*.7+fly.sensoryDrive*.16+human.neuro.arousal*.14)
+  };
 
   const broadcast:string[]=[
     salience>.62?'stay-on-topic-high-salience':'normal-salience',
@@ -90,9 +165,13 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
     human,
     workspace:{mode,salience,confidence,uncertainty,inhibition,exploration,actionReadiness,broadcast},
     memory:{
-      working:[clean(prompt,260),...prev.memory.working].filter(Boolean).slice(0,8),
-      episodic:prev.memory.episodic.slice(-40)
+      working:[clean(prompt,260),...(prev.memory?.working||[])].filter(Boolean).slice(0,8),
+      episodic:(prev.memory?.episodic||[]).slice(-80),
+      autobiographical:(prev.memory?.autobiographical||[]).slice(-120),
+      semantic:(prev.memory?.semantic||[]).slice(-120),
+      perceptual:(prev.memory?.perceptual||[]).slice(-120)
     },
+    consciousAccess,
     mappedEvidence:prev.mappedEvidence||{},
     lastUpdated:Date.now()
   };
@@ -108,12 +187,16 @@ export function cognitivePromptContext(state:CognitiveState){
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
     'Working memory: '+(state.memory.working.slice(0,4).join(' | ')||'empty')+'.',
+    'Autobiographical memory: '+((state.memory.autobiographical||[]).slice(-5).map(x=>x.text).join(' | ')||'empty')+'.',
+    'Recent episodes: '+((state.memory.episodic||[]).slice(-4).map(x=>x.prompt+' -> '+x.answerPreview).join(' | ')||'empty')+'.',
+    'CONSCIOUS ACCESS MAP (functional software state, not proof of biological consciousness): attention '+Math.round(state.consciousAccess.attention*100)+'%; perceptual binding '+Math.round(state.consciousAccess.perceptualBinding*100)+'%; self-model '+Math.round(state.consciousAccess.selfModel*100)+'%; continuity '+Math.round(state.consciousAccess.continuity*100)+'%; memory access '+Math.round(state.consciousAccess.memoryAccess*100)+'%; agency '+Math.round(state.consciousAccess.agency*100)+'%; reportability '+Math.round(state.consciousAccess.reportability*100)+'%; global broadcast '+Math.round(state.consciousAccess.globalBroadcast*100)+'%.',
     state.mappedEvidence.fly
       ? 'Imported FlyWire real-subset evidence: '+state.mappedEvidence.fly.nodes+' nodes, '+state.mappedEvidence.fly.edges+' edges across '+state.mappedEvidence.fly.regions+' regions.'
       : 'Fly core currently uses the published FlyWire-derived structural profile; no raw subset is loaded.',
     state.mappedEvidence.human
       ? 'Imported H01 real-subset evidence: '+state.mappedEvidence.human.nodes+' nodes, '+state.mappedEvidence.human.edges+' edges; excitatory share '+Math.round(state.mappedEvidence.human.excitation*100)+'%.'
       : 'Human core currently uses the published H01-derived cortical structural profile; no raw subset is loaded.',
+    'FUNCTIONAL MAP:\n'+cognitiveFunctionalMapContext(),
     'Use this only to improve attention, continuity, calibration and action selection. Never narrate it unless the user explicitly asks to inspect the Cognitive Lab.'
   ].join('\n\n');
 }
@@ -161,7 +244,17 @@ export function applyCognitiveOutcome(
     },
     memory:{
       working:previous.memory.working,
-      episodic:[...previous.memory.episodic,episode].slice(-40)
+      episodic:[...(previous.memory.episodic||[]),episode].slice(-80),
+      autobiographical:(previous.memory.autobiographical||[]).slice(-120),
+      semantic:(previous.memory.semantic||[]).slice(-120),
+      perceptual:(previous.memory.perceptual||[]).slice(-120)
+    },
+    consciousAccess:{
+      ...previous.consciousAccess,
+      continuity:clamp((previous.consciousAccess?.continuity??.5)*.7+.3),
+      memoryAccess:clamp((previous.consciousAccess?.memoryAccess??.5)*.65+Math.max(.35,directReward)*.35),
+      selfModel:clamp((previous.consciousAccess?.selfModel??.6)*.82+.18),
+      reportability:clamp((previous.consciousAccess?.reportability??.52)*.75+directReward*.25)
     },
     lastUpdated:Date.now()
   };
@@ -200,4 +293,126 @@ export function applyMappedSubsetEvidence(
     };
   }
   return next;
+}
+
+
+function memoryId(prefix:string){
+  return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+}
+
+export function recordCognitiveMemory(
+  previous:CognitiveState,
+  trace:Omit<CognitiveMemoryTrace,'id'|'at'> & {id?:string;at?:number}
+):CognitiveState{
+  const row:CognitiveMemoryTrace={
+    id:trace.id||memoryId(trace.kind),
+    at:trace.at||Date.now(),
+    kind:trace.kind,
+    actor:trace.actor,
+    text:clean(trace.text,360),
+    salience:clamp(trace.salience),
+    strength:clamp(trace.strength),
+    source:trace.source
+  };
+  const key=row.kind==='perceptual'?'perceptual':row.kind==='semantic'?'semantic':'autobiographical';
+  const memory={
+    ...previous.memory,
+    working:previous.memory?.working||[],
+    episodic:previous.memory?.episodic||[],
+    autobiographical:previous.memory?.autobiographical||[],
+    semantic:previous.memory?.semantic||[],
+    perceptual:previous.memory?.perceptual||[]
+  };
+  memory[key]=[...memory[key],row]
+    .sort((a,b)=>(b.salience*b.strength)-(a.salience*a.strength)||b.at-a.at)
+    .slice(0,120);
+  return {
+    ...previous,
+    memory,
+    consciousAccess:{
+      ...(previous.consciousAccess||createCognitiveState().consciousAccess),
+      memoryAccess:clamp((previous.consciousAccess?.memoryAccess??.5)*.72+row.salience*.28),
+      continuity:clamp((previous.consciousAccess?.continuity??.5)*.82+.18)
+    },
+    lastUpdated:Date.now()
+  };
+}
+
+export function captureConversationMemory(
+  previous:CognitiveState,
+  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'}
+){
+  let next=previous;
+  const prompt=clean(input.prompt,360);
+  const answer=clean(input.answer,360);
+  const actor=input.mode;
+  const identity=prompt.match(/\bmeu nome (?:e|é|eh)\s+([^,.!?]{2,48})/i);
+  const preference=prompt.match(/\b(?:eu\s+)?(?:gosto|adoro|amo|prefiro|nao gosto|não gosto|odeio)\s+(?:de\s+)?([^.!?]{2,120})/i);
+  if(identity){
+    next=recordCognitiveMemory(next,{
+      kind:'identity',actor:'user',
+      text:'O usuário disse que seu nome é '+clean(identity[1],48)+'.',
+      salience:.98,strength:1,source:'conversation'
+    });
+  }
+  if(preference){
+    next=recordCognitiveMemory(next,{
+      kind:'preference',actor:'user',
+      text:'O usuário expressou esta preferência: '+prompt+'.',
+      salience:.78,strength:.92,source:'conversation'
+    });
+  }
+  next=recordCognitiveMemory(next,{
+    kind:'event',actor,
+    text:'Conversa: usuário: '+prompt+' | resposta: '+answer,
+    salience:.58+Math.min(.28,prompt.length/700),
+    strength:.86,
+    source:'conversation'
+  });
+  return next;
+}
+
+export function recordPerceptionMemory(
+  previous:CognitiveState,
+  actor:'fly'|'human',
+  text:string,
+  salience=.62
+){
+  return recordCognitiveMemory(previous,{
+    kind:'perceptual',actor,text,salience,strength:.82,source:'simulation'
+  });
+}
+
+export function cognitiveIdentity(mode:'fly'|'human'|'dual'){
+  if(mode==='fly')return 'Mosca Predict';
+  if(mode==='human')return 'PredictLM Human Core';
+  return 'PredictLM Cognitive Lab';
+}
+
+export function cognitiveDirectRecall(
+  state:CognitiveState,
+  mode:'fly'|'human'|'dual',
+  prompt:string
+){
+  const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  if(/\b(qual (?:e )?seu nome|quem e voce|quem voce e|como voce se chama)\b/.test(q)){
+    return 'Eu sou '+cognitiveIdentity(mode)+'. O modelo que gera texto pode mudar, mas nomes como Nemotron, Gemini ou Claude são apenas motores de resposta — não minha identidade.';
+  }
+  if(!/\b(lembranca|lembrancas|memoria|memorias|lembra|recorda)\b/.test(q))return null;
+
+  const auto=(state.memory?.autobiographical||[])
+    .filter(x=>x.actor===mode||x.actor==='user'||x.actor==='world'||x.actor==='dual')
+    .sort((a,b)=>(b.salience*b.strength)-(a.salience*a.strength)||b.at-a.at);
+  const episodes=[...(state.memory?.episodic||[])].reverse();
+  const perceptions=(state.memory?.perceptual||[]).filter(x=>x.actor===mode).slice(-3).reverse();
+
+  const rows:string[]=[];
+  for(const item of auto.slice(0,3))rows.push(item.text);
+  for(const item of perceptions.slice(0,2))rows.push('Percepção lembrada: '+item.text);
+  for(const item of episodes.slice(0,2))rows.push('Episódio: '+item.prompt+' → '+item.answerPreview);
+
+  if(!rows.length){
+    return 'Ainda não tenho uma lembrança autobiográfica registrada além da inicialização deste estado. A partir das nossas conversas e da simulação, minhas memórias ficam persistidas no Cognitive Lab.';
+  }
+  return 'Minhas lembranças mais acessíveis agora são:\n- '+rows.join('\n- ');
 }

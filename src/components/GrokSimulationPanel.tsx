@@ -16,6 +16,13 @@ import {
 import { dominantCircuits } from '@/lib/neurocore';
 import {cameraForFocus,placeVisual,pointInPolygon,projectedPlacePolygon,projectIsoPoint,type IsoCamera} from '@/lib/life-sim-25d';
 import {
+  LIFE_WORLD_HEIGHT,
+  LIFE_WORLD_WIDTH,
+  WORLD_OBJECTS,
+  perceiveFlyWorld,
+  perceiveHumanWorld
+} from '@/lib/life-world-open';
+import {
   agentWorldObservation,
   autonomousLifePlan,
   createLifeAgentState,
@@ -30,6 +37,7 @@ import {
 } from '@/lib/life-simulation-agent';
 import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
+import {advanceCognitiveWorkspace,recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
@@ -142,8 +150,9 @@ export function GrokSimulationPanel(){
         personY:state.person.y,
         personAction:state.person.currentAction,
         personLocation:String(state.person.location),
-        width:640,
-        height:360
+        worldState:state,
+        width:LIFE_WORLD_WIDTH,
+        height:LIFE_WORLD_HEIGHT
       }));
     },260);
     return()=>window.clearInterval(timer);
@@ -169,7 +178,7 @@ export function GrokSimulationPanel(){
     const timer=window.setTimeout(()=>{
       setAgent(prev=>{
         const normalized=normalizeLifeAgentState(prev);
-        const plan=repairLifeAgentPlan(autonomousLifePlan(state,normalized,'Decida a próxima ação útil'),state,normalized);
+        const plan=repairLifeAgentPlan(autonomousLifePlan(state,normalized,'Decida a próxima ação útil',fly),state,normalized);
         return {
           ...startLifeAgentPlan(normalized,plan),
           autonomy:{
@@ -182,7 +191,28 @@ export function GrokSimulationPanel(){
       });
     },900);
     return()=>window.clearTimeout(timer);
-  },[hydrated,state,agent.plan?.status,agent.autonomy.enabled,agentBusy]);
+  },[hydrated,state,agent.plan?.status,agent.autonomy.enabled,agentBusy,fly.x,fly.y]);
+
+  useEffect(()=>{
+    if(!hydrated||state.tick===0||state.tick%6!==0)return;
+    const humanSnapshot=perceiveHumanWorld(state,fly);
+    const flySnapshot=perceiveFlyWorld(fly,state);
+    const timer=window.setTimeout(()=>{
+      loadCognitiveState().then(current=>{
+        let next=advanceCognitiveWorkspace(current,[
+          'SIMULAÇÃO',
+          humanSnapshot.summary,
+          'Ação humana: '+state.person.currentAction,
+          'Humor: '+state.person.mood
+        ].join(' · '));
+        next={...next,fly:fly.core,lastUpdated:Date.now()};
+        next=recordPerceptionMemory(next,'human',humanSnapshot.summary+' Ação: '+state.person.currentAction,.7);
+        next=recordPerceptionMemory(next,'fly',flySnapshot.summary+' Comportamento: '+fly.behavior,.72);
+        return saveCognitiveState(next);
+      }).catch(()=>{});
+    },150);
+    return()=>window.clearTimeout(timer);
+  },[hydrated,state.tick,state.person.x,state.person.y,state.person.heading,fly.x,fly.y,fly.vx,fly.vy]);
 
   useEffect(()=>{
     const el=canvas.current;
@@ -258,6 +288,43 @@ export function GrokSimulationPanel(){
       ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.ellipse(center.x,center.y,22*camera.zoom,8*camera.zoom,0,0,Math.PI*2);ctx.fill();
     };
 
+    const drawWorldObject=(obj:(typeof WORLD_OBJECTS)[number])=>{
+      const p=iso(obj.x,obj.y,0);
+      const s=Math.max(.72,camera.zoom);
+      if(obj.kind==='tree'){
+        ctx.fillStyle='#6b4c32';ctx.fillRect(p.x-2*s,p.y-24*s,4*s,24*s);
+        ctx.fillStyle='#4f8b5d';ctx.beginPath();ctx.arc(p.x,p.y-30*s,14*s,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#6ba873';ctx.beginPath();ctx.arc(p.x-7*s,p.y-35*s,8*s,0,Math.PI*2);ctx.fill();
+        return;
+      }
+      if(obj.kind==='lamp'){
+        ctx.strokeStyle='#66727d';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-42*s);ctx.stroke();
+        ctx.fillStyle='#ffe6a0';ctx.beginPath();ctx.arc(p.x,p.y-45*s,5*s,0,Math.PI*2);ctx.fill();return;
+      }
+      if(obj.kind==='fountain'){
+        ctx.fillStyle='#6e9da7';ctx.beginPath();ctx.ellipse(p.x,p.y,17*s,7*s,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#83d5e4';ctx.beginPath();ctx.arc(p.x,p.y-8*s,5*s,0,Math.PI*2);ctx.fill();return;
+      }
+      const colors:Record<string,[string,string]>={
+        bed:['#d9b9b4','#9b7c78'],sofa:['#8d7284','#634e5b'],tv:['#303841','#1f252c'],
+        fridge:['#d9e0e4','#98a2a9'],stove:['#8b9298','#5c6368'],shower:['#9bcfd4','#628e94'],
+        computer:['#52677f','#344353'],phone:['#343942','#20242a'],desk:['#866b51','#5d4937'],
+        bench:['#8a6546','#60462f'],bookshelf:['#6c5140','#49362b'],table:['#87664e','#604736'],
+        coffee:['#9a6850','#6c4838'],shelf:['#8f969c','#62686d'],treadmill:['#555d65','#343a40'],
+        clinic_bed:['#c7dddd','#88aaac'],plant:['#4f8658','#31583a'],art:['#9a79ad','#644c72'],
+        trash:['#555b60','#373b3f'],door:['#77543e','#52392b']
+      };
+      const [top,side]=colors[obj.kind]||['#777','#555'];
+      drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
+      if(obj.kind==='computer'){
+        const sp=iso(obj.x,obj.y,obj.z+10);ctx.fillStyle='#79b7ff';ctx.fillRect(sp.x-7*s,sp.y-6*s,14*s,8*s);
+      }else if(obj.kind==='phone'){
+        const sp=iso(obj.x,obj.y,obj.z+2);ctx.fillStyle='#9ae7ff';ctx.fillRect(sp.x-2*s,sp.y-4*s,4*s,7*s);
+      }else if(obj.kind==='plant'){
+        const sp=iso(obj.x,obj.y,obj.z+8);ctx.fillStyle='#67a76d';ctx.beginPath();ctx.arc(sp.x,sp.y-6*s,7*s,0,Math.PI*2);ctx.fill();
+      }
+    };
+
     const sky=ctx.createLinearGradient(0,0,0,height);
     sky.addColorStop(0,'#31445d');
     sky.addColorStop(.48,'#1d2b3b');
@@ -314,6 +381,25 @@ export function GrokSimulationPanel(){
         ctx.beginPath();ctx.arc(label.x,label.y+2,3.5*camera.zoom,0,Math.PI*2);ctx.fill();
       }
     }
+
+    // Interactive world objects are rendered independently from the lots.
+    // They are also the same objects used by the human/fly vision systems.
+    for(const obj of [...WORLD_OBJECTS].sort((a,b)=>(a.x+a.y)-(b.x+b.y)))drawWorldObject(obj);
+
+    // Perception fields: human cone + fly panoramic sensing.
+    const hpGround=iso(state.person.x,state.person.y,0);
+    const humanHeading=state.person.heading||0;
+    const ray=(angle:number,range:number)=>iso(
+      Math.max(0,Math.min(LIFE_WORLD_WIDTH,state.person.x+Math.cos(angle)*range)),
+      Math.max(0,Math.min(LIFE_WORLD_HEIGHT,state.person.y+Math.sin(angle)*range)),
+      0
+    );
+    ctx.fillStyle='rgba(110,240,179,.055)';
+    poly([hpGround,ray(humanHeading-1.09,190),ray(humanHeading+1.09,190)],'rgba(110,240,179,.055)');
+
+    const flyGroundVision=iso(fly.x,fly.y,0);
+    ctx.strokeStyle='rgba(187,140,255,.10)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(flyGroundVision.x,flyGroundVision.y,52*camera.zoom,22*camera.zoom,0,0,Math.PI*2);ctx.stroke();
 
     // Human character rendered inside the world.
     const hp=iso(state.person.x,state.person.y,0);
@@ -390,6 +476,13 @@ export function GrokSimulationPanel(){
   },[state,manualTarget,fly,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
+  const humanVision=useMemo(()=>perceiveHumanWorld(state,fly),[
+    state.person.x,state.person.y,state.person.heading,state.person.currentAction,state.person.location,
+    fly.x,fly.y
+  ]);
+  const flyVision=useMemo(()=>perceiveFlyWorld(fly,state),[
+    fly.x,fly.y,fly.vx,fly.vy,state.person.x,state.person.y,state.person.heading
+  ]);
   const relation=state.relationships[0];
 
   function tick(){
@@ -414,17 +507,17 @@ export function GrokSimulationPanel(){
     if(stopAutonomy){
       setAgent(prev=>{
         const normalized=normalizeLifeAgentState(prev);
-        return {...normalized,plan:normalized.plan?.status==='running'?{...normalized.plan,status:'cancelled'}:normalized.plan,autonomy:{...normalized.autonomy,enabled:false,lastDecision:'Autonomia desativada pelo usuário.'}};
+        return {...normalized,plan:normalized.plan?.status==='running'?{...normalized.plan,status:'cancelled'}:normalized.plan,autonomy:{...normalized.autonomy,enabled:false,manualOverride:true,lastDecision:'Autonomia desativada pelo usuário.'}};
       });
       setCommand('');
       setAgentBusy(false);
       return;
     }
 
-    const deterministic=wantsAutonomy?autonomousLifePlan(state,agent,value):deterministicLifePlan(value,state);
+    const deterministic=wantsAutonomy?autonomousLifePlan(state,agent,value,fly):deterministicLifePlan(value,state);
     let selected=deterministic;
     try{
-      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent)});
+      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent,fly)});
       const plannerPrompt=simulationPlannerPrompt(value,state,agent);
       const controller=new AbortController();
       const timeout=window.setTimeout(()=>controller.abort(),18000);
@@ -437,7 +530,7 @@ export function GrokSimulationPanel(){
             mode:'simulation-plan',
             prompt:value,
             language:'pt-BR',
-            worldState:agentWorldObservation(state,agent),
+            worldState:agentWorldObservation(state,agent,fly),
             localAdvisory:advisory?.content||'',
             plannerHint:plannerPrompt
           })
@@ -457,7 +550,7 @@ export function GrokSimulationPanel(){
       const normalized=normalizeLifeAgentState(prev);
       const started=startLifeAgentPlan(normalized,selected);
       return wantsAutonomy
-        ? {...started,autonomy:{...normalized.autonomy,enabled:true,decisionCount:normalized.autonomy.decisionCount+1,lastDecision:selected.summary}}
+        ? {...started,autonomy:{...normalized.autonomy,enabled:true,manualOverride:true,decisionCount:normalized.autonomy.decisionCount+1,lastDecision:selected.summary}}
         : started;
     });
     setCommand('');
@@ -495,7 +588,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Life-sim 2.5D isométrico · Humano + FlyWire Agent · memória local · otimizado para mobile</p>
+        <p>Life-sim 2.5D open world · Humano + FlyWire Agent · visão local · memória persistente</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -516,7 +609,7 @@ export function GrokSimulationPanel(){
             onClick={()=>setAgent(prev=>{
               const normalized=normalizeLifeAgentState(prev);
               const enabled=!normalized.autonomy.enabled;
-              return {...normalized,autonomy:{...normalized.autonomy,enabled,lastDecision:enabled?'Autonomia ativada pelo usuário.':'Autonomia desativada pelo usuário.'}};
+              return {...normalized,autonomy:{...normalized.autonomy,enabled,manualOverride:true,lastDecision:enabled?'Autonomia ativada pelo usuário.':'Autonomia desativada pelo usuário.'}};
             })}
             className={agent.autonomy.enabled?'active':''}
             title="Quando ativo, a IA observa o estado e escolhe novas ações após concluir cada plano."
@@ -539,6 +632,7 @@ export function GrokSimulationPanel(){
           <span><MapPin size={12}/>{state.person.location}</span>
           <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
           <span>Mosca: {fly.behavior} · {fly.targetLabel}</span>
+          <span>Visão: {humanVision.visible.length} humano · {flyVision.visible.length} mosca</span>
           <b>{state.person.currentAction}</b>
         </div>
 
@@ -622,6 +716,16 @@ export function GrokSimulationPanel(){
           <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
         </section>
 
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Activity size={14}/><b>Percepção</b><span>visão local</span></div>
+          <small className="sim-note"><b>Humano:</b> {humanVision.summary}</small>
+          <small className="sim-note"><b>Mosca:</b> {flyVision.summary}</small>
+          <div className="sim-metrics">
+            {humanVision.visible.slice(0,4).map(item=><span key={'h-'+item.id}>{item.label} · {Math.round(item.distance)}</span>)}
+            {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>🪰 {item.label}</span>)}
+          </div>
+        </section>
+
         <section className="sim-panel memories">
           <div className="sim-panel-title"><Sparkles size={14}/><b>Memórias</b><span>{state.memories.length}</span></div>
           {state.memories.slice(0,5).map(m=><article key={m.id}><b>{m.kind}</b><span>{m.summary}</span><small>salience {Math.round(m.salience*100)}%</small></article>)}
@@ -637,7 +741,7 @@ export function GrokSimulationPanel(){
       .sim-clock{border:1px solid #242b38;background:#0d1119;border-radius:14px;padding:10px 13px;display:grid;grid-template-columns:auto auto;gap:2px 7px;align-items:center}.sim-clock b{font-size:12px}.sim-clock span{grid-column:2;color:#8290a6;font-size:10px}
       .sim-layout{max-width:1320px;margin:auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.65fr);gap:14px}.sim-world-card,.sim-panel{border:1px solid #202735;background:linear-gradient(180deg,#0e131c,#0a0e15);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.25)}.sim-world-card{padding:12px;min-width:0}
       .sim-toolbar{display:flex;gap:7px;align-items:center;margin-bottom:10px}.sim-toolbar button,.sim-toolbar select{border:1px solid #293143;background:#121823;color:#c9d2e2;border-radius:9px;padding:7px 10px;font-size:10px}.sim-toolbar button{display:flex;gap:5px;align-items:center}.sim-toolbar .primary{background:#6e55e7;color:#fff;border-color:#826df2}.sim-toolbar .active{border-color:#5dcaab;color:#76e0c1}.sim-toolbar .reset{margin-left:auto}
-      .sim-canvas-wrap{position:relative;width:100%;height:430px;overflow:hidden;border-radius:16px}.sim-canvas{width:100%;height:430px;display:block;border:1px solid #283242;border-radius:16px;background:#182332;cursor:pointer;touch-action:manipulation}.sim-camera-badge{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(8,12,18,.72);backdrop-filter:blur(10px);border-radius:999px;padding:6px 9px;font-size:9px;color:#93a0b5;pointer-events:none}.sim-camera-badge span{color:#76e0c1;font-weight:800}.sim-camera-badge b{color:#eef3f8}.sim-camera-badge em{font-style:normal;color:#b39cff}.sim-world-foot{display:grid;grid-template-columns:auto auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
+      .sim-canvas-wrap{position:relative;width:100%;height:430px;overflow:hidden;border-radius:16px}.sim-canvas{width:100%;height:430px;display:block;border:1px solid #283242;border-radius:16px;background:#182332;cursor:pointer;touch-action:manipulation}.sim-camera-badge{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(8,12,18,.72);backdrop-filter:blur(10px);border-radius:999px;padding:6px 9px;font-size:9px;color:#93a0b5;pointer-events:none}.sim-camera-badge span{color:#76e0c1;font-weight:800}.sim-camera-badge b{color:#eef3f8}.sim-camera-badge em{font-style:normal;color:#b39cff}.sim-world-foot{display:grid;grid-template-columns:auto auto auto auto 1fr;gap:9px;align-items:center;padding:10px 4px 3px;font-size:10px;color:#79869a}.sim-world-foot span{display:flex;align-items:center;gap:4px}.sim-world-foot b{text-align:right;color:#cdd6e5;font-weight:600}
       .sim-command{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border-top:1px solid #202735;margin-top:9px;padding-top:10px;color:#8d7cf1}.sim-spin{animation:simspin .8s linear infinite}@keyframes simspin{to{transform:rotate(360deg)}}.sim-command input{min-width:0;border:1px solid #252d3d;background:#0a0e15;color:#eef3fa;border-radius:10px;padding:10px 11px;outline:0}.sim-command button{border:0;background:#6e55e7;color:white;border-radius:9px;width:34px;height:34px;display:grid;place-items:center}
       .sim-agent{margin-top:10px;border:1px solid #252d3d;border-radius:13px;background:#0a0f17;padding:11px}.sim-agent-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c2432;padding-bottom:8px}.sim-agent-head>div{display:flex;gap:6px;align-items:center}.sim-agent-head b{font-size:10px}.sim-agent-head span{font-size:9px;color:#8290a5}.sim-plan{padding-top:9px;display:grid;gap:7px}.sim-plan>strong{font-size:11px}.sim-plan>small{color:#7c899e;font-size:9px}.sim-plan-steps{display:grid;gap:5px}.sim-plan-steps>div{display:grid;grid-template-columns:16px 145px 1fr;gap:6px;align-items:center;border:1px solid #1c2430;border-radius:8px;padding:6px 7px;color:#778398}.sim-plan-steps>div.done{color:#66cfae}.sim-plan-steps>div.current{border-color:#7560e6;color:#c7bcff;background:#141128}.sim-plan-steps>div.failed{border-color:#a64f62;color:#ff91a6}.sim-plan-steps span{font-size:9px}.sim-plan-steps small{font-size:8px;color:#6f7c90}.sim-agent-error{font-size:9px;color:#ff8ba0}.sim-agent-log{margin-top:8px;color:#8693a8;font-size:9px}.sim-agent-log>div{display:grid;grid-template-columns:34px 70px 1fr;gap:6px;padding:5px 0;border-top:1px solid #171e29}.sim-agent-log b{color:#76d9b7}.sim-agent-log small{color:#778398}
       .sim-side{display:flex;flex-direction:column;gap:12px}.sim-panel{padding:13px}.sim-panel-title{display:grid;grid-template-columns:auto auto 1fr;gap:6px;align-items:center;border-bottom:1px solid #202735;padding-bottom:9px;margin-bottom:10px;color:#9c8cff}.sim-panel-title b{font-size:11px;color:#eef2f8}.sim-panel-title span{text-align:right;color:#7d8799;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

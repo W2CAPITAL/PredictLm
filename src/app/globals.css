@@ -765,3 +765,46 @@ html,body{max-width:100%;overflow-x:hidden}
   .gmedia-gallery{grid-template-columns:1fr!important}
   .gbuild-code,.gbuild-workspace iframe{min-height:420px!important}
 }
+
+
+/* PredictLM v6.4 — unified scroll host
+   One vertical scroll owner prevents wheel/touch from getting trapped inside
+   fixed-height tab shells on desktop and mobile. */
+html{height:100%;min-height:100%;overflow-y:auto;overscroll-behavior-y:auto;scroll-behavior:smooth}
+body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.grok-shell{height:100dvh;min-height:100dvh;overflow:hidden}
+.grok-main{
+  height:100dvh;
+  min-height:0;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  touch-action:pan-y;
+}
+.grok-conversation-wrap{
+  height:auto!important;
+  min-height:100dvh;
+  overflow:visible!important;
+}
+.gtool{
+  height:auto!important;
+  min-height:100dvh;
+  overflow:visible!important;
+}
+.grok-library,.grok-home{min-height:100dvh}
+.gbuild-grid,.gimagine-grid{max-height:none}
+.grok-sidebar,.grok-history,.gbuild-thread,.gbuild-files,.gimagine-controls,.panel-scroll,.legal-main{
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+}
+@media(max-width:760px){
+  .grok-main{height:100dvh;min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  .grok-conversation-wrap{padding-bottom:170px}
+  .grok-bottom-composer{bottom:max(10px,env(safe-area-inset-bottom))}
+  .gtool{padding-bottom:max(44px,calc(24px + env(safe-area-inset-bottom)))}
+  .gbuild-grid,.gimagine-grid{min-height:auto!important;height:auto!important}
+  .gbuild-workspace{height:min(68dvh,640px)}
+}

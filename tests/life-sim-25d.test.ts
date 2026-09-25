@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {cameraForFocus,pointInPolygon,projectedPlacePolygon,projectIsoPoint,unprojectIsoPoint} from '../src/lib/life-sim-25d';
 import {createLifeSimulation} from '../src/lib/life-simulation-engine';
+import {LIFE_WORLD_HEIGHT,LIFE_WORLD_WIDTH} from '../src/lib/life-world-open';
 import {createFlySimulationState,stepFlySimulation} from '../src/lib/cognitive/fly-simulation';
 
 test('isometric projection round-trips logical world coordinates',()=>{
   const camera={zoom:1.1,offsetX:18,offsetY:-9};
-  for(const [x,y] of [[0,0],[320,180],[640,360],[110,255],[530,95]]){
+  for(const [x,y] of [[0,0],[LIFE_WORLD_WIDTH/2,LIFE_WORLD_HEIGHT/2],[LIFE_WORLD_WIDTH,LIFE_WORLD_HEIGHT],[110,255],[830,495]]){
     const screen=projectIsoPoint(x,y,0,720,430,camera);
     const world=unprojectIsoPoint(screen.x,screen.y,720,430,camera);
     assert.ok(Math.abs(world.x-x)<.001,`x ${x}`);

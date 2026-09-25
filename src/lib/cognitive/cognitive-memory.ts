@@ -18,6 +18,28 @@ function openDb():Promise<IDBDatabase>{
   });
 }
 
+function normalizeState(raw:any):CognitiveState{
+  const base=createCognitiveState();
+  if(!raw||raw.version!==1)return base;
+  return {
+    ...base,
+    ...raw,
+    fly:raw.fly?.version===1?raw.fly:base.fly,
+    human:raw.human?.version===1?raw.human:base.human,
+    workspace:{...base.workspace,...(raw.workspace||{})},
+    consciousAccess:{...base.consciousAccess,...(raw.consciousAccess||{})},
+    memory:{
+      working:Array.isArray(raw.memory?.working)?raw.memory.working.slice(0,8):[],
+      episodic:Array.isArray(raw.memory?.episodic)?raw.memory.episodic.slice(-80):[],
+      autobiographical:Array.isArray(raw.memory?.autobiographical)?raw.memory.autobiographical.slice(-120):base.memory.autobiographical,
+      semantic:Array.isArray(raw.memory?.semantic)?raw.memory.semantic.slice(-120):base.memory.semantic,
+      perceptual:Array.isArray(raw.memory?.perceptual)?raw.memory.perceptual.slice(-120):[]
+    },
+    mappedEvidence:raw.mappedEvidence||{},
+    lastUpdated:Number(raw.lastUpdated||Date.now())
+  };
+}
+
 export async function loadCognitiveState():Promise<CognitiveState>{
   if(typeof indexedDB==='undefined')return createCognitiveState();
   try{
@@ -25,7 +47,7 @@ export async function loadCognitiveState():Promise<CognitiveState>{
     return await new Promise(resolve=>{
       const tx=db.transaction(STORE,'readonly');
       const req=tx.objectStore(STORE).get(KEY);
-      req.onsuccess=()=>resolve(req.result?.version===1?req.result:createCognitiveState());
+      req.onsuccess=()=>resolve(normalizeState(req.result));
       req.onerror=()=>resolve(createCognitiveState());
     });
   }catch{return createCognitiveState()}

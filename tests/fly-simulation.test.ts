@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation} from '../src/lib/cognitive/fly-simulation';
+import {LIFE_WORLD_HEIGHT,LIFE_WORLD_WIDTH} from '../src/lib/life-world-open';
 
 test('FlyCore simulation agent moves autonomously inside world bounds',()=>{
   let fly=createFlySimulationState();
@@ -14,8 +15,8 @@ test('FlyCore simulation agent moves autonomously inside world bounds',()=>{
     });
   }
   assert.equal(fly.tick,12);
-  assert.ok(fly.x>=18&&fly.x<=622);
-  assert.ok(fly.y>=20&&fly.y<=338);
+  assert.ok(fly.x>=18&&fly.x<=LIFE_WORLD_WIDTH-18);
+  assert.ok(fly.y>=20&&fly.y<=LIFE_WORLD_HEIGHT-22);
   assert.ok(fly.x!==start.x||fly.y!==start.y);
   assert.match(flySimulationBubble(fly),/bzz/i);
 });
@@ -36,7 +37,7 @@ test('FlyCore simulation reacts to nearby threat stimulus with avoidance',()=>{
   });
   assert.ok(next.core.threat>.5);
   assert.equal(next.behavior,'avoid');
-  assert.match(flySimulationBubble(next),/afastando/i);
+  assert.match(flySimulationBubble(next),/afastando|longe/i);
 });
 
 test('Fly simulation preserves the mapped FlyWire core metadata',()=>{

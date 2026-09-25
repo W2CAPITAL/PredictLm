@@ -1,4 +1,5 @@
 import type {LifeLocation,LifeWorldPlace} from './life-simulation-engine';
+import {LIFE_WORLD_HEIGHT,LIFE_WORLD_WIDTH} from './life-world-open';
 
 export interface IsoCamera{
   zoom:number;
@@ -41,8 +42,8 @@ export function projectIsoPoint(
   camera:IsoCamera=DEFAULT_ISO_CAMERA
 ):IsoPoint{
   const zoom=Math.max(.65,Math.min(1.65,camera.zoom||1));
-  const u=(x-320)/320;
-  const v=(y-180)/180;
+  const u=(x-LIFE_WORLD_WIDTH/2)/(LIFE_WORLD_WIDTH/2);
+  const v=(y-LIFE_WORLD_HEIGHT/2)/(LIFE_WORLD_HEIGHT/2);
   const baseX=width*.5+(u-v)*width*.235*zoom;
   const baseY=height*.46+(u+v)*height*.165*zoom-z*zoom;
   return {x:baseX+camera.offsetX,y:baseY+camera.offsetY};
@@ -61,8 +62,8 @@ export function unprojectIsoPoint(
   const u=(a+b)/2;
   const v=(b-a)/2;
   return {
-    x:Math.max(0,Math.min(640,320+u*320)),
-    y:Math.max(0,Math.min(360,180+v*180))
+    x:Math.max(0,Math.min(LIFE_WORLD_WIDTH,LIFE_WORLD_WIDTH/2+u*(LIFE_WORLD_WIDTH/2))),
+    y:Math.max(0,Math.min(LIFE_WORLD_HEIGHT,LIFE_WORLD_HEIGHT/2+v*(LIFE_WORLD_HEIGHT/2)))
   };
 }
 
