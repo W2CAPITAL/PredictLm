@@ -37,7 +37,10 @@ function providerImageSize(width:number,height:number,nano:boolean){
   return '1024x1024';
 }
 
-function localRenderUrl(prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean){
+function localRenderUrl(
+  prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean,
+  referenceUrls:string[]=[]
+){
   const q=new URLSearchParams({
     prompt,
     width:String(width),
@@ -46,6 +49,7 @@ function localRenderUrl(prompt:string,width:number,height:number,seed:number,mod
     model:model||'flux',
     enhance:enhance?'true':'false'
   });
+  for(const url of referenceUrls.slice(0,3))q.append('reference',url);
   return '/api/media/render?'+q.toString();
 }
 
@@ -249,8 +253,9 @@ export async function POST(req:Request){
 
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
+    const automaticReferenceUrls=referencePlan.references.map(x=>x.imageUrl).filter(Boolean).slice(0,3);
     return Response.json({
-      url:localRenderUrl(providerPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal'),
+      url:localRenderUrl(providerPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal',automaticReferenceUrls),
       provider:'pollinations-proxy',
       model:requestedModel,
       width,
@@ -259,7 +264,8 @@ export async function POST(req:Request){
       identityLocked:true,
       referenceQuery:referencePlan.query||null,
       referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
-      referenceImagesPassed:0,
+      referenceImagesPassed:automaticReferenceUrls.length,
+      automaticReferenceCount:automaticReferenceUrls.length,
       userReferenceCount:userInline.length,
       searchedReferenceCount:searchedInline.length,
       referenceWarnings:referencePlan.warnings,
@@ -273,7 +279,9 @@ export async function POST(req:Request){
       style,
       styleLocked,
       fidelityLimited:true,
-      providerWarning:'Fallback público ativo: fidelidade de personagens e franquias pode ser limitada. Configure um provider de imagem forte para melhor identidade.'
+      providerWarning:automaticReferenceUrls.length
+        ? 'Fallback público com referências automáticas encaminhadas. A fidelidade depende de o modelo ativo aceitar image-reference; a verificação semântica continua separada.'
+        : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
     });
   }catch(error:any){
     return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
