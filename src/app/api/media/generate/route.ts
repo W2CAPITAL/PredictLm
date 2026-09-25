@@ -254,10 +254,15 @@ export async function POST(req:Request){
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
     const automaticReferenceUrls=referencePlan.references.map(x=>x.imageUrl).filter(Boolean).slice(0,3);
-    const referenceCapableFallback=needsStrongIdentity&&automaticReferenceUrls.length>0;
-    const fallbackModel=referenceCapableFallback
+    const wantsReferenceFallback=needsStrongIdentity&&automaticReferenceUrls.length>0;
+    const fallbackModel=wantsReferenceFallback
       ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
       : requestedModel;
+    const referenceTransportVerified=Boolean(
+      String(process.env.POLLINATIONS_API_KEY||'').trim()||
+      String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim()
+    );
+    const referenceCapableFallback=wantsReferenceFallback&&referenceTransportVerified;
     return Response.json({
       url:localRenderUrl(providerPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
       provider:'pollinations-proxy',
@@ -284,9 +289,9 @@ export async function POST(req:Request){
       styleLocked,
       fidelityLimited:true,
       providerWarning:referenceCapableFallback
-        ? 'Fallback de personagem usa modelo image-to-image com referências automáticas; a revisão semântica valida o resultado antes de persistir.'
-        : automaticReferenceUrls.length
-          ? 'Referências automáticas foram encontradas, mas o fallback atual não declarou suporte visual suficiente para tratá-las como grounding.'
+        ? 'Fallback de personagem usa modelo image-to-image com transporte de referência configurado; a revisão semântica valida o resultado antes de persistir.'
+        : wantsReferenceFallback
+          ? 'O PredictLM encontrou referências e tentou um modelo image-to-image, mas não há transporte de referência autenticado/configurado para afirmar que o provider consumiu esses pixels; a revisão semântica decide se o resultado é aceitável.'
           : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
     });
   }catch(error:any){
