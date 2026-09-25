@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autonomousLifePlan,createLifeAgentState} from '../src/lib/life-simulation-agent';
-import {createLifeSimulation} from '../src/lib/life-simulation-engine';
+import {advanceLifeWorldPassive,createLifeSimulation} from '../src/lib/life-simulation-engine';
 import {
   LIFE_WORLD_HEIGHT,
   LIFE_WORLD_WIDTH,
   WORLD_OBJECTS,
   perceiveFlyWorld,
-  perceiveHumanWorld
+  perceiveHumanWorld,
+  worldStimuli
 } from '../src/lib/life-world-open';
 import {createFlySimulationState,stepFlySimulation} from '../src/lib/cognitive/fly-simulation';
 
@@ -15,7 +16,7 @@ test('open world is larger and contains meaningful interactive objects',()=>{
   assert.equal(LIFE_WORLD_WIDTH,960);
   assert.equal(LIFE_WORLD_HEIGHT,600);
   const kinds=new Set(WORLD_OBJECTS.map(x=>x.kind));
-  for(const kind of ['computer','phone','tree','bed','sofa','fridge','stove','bookshelf']){
+  for(const kind of ['computer','phone','tree','bed','sofa','fridge','stove','bookshelf','door','window']){
     assert.ok(kinds.has(kind as any),kind);
   }
   assert.ok(WORLD_OBJECTS.length>=30);
@@ -87,4 +88,28 @@ test('fly chooses visible stimuli and may speak or stay silent autonomously',()=
   assert.ok(fly.visible.length>0);
   assert.ok(sawSilence);
   assert.ok(sawUtterance||fly.silenceTicks>0);
+});
+
+
+test('passive time never chooses a destination on its own',()=>{
+  const state=createLifeSimulation();
+  const before={x:state.person.x,y:state.person.y,location:state.person.location};
+  const next=advanceLifeWorldPassive(state,30);
+  assert.equal(next.person.x,before.x);
+  assert.equal(next.person.y,before.y);
+  assert.equal(next.person.location,before.location);
+  assert.equal(next.tick,state.tick+1);
+  assert.equal(next.minute,state.minute+30);
+});
+
+test('world exposes doors windows and changing environmental stimuli',()=>{
+  const state=createLifeSimulation();
+  const kinds=new Set(WORLD_OBJECTS.map(x=>x.kind));
+  assert.ok(kinds.has('door'));
+  assert.ok(kinds.has('window'));
+  const morning=worldStimuli(state);
+  assert.ok(morning.some(x=>x.kind==='light'));
+  assert.ok(morning.some(x=>x.kind==='air'||x.kind==='sound'||x.kind==='smell'));
+  const human=perceiveHumanWorld(state);
+  assert.ok(Array.isArray(human.stimuli));
 });
