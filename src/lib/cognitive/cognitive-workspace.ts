@@ -15,7 +15,7 @@ export interface CognitiveMemoryTrace{
   id:string;
   at:number;
   kind:'identity'|'preference'|'event'|'semantic'|'perceptual'|'association';
-  actor:'user'|'fly'|'human'|'dual'|'world';
+  actor:'user'|'fly'|'human'|'dual'|'frank'|'world';
   text:string;
   salience:number;
   strength:number;
@@ -367,7 +367,7 @@ export function recordCognitiveMemory(
 
 export function captureConversationMemory(
   previous:CognitiveState,
-  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'}
+  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'|'frank'}
 ){
   let next=previous;
   const prompt=clean(input.prompt,360);
@@ -396,6 +396,16 @@ export function captureConversationMemory(
     strength:.86,
     source:'conversation'
   });
+  if(next.frank){
+    next=recordCognitiveMemory(next,{
+      kind:'association',
+      actor:'frank',
+      text:'Estado emocional associado: '+next.frank.emotion.activeFeeling+' | memória: '+next.frank.publicMentalState.remembering,
+      salience:Math.min(1,.55+next.frank.emotion.emotionalMemoryBias*.35),
+      strength:.88,
+      source:'conversation'
+    });
+  }
   return next;
 }
 
@@ -410,15 +420,16 @@ export function recordPerceptionMemory(
   });
 }
 
-export function cognitiveIdentity(mode:'fly'|'human'|'dual'){
+export function cognitiveIdentity(mode:'fly'|'human'|'dual'|'frank'){
   if(mode==='fly')return 'Mosca Predict';
   if(mode==='human')return 'PredictLM Human Core';
+  if(mode==='frank')return 'Frank Stein';
   return 'PredictLM Cognitive Lab';
 }
 
 export function cognitiveDirectRecall(
   state:CognitiveState,
-  mode:'fly'|'human'|'dual',
+  mode:'fly'|'human'|'dual'|'frank',
   prompt:string
 ){
   const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
