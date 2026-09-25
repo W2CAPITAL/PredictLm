@@ -766,3 +766,18 @@ Rotas isoladas:
 - `/cognitive` para o workspace híbrido multiespécies.
 
 Estados continuam browser-local/IndexedDB; nenhuma dependência Supabase é introduzida.
+
+
+## Embodied Simulation + Cognitive Creativity Sync (2026-09-25)
+
+Life Simulation passa a combinar Humano + Macaque + Fly em mundo browser com movimento progressivo, objetos com affordances reais e três POVs voxel/perspectiva.
+
+Estado novo permanece local:
+- `life-pov-3d` para projeção em primeira pessoa;
+- `macaque-simulation` para agente macaque encarnado;
+- `synthetic-life-memory` para biografias sintéticas e memórias de runtime;
+- `objectInteraction` para confirmar visualmente uso de objetos.
+
+Imagine consome apenas um resumo público do Cognitive Creative Brain para criatividade de composição. Em pedidos de identidade específica, esse cérebro não pode reescrever identidade canônica.
+
+Persistência continua browser-local/IndexedDB/localStorage. Nenhuma dependência Supabase é adicionada.
