@@ -2,7 +2,7 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.2.0"
+  version: "3.3.0"
   runtime: "browser + provider context"
 ---
 
@@ -174,3 +174,30 @@ Biografias de vida inteira são permitidas como mecanismo narrativo persistente,
 2. nunca sejam apresentadas como fatos biológicos ou experiências de um indivíduo real;
 3. conectomas/atlas apenas modulam o controlador; não fornecem lembranças pessoais;
 4. experiências novas do mundo usam `source: runtime` e permanecem separadas da biografia inventada.
+
+
+## Public Decision State + Creativity v3.3
+
+Humano, Macaque e Mosca podem expor apenas estado cognitivo público de alto nível:
+- percepção resumida;
+- lembrança recuperada;
+- conjunto curto de intenções candidatas;
+- decisão selecionada;
+- objetivo atual;
+- `publicThought` sintético.
+
+O histórico desse estado é observabilidade de simulação, não chain-of-thought privado de modelos.
+
+Biografias sintéticas podem influenciar recall e decisão, mas continuam ficção explicitamente marcada.
+
+### NeuroCore → Imagine
+
+O cérebro cognitivo pode modular:
+- criatividade/novidade;
+- composição;
+- câmera;
+- staging;
+- legibilidade;
+- disciplina de fidelidade.
+
+Para personagens/identidades específicas, criatividade só começa **depois** do identity lock. Human Core atua como crítico de execução/fidelidade; Macaque visual hierarchy/PFC/claustrum podem informar composição; novelty do Organism Engine pode variar enquadramento e atmosfera. Nenhum desses sinais pode trocar identidade, anatomia canônica, traje, cores, número de personagens, forma/poder ou ação pedida.
