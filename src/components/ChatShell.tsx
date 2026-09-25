@@ -160,6 +160,13 @@ export function ChatShell({onOpenLegal}:Props){
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
 
   useEffect(()=>{
+    try{
+      const requested=new URLSearchParams(window.location.search).get('screen');
+      if(requested==='simulation')setScreen('simulation');
+    }catch{}
+  },[]);
+
+  useEffect(()=>{
     const onWarm=(event:Event)=>{
       const detail=(event as CustomEvent<any>).detail||{};
       if(detail.phase==='loading'){
