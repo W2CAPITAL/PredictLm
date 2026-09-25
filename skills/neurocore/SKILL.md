@@ -163,3 +163,14 @@ Nunca transformar proxy macaque em “medição humana”. Não inventar sinapse
 O Macaque Core tem chat próprio em `/cognitive/macaque`, histórico próprio e identidade `PredictLM Macaque Core`.
 
 O modo híbrido do Cognitive Lab usa Human + Macaque + Fly com proveniência separada.
+
+
+## Public Thought + Synthetic Biography Boundary v3.3
+
+O NeuroCore pode produzir `publicThought` curto para Humano, Macaque e Mosca. Esse campo é telemetria deliberadamente pública do simulador: objetivo, hipótese curta, preocupação e próxima ação. Não armazenar/exibir raciocínio privado detalhado do provider.
+
+Biografias de vida inteira são permitidas como mecanismo narrativo persistente, desde que:
+1. sejam rotuladas `synthetic-biography`;
+2. nunca sejam apresentadas como fatos biológicos ou experiências de um indivíduo real;
+3. conectomas/atlas apenas modulam o controlador; não fornecem lembranças pessoais;
+4. experiências novas do mundo usam `source: runtime` e permanecem separadas da biografia inventada.
