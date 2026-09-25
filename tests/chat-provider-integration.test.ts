@@ -365,3 +365,68 @@ test('purchase-location wording stays a direct provider turn instead of encyclop
     assert.doesNotMatch(data.content,/fundad[ao] em 1940|Richard|Maurice/i);
   }finally{globalThis.fetch=original}
 });
+
+
+test('normal game conversation stays on clean provider chat with history and no RAG dump',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  process.env.VERCEL_OIDC_TOKEN='oidc-test-token';
+  process.env.PREDICTLM_PROVIDER_ORDER='vercel-gateway';
+  resetProviderHealthForTests();
+
+  const original=globalThis.fetch;
+  const seen:any[]=[];
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    assert.equal(String(input),'https://ai-gateway.vercel.sh/v1/chat/completions');
+    const body=JSON.parse(String(init?.body||'{}'));
+    const messages=Array.isArray(body.messages)?body.messages:[];
+    const prompt=[...messages].reverse().find((x:any)=>x.role==='user')?.content||'';
+    seen.push(messages);
+
+    let content='Você pode começar pequeno: escolha uma engine, faça um protótipo com movimento, uma mecânica principal e uma fase curta; depois adicione arte, som e progressão.';
+    if(String(prompt).includes('quadradão')){
+      const hasGameContext=messages.some((x:any)=>/jogo|game/i.test(String(x.content||'')));
+      assert.equal(hasGameContext,true);
+      content='Se você quer o visual todo quadradão, dá para seguir uma estética voxel/blocky: personagem cúbico, cenário em blocos, texturas simples e animações curtas. Isso combina bem com um jogo estilizado.';
+    }else if(/tycoon/i.test(String(prompt))){
+      content='Para um game tycoon, faça o loop básico ganhar dinheiro → investir → desbloquear melhorias → aumentar produção. Comece com uma loja ou fábrica simples e uma interface clara de caixa, upgrades e metas.';
+    }else if(/terror/i.test(String(prompt))){
+      content='Para um jogo de terror, comece por uma mecânica central simples, como explorar um local enquanto algo persegue o jogador. Trabalhe iluminação, som, ritmo, pistas e momentos de tensão antes de aumentar o mapa.';
+    }
+
+    return new Response(JSON.stringify({choices:[{message:{content}}]}),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+
+  try{
+    const a=await ask('Como posso criar um jogo');
+    assert.equal(a.response.status,200);
+    assert.equal(a.data.provider,'vercel-gateway');
+    assert.deepEqual(a.data.sources,[]);
+    assert.doesNotMatch(a.data.content,/Relacionado:|Skill|GitHub Knowledge/i);
+
+    const history=[
+      {role:'user',content:'Como posso criar um jogo'},
+      {role:'assistant',content:a.data.content}
+    ];
+    const b=await ask('Eu queria ser todo quadradão','clean',history);
+    assert.equal(b.response.status,200);
+    assert.match(b.data.content,/voxel|blocky|cúbico/i);
+    assert.doesNotMatch(b.data.content,/Relacionado:|Neo4j|Terraform|Skill/i);
+
+    const c1=await ask('Como posso criar um game tycoon');
+    assert.equal(c1.response.status,200);
+    assert.match(c1.data.content,/dinheiro|investir|produção|upgrades/i);
+    assert.doesNotMatch(c1.data.content,/Cross-Engine Agents|Higgsfield|Relacionado:/i);
+
+    const d=await ask('Como posso criar um jogo de terror');
+    assert.equal(d.response.status,200);
+    assert.match(d.data.content,/terror|tensão|iluminação|som/i);
+    assert.doesNotMatch(d.data.content,/SuperWEIRD|Relacionado:|Life Simulation Skill/i);
+
+    assert.ok(seen.length>=4);
+  }finally{globalThis.fetch=original}
+});
+
+test('normal chat rejects internal context leakage',()=>{
+  const leak='Relacionado: Tasks\nPredictLM Life Simulation Skill\nCross-Engine Agents';
+  assert.equal(conversationAnswerIssue('Como posso criar um jogo',leak),'internal-context-leak');
+});
