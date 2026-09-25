@@ -10,7 +10,7 @@ export async function GET(){
     const r=await fetch(base+'/health',{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(3000),cache:'no-store',redirect:'error'});
     if(r.ok){const d=await r.json();ready=Array.isArray(d.adapters)?d.adapters.filter((a:{available?:boolean})=>a.available).map((a:{id:string})=>a.id):[];}
   }catch{}
-  return Response.json({adapters:ANIMAL_BACKENDS.map(id=>({id,available:id==='browser'||ready.includes(id)}))},{headers});
+  return Response.json({adapters:ANIMAL_BACKENDS.map(id=>({id,available:id==='auto'||id==='browser'||ready.includes(id)}))},{headers});
 }
 export async function POST(req:Request){
   const origin=req.headers.get('origin');
