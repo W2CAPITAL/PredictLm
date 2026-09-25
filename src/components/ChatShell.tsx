@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
+import { Activity, AlertTriangle, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
@@ -153,6 +153,13 @@ export function ChatShell({onOpenLegal}:Props){
   const [localRuntimeLabel,setLocalRuntimeLabel]=useState('Auto');
   const [modelTick,setModelTick]=useState(0);
   const [activity,setActivity]=useState<string[]>([]);
+  const [legalHealth,setLegalHealth]=useState<{
+    fetchedAt:string;
+    latencyMs?:number;
+    datajud:{ok:boolean;detail:string};
+    djen:{ok:boolean;detail:string};
+  }|null>(null);
+  const [legalHealthBusy,setLegalHealthBusy]=useState(false);
   const bottom=useRef<HTMLDivElement>(null);
   const turnAbort=useRef<AbortController|null>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
@@ -204,6 +211,36 @@ export function ChatShell({onOpenLegal}:Props){
       mq.removeEventListener?.('change',sync);
       delete document.documentElement.dataset.predictlmMobileShell;
     };
+  },[]);
+
+  async function refreshLegalHealth(){
+    if(legalHealthBusy)return;
+    setLegalHealthBusy(true);
+    try{
+      const r=await fetch('/api/legal/health',{cache:'no-store'});
+      const data=await r.json().catch(()=>null);
+      if(data?.datajud&&data?.djen)setLegalHealth(data);
+      else setLegalHealth({
+        fetchedAt:new Date().toISOString(),
+        datajud:{ok:false,detail:'Não foi possível verificar o DataJud.'},
+        djen:{ok:false,detail:'Não foi possível verificar o DJEN.'}
+      });
+    }catch{
+      setLegalHealth({
+        fetchedAt:new Date().toISOString(),
+        datajud:{ok:false,detail:'Falha de rede na verificação do DataJud.'},
+        djen:{ok:false,detail:'Falha de rede na verificação do DJEN.'}
+      });
+    }finally{
+      setLegalHealthBusy(false);
+    }
+  }
+
+  useEffect(()=>{
+    void refreshLegalHealth();
+    const id=window.setInterval(()=>void refreshLegalHealth(),5*60*1000);
+    return()=>window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   function closeSidebarOnMobile(){
@@ -1240,11 +1277,12 @@ export function ChatShell({onOpenLegal}:Props){
 
   return <div className={'grok-shell '+(sidebar?'sidebar-open':'sidebar-closed')}>
     <aside className="grok-sidebar">
-      <div className="grok-sidebar-top">
-        <button className="grok-logo" onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Sparkles size={20}/></button>
+      <div className="grok-sidebar-top grok-sidebar-brandbar">
+        <button className="grok-logo grok-brand-logo" onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Scale size={20}/></button>
+        <div className="grok-brand-copy"><b>PredictLM</b><small>Inteligência Jurídica</small></div>
         <div className="grok-top-icons">
-          <button onClick={()=>setSearching(v=>!v)} title="Buscar"><Search size={18}/></button>
-          <button onClick={()=>setSidebar(false)} title="Recolher sidebar"><PanelLeft size={18}/></button>
+          <button onClick={()=>setSearching(v=>!v)} title="Buscar"><Search size={17}/></button>
+          <button onClick={()=>setSidebar(false)} title="Recolher sidebar"><PanelLeft size={17}/></button>
         </div>
       </div>
 
@@ -1280,7 +1318,7 @@ export function ChatShell({onOpenLegal}:Props){
 
     <main className="grok-main">
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
-      <div className="grok-status"><span className="private-dot"/> Private</div>
+      <div className="grok-status"><span className="private-dot"/> Privado</div>
 
       {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat} deleteChat={s.deleteSession} createChat={()=>{s.createChat();setScreen('chat')}}/>:
       screen==='build'?<GrokBuildPanel/>:
@@ -1289,12 +1327,90 @@ export function ChatShell({onOpenLegal}:Props){
       screen==='vision'?<AnimalVisionPanel onChat={text=>{s.addMessage({role:'user',content:'Identificar o animal da foto',status:'done'});s.addMessage({role:'assistant',content:text,engine:'Visão',status:'done'});setScreen('chat');}}/>:
       screen==='simulation'?<GrokSimulationPanel/>:
       screen==='plugins'?<GrokPluginsPanel/>:
-      !hasMessages?<section className="grok-home">
-        <h1>O que vamos explorar?</h1>
-        <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
-        <button className="grok-build-card" onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><div className="build-card-icon"><Code2 size={21}/></div><div><b>Build Mode</b><span>Crie e continue sites, apps, sistemas e dashboards sem sair do shell.</span></div><strong>Experimentar</strong></button><button className="grok-build-card" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><div className="build-card-icon"><Activity size={21}/></div><div><b>Life Simulation Studio</b><span>Rode uma simulação 2D persistente com personagem, rotina, relações, memória e NeuroCore.</span></div><strong>Abrir</strong></button>
-        <div className="grok-home-foot"><span className="private-dot"/> conversa · memória · criação</div>
-      </section>:
+      !hasMessages?<section className="grok-home grok-home-dashboard">
+        <div className="grok-dashboard-grid">
+          <div className="grok-home-core">
+            <div className="grok-hero-copy">
+              <span>SUA PLATAFORMA DE IA JURÍDICA</span>
+              <h1>O que vamos <em>explorar hoje?</em></h1>
+              <p>Pesquise, analise, construa e automatize fluxos jurídicos com inteligência artificial, seus dados e fontes oficiais.</p>
+            </div>
+
+            <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/>
+
+            <div className="grok-home-cards">
+              <button className="grok-home-card teal" onClick={()=>{setScreen('build');closeSidebarOnMobile()}}>
+                <span className="grok-home-card-icon"><Code2 size={22}/></span>
+                <b>Build Mode</b>
+                <p>Crie e continue sites, apps, sistemas e dashboards sem sair do ambiente.</p>
+                <strong>Começar agora <ChevronDown size={14}/></strong>
+              </button>
+              <button className="grok-home-card violet" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}>
+                <span className="grok-home-card-icon"><Activity size={22}/></span>
+                <b>Simulação de Vida</b>
+                <p>Rode uma simulação persistente com personagem, rotina, relações, memória e NeuroCore.</p>
+                <strong>Abrir simulador <ChevronDown size={14}/></strong>
+              </button>
+              <button className="grok-home-card amber" onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}>
+                <span className="grok-home-card-icon"><Scale size={22}/></span>
+                <b>Processos</b>
+                <p>Consulte e analise processos em tempo real com DataJud, DJEN e fontes oficiais.</p>
+                <strong>Pesquisar processos <ChevronDown size={14}/></strong>
+              </button>
+              <button className="grok-home-card blue" onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}>
+                <span className="grok-home-card-icon"><ShieldCheck size={22}/></span>
+                <b>Monitoramento Jurídico</b>
+                <p>Confira movimentações, publicações e o estado atual das integrações jurídicas.</p>
+                <strong>Consultar <ChevronDown size={14}/></strong>
+              </button>
+            </div>
+
+            <div className="grok-quick-actions">
+              <span>Ações rápidas</span>
+              <div>
+                <button onClick={()=>{setInput('Analise este documento e destaque fatos, riscos e próximos passos.');setScreen('chat')}}><FileText size={13}/>Analisar documento</button>
+                <button onClick={()=>{setInput('Resuma este processo de forma direta, com situação atual e próximos passos.');setScreen('chat')}}><Scale size={13}/>Resumir processo</button>
+                <button onClick={()=>{s.setWebEnabled(true);setInput('Pesquise jurisprudência atual sobre: ');setScreen('chat')}}><Search size={13}/>Pesquisar jurisprudência</button>
+                <button onClick={()=>{setInput('Crie uma minuta jurídica com base no contexto que vou fornecer.');setScreen('chat')}}><FileText size={13}/>Criar minuta</button>
+              </div>
+            </div>
+          </div>
+
+          <aside className="grok-home-side">
+            <section className="grok-system-card">
+              <header><div><ShieldCheck size={16}/><b>Status dos sistemas</b></div><span><i/>Tempo real</span></header>
+
+              <article className={'grok-source-health '+(legalHealth?.datajud.ok?'ok':'error')}>
+                <span className="health-orb">{legalHealth?.datajud.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
+                <div><b>DataJud</b><strong>{legalHealth?.datajud.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.datajud.detail||'Verificando API pública...'}</small></div>
+                <button onClick={refreshLegalHealth} disabled={legalHealthBusy}>{legalHealthBusy?<RefreshCw className="spin" size={12}/>:<RefreshCw size={12}/>}Verificar</button>
+              </article>
+
+              <article className={'grok-source-health '+(legalHealth?.djen.ok?'ok':'error')}>
+                <span className="health-orb">{legalHealth?.djen.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
+                <div><b>DJEN</b><strong>{legalHealth?.djen.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.djen.detail||'Verificando comunicações...'}</small></div>
+                <button onClick={refreshLegalHealth} disabled={legalHealthBusy}>{legalHealthBusy?<RefreshCw className="spin" size={12}/>:<RefreshCw size={12}/>}Verificar</button>
+              </article>
+            </section>
+
+            <section className="grok-system-card grok-system-health">
+              <header><div><Activity size={16}/><b>Saúde do sistema</b></div><span className={(legalHealth?.datajud.ok&&legalHealth?.djen.ok)?'healthy':'attention'}><i/>{(legalHealth?.datajud.ok&&legalHealth?.djen.ok)?'Operacional':'Atenção'}</span></header>
+              <div className="grok-health-row"><span><Globe2 size={13}/>Fontes jurídicas</span><b>{legalHealth?.datajud.ok&&legalHealth?.djen.ok?'2/2 online':legalHealth?'parcial':'verificando'}</b></div>
+              <div className="grok-health-row"><span><Brain size={13}/>Memória adaptativa</span><b>{memoryStats?.trusted||0}/{memoryStats?.count||0} confiáveis</b></div>
+              <div className="grok-health-row"><span><Library size={13}/>Base de conhecimento</span><b>{learningStats?.sources?.total||0} fontes</b></div>
+              <div className="grok-health-row"><span><Zap size={13}/>Neural local</span><b>{neural?.loaded||webllm?.loaded?'Ativo':'Sob demanda'}</b></div>
+              <footer><Clock3 size={13}/><span><b>Última verificação</b><small>{legalHealth?.fetchedAt?new Date(legalHealth.fetchedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'aguardando'}</small></span></footer>
+            </section>
+
+            <section className="grok-system-card grok-activity-card">
+              <header><div><Bell size={16}/><b>Atividade recente</b></div></header>
+              <div className={legalHealth?.datajud.ok?'ok':'warn'}><span>{legalHealth?.datajud.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{legalHealth?.datajud.ok?'DataJud verificado':'DataJud com falha'}</b><small>{legalHealth?.datajud.detail||'Aguardando verificação.'}</small></p></div>
+              <div className={legalHealth?.djen.ok?'ok':'warn'}><span>{legalHealth?.djen.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{legalHealth?.djen.ok?'DJEN verificado':'DJEN com falha'}</b><small>{legalHealth?.djen.detail||'Aguardando verificação.'}</small></p></div>
+              <div className="info"><span><Brain size={13}/></span><p><b>Predict Auto pronto</b><small>Chat, pesquisa, memória e runtimes continuam disponíveis.</small></p></div>
+            </section>
+          </aside>
+        </div>
+      </section>
       <section className="grok-conversation-wrap">
         <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.reasoningSummary&&m.role==='assistant'?<details className="grok-reasoning"><summary><Brain size={11}/><span>Raciocínio</span><ChevronDown className="grok-reasoning-chevron" size={11}/></summary><p>{m.reasoningSummary}</p></details>:null}{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Raciocínio</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
         <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>setScreen('build')} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={onOpenLegal}/></div>
