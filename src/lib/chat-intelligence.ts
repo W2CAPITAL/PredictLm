@@ -160,6 +160,12 @@ function startupHowTo(){
 
 export function practicalHowToReply(prompt:string){
   const p=clean(prompt);
+  if(/\b(chocar|incubar)\b/.test(p)&&/\bovos?\b/.test(p)&&/\b(britadeira|marreta|martelo pneumatico|furadeira|serra eletrica|serra elétrica|explosivo|prensa hidraulica|prensa hidráulica)\b/.test(p))return [
+    '**Com uma britadeira, não dá para chocar um ovo.**',
+    'Chocar exige calor, umidade, ventilação e manuseio controlados; uma britadeira produz impacto e vibração e provavelmente quebraria o ovo.',
+    '',
+    'Se a pergunta era uma situação absurda/comédia, a resposta curta é: **a britadeira é exatamente o equipamento errado**. Para incubação real, use uma chocadeira apropriada.'
+  ].join('\n');
   if(/\b(chocar|incubar)\b/.test(p)&&/\bovos?\b/.test(p)&&!/\b(pato|codorna|ganso|peru|tartaruga|reptil)\b/.test(p))return [
     'Se for um **ovo de galinha**, ele precisa estar fértil: ovos de consumo normalmente não vão gerar pintinhos.',
     '1. Use uma chocadeira limpa, ventilada e com temperatura e umidade monitoradas; teste-a antes de colocar os ovos.',
