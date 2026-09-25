@@ -1,4 +1,4 @@
-import { canonicalMatchupLock, matchupReferenceQueries } from './canonical-matchup';
+import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, matchupReferenceQueries } from './canonical-matchup';
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 
