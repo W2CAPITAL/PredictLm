@@ -107,6 +107,11 @@ export function GrokSimulationPanel(){
   const [cameraZoom,setCameraZoom]=useState(1);
   const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'|'macaque'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
+  const stateRef=useRef(state);
+  const flyRef=useRef(fly);
+
+  useEffect(()=>{stateRef.current=state},[state]);
+  useEffect(()=>{flyRef.current=fly},[fly]);
 
   useEffect(()=>{
     const nextState=loadState();
@@ -197,11 +202,13 @@ export function GrokSimulationPanel(){
 
   useEffect(()=>{
     if(!state.running)return;
+    // Do not depend on fly/state coordinates here: the fly updates faster than this
+    // interval and used to cancel the Macaque timer before its first tick.
     const timer=window.setInterval(()=>{
-      setMacaque(prev=>stepMacaqueSimulation(prev,{worldState:state,fly}));
-    },390);
+      setMacaque(prev=>stepMacaqueSimulation(prev,{worldState:stateRef.current,fly:flyRef.current}));
+    },220);
     return()=>window.clearInterval(timer);
-  },[state.running,state.person.x,state.person.y,state.person.currentAction,state.person.location,fly.x,fly.y]);
+  },[state.running]);
 
   useEffect(()=>{
     const runningPlan=agent.plan?.status==='running';
@@ -463,8 +470,8 @@ export function GrokSimulationPanel(){
       poly([p1,p2,p2u,p1u],visual.wallLight,'rgba(255,255,255,.18)');
       poly([p1,p4,p4u,p1u],visual.wallDark,'rgba(255,255,255,.12)');
 
-      drawFurniture(visual.furniture,p);
-
+      // No fake room furniture here: WORLD_OBJECTS below is the single source
+      // of truth for what agents can see, approach and use.
       const label=iso(p.x+p.w*.5,p.y+p.h*.5,h+4);
       ctx.textAlign='center';
       ctx.font=`600 ${Math.max(9,11*camera.zoom)}px ui-sans-serif,system-ui`;
@@ -560,11 +567,15 @@ export function GrokSimulationPanel(){
     ctx.beginPath();ctx.moveTo(mp.x+6*ms,mp.y-17*ms);ctx.lineTo(mp.x+14*ms,mp.y-8*ms);ctx.stroke();
     ctx.strokeStyle='#9c7353';ctx.lineWidth=2*ms;ctx.beginPath();ctx.arc(mp.x+7*ms,mp.y-14*ms,11*ms,-1.5,1.15);ctx.stroke();
     ctx.font='9px ui-sans-serif,system-ui';ctx.textAlign='center';ctx.fillStyle='#f2d6bd';ctx.fillText('Auri · '+macaque.behavior,mp.x,mp.y-42*ms);
-    const macaqueTarget=WORLD_OBJECTS.find(obj=>obj.label===macaque.targetLabel);
+    const macaqueTarget=WORLD_OBJECTS.find(obj=>obj.id===macaque.targetId);
     if(macaqueTarget&&(macaque.behavior==='inspect'||macaque.behavior==='forage'||macaque.behavior==='climb')){
       const mt=iso(macaqueTarget.x,macaqueTarget.y,Math.max(5,macaqueTarget.z*.5));
       ctx.strokeStyle='#e4ad74';ctx.lineWidth=1.6*ms;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(mp.x,mp.y-14*ms);ctx.lineTo(mt.x,mt.y);ctx.stroke();ctx.setLineDash([]);
       ctx.fillStyle='#e4ad74';ctx.beginPath();ctx.arc(mt.x,mt.y,3*ms,0,Math.PI*2);ctx.fill();
+      if((macaque.actionProgress||0)>0){
+        ctx.strokeStyle='#ffd39b';ctx.lineWidth=2.3*ms;
+        ctx.beginPath();ctx.arc(mt.x,mt.y,8*ms,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,macaque.actionProgress||0));ctx.stroke();
+      }
     }
 
     // FlyWire agent in real 2.5D flight height.
@@ -615,8 +626,8 @@ export function GrokSimulationPanel(){
     macaque.x,macaque.y,macaque.heading,state.person.x,state.person.y,fly.x,fly.y
   ]);
   const relation=state.relationships[0];
-  const macaqueTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.label===macaque.targetLabel)||null,[macaque.targetLabel]);
-  const flyTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.label===fly.targetLabel)||null,[fly.targetLabel]);
+  const macaqueTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.id===macaque.targetId)||null,[macaque.targetId]);
+  const flyTargetObject=useMemo(()=>WORLD_OBJECTS.find(obj=>obj.id===fly.targetId)||null,[fly.targetId]);
   const povAgents=useMemo<PovOtherAgent[]>(()=>[
     {id:'human',label:state.person.name,actor:'human',x:state.person.x,y:state.person.y,z:18},
     {id:'fly',label:'Mosca',actor:'fly',x:fly.x,y:fly.y,z:fly.z||36},
@@ -624,7 +635,18 @@ export function GrokSimulationPanel(){
   ],[state.person.name,state.person.x,state.person.y,fly.x,fly.y,fly.z,macaque.x,macaque.y,macaque.z]);
 
   function tick(){
-    setState(prev=>stepLifeSimulation(prev,10*prev.speed,manualTarget));
+    const nextState=stepLifeSimulation(stateRef.current,10*stateRef.current.speed,manualTarget);
+    setState(nextState);
+    setFly(prev=>{
+      const next=stepFlySimulation(prev,{
+        personX:nextState.person.x,personY:nextState.person.y,
+        personAction:nextState.person.currentAction,personLocation:String(nextState.person.location),
+        worldState:nextState,width:LIFE_WORLD_WIDTH,height:LIFE_WORLD_HEIGHT
+      });
+      flyRef.current=next;
+      return next;
+    });
+    setMacaque(prev=>stepMacaqueSimulation(prev,{worldState:nextState,fly:flyRef.current}));
   }
 
   function reset(){
@@ -773,7 +795,7 @@ export function GrokSimulationPanel(){
           <span><MapPin size={12}/>{state.person.location}</span>
           <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
           <span>Mosca: {fly.behavior} · {fly.targetLabel}</span>
-          <span>Macaco: {macaque.behavior} · {macaque.targetLabel}</span>
+          <span>Macaco: {macaque.behavior} · {macaque.targetLabel}{macaque.actionProgress>0?' · '+Math.round(macaque.actionProgress*100)+'%':''}</span>
           <span>Visão: {humanVision.visible.length} humano · {macaqueVision.visible.length} macaco · {flyVision.visible.length} mosca</span>
           <b>{state.person.currentAction}</b>
         </div>
