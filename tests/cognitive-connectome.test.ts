@@ -146,3 +146,31 @@ test('functional conscious-access map combines human and fly-derived controls',(
   assert.match(context,/Memória associativa|associative/i);
   assert.match(context,/FlyWire-whole-fly/);
 });
+
+
+test('organism engine keeps inspectable drives and multiple simulated brains',()=>{
+  const initial=createCognitiveState();
+  const next=advanceCognitiveWorkspace(initial,'Imagine um ambiente novo e decida se deve explorar ou observar.');
+  assert.equal(next.organism.version,1);
+  assert.ok(next.organism.simulatedBrains.length>=4);
+  assert.ok(next.organism.drives.curiosity>=0&&next.organism.drives.curiosity<=1);
+  assert.ok(next.organism.selectedAction.length>0);
+  assert.ok(next.organism.alternativeAction.length>0);
+  assert.match(cognitivePromptContext(next),/ORGANISM SIMULATION STATE/);
+  assert.match(cognitivePromptContext(next),/not literal mind-reading/i);
+});
+
+test('real-life memory question never claims imported biological memories',()=>{
+  let state=createCognitiveState();
+  state=captureConversationMemory(
+    applyCognitiveOutcome(state,{
+      prompt:'Você viu uma maçã na simulação',
+      answer:'Registrei o evento no meu runtime.'
+    }),
+    {prompt:'Você viu uma maçã na simulação',answer:'Registrei o evento no meu runtime.',mode:'dual'}
+  );
+  const recall=cognitiveDirectRecall(state,'dual','Do que você lembra da sua vida real?')||'';
+  assert.match(recall,/não tenho uma vida biológica/i);
+  assert.match(recall,/runtime|simulação/i);
+  assert.doesNotMatch(recall,/memórias retiradas de um cérebro.*como se fossem minhas/i);
+});
