@@ -8,7 +8,7 @@ const masterDir=path.join(root,'skills','predictlm-master');
 
 test('PredictLM Master portable bundle has synchronized v3.14 references',()=>{
   const manifest=JSON.parse(fs.readFileSync(path.join(masterDir,'manifest.json'),'utf8'));
-  assert.match(String(manifest.version),/^3\.14\./);
+  assert.match(String(manifest.version),/^3\.15\./);
   assert.equal(manifest.noGenericFallbackAsAnswer,true);
   for(const capability of ['agent-fabric','cognitive-lab','fly-core','human-core-h01','macaque-core','report-architect']){
     assert.ok(manifest.capabilities.includes(capability),'missing capability '+capability);
