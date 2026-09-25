@@ -202,7 +202,8 @@ export async function POST(req:Request){
       providers:[...new Set(reviewable.map(x=>x.review.provider).filter(Boolean))],
       subjects:[...new Set(reviewable.flatMap(x=>x.review.subjects||[]))].slice(0,10),
       queries:referencePlan.queries||[referencePlan.query].filter(Boolean),
-      searchRounds:Number(referencePlan.searchRounds||1)
+      searchRounds:Number(referencePlan.searchRounds||1),
+      catalogCharacters:Array.isArray(referencePlan.catalogCharacters)?referencePlan.catalogCharacters:[]
     };
     const providerPrompt=groundedPrompt+(userInline.length
       ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
