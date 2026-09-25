@@ -400,9 +400,15 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
     if(provider.name==='nvidia'){
       body.chat_template_kwargs={enable_thinking:deep};
       if(deep){
-        body.max_tokens=Math.max(Number(body.max_tokens||0),2048);
-        body.thinking_token_budget=768;
+        body.max_tokens=Math.max(Number(body.max_tokens||0),4096);
+        body.reasoning_budget=1536;
       }
+    }
+    if(provider.name==='vercel-gateway'){
+      body.models=[
+        'google/gemini-3.8-flash',
+        'anthropic/claude-sonnet-5'
+      ];
     }
     if(provider.name==='minimax')body.thinking={type:'disabled'};
 
@@ -702,10 +708,22 @@ export async function GET(){
   const all=providers();
   const configured=primaryProviders(all);
   const auxiliary=all.filter(x=>!configured.includes(x));
+  const gatewayAuth=process.env.AI_GATEWAY_API_KEY
+    ? 'api-key'
+    : process.env.VERCEL_OIDC_TOKEN
+      ? 'oidc'
+      : 'missing';
   return Response.json({
     available:configured.length>0,
     providers:configured.map(x=>({name:x.name,model:x.model})),
     count:configured.length,
+    gateway:{
+      auth:gatewayAuth,
+      model:process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning',
+      fallbackModels:['google/gemini-3.8-flash','anthropic/claude-sonnet-5']
+    },
+    health:providerHealthSnapshot(configured),
+    environment:{vercel:Boolean(process.env.VERCEL)},
     auxiliaryLocal:auxiliary.map(x=>({name:x.name,model:x.model}))
   },{headers:{'Cache-Control':'no-store'}});
 }
