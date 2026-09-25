@@ -21,8 +21,14 @@ export function animalResult(backend:AnimalBackend,model:string,raw:unknown,elap
   }).sort((a,b)=>b.score-a.score).slice(0,5);
   const first=predictions[0];
   const margin=first.score-(predictions[1]?.score||0);
-  const confident=first.score>=.45&&margin>=.12;
-  return {backend,model,predictions,verdict:!confident?'uncertain':first.animal?'likely-animal':'not-animal',elapsedMs:Math.max(0,Math.round(elapsedMs)),...meta};
+  const confidentAnimal=first.animal&&first.score>=.45&&margin>=.12;
+  const confidentNonAnimal=!first.animal&&(
+    backend==='browser'
+      ? first.score>=.82&&margin>=.20
+      : first.score>=.62&&margin>=.15
+  );
+  const verdict=confidentAnimal?'likely-animal':confidentNonAnimal?'not-animal':'uncertain';
+  return {backend,model,predictions,verdict,elapsedMs:Math.max(0,Math.round(elapsedMs)),...meta};
 }
 export function animalSummary(result:AnimalResult){
   const first=result.predictions[0];
