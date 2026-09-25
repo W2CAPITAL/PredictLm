@@ -20,6 +20,7 @@ import {
 } from '@/lib/cognitive/connectome-import';
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
 import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
+import {CognitiveBrainInspector} from '@/components/CognitiveBrainInspector';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
 export type CognitiveChatMode='dual'|'fly'|'human';
@@ -335,7 +336,7 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Upload size={15}/> Dados reais</div>
-          <p className="mb-3 text-[10px] leading-5 text-zinc-500">Opcional: carregue subconjuntos reais. O arquivo fica no navegador; não é enviado ao Supabase.</p>
+          <p className="mb-3 text-[10px] leading-5 text-zinc-500">Opcional: carregue subconjuntos reais. O arquivo fica no navegador e não é enviado para banco externo.</p>
           <label className="mb-2 block cursor-pointer rounded-xl border border-zinc-800 px-3 py-2 text-xs text-zinc-400 hover:border-amber-500/40 hover:text-zinc-200">
             Importar FlyWire CSV
             <input type="file" accept=".csv,.txt" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void importSubset('fly',f)}}/>
@@ -432,6 +433,8 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
           <Row label="Perceptiva" value={String(state.memory.perceptual?.length||0)}/>
           <Row label="Ticks" value={String(state.tick)}/>
         </section>
+
+        <CognitiveBrainInspector state={state}/>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
           <div className="mb-3 text-sm font-semibold">Acesso consciente funcional</div>
