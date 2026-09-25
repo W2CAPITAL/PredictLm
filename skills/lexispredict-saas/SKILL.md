@@ -224,3 +224,20 @@ Uma capacidade só conta como pronta quando:
 - build/typecheck passa;
 - integração é testada ou marcada como não configurada;
 - não há segredo no repositório.
+
+
+## Report Architect exports
+
+Relatórios executivos, dossiês jurídicos, due diligence e relatórios técnicos do SaaS devem compartilhar o contrato Report Architect quando forem exportados.
+
+Fluxo:
+DADOS/PROCESSOS → ANÁLISE → DOSSIER MARKDOWN → PROVENIÊNCIA → QUALITY GATE → HTML/JSON → PDF/DOCX opcional.
+
+Regras:
+- fatos de DataJud/DJEN e portais oficiais = [oficial];
+- dados enviados/importados pela empresa = [fornecida];
+- interpretação = [inferência];
+- retorno de API ausente/falha entra em Limitações;
+- não inferir inexistência de ato apenas porque ele não foi localizado;
+- classificação confidencial por padrão quando houver cliente, estratégia processual ou dado pessoal;
+- nenhuma nova dependência Supabase é exigida pelo Report Architect.
