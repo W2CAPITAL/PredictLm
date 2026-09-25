@@ -18,7 +18,7 @@ export function isGenericHowTo(prompt:string){
   if(isHypotheticalPrompt(prompt))return false;
   const p=clean(prompt).replace(/^(?:por favor[, ]+|me diga[, ]+|me explique[, ]+)/,'');
   if(/^(?:passo a passo|o que preciso para|quero aprender a|me ensine a)\b/.test(p))return true;
-  if(/^como\s+(?:(?:eu\s+)?faco|(?:[a-z]+(?:ar|er|ir))|por)\b/.test(p))return true;
+  if(/^como\s+(?:(?:eu\s+)?faco|(?:posso|pode|podemos|poderia|poderíamos)\s+[a-z]+(?:ar|er|ir)|(?:[a-z]+(?:ar|er|ir))|por)\b/.test(p))return true;
   return false;
 }
 
