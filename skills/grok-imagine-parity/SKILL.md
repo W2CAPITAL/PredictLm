@@ -277,3 +277,15 @@ Patterns incorporated from the MIT-licensed `krusemediallc/arcads-claude-code` s
 - Repair is bounded. Regenerate only from concrete visible defects and preserve the accepted identity/reference; do not restart creatively from scratch.
 - External API pricing, model names, limits and availability from the Arcads repository are **volatile examples**, not permanent PredictLM facts. Verify before execution.
 - Bundled influencer/product photos are assets, not training material; PredictLM does not ingest them into its knowledge index.
+
+
+## Referências adicionadas em 2026-09-25
+
+Padrões aprovados para adaptação, sem transformar serviços de terceiros em dependência obrigatória:
+
+- `flaqai/awesome-grok-imagine` (MIT): separar frame inicial, ação/física, câmera, áudio, continuity lock e lista curta de falhas a evitar; útil principalmente para vídeo e reference-to-video.
+- `starrlord/grokive` (MIT): manter prompt original, prompt normalizado, origem/parent, workspace e histórico de gerações separados; biblioteca local/recarregável e exportação sem mascarar provenance.
+- `Anil-matcha/Grok-Imagine-Image-2-API` (MIT): adapter assíncrono submit → request id → poll → resultado e edição encadeada por id; qualquer chave fica server-side e o adapter é opcional.
+- `apimart-API-Gateway/grok-image-api`: referência documental para adapter e contratos de imagem; licença do repositório não autoriza copiar implementação. Usar somente padrões de interface/documentação ou endpoint autorizado configurado pelo usuário.
+
+Para visualizações do Cognitive Lab, o Imagine pode receber um prefill conceitual via `sessionStorage`; isso não transforma telemetria simulada em “imagem do pensamento real”.
