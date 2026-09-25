@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.31.0"
+  version: "1.32.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -840,5 +840,21 @@ Imagine:
 - identity-sensitive failed candidates are rejected instead of being presented as successful character art;
 - fidelity-limited fallback without approved semantic review is a failure for named characters;
 - Media Library stores only reference counts/metadata, never user reference image blobs.
+
+No Supabase dependency is introduced.
+
+
+## Automatic character reference search (2026-09-25)
+
+Imagine no longer depends on manual uploads for named characters.
+
+- Google Images is preferred when its API credentials exist.
+- Firecrawl remains a strong structured image source.
+- DuckDuckGo Images is the no-key automatic fallback.
+- Search results are ranked for canonical terms/trusted sources before use.
+- Up to three automatic image URLs are forwarded to compatible fallback image endpoints.
+- Manual reference upload remains optional and only overrides automatic grounding.
+- If automatic grounding exists but semantic review is unavailable, do not emit a message demanding user-uploaded references; keep the candidate session-only/unverified.
+- A semantic review that actually sees a wrong identity still rejects the result.
 
 No Supabase dependency is introduced.
