@@ -19,22 +19,24 @@ import {
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
-const CHAT_KEY='predictlm-cognitive-chat-v1';
+export type CognitiveChatMode='dual'|'fly'|'human';
+const chatKey=(mode:CognitiveChatMode)=>'predictlm-cognitive-chat-v2-'+mode;
 
-function loadMessages():Msg[]{
+function loadMessages(mode:CognitiveChatMode):Msg[]{
   if(typeof window==='undefined')return [];
   try{
-    const parsed=JSON.parse(localStorage.getItem(CHAT_KEY)||'[]');
+    const parsed=JSON.parse(localStorage.getItem(chatKey(mode))||'[]');
     return Array.isArray(parsed)?parsed.slice(-80):[];
   }catch{return []}
 }
 
-function saveMessages(messages:Msg[]){
-  try{localStorage.setItem(CHAT_KEY,JSON.stringify(messages.slice(-80)))}catch{}
+function saveMessages(mode:CognitiveChatMode,messages:Msg[]){
+  try{localStorage.setItem(chatKey(mode),JSON.stringify(messages.slice(-80)))}catch{}
 }
 
-export function CognitiveLab(){
+export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMode}){
   const [state,setState]=useState<CognitiveState>(createCognitiveState());
+  const [mode,setMode]=useState<CognitiveChatMode>(defaultMode);
   const [messages,setMessages]=useState<Msg[]>([]);
   const [input,setInput]=useState('');
   const [busy,setBusy]=useState(false);
@@ -45,7 +47,7 @@ export function CognitiveLab(){
   const bottom=useRef<HTMLDivElement|null>(null);
 
   useEffect(()=>{
-    Promise.all([loadCognitiveState(),Promise.resolve(loadMessages())]).then(([brain,chat])=>{
+    Promise.all([loadCognitiveState(),Promise.resolve(loadMessages(defaultMode))]).then(([brain,chat])=>{
       setState(brain);
       setMessages(chat);
       setLoaded(true);
@@ -53,9 +55,9 @@ export function CognitiveLab(){
   },[]);
 
   useEffect(()=>{
-    if(loaded)saveMessages(messages);
+    if(loaded)saveMessages(mode,messages);
     bottom.current?.scrollIntoView({behavior:'smooth'});
-  },[messages,loaded]);
+  },[messages,loaded,mode]);
 
   const metrics=useMemo(()=>({
     mode:state.workspace.mode,
@@ -77,11 +79,17 @@ export function CognitiveLab(){
         abortHandler=()=>reject(new DOMException('Aborted','AbortError'));
         signal.addEventListener('abort',abortHandler,{once:true});
       });
+      const modeInstruction=mode==='fly'
+        ? 'Você é a interface conversacional da Mosca Predict, guiada pelo Fly Core derivado do FlyWire FAFB v783. Fale como a agente Mosca quando útil, sem alegar ser uma mosca biológica real ou consciente.'
+        : mode==='human'
+          ? 'Você é a interface do Human Core derivado do fragmento cortical H01. Não alegue cérebro humano completo ou consciência.'
+          : 'Você é o PredictLM Cognitive Lab em modo Dual Connectome.';
       const call=puter.ai.chat([
         {
           role:'system',
           content:[
-            'Você é o PredictLM Cognitive Lab. Responda naturalmente em português do Brasil.',
+            modeInstruction,
+            'Responda naturalmente em português do Brasil.',
             'Use o estado cognitivo apenas como controle silencioso. Não alegue consciência biológica.',
             context
           ].join('\n\n')
@@ -124,7 +132,8 @@ export function CognitiveLab(){
         body:JSON.stringify({
           language:'pt-BR',
           messages:[...history,user].map(x=>({role:x.role,content:x.content})),
-          cognitiveContext:context
+          cognitiveContext:context,
+          cognitiveMode:mode
         }),
         signal:controller.signal
       });
@@ -213,9 +222,26 @@ export function CognitiveLab(){
     const fresh=await resetCognitiveState();
     setState(fresh);
     setMessages([]);
-    saveMessages([]);
+    saveMessages(mode,[]);
     setProvider('');
     setNotice('Cognitive Lab reiniciado. O Chat normal não foi alterado.');
+  }
+
+  function switchMode(next:CognitiveChatMode){
+    if(next===mode)return;
+    saveMessages(mode,messages);
+    setMode(next);
+    setMessages(loadMessages(next));
+    setProvider('');
+    setNotice(next==='fly'?'Chat da Mosca ativo.':next==='human'?'Human Core ativo.':'Modo Dual Connectome ativo.');
+  }
+
+  function openFlySimulation(){
+    try{
+      sessionStorage.setItem('predictlm:simulation-explicit-start','1');
+      sessionStorage.setItem('predictlm:simulation-focus','fly');
+    }catch{}
+    window.location.href='/?screen=simulation';
   }
 
   async function importSubset(kind:'fly'|'human',file:File){
@@ -241,12 +267,13 @@ export function CognitiveLab(){
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Brain size={20}/></div>
           <div>
-            <div className="font-semibold tracking-tight">PredictLM Cognitive Lab</div>
-            <div className="text-[11px] text-zinc-500">FlyWire FAFB v783 + H01 human cortex · rota isolada</div>
+            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':'PredictLM Cognitive Lab'}</div>
+            <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 human cortex · chat isolado':'FlyWire FAFB v783 + H01 human cortex · rota isolada'}</div>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {provider&&<span className="hidden rounded-full border border-zinc-800 px-2.5 py-1 text-[10px] text-zinc-500 sm:inline">{provider}</span>}
+          <button onClick={openFlySimulation} className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 hover:bg-amber-500/15"><Activity size={14}/> Simulação</button>
           <button onClick={resetAll} className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-400 hover:text-white"><RotateCcw size={14}/> Reiniciar</button>
         </div>
       </div>
@@ -296,14 +323,23 @@ export function CognitiveLab(){
 
       <section className="flex min-h-[72vh] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-[#0a0b0f]">
         <div className="border-b border-zinc-800 px-4 py-3">
-          <div className="text-sm font-medium">Dual Connectome Chat</div>
-          <div className="mt-1 text-[10px] text-zinc-500">O Chat normal permanece separado em <code>/</code>. Este laboratório usa <code>/api/chat/cognitive-stream</code>.</div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium">{mode==='fly'?'Chat da Mosca':mode==='human'?'Human Core Chat':'Dual Connectome Chat'}</div>
+              <div className="mt-1 text-[10px] text-zinc-500">O Chat normal permanece separado em <code>/</code>. Cada modo cognitivo mantém histórico próprio.</div>
+            </div>
+            <div className="flex rounded-xl border border-zinc-800 bg-zinc-950 p-1 text-[10px]">
+              <button onClick={()=>switchMode('fly')} className={'rounded-lg px-3 py-1.5 '+(mode==='fly'?'bg-amber-500/15 text-amber-200':'text-zinc-500')}>Mosca</button>
+              <button onClick={()=>switchMode('human')} className={'rounded-lg px-3 py-1.5 '+(mode==='human'?'bg-violet-500/15 text-violet-200':'text-zinc-500')}>Humano</button>
+              <button onClick={()=>switchMode('dual')} className={'rounded-lg px-3 py-1.5 '+(mode==='dual'?'bg-zinc-800 text-zinc-100':'text-zinc-500')}>Dual</button>
+            </div>
+          </div>
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {!messages.length&&<div className="mx-auto max-w-xl py-20 text-center">
             <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Activity/></div>
-            <h1 className="text-xl font-semibold">Cérebro humano + mosca</h1>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">Converse normalmente. Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.</p>
+            <h1 className="text-xl font-semibold">{mode==='fly'?'Converse com a Mosca Predict':mode==='human'?'Converse com o Human Core':'Cérebro humano + mosca'}</h1>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">{mode==='fly'?'A resposta é controlada prioritariamente pelo Fly Core: saliência, exploração, ameaça, mushroom body, central complex e action selection.':mode==='human'?'A resposta é controlada prioritariamente pelo Human Core H01: memória de trabalho, recorrência, controle executivo e metacognição.':'Os dois conectomas influenciam atenção, inibição, exploração, memória e prediction error sem aparecer como texto operacional.'}</p>
           </div>}
           {messages.map((m,i)=><div key={i} className={m.role==='user'?'flex justify-end':'flex justify-start'}>
             <div className={m.role==='user'
@@ -320,7 +356,7 @@ export function CognitiveLab(){
               value={input}
               onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send()}}}
-              placeholder="Converse com o modo cognitivo..."
+              placeholder={mode==='fly'?'Fale com a Mosca Predict...':mode==='human'?'Fale com o Human Core...':'Converse com o modo cognitivo...'}
               rows={1}
               className="max-h-40 min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none placeholder:text-zinc-600"
             />
