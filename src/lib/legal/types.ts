@@ -119,3 +119,67 @@ export interface LegalProcessBundle {
     sourceSummary:string;
   };
 }
+
+
+export interface LegalSearchInput{
+  tribunal:string;
+  size?:number;
+  offset?:number;
+  processNumber?:string;
+  degree?:string;
+  classCode?:string|number;
+  subjectCode?:string|number;
+  municipalityCode?:string|number;
+  filedFrom?:string;
+  filedTo?:string;
+}
+
+export interface LegalSearchCase{
+  processNumber:string;
+  digits:string;
+  tribunal:string;
+  degree?:string;
+  filedAt?:string;
+  lastUpdate?:string;
+  class?:{code?:number|string;name?:string};
+  subjects:{code?:number|string;name?:string}[];
+  court?:{code?:number|string;name?:string;municipalityCode?:number|string};
+  format?:string;
+  system?:string;
+  confidentiality?:number;
+  movementCount:number;
+  latestMovement?:{date?:string;code?:number|string;name:string;details?:string[]};
+}
+
+export interface LegalSearchResult{
+  tribunal:string;
+  alias:string;
+  total:number;
+  size:number;
+  offset:number;
+  fetchedAt:string;
+  items:LegalSearchCase[];
+  source:'DataJud';
+  caveat:string;
+}
+
+export interface DjenSearchInput{
+  oab?:string;
+  uf?:string;
+  processNumber?:string;
+  from?:string;
+  to?:string;
+  keyword?:string;
+  tribunal?:string;
+  page?:number;
+  size?:number;
+}
+
+export interface DjenSearchResult{
+  ok:boolean;
+  endpoint:string;
+  count:number;
+  items:LegalPublication[];
+  fetchedAt:string;
+  caveat:string;
+}
