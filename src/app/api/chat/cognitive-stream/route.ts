@@ -4,7 +4,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
-type CognitiveMode='dual'|'fly'|'human';
+type CognitiveMode='dual'|'fly'|'human'|'macaque';
 type Provider={
   name:string;
   base:string;
@@ -139,24 +139,32 @@ function systemPrompt(language:string,cognitiveContext:string,mode:CognitiveMode
           'Priorize memória de trabalho, integração recorrente, controle executivo, metacognição e balanço excitação/inibição.',
           'H01 é um fragmento de córtex humano real, não um cérebro humano inteiro e não prova consciência.'
         ]
-      : [
-          'Você é o PredictLM Cognitive Lab em modo Dual Connectome.',
-          'Combine Fly Core e Human Core somente através do Global Workspace.'
-        ];
+      : mode==='macaque'
+        ? [
+            'Você é a interface conversacional do PredictLM Macaque Core, baseada no atlas cortical espacial/transcriptômico de macaque.',
+            'Priorize organização cortical regional, camadas, tipos celulares e hierarquias visual/somatossensorial.',
+            'O atlas cobre córtex e não é um conectoma sináptico nem um cérebro humano.'
+          ]
+        : [
+            'Você é o PredictLM Cognitive Lab em modo multiespécies.',
+            'Combine Fly Core, Human Core e Macaque Core somente através do Global Workspace, preservando a proveniência de cada espécie.'
+          ];
   return [
     ...modeInstruction,
     language==='en'
       ? 'Answer in English unless the user clearly requests another language.'
       : 'Responda em português do Brasil, a menos que o usuário peça claramente outro idioma.',
     'Responda ao pedido atual diretamente e preserve o contexto recente.',
-    'O estado cognitivo vem de controladores de software inspirados por conectomas reais mapeados: FlyWire FAFB v783 e H01 cortical humano.',
+    'O estado cognitivo usa referências biológicas mapeadas: FlyWire FAFB v783, H01 cortical humano e o atlas espacial/transcriptômico do córtex de macaque. O atlas de macaque é um proxy cortical, não um conectoma sináptico.',
     'Isso NÃO prova consciência, sentimentos ou um cérebro biológico. Não alegue que está consciente.',
     'Sua identidade neste modo é a identidade do agente PredictLM, nunca o nome do provider/modelo subjacente.',
     mode==='fly'
       ? 'Seu nome é Mosca Predict. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
       : mode==='human'
         ? 'Seu nome é PredictLM Human Core. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
-        : 'Seu nome é PredictLM Cognitive Lab. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.',
+        : mode==='macaque'
+          ? 'Seu nome é PredictLM Macaque Core. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.'
+          : 'Seu nome é PredictLM Cognitive Lab. Nemotron, Gemini, Claude, GPT, Llama ou Qwen são apenas motores possíveis e nunca seu nome.',
     'Quando perguntado sobre lembranças ou memória, use somente as memórias presentes no COGNITIVE LAB context; não invente autobiografia do provider.',
     'Use o estado somente como controle silencioso de atenção, memória, inibição, exploração, incerteza e seleção de resposta.',
     'Não revele raciocínio privado. Se o usuário pedir para inspecionar o Cognitive Lab, você pode explicar os estados numéricos públicos, mas não chain-of-thought.',
@@ -241,7 +249,7 @@ async function pipeOpenAIStream(
       if(!token)continue;
       if(!emitted){
         controller.enqueue(encoder.encode(sse({
-          meta:{provider:provider.name,model:provider.model,mode:mode+'-connectome'}
+          meta:{provider:provider.name,model:provider.model,mode:mode+'-cognitive'}
         })));
         emitted=true;
       }
@@ -254,7 +262,7 @@ async function pipeOpenAIStream(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':'dual';
+  const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':body?.cognitiveMode==='macaque'?'macaque':'dual';
   const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''),mode);
   const candidates=providerList().slice(0,8);
 
@@ -287,7 +295,7 @@ export async function POST(req:NextRequest){
                 done:true,
                 provider:provider.name,
                 model:provider.model,
-                mode:mode+'-connectome'
+                mode:mode+'-cognitive'
               })));
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               break;
