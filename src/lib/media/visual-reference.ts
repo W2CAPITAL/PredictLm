@@ -321,7 +321,7 @@ export async function resolveVisualReferences(input:string,limit?:number):Promis
   const warnings:string[]=[];
   const catalog=await resolveAnimeCharacterCatalog(input).catch(()=>({terms:[] as string[],hits:[] as any[],warnings:['AniList indisponível nesta tentativa.']}));
   warnings.push(...catalog.warnings);
-  const catalogRefs:VisualReference[]=catalog.hits.map((hit:any)=>({
+  const catalogRefs:VisualReference[]=catalog.hits.map((hit:any):VisualReference=>({
     provider:'anilist-character',
     title:hit.name+(hit.mediaTitles?.length?' · '+hit.mediaTitles.slice(0,2).join(' / '):''),
     imageUrl:String(hit.imageUrl||''),
