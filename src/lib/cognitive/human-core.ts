@@ -1,5 +1,6 @@
 import {advanceNeuroState,createNeuroState,type NeuroState} from '../neurocore';
-import {H01_HUMAN_CORTEX} from './connectome-provenance';
+import {H01_HUMAN_CORTEX,MACAQUE_CORTEX_SPATIAL_ATLAS} from './connectome-provenance';
+import {createMacaqueCoreState,type MacaqueCoreState} from './macaque-core';
 
 export interface HumanCoreState{
   version:1;
@@ -20,6 +21,17 @@ export interface HumanCoreState{
     neuronScale:number;
     synapseScale:number;
     completeHumanBrain:false;
+  };
+  crossSpeciesProxy:{
+    enabled:true;
+    sourceDataset:string;
+    sourceSpecies:string;
+    proxyScope:string;
+    proxyWeight:number;
+    visualHierarchy:number;
+    somatosensoryHierarchy:number;
+    corticalRegionalIntegration:number;
+    unresolved:string[];
   };
 }
 
@@ -46,12 +58,29 @@ export function createHumanCoreState():HumanCoreState{
       neuronScale:H01_HUMAN_CORTEX.neuronsApprox,
       synapseScale:H01_HUMAN_CORTEX.synapsesApprox,
       completeHumanBrain:false
+    },
+    crossSpeciesProxy:{
+      enabled:true,
+      sourceDataset:MACAQUE_CORTEX_SPATIAL_ATLAS.dataset,
+      sourceSpecies:MACAQUE_CORTEX_SPATIAL_ATLAS.species,
+      proxyScope:'Homologous broad cortical organization outside the H01 fragment; provenance remains macaque-proxy.',
+      proxyWeight:.18,
+      visualHierarchy:.5,
+      somatosensoryHierarchy:.5,
+      corticalRegionalIntegration:.47,
+      unresolved:[
+        'whole-brain human synaptic connectome',
+        'human subcortical structures not covered by the macaque cortical atlas',
+        'human autobiographical memories or thoughts'
+      ]
     }
   };
 }
 
-export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string):HumanCoreState{
+export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string,macaqueInput?:MacaqueCoreState):HumanCoreState{
   const prev=previous?.version===1?previous:createHumanCoreState();
+  const macaque=macaqueInput?.version===1?macaqueInput:createMacaqueCoreState();
+  const proxyWeight=clamp(prev.crossSpeciesProxy?.proxyWeight??.18,0,.28);
   const neuro=advanceNeuroState(prev.neuro,prompt);
   const q=norm(prompt);
   const factual=/\b(quem|qual|explique|verdade|fato|confirme|fonte|sabia|e verdade|é verdade)\b/.test(q)?1:0;
@@ -62,7 +91,7 @@ export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string
 
   const excitation=clamp(prev.excitation*.64+neuro.circuits.salience*.18+neuro.circuits.planning*.12+load*.06);
   const inhibition=clamp(prev.inhibition*.6+neuro.circuits.inhibition*.28+neuro.circuits.threat*.12);
-  const recurrentIntegration=clamp(prev.recurrentIntegration*.56+neuro.circuits.workingMemory*.18+neuro.circuits.planning*.16+neuro.circuits.attention*.1);
+  const recurrentIntegration=clamp(prev.recurrentIntegration*.52+neuro.circuits.workingMemory*.17+neuro.circuits.planning*.15+neuro.circuits.attention*.09+macaque.regionalIntegration*.07);
   const strongInputGain=clamp(prev.strongInputGain*.72+Math.max(factual,planning,social)*.18+neuro.circuits.salience*.1);
   const predictiveError=clamp(prev.predictiveError*.62+neuro.uncertainty*.24+ambiguity*.14);
   const executiveControl=clamp(prev.executiveControl*.58+neuro.circuits.planning*.24+inhibition*.18);
@@ -70,12 +99,12 @@ export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string
   const metacognition=clamp(prev.metacognition*.58+(1-neuro.confidence)*.18+factual*.14+ambiguity*.1);
 
   const layerDrive={
-    L1:clamp(prev.corticalLayers.L1*.75+neuro.circuits.sensory*.25),
-    L2:clamp(prev.corticalLayers.L2*.68+social*.12+neuro.circuits.attention*.2),
-    L3:clamp(prev.corticalLayers.L3*.62+recurrentIntegration*.28+neuro.circuits.workingMemory*.1),
-    L4:clamp(prev.corticalLayers.L4*.64+neuro.circuits.sensory*.22+factual*.14),
-    L5:clamp(prev.corticalLayers.L5*.58+neuro.circuits.action*.22+planning*.2),
-    L6:clamp(prev.corticalLayers.L6*.62+executiveControl*.24+predictiveError*.14)
+    L1:clamp(prev.corticalLayers.L1*.72+neuro.circuits.sensory*.22+macaque.corticalLayers.L1*proxyWeight*.06),
+    L2:clamp(prev.corticalLayers.L2*.64+social*.11+neuro.circuits.attention*.18+macaque.corticalLayers.L2*proxyWeight*.07),
+    L3:clamp(prev.corticalLayers.L3*.59+recurrentIntegration*.26+neuro.circuits.workingMemory*.09+macaque.corticalLayers.L3*proxyWeight*.06),
+    L4:clamp(prev.corticalLayers.L4*.57+neuro.circuits.sensory*.2+factual*.12+macaque.corticalLayers.L4*proxyWeight*.07+macaque.primateSpecificL4*proxyWeight*.04),
+    L5:clamp(prev.corticalLayers.L5*.55+neuro.circuits.action*.2+planning*.18+macaque.corticalLayers.L5*proxyWeight*.07),
+    L6:clamp(prev.corticalLayers.L6*.59+executiveControl*.22+predictiveError*.13+macaque.corticalLayers.L6*proxyWeight*.06)
   };
 
   return {
@@ -90,7 +119,17 @@ export function advanceHumanCore(previous:HumanCoreState|undefined,prompt:string
     predictiveError,
     executiveControl,
     workingMemory,
-    metacognition
+    metacognition,
+    crossSpeciesProxy:{
+      ...prev.crossSpeciesProxy,
+      enabled:true,
+      sourceDataset:MACAQUE_CORTEX_SPATIAL_ATLAS.dataset,
+      sourceSpecies:MACAQUE_CORTEX_SPATIAL_ATLAS.species,
+      proxyWeight,
+      visualHierarchy:macaque.visualHierarchy,
+      somatosensoryHierarchy:macaque.somatosensoryHierarchy,
+      corticalRegionalIntegration:macaque.regionalIntegration
+    }
   };
 }
 
@@ -98,9 +137,11 @@ export function humanCoreContext(state:HumanCoreState){
   return [
     'HUMAN CONNECTOME CORE — cortical controller derived from the H01 mapped human temporal-cortex fragment.',
     'H01 is approximately 1 mm³ of real human cortex, not a complete mapped human brain.',
+    'Where H01 has no broad cortical coverage, the controller may use a low-weight macaque cortical proxy from the 143-region/264-cell-type atlas. Macaque-derived values remain explicitly labeled proxy data, never direct human measurements.',
+    'Macaque proxy weight '+Math.round((state.crossSpeciesProxy?.proxyWeight||0)*100)+'%; visual hierarchy '+Math.round((state.crossSpeciesProxy?.visualHierarchy||0)*100)+'%; somatosensory hierarchy '+Math.round((state.crossSpeciesProxy?.somatosensoryHierarchy||0)*100)+'%.',
     'Working-memory drive '+Math.round(state.workingMemory*100)+'%; executive control '+Math.round(state.executiveControl*100)+'%; metacognition '+Math.round(state.metacognition*100)+'%.',
     'Excitation '+Math.round(state.excitation*100)+'%; inhibition '+Math.round(state.inhibition*100)+'%; recurrent integration '+Math.round(state.recurrentIntegration*100)+'%; prediction error '+Math.round(state.predictiveError*100)+'%.',
     'Use recurrent integration for context, inhibition to suppress irrelevant associations, executive control for ordered plans, and prediction error to reduce false certainty.',
-    'Do not claim this software state is biological consciousness or a full simulation of the human cortex.'
+    'Do not claim this software state is biological consciousness, a complete human brain, or that macaque proxy values are measured human anatomy.'
   ].join('\n');
 }
