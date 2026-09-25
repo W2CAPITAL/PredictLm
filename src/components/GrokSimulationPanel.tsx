@@ -16,6 +16,13 @@ import {
 import { dominantCircuits } from '@/lib/neurocore';
 import {cameraForFocus,placeVisual,pointInPolygon,projectedPlacePolygon,projectIsoPoint,type IsoCamera} from '@/lib/life-sim-25d';
 import {
+  LIFE_WORLD_HEIGHT,
+  LIFE_WORLD_WIDTH,
+  WORLD_OBJECTS,
+  perceiveFlyWorld,
+  perceiveHumanWorld
+} from '@/lib/life-world-open';
+import {
   agentWorldObservation,
   autonomousLifePlan,
   createLifeAgentState,
@@ -30,6 +37,7 @@ import {
 } from '@/lib/life-simulation-agent';
 import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
+import {recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
@@ -142,8 +150,9 @@ export function GrokSimulationPanel(){
         personY:state.person.y,
         personAction:state.person.currentAction,
         personLocation:String(state.person.location),
-        width:640,
-        height:360
+        worldState:state,
+        width:LIFE_WORLD_WIDTH,
+        height:LIFE_WORLD_HEIGHT
       }));
     },260);
     return()=>window.clearInterval(timer);
@@ -169,7 +178,7 @@ export function GrokSimulationPanel(){
     const timer=window.setTimeout(()=>{
       setAgent(prev=>{
         const normalized=normalizeLifeAgentState(prev);
-        const plan=repairLifeAgentPlan(autonomousLifePlan(state,normalized,'Decida a próxima ação útil'),state,normalized);
+        const plan=repairLifeAgentPlan(autonomousLifePlan(state,normalized,'Decida a próxima ação útil',fly),state,normalized);
         return {
           ...startLifeAgentPlan(normalized,plan),
           autonomy:{
@@ -183,6 +192,20 @@ export function GrokSimulationPanel(){
     },900);
     return()=>window.clearTimeout(timer);
   },[hydrated,state,agent.plan?.status,agent.autonomy.enabled,agentBusy]);
+
+  useEffect(()=>{
+    if(!hydrated||state.tick===0||state.tick%6!==0)return;
+    const humanSnapshot=perceiveHumanWorld(state,fly);
+    const flySnapshot=perceiveFlyWorld(fly,state);
+    const timer=window.setTimeout(()=>{
+      loadCognitiveState().then(current=>{
+        let next=recordPerceptionMemory(current,'human',humanSnapshot.summary,.66);
+        next=recordPerceptionMemory(next,'fly',flySnapshot.summary,.7);
+        return saveCognitiveState(next);
+      }).catch(()=>{});
+    },150);
+    return()=>window.clearTimeout(timer);
+  },[hydrated,state.tick,state.person.x,state.person.y,state.person.heading,fly.x,fly.y,fly.vx,fly.vy]);
 
   useEffect(()=>{
     const el=canvas.current;
@@ -258,6 +281,43 @@ export function GrokSimulationPanel(){
       ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.ellipse(center.x,center.y,22*camera.zoom,8*camera.zoom,0,0,Math.PI*2);ctx.fill();
     };
 
+    const drawWorldObject=(obj:(typeof WORLD_OBJECTS)[number])=>{
+      const p=iso(obj.x,obj.y,0);
+      const s=Math.max(.72,camera.zoom);
+      if(obj.kind==='tree'){
+        ctx.fillStyle='#6b4c32';ctx.fillRect(p.x-2*s,p.y-24*s,4*s,24*s);
+        ctx.fillStyle='#4f8b5d';ctx.beginPath();ctx.arc(p.x,p.y-30*s,14*s,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#6ba873';ctx.beginPath();ctx.arc(p.x-7*s,p.y-35*s,8*s,0,Math.PI*2);ctx.fill();
+        return;
+      }
+      if(obj.kind==='lamp'){
+        ctx.strokeStyle='#66727d';ctx.lineWidth=3*s;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-42*s);ctx.stroke();
+        ctx.fillStyle='#ffe6a0';ctx.beginPath();ctx.arc(p.x,p.y-45*s,5*s,0,Math.PI*2);ctx.fill();return;
+      }
+      if(obj.kind==='fountain'){
+        ctx.fillStyle='#6e9da7';ctx.beginPath();ctx.ellipse(p.x,p.y,17*s,7*s,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#83d5e4';ctx.beginPath();ctx.arc(p.x,p.y-8*s,5*s,0,Math.PI*2);ctx.fill();return;
+      }
+      const colors:Record<string,[string,string]>={
+        bed:['#d9b9b4','#9b7c78'],sofa:['#8d7284','#634e5b'],tv:['#303841','#1f252c'],
+        fridge:['#d9e0e4','#98a2a9'],stove:['#8b9298','#5c6368'],shower:['#9bcfd4','#628e94'],
+        computer:['#52677f','#344353'],phone:['#343942','#20242a'],desk:['#866b51','#5d4937'],
+        bench:['#8a6546','#60462f'],bookshelf:['#6c5140','#49362b'],table:['#87664e','#604736'],
+        coffee:['#9a6850','#6c4838'],shelf:['#8f969c','#62686d'],treadmill:['#555d65','#343a40'],
+        clinic_bed:['#c7dddd','#88aaac'],plant:['#4f8658','#31583a'],art:['#9a79ad','#644c72'],
+        trash:['#555b60','#373b3f'],door:['#77543e','#52392b']
+      };
+      const [top,side]=colors[obj.kind]||['#777','#555'];
+      drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
+      if(obj.kind==='computer'){
+        const sp=iso(obj.x,obj.y,obj.z+10);ctx.fillStyle='#79b7ff';ctx.fillRect(sp.x-7*s,sp.y-6*s,14*s,8*s);
+      }else if(obj.kind==='phone'){
+        const sp=iso(obj.x,obj.y,obj.z+2);ctx.fillStyle='#9ae7ff';ctx.fillRect(sp.x-2*s,sp.y-4*s,4*s,7*s);
+      }else if(obj.kind==='plant'){
+        const sp=iso(obj.x,obj.y,obj.z+8);ctx.fillStyle='#67a76d';ctx.beginPath();ctx.arc(sp.x,sp.y-6*s,7*s,0,Math.PI*2);ctx.fill();
+      }
+    };
+
     const sky=ctx.createLinearGradient(0,0,0,height);
     sky.addColorStop(0,'#31445d');
     sky.addColorStop(.48,'#1d2b3b');
@@ -314,6 +374,25 @@ export function GrokSimulationPanel(){
         ctx.beginPath();ctx.arc(label.x,label.y+2,3.5*camera.zoom,0,Math.PI*2);ctx.fill();
       }
     }
+
+    // Interactive world objects are rendered independently from the lots.
+    // They are also the same objects used by the human/fly vision systems.
+    for(const obj of [...WORLD_OBJECTS].sort((a,b)=>(a.x+a.y)-(b.x+b.y)))drawWorldObject(obj);
+
+    // Perception fields: human cone + fly panoramic sensing.
+    const hpGround=iso(state.person.x,state.person.y,0);
+    const humanHeading=state.person.heading||0;
+    const ray=(angle:number,range:number)=>iso(
+      Math.max(0,Math.min(LIFE_WORLD_WIDTH,state.person.x+Math.cos(angle)*range)),
+      Math.max(0,Math.min(LIFE_WORLD_HEIGHT,state.person.y+Math.sin(angle)*range)),
+      0
+    );
+    ctx.fillStyle='rgba(110,240,179,.055)';
+    poly([hpGround,ray(humanHeading-1.09,190),ray(humanHeading+1.09,190)],'rgba(110,240,179,.055)');
+
+    const flyGroundVision=iso(fly.x,fly.y,0);
+    ctx.strokeStyle='rgba(187,140,255,.10)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(flyGroundVision.x,flyGroundVision.y,52*camera.zoom,22*camera.zoom,0,0,Math.PI*2);ctx.stroke();
 
     // Human character rendered inside the world.
     const hp=iso(state.person.x,state.person.y,0);
@@ -390,6 +469,13 @@ export function GrokSimulationPanel(){
   },[state,manualTarget,fly,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
+  const humanVision=useMemo(()=>perceiveHumanWorld(state,fly),[
+    state.person.x,state.person.y,state.person.heading,state.person.currentAction,state.person.location,
+    fly.x,fly.y
+  ]);
+  const flyVision=useMemo(()=>perceiveFlyWorld(fly,state),[
+    fly.x,fly.y,fly.vx,fly.vy,state.person.x,state.person.y,state.person.heading
+  ]);
   const relation=state.relationships[0];
 
   function tick(){
@@ -421,10 +507,10 @@ export function GrokSimulationPanel(){
       return;
     }
 
-    const deterministic=wantsAutonomy?autonomousLifePlan(state,agent,value):deterministicLifePlan(value,state);
+    const deterministic=wantsAutonomy?autonomousLifePlan(state,agent,value,fly):deterministicLifePlan(value,state);
     let selected=deterministic;
     try{
-      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent)});
+      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent,fly)});
       const plannerPrompt=simulationPlannerPrompt(value,state,agent);
       const controller=new AbortController();
       const timeout=window.setTimeout(()=>controller.abort(),18000);
@@ -437,7 +523,7 @@ export function GrokSimulationPanel(){
             mode:'simulation-plan',
             prompt:value,
             language:'pt-BR',
-            worldState:agentWorldObservation(state,agent),
+            worldState:agentWorldObservation(state,agent,fly),
             localAdvisory:advisory?.content||'',
             plannerHint:plannerPrompt
           })
@@ -495,7 +581,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO</span>
         <h1>{state.person.name}</h1>
-        <p>Life-sim 2.5D isométrico · Humano + FlyWire Agent · memória local · otimizado para mobile</p>
+        <p>Life-sim 2.5D open world · Humano + FlyWire Agent · visão local · memória persistente</p>
       </div>
       <div className="sim-clock">
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
@@ -539,6 +625,7 @@ export function GrokSimulationPanel(){
           <span><MapPin size={12}/>{state.person.location}</span>
           <span>{agent.plan?.status==='running'?'Executando plano da IA':manualTarget?'Destino manual: '+manualTarget:'Autonomia local ativa'}</span>
           <span>Mosca: {fly.behavior} · {fly.targetLabel}</span>
+          <span>Visão: {humanVision.visible.length} humano · {flyVision.visible.length} mosca</span>
           <b>{state.person.currentAction}</b>
         </div>
 
@@ -620,6 +707,16 @@ export function GrokSimulationPanel(){
             <div><span>mushroom body</span><i><u style={{width:Math.round(fly.core.mushroomBody*100)+'%'}}/></i><b>{Math.round(fly.core.mushroomBody*100)}%</b></div>
           </div>
           <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Activity size={14}/><b>Percepção</b><span>visão local</span></div>
+          <small className="sim-note"><b>Humano:</b> {humanVision.summary}</small>
+          <small className="sim-note"><b>Mosca:</b> {flyVision.summary}</small>
+          <div className="sim-metrics">
+            {humanVision.visible.slice(0,4).map(item=><span key={'h-'+item.id}>{item.label} · {Math.round(item.distance)}</span>)}
+            {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>🪰 {item.label}</span>)}
+          </div>
         </section>
 
         <section className="sim-panel memories">
