@@ -78,9 +78,11 @@ export async function GET(req:Request){
     }
 
     if(!upstream||!upstream.ok){
-      const detail=(await upstream.text().catch(()=>'')).
-        replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,220);
-      return Response.json({error:'Provider de imagem respondeu '+upstream.status,detail},{status:502});
+      const status=upstream?.status||502;
+      const detail=upstream
+        ? (await upstream.text().catch(()=>'')).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,220)
+        : 'Nenhum modelo de imagem respondeu.';
+      return Response.json({error:'Provider de imagem respondeu '+status,detail},{status:502});
     }
 
     const type=String(upstream.headers.get('content-type')||'');
