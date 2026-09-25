@@ -37,3 +37,18 @@ Frank Stein tags experiences with:
 - dominant feelings.
 
 High-salience experiences receive stronger consolidation/retrieval weight. Emotional tagging is an internal software signal; it is not a biological memory trace copied from a donor.
+
+
+## Hippocampal engrams
+
+Frank stores computational engrams with:
+- cue and gist;
+- sparse dentate vector;
+- CA3 completion state;
+- CA1 mismatch/novelty;
+- emotional vector;
+- salience, strength, repetitions and consolidation.
+
+Recall is cue-based and weighted by similarity + strength + salience + consolidation.
+
+Never describe FlyWire/H01 donor data as the donor's recoverable memories or thoughts. A connectome/atlas is structural evidence, not autobiographical content.
