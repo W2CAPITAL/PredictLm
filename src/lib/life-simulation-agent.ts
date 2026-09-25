@@ -567,7 +567,8 @@ export function executeLifeAgentAction(
       if(affords.has('create')){agent.skills.creativity=clamp(agent.skills.creativity+3);state.needs.fun=clamp(state.needs.fun+5)}
       state=runMinutes(state,Math.min(10,minutes),obj.location);
       state.person.currentAction=activity;
-      state.objectInteraction={objectId:obj.id,actor:'human',verb:activity,tick:state.tick,startedAt:Date.now()};
+      const interactionMs=Math.max(5000,Math.min(30000,minutes*420));
+      state.objectInteraction={objectId:obj.id,actor:'human',verb:activity,tick:state.tick,startedAt:Date.now(),durationMs:interactionMs,expiresAt:Date.now()+interactionMs};
       state.person.x=Math.max(0,Math.min(LIFE_WORLD_WIDTH,obj.x-10));
       state.person.y=Math.max(0,Math.min(LIFE_WORLD_HEIGHT,obj.y+8));
       state.person.heading=Math.atan2(obj.y-state.person.y,obj.x-state.person.x);
