@@ -53,12 +53,13 @@ function providers():Provider[]{
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
   const gatewayKey=process.env.AI_GATEWAY_API_KEY;
-  if(gatewayKey&&process.env.AI_GATEWAY_MODEL){
+  const gatewayModel=process.env.AI_GATEWAY_MODEL;
+  if(gatewayKey&&gatewayModel){
     push({
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
       key:gatewayKey,
-      model:process.env.AI_GATEWAY_MODEL
+      model:gatewayModel
     });
   }
   if(process.env.OPENAI_API_KEY){
