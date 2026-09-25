@@ -4,6 +4,7 @@ import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
 import { mediaErrorText } from '@/lib/media/media-errors';
 import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -35,6 +36,43 @@ function providerImageSize(width:number,height:number,nano:boolean){
   if(ratio>1.3)return '1792x1024';
   if(ratio<0.77)return '1024x1792';
   return '1024x1024';
+}
+
+async function reviewReferenceUsefulness(
+  prompt:string,
+  ref:{title:string;site:string;query:string},
+  inline:{mimeType:string;data:string}
+){
+  try{
+    const instruction=[
+      'You are validating a candidate visual reference before image generation.',
+      'Target request: '+prompt,
+      'Candidate search query: '+ref.query,
+      'Candidate title/site: '+ref.title+' · '+ref.site,
+      'Inspect the pixels. The reference is useful if it clearly depicts at least one requested named character/form/object or the requested canonical scene/setting.',
+      'A single-character reference is useful even when the final request contains multiple characters.',
+      'Reject unrelated characters, fan art with contradictory identity, memes, collages dominated by text, logos-only images, merchandise photos that hide the design, or visibly wrong forms.',
+      'Return JSON only: {"useful":true,"confidence":0.0,"subjects":["visible requested identity"],"reason":"short reason"}.'
+    ].join('\n');
+    const vision=await callVisionProviders(
+      instruction,
+      'data:'+inline.mimeType+';base64,'+inline.data,
+      {timeoutMs:11000,maxProviders:2}
+    );
+    const parsed=parseVisionJson<any>(vision.text);
+    if(!parsed||typeof parsed.useful!=='boolean')return {status:'unavailable' as const,useful:true,confidence:0,subjects:[] as string[],provider:'',model:''};
+    return {
+      status:'reviewed' as const,
+      useful:parsed.useful===true,
+      confidence:Math.max(0,Math.min(1,Number(parsed.confidence)||0)),
+      subjects:Array.isArray(parsed.subjects)?parsed.subjects.map((x:any)=>String(x||'').trim()).filter(Boolean).slice(0,5):[],
+      reason:String(parsed.reason||'').trim().slice(0,280),
+      provider:vision.provider,
+      model:vision.model
+    };
+  }catch{
+    return {status:'unavailable' as const,useful:true,confidence:0,subjects:[] as string[],provider:'',model:''};
+  }
 }
 
 function localRenderUrl(
@@ -134,13 +172,43 @@ export async function POST(req:Request){
       .map((x:any)=>inlineImageFromDataUrl(String(x||'')))
       .filter(Boolean) as {mimeType:string;data:string}[];
 
-    const searchedInline=(await Promise.all(
-      referencePlan.references.slice(0,Math.max(0,3-userInline.length)).map(ref=>fetchReferenceInlineData(ref))
-    )).filter(Boolean) as {mimeType:string;data:string}[];
+    const downloadCandidates=(await Promise.all(
+      referencePlan.references.slice(0,8).map(async ref=>({
+        ref,
+        inline:await fetchReferenceInlineData(ref)
+      }))
+    )).filter(x=>x.inline) as {ref:(typeof referencePlan.references)[number];inline:{mimeType:string;data:string}}[];
+
+    const reviewable=needsStrongIdentity
+      ? await Promise.all(downloadCandidates.slice(0,5).map(async item=>({
+          ...item,
+          review:await reviewReferenceUsefulness(sourcePrompt,item.ref,item.inline)
+        })))
+      : downloadCandidates.map(item=>({...item,review:{status:'skipped' as const,useful:true,confidence:0,subjects:[] as string[],provider:'',model:''}}));
+
+    const approvedDownloaded=reviewable
+      .filter(item=>item.review.useful!==false)
+      .sort((a,b)=>(b.review.confidence||0)-(a.review.confidence||0))
+      .slice(0,Math.max(0,3-userInline.length));
+
+    const searchedInline=approvedDownloaded.map(x=>x.inline);
+    const searchedReferenceUrls=approvedDownloaded.map(x=>x.ref.imageUrl);
     const inlineReferences=[...userInline,...searchedInline].slice(0,3);
+    const referenceReview={
+      candidatesFound:Number(referencePlan.candidatesFound||referencePlan.references.length),
+      urlsDownloaded:downloadCandidates.length,
+      visuallyReviewed:reviewable.filter(x=>x.review.status==='reviewed').length,
+      visuallyApproved:approvedDownloaded.length,
+      providers:[...new Set(reviewable.map(x=>x.review.provider).filter(Boolean))],
+      subjects:[...new Set(reviewable.flatMap(x=>x.review.subjects||[]))].slice(0,10),
+      queries:referencePlan.queries||[referencePlan.query].filter(Boolean),
+      searchRounds:Number(referencePlan.searchRounds||1)
+    };
     const providerPrompt=groundedPrompt+(userInline.length
       ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
-      : '');
+      : searchedInline.length
+        ? '\n\nAUTOMATIC VISUAL GROUNDING: '+searchedInline.length+' downloaded reference image(s) passed the automatic usefulness filter and should control canonical identity/forms more strongly than textual style expansion.'
+        : '');
 
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
@@ -232,6 +300,7 @@ export async function POST(req:Request){
             referenceImagesPassed,
             userReferenceCount:userInline.length,
             searchedReferenceCount:searchedInline.length,
+            referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
             expandedPrompt:providerPrompt,
@@ -253,7 +322,7 @@ export async function POST(req:Request){
 
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
-    const automaticReferenceUrls=referencePlan.references.map(x=>x.imageUrl).filter(Boolean).slice(0,3);
+    const automaticReferenceUrls=searchedReferenceUrls.slice(0,3);
     const wantsReferenceFallback=needsStrongIdentity&&automaticReferenceUrls.length>0;
     const fallbackModel=wantsReferenceFallback
       ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
@@ -277,6 +346,7 @@ export async function POST(req:Request){
       automaticReferenceCount:automaticReferenceUrls.length,
       userReferenceCount:userInline.length,
       searchedReferenceCount:searchedInline.length,
+      referenceReview,
       referenceWarnings:referencePlan.warnings,
       originalPrompt:sourcePrompt,
       expandedPrompt:providerPrompt,
