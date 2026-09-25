@@ -27,6 +27,9 @@ export interface LifeFirstPersonViewportProps{
   action:string;
   target?:string;
   interactionObjectId?:string|null;
+  interactionVerb?:string;
+  interactionStartedAt?:number;
+  interactionDurationMs?:number;
   peripheralFovDeg?:number;
   otherAgents?:PovOtherAgent[];
 }
@@ -96,6 +99,11 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
         range:props.range
       };
       const scene=buildFirstPersonScene(camera);
+      const activeObject=props.interactionObjectId?WORLD_OBJECTS.find(x=>x.id===props.interactionObjectId):null;
+      const elapsed=props.interactionStartedAt?Math.max(0,performance.now()-props.interactionStartedAt):performance.now();
+      const duration=Math.max(1200,props.interactionDurationMs||7000);
+      const interactionPhase=(elapsed%duration)/duration;
+      const interactionPulse=(Math.sin(interactionPhase*Math.PI*2*3)+1)/2;
 
       const sky=ctx.createLinearGradient(0,0,0,height*.56);
       sky.addColorStop(0,'#273a57');
@@ -135,7 +143,7 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
         const x=base.x-screenW*.5;
         const y=base.y-screenH;
         const colors=palette[voxel.kind]||['#78828d','#4d555e','#aab4bf'];
-        const pulse=props.interactionObjectId===voxel.id?(Math.sin(performance.now()/120)+1)/2:0;
+        const pulse=props.interactionObjectId===voxel.id?interactionPulse:0;
         if(pulse){
           ctx.shadowColor='#ffe78c';
           ctx.shadowBlur=10+12*pulse;
@@ -159,6 +167,44 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
         ctx.closePath();
         ctx.fill();
         ctx.shadowBlur=0;
+
+        if(props.interactionObjectId===voxel.id){
+          const cx=base.x,cy=Math.max(8,y+screenH*.45);
+          if(voxel.kind==='computer'||voxel.kind==='tv'){
+            ctx.fillStyle='rgba(96,205,255,'+(0.28+interactionPulse*.5)+')';
+            ctx.fillRect(x+screenW*.16,y+screenH*.16,screenW*.68,screenH*.38);
+            ctx.strokeStyle='rgba(220,248,255,.85)';
+            ctx.lineWidth=1;
+            for(let row=0;row<3;row++){
+              const ww=screenW*(.22+.12*((row+Math.floor(interactionPhase*10))%3));
+              ctx.beginPath();ctx.moveTo(x+screenW*.24,y+screenH*(.25+row*.09));ctx.lineTo(x+screenW*.24+ww,y+screenH*(.25+row*.09));ctx.stroke();
+            }
+          }else if(voxel.kind==='printer'){
+            const sheetH=8+interactionPulse*14;
+            ctx.fillStyle='#f5f4e9';ctx.fillRect(cx-screenW*.22,y-screenH*.05,screenW*.44,sheetH);
+            ctx.fillStyle='#8ba0b6';ctx.fillRect(cx-screenW*.16,y+2,screenW*.28,1);
+          }else if(voxel.kind==='whiteboard'){
+            ctx.strokeStyle='rgba(94,140,235,.95)';ctx.lineWidth=1.4;
+            for(let row=0;row<4;row++){
+              const yy=y+screenH*(.18+row*.16);
+              const w=screenW*(.18+.5*Math.abs(Math.sin(interactionPhase*4+row)));
+              ctx.beginPath();ctx.moveTo(x+screenW*.12,yy);ctx.lineTo(x+screenW*.12+w,yy);ctx.stroke();
+            }
+          }else if(voxel.kind==='fridge'){
+            ctx.fillStyle='rgba(195,235,255,'+(.12+interactionPulse*.26)+')';
+            ctx.fillRect(x+screenW*.08,y+screenH*.08,screenW*.84,screenH*.84);
+            ctx.strokeStyle='#e5f6ff';ctx.beginPath();ctx.moveTo(x+screenW*.84,y+screenH*.18);ctx.lineTo(x+screenW*(.84+.12*interactionPulse),y+screenH*.55);ctx.stroke();
+          }else if(voxel.kind==='coffee'||voxel.kind==='stove'){
+            ctx.strokeStyle='rgba(240,240,255,'+(.25+interactionPulse*.5)+')';ctx.lineWidth=1.2;
+            for(let s=0;s<3;s++){ctx.beginPath();ctx.moveTo(cx+(s-1)*4,cy-4);ctx.quadraticCurveTo(cx+(s-1)*4+3*Math.sin(interactionPhase*6+s),cy-14,cx+(s-1)*4,cy-22);ctx.stroke();}
+          }else if(voxel.kind==='fruit_tree'||voxel.kind==='flower'||voxel.kind==='plant'){
+            ctx.fillStyle='rgba(255,211,86,'+(.25+interactionPulse*.55)+')';
+            ctx.beginPath();ctx.arc(cx+Math.sin(interactionPhase*8)*screenW*.14,cy-screenH*.3,2.5+interactionPulse*2,0,Math.PI*2);ctx.fill();
+          }else if(voxel.kind==='water'||voxel.kind==='fountain'||voxel.kind==='shower'){
+            ctx.strokeStyle='rgba(123,222,255,'+(.35+interactionPulse*.5)+')';ctx.lineWidth=1;
+            for(let s=-2;s<=2;s++){ctx.beginPath();ctx.moveTo(cx+s*4,y+screenH*.1);ctx.lineTo(cx+s*4+Math.sin(interactionPhase*10+s)*2,y+screenH*.72);ctx.stroke();}
+          }
+        }
 
         if(voxel.distance<95){
           ctx.font='9px ui-sans-serif,system-ui';
@@ -232,6 +278,25 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
       const peripheral=props.peripheralFovDeg&&props.peripheralFovDeg!==props.fovDeg?' · periférico '+props.peripheralFovDeg+'°':'';
       ctx.fillText('POV voxel '+props.fovDeg+'°'+peripheral+' · '+Math.round(props.range)+'u',16,31);
 
+      if(activeObject){
+        const handY=height-22;
+        const reach=18+interactionPulse*18;
+        if(props.actor==='human'){
+          ctx.strokeStyle='#d8ad91';ctx.lineWidth=7;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(width*.34,handY+14);ctx.lineTo(width*.46,handY-reach);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(width*.66,handY+14);ctx.lineTo(width*.54,handY-reach*.9);ctx.stroke();
+        }else if(props.actor==='macaque'){
+          ctx.strokeStyle='#9c7353';ctx.lineWidth=8;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(width*.27,handY+12);ctx.lineTo(width*.48,handY-reach);ctx.stroke();
+          ctx.beginPath();ctx.moveTo(width*.73,handY+12);ctx.lineTo(width*.55,handY-reach*.82);ctx.stroke();
+        }else{
+          ctx.strokeStyle='rgba(219,207,255,.75)';ctx.lineWidth=1.4;
+          for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(width*.5+(i-1)*9,handY);ctx.lineTo(width*.5+(i-1)*5,handY-reach*.55);ctx.stroke();}
+        }
+        ctx.font='700 8px ui-sans-serif,system-ui';ctx.textAlign='center';ctx.fillStyle='#ffe99a';
+        ctx.fillText((props.interactionVerb||('interagindo com '+activeObject.label)).slice(0,72),width*.5,height-9);
+      }
+
       const thought=String(props.thought||'').replace(/\s+/g,' ').trim();
       const action=String(props.action||'').replace(/\s+/g,' ').trim();
       const panelH=thought?48:29;
@@ -252,7 +317,7 @@ export function LifeFirstPersonViewport(props:LifeFirstPersonViewportProps){
     return()=>cancelAnimationFrame(raf);
   },[
     props.actor,props.x,props.y,props.z,props.heading,props.fovDeg,props.range,
-    props.thought,props.action,props.target,props.interactionObjectId,props.peripheralFovDeg,props.otherAgents
+    props.thought,props.action,props.target,props.interactionObjectId,props.interactionVerb,props.interactionStartedAt,props.interactionDurationMs,props.peripheralFovDeg,props.otherAgents
   ]);
 
   return <div style={{minWidth:0,border:'1px solid #263244',background:'#080c12',borderRadius:13,overflow:'hidden'}}>
