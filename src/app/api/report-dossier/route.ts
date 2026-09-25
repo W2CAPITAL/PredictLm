@@ -87,6 +87,7 @@ export async function GET(req:Request){
     classifications:['publico','interno','confidencial','restrito'],
     contract:REPORT_DOSSIER_CONTRACT,
     example:'/api/report-dossier?example=1',
+    aiGenerate:'/api/report-dossier/generate',
     studio:'/dossie-studio'
   },{headers:{'Cache-Control':'no-store'}});
 }
