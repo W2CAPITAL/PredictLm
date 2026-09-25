@@ -1,6 +1,10 @@
 import { buildLegalLenses, interpretProcessState, mergeTimeline } from './analysis';
 import { cnjDigits, datajudTribunal, isValidCnj, maskCnj } from './cnj';
-import type { LegalMovement, LegalPortalResult, LegalProcessBundle, LegalPublication, LegalTraceStep } from './types';
+import type {
+  DjenSearchInput, DjenSearchResult, LegalMovement, LegalPortalResult, LegalProcessBundle, LegalPublication,
+  LegalSearchCase, LegalSearchInput, LegalSearchResult, LegalTraceStep
+} from './types';
+import {legalTribunal} from './tribunals';
 
 const DATAJUD_KEY_FALLBACK='cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==';
 let keyCache:{key:string;expires:number}|null=null;
@@ -521,5 +525,148 @@ export async function queryLegalProcess(value:string):Promise<LegalProcessBundle
       caveats,
       sourceSummary
     }
+  };
+}
+
+
+function datajudSearchHit(hit:any,tribunalLabel:string):LegalSearchCase|null{
+  const source=hit?._source||{};
+  const digits=cnjDigits(source?.numeroProcesso||'');
+  if(digits.length!==20)return null;
+  const moves=(Array.isArray(source.movimentos)?source.movimentos:[])
+    .map((m:any)=>({
+      date:normalizeDate(m?.dataHora||m?.data_hora),
+      code:m?.codigo,
+      name:String(m?.nome||m?.descricao||'Movimentação').trim(),
+      details:movementDetails(m)
+    }))
+    .sort((a:any,b:any)=>String(b.date).localeCompare(String(a.date)));
+  const latest=moves[0];
+  const subjects=(Array.isArray(source.assuntos)?source.assuntos:[])
+    .map((x:any)=>({code:x?.codigo,name:x?.nome}))
+    .filter((x:any)=>x.name);
+  return {
+    processNumber:maskCnj(digits),
+    digits,
+    tribunal:String(source?.tribunal||tribunalLabel),
+    degree:String(source?.grau||'')||undefined,
+    filedAt:normalizeDate(source?.dataAjuizamento)||undefined,
+    lastUpdate:normalizeDate(source?.dataHoraUltimaAtualizacao||source?.['@timestamp']||source?.data_ultima_atualizacao)||undefined,
+    class:source?.classe?{code:source.classe.codigo,name:source.classe.nome}:undefined,
+    subjects,
+    court:source?.orgaoJulgador?{
+      code:source.orgaoJulgador.codigo,
+      name:source.orgaoJulgador.nome,
+      municipalityCode:source.orgaoJulgador.codigoMunicipioIBGE
+    }:undefined,
+    format:source?.formato?.nome,
+    system:source?.sistema?.nome,
+    confidentiality:Number.isFinite(Number(source?.nivelSigilo))?Number(source.nivelSigilo):undefined,
+    movementCount:moves.length,
+    latestMovement:latest
+  };
+}
+
+export async function searchLegalCases(input:LegalSearchInput):Promise<LegalSearchResult>{
+  const tribunal=legalTribunal(input.tribunal);
+  if(!tribunal)throw new Error('Tribunal não suportado.');
+  const size=Math.max(1,Math.min(100,Number(input.size)||50));
+  const offset=Math.max(0,Math.min(9900,Number(input.offset)||0));
+  const filters:any[]=[];
+  const must:any[]=[];
+
+  const processDigits=cnjDigits(input.processNumber||'');
+  if(processDigits){
+    if(processDigits.length!==20)throw new Error('Número CNJ inválido para a busca.');
+    must.push({match:{numeroProcesso:processDigits}});
+  }
+  if(input.degree)filters.push({term:{grau:String(input.degree)}});
+  if(String(input.classCode||'').trim())filters.push({term:{'classe.codigo':Number(input.classCode)||String(input.classCode)}});
+  if(String(input.subjectCode||'').trim())filters.push({term:{'assuntos.codigo':Number(input.subjectCode)||String(input.subjectCode)}});
+  if(String(input.municipalityCode||'').trim())filters.push({term:{'orgaoJulgador.codigoMunicipioIBGE':Number(input.municipalityCode)||String(input.municipalityCode)}});
+
+  if(input.filedFrom||input.filedTo){
+    const range:any={};
+    if(input.filedFrom)range.gte=String(input.filedFrom).slice(0,10)+'T00:00:00.000Z';
+    if(input.filedTo)range.lte=String(input.filedTo).slice(0,10)+'T23:59:59.999Z';
+    filters.push({range:{dataAjuizamento:range}});
+  }
+
+  const query=must.length||filters.length?{bool:{must,filter:filters}}:{match_all:{}};
+  const endpoint='https://api-publica.datajud.cnj.jus.br/api_publica_'+tribunal.alias+'/_search';
+  const key=await datajudKey();
+  const body=JSON.stringify({
+    from:offset,
+    size,
+    track_total_hits:true,
+    query,
+    sort:[{'dataHoraUltimaAtualizacao':{order:'desc',unmapped_type:'date'}},{'_doc':{order:'desc'}}]
+  });
+  const r=await retryFetch(endpoint,{
+    method:'POST',
+    headers:{Authorization:'APIKey '+key,'Content-Type':'application/json','Accept':'application/json',...BROWSER_HEADERS},
+    body
+  },[15000,24000]);
+  const text=await r.text();
+  if(!r.ok)throw new Error('DataJud HTTP '+r.status+(text?' — '+stripHtml(text).slice(0,180):''));
+  const json=JSON.parse(text);
+  const hits=Array.isArray(json?.hits?.hits)?json.hits.hits:[];
+  const totalRaw=json?.hits?.total;
+  const total=typeof totalRaw==='number'?totalRaw:Number(totalRaw?.value||hits.length);
+  const items=hits.map((hit:any)=>datajudSearchHit(hit,tribunal.sigla)).filter(Boolean) as LegalSearchCase[];
+  return {
+    tribunal:tribunal.sigla,
+    alias:tribunal.alias,
+    total,
+    size,
+    offset,
+    fetchedAt:new Date().toISOString(),
+    items,
+    source:'DataJud',
+    caveat:'DataJud é uma base pública de metadados processuais e pode ter defasagem em relação ao portal do tribunal. Confirme atos e prazos nos autos/portal oficial.'
+  };
+}
+
+export async function searchDjenCommunications(input:DjenSearchInput):Promise<DjenSearchResult>{
+  const oab=String(input.oab||'').replace(/\D/g,'');
+  const uf=String(input.uf||'').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,2);
+  const digits=cnjDigits(input.processNumber||'');
+  if(!oab&&!digits)throw new Error('Informe OAB ou número do processo.');
+  if(oab&&!uf)throw new Error('A busca por OAB exige UF.');
+  if(digits&&digits.length!==20)throw new Error('Número CNJ inválido.');
+
+  const url=new URL('https://comunicaapi.pje.jus.br/api/v1/comunicacao');
+  if(oab){url.searchParams.set('numeroOab',oab);url.searchParams.set('ufOab',uf)}
+  if(digits)url.searchParams.set('numeroProcesso',digits);
+  if(input.from)url.searchParams.set('dataDisponibilizacaoInicio',String(input.from).slice(0,10));
+  if(input.to)url.searchParams.set('dataDisponibilizacaoFim',String(input.to).slice(0,10));
+  url.searchParams.set('pagina',String(Math.max(1,Number(input.page)||1)));
+  url.searchParams.set('itensPorPagina',String(Math.max(1,Math.min(100,Number(input.size)||100))));
+
+  const r=await retryFetch(url.toString(),{
+    headers:{
+      Accept:'application/json, text/plain, */*',
+      Referer:'https://comunica.pje.jus.br/',
+      Origin:'https://comunica.pje.jus.br',
+      ...BROWSER_HEADERS
+    }
+  },[10000,18000]);
+  const text=await r.text();
+  if(!r.ok)throw new Error('DJEN HTTP '+r.status+(text?' — '+stripHtml(text).slice(0,180):''));
+  const json=JSON.parse(text);
+  let rows=Array.isArray(json?.items)?json.items:Array.isArray(json?.content)?json.content:[];
+  const keyword=String(input.keyword||'').trim().toLowerCase();
+  const tribunal=String(input.tribunal||'').trim().toLowerCase();
+  if(keyword)rows=rows.filter((x:any)=>stripHtml(x?.texto||x?.textoComunicacao||x?.conteudo||'').toLowerCase().includes(keyword));
+  if(tribunal)rows=rows.filter((x:any)=>String(x?.siglaTribunal||x?.sigla_tribunal||x?.tribunal||'').toLowerCase().includes(tribunal));
+  const items=rows.map((x:any,i:number)=>normalizePublication(x,i,digits||String(x?.numeroProcesso||'')));
+  const count=Number(json?.count??json?.total??items.length);
+  return {
+    ok:true,
+    endpoint:url.toString(),
+    count:Math.max(count,items.length),
+    items,
+    fetchedAt:new Date().toISOString(),
+    caveat:'Publicações do DJEN são indícios de comunicação processual. Prazo legal exige leitura integral, data juridicamente relevante e calendário/suspensões aplicáveis.'
   };
 }
