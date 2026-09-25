@@ -57,6 +57,36 @@ test('animal scores stay calibrated to the model output and non-animals remain v
   assert.throws(()=>validateAnimalFile({size:30,type:'text/html'}));assert.throws(()=>validateAnimalFile({size:9*1024*1024,type:'image/png'}));
 });
 
+test('browser ImageNet abstains instead of calling a monkey photo a household object at middling confidence',()=>{
+  const r=animalResult('browser','mobilenet',[
+    {label:'window screen',score:.566,animal:false},
+    {label:'shower curtain',score:.101,animal:false},
+    {label:'macaque',score:.09,animal:true}
+  ]);
+  assert.equal(r.verdict,'uncertain');
+});
+
+test('semantic auto vision can positively identify an animal without ImageNet class ids',()=>{
+  const r=animalResult('auto','vision-provider',[
+    {label:'macaco / macaque',score:.91,animal:true},
+    {label:'outro primata',score:.22,animal:true}
+  ],120,{semantic:true,scientificName:'Macaca sp.',description:'Um primata de pelagem escura em primeiro plano.',confidence:.91});
+  assert.equal(r.verdict,'likely-animal');
+  assert.equal(r.semantic,true);
+  assert.match(r.description||'',/primata/i);
+});
+
+test('absurd egg tool modifier is preserved instead of returning the canned incubator recipe',()=>{
+  const prompt='como chocar um ovo com uma britadeira';
+  assert.equal(classifyConversation(prompt),'howto');
+  const answer=practicalHowToReply(prompt);
+  assert.ok(answer);
+  assert.match(answer!,/britadeira/i);
+  assert.match(answer!,/não dá|nao da/i);
+  assert.doesNotMatch(answer!,/37,5|21 dias|50–60/);
+  assert.equal(shouldSearchConversation('howto',true,prompt),false);
+});
+
 test('hypothetical prompts stay isolated from retrieval topics',()=>{
   const prompt='E se Alexandre de Moraes fosse uma mosca?';
   assert.equal(classifyConversation(prompt),'hypothetical');
