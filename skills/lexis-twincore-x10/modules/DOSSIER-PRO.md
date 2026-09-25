@@ -65,3 +65,15 @@ Regras:
 - se houver ato com efeito jurídico (protocolo, assinatura, acordo ou pagamento), exigir confirmação humana.
 
 O renderer jurídico legado pode continuar para telas específicas de processo, mas novos relatórios genéricos e exportações devem compartilhar o contrato Report Architect para evitar dois padrões incompatíveis.
+
+
+## Universal Report Intelligence boundary
+
+DOSSIER PRO remains the legal-domain specialist. It does not own the generic report system.
+
+For a legal dossier:
+CNJ/DataJud/DJEN/documents → DOSSIER PRO evidence normalization → FORGE/AEGIS/PARALLAX → Council X10 → Chair → Report Architect renderer.
+
+For non-legal reports, use Report Architect directly with the inferred blueprint.
+
+Council/brains may challenge and synthesize evidence, but they cannot upgrade unknown/inference into official fact.
