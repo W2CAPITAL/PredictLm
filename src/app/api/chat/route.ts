@@ -1,4 +1,4 @@
-import { conversationAnswerIssue, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -52,13 +52,13 @@ function providers():Provider[]{
   if(process.env.AI_BASE_URL&&process.env.AI_API_KEY&&process.env.AI_MODEL){
     push({name:'server',base:process.env.AI_BASE_URL,key:process.env.AI_API_KEY,model:process.env.AI_MODEL});
   }
-  const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
-  if(gatewayKey){
+  const gatewayKey=process.env.AI_GATEWAY_API_KEY;
+  if(gatewayKey&&process.env.AI_GATEWAY_MODEL){
     push({
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
       key:gatewayKey,
-      model:process.env.AI_GATEWAY_MODEL||'anthropic/claude-sonnet-4.6'
+      model:process.env.AI_GATEWAY_MODEL
     });
   }
   if(process.env.OPENAI_API_KEY){
@@ -143,11 +143,9 @@ function providers():Provider[]{
 }
 
 function primaryProviders(configured:Provider[]){
-  return configured.filter(provider=>
-    provider.name!=='ollama'
-    && provider.name!=='freellmapi'
-    && !loopbackBase(provider.base)
-  );
+  // Missing environment variables are already ignored by providers(). Keep
+  // every actually configured endpoint that the current server can reach.
+  return configured.filter(provider=>serverCanReach(provider.base));
 }
 
 type ProviderTask='code'|'legal'|'research'|'creative'|'reasoning'|'quick'|'general';
@@ -279,9 +277,9 @@ function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
   const plan=planAgenticRun(prompt,surface,deep);
   return [
     'API AGENTIC PLAN: '+plan.roles.join(' → ')+'.',
-    'The remote provider is the primary answering engine. Execute relevant contracts silently; do not recite agents, skills or routing to the user.',
+    'The PredictLM core owns the response contract. A configured provider is only an optional generation backend and must obey the selected agents/skills silently.',
     'Use deferred skill discovery: load only task-relevant contracts instead of the entire catalog.',
-    'Local runtimes, when present, are advisory evidence only and never outrank the remote provider.',
+    'Local/browser runtimes, knowledge and memory are first-class PredictLM paths; no remote provider is required to complete a normal chat turn.',
     skillContractContext(prompt,surface,surface==='chat'?7:9)
   ].join('\n');
 }
@@ -458,13 +456,18 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
 
   const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.min(4,Math.max(PROVIDER_ATTEMPT_LIMIT,4)));
   if(!candidates.length){
+    const kind=classifyConversation(prompt);
+    const content=generativeOfflineReply(prompt,kind);
     return Response.json({
       available:false,
-      content:null,
-      code:'NO_REMOTE_PROVIDER',
+      content,
+      provider:'predictlm-core',
+      model:'internal',
+      code:content?'PREDICTLM_INTERNAL':'NO_REMOTE_PROVIDER',
       mode:'clean-chat',
-      errors:['Nenhuma API remota configurada ou disponível.']
-    },{status:503,headers:{'Cache-Control':'no-store'}});
+      sources:[],
+      errors:content?[]:['Nenhuma API remota configurada ou disponível.']
+    },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
   }
 
   // Race several configured APIs inside one bounded window. We still select
@@ -653,12 +656,25 @@ export async function POST(req:Request){
 
     const configured=primaryProviders(providers());
     if(!configured.length){
+      if(body?.mode==='simulation-plan'||body?.mode==='media-director'){
+        return Response.json({
+          available:false,
+          content:null,
+          code:'NO_CONFIGURED_GENERATOR',
+          message:'Este modo precisa de um gerador compatível configurado; o chat normal do PredictLM continua funcionando sem provider remoto.'
+        },{status:503,headers:{'Cache-Control':'no-store'}});
+      }
+      const kind=classifyConversation(prompt);
+      const content=generativeOfflineReply(prompt,kind);
       return Response.json({
         available:false,
-        content:null,
-        code:'NO_REMOTE_PROVIDER',
-        message:'Nenhuma API remota server-side está configurada. Runtimes locais permanecem apenas auxiliares e não podem produzir a resposta final do Predict Auto.'
-      },{status:503,headers:{'Cache-Control':'no-store'}});
+        content,
+        provider:'predictlm-core',
+        model:'internal',
+        code:content?'PREDICTLM_INTERNAL':'NO_REMOTE_PROVIDER',
+        mode:body?.mode==='clean-chat'?'clean-chat':'predictlm-core',
+        sources:[]
+      },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
@@ -873,7 +889,20 @@ export async function POST(req:Request){
         errors.push(String(error?.message||error).slice(0,300));
       }
     }
-    return Response.json({error:'Não foi possível obter uma resposta final válida dentro do orçamento de execução.',code:'NO_VALID_ANSWER',attempted:candidates.length,budgetMs:REQUEST_BUDGET_MS},{status:502,headers:{'Cache-Control':'no-store'}});
+    const internal=generativeOfflineReply(prompt,classifyConversation(prompt))||answerAnchor;
+    if(internal){
+      return Response.json({
+        content:internal,
+        provider:'predictlm-core',
+        model:'internal',
+        cache:'miss',
+        code:'PREDICTLM_INTERNAL_AFTER_PROVIDER_FAILURE',
+        attempted:candidates.length,
+        budgetMs:REQUEST_BUDGET_MS,
+        sources:[]
+      },{headers:{'Cache-Control':'no-store'}});
+    }
+    return Response.json({error:'O PredictLM não encontrou uma resposta interna válida neste turno.',code:'NO_VALID_ANSWER',attempted:candidates.length,budgetMs:REQUEST_BUDGET_MS},{status:502,headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:500});
   }
