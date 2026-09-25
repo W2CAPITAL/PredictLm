@@ -66,7 +66,10 @@ export function stepFlySimulation(
     height?:number;
   }
 ):FlySimulationState{
-  const prev=previous?.version===1?previous:createFlySimulationState();
+  const base=createFlySimulationState(previous?.core);
+  const prev:FlySimulationState=previous?.version===1
+    ? {...base,...previous,lastTargets:Array.isArray(previous.lastTargets)?previous.lastTargets:[]}
+    : base;
   const width=input.width||LIFE_WORLD_WIDTH;
   const height=input.height||LIFE_WORLD_HEIGHT;
   const currentZ=Number.isFinite(prev.z)?prev.z:34;
