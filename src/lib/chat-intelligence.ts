@@ -288,9 +288,9 @@ export function answerQuality(prompt:string,content:string){
   if(text.length>=180)score+=2; else if(text.length>=90)score+=1;
   if(/\n|\d+\.|- |\*\*/.test(text))score+=1;
   if(/como|passo|agora|fa[cç]a|primeiro|depois|pr[oó]ximo/.test(clean(text)))score+=1;
-  if(/^como\b/.test(p)&&text.length<140)score-=2;
-  if(/^como\b/.test(p)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
-  if(/^como\b/.test(p)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
+  if(isGenericHowTo(prompt)&&text.length<140)score-=2;
+  if(isGenericHowTo(prompt)&&/^(uma |o |a ).{0,100}\b(e|é)\b/.test(clean(text)))score-=2;
+  if(isGenericHowTo(prompt)&&!/(passo|primeiro|depois|coloque|use|fa[cç]a|plante|mantenha|espere|prepare|deixe|adicione|retire|corte|cubra|regue)/.test(clean(text)))score-=1;
   if(/nao tenho contexto|não tenho contexto|ative neural|ative o neural|fallback/i.test(text))score-=3;
   const stableFactual=/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
     && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|patrimônio|preco|preço|ranking)\b/.test(p);
@@ -554,6 +554,13 @@ const TOPIC_SYNONYMS:Record<string,string[]>={
 export function responseTopicAlignment(prompt:string,content:string){
   const p=clean(prompt);
   const c=clean(content);
+  if(!c)return {relevant:false,score:0,subject:[] as string[]};
+
+  // Generative/transformative requests often produce correct outputs without
+  // repeating command words or even the original topic literally.
+  const generative=/^(?:escreva|redija|crie|gere|invente|imagine|traduza|reescreva|reformule|resuma|corrija|melhore|transforme|continue|complete|fa[cç]a)\b/.test(p);
+  if(generative&&c.length>=20)return {relevant:true,score:1,subject:[] as string[]};
+
   const subject=p.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!TOPIC_STOPWORDS.has(x));
   if(!subject.length)return {relevant:true,score:1,subject:[] as string[]};
   let hits=0;
@@ -563,5 +570,9 @@ export function responseTopicAlignment(prompt:string,content:string){
   }
   const score=hits/subject.length;
   const hypothetical=isHypotheticalPrompt(prompt);
-  return {relevant:hits>=1&&(hypothetical||subject.length===1||score>=0.34),score,subject};
+  return {
+    relevant:hits>=1&&(hypothetical||subject.length===1||score>=0.25),
+    score,
+    subject
+  };
 }
