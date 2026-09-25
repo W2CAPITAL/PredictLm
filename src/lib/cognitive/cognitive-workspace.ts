@@ -1,6 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
 import {cognitiveFunctionalMapContext} from './functional-map';
+import {advanceFrankStein,createFrankSteinState,frankSteinContext,type FrankSteinState} from './frank-stein-brain';
 
 export interface CognitiveEpisode{
   at:number;
@@ -56,6 +57,7 @@ export interface CognitiveState{
     perceptual:CognitiveMemoryTrace[];
   };
   consciousAccess:ConsciousAccessState;
+  frank:FrankSteinState;
   mappedEvidence:{
     fly?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
     human?:{nodes:number;edges:number;totalWeight:number;excitation:number;inhibition:number;regions:number;source:'imported-real-subset'};
@@ -118,6 +120,7 @@ export function createCognitiveState():CognitiveState{
       globalBroadcast:.44,
       arousal:.55
     },
+    frank:createFrankSteinState(),
     mappedEvidence:{},
     lastUpdated:Date.now()
   };
@@ -158,6 +161,22 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
     actionReadiness>.65?'prefer-concrete-next-action':'answer-before-action'
   ];
 
+  const provisional={
+    ...prev,
+    version:1 as const,
+    tick:prev.tick+1,
+    fly,
+    human,
+    workspace:{mode,salience,confidence,uncertainty,inhibition,exploration,actionReadiness,broadcast},
+    consciousAccess
+  } as CognitiveState;
+  const frank=advanceFrankStein(prev.frank,{
+    prompt,
+    cognitive:provisional,
+    perception:prev.memory?.perceptual?.at(-1)?.text||'contexto atual',
+    intendedAction:broadcast.join(', ')
+  });
+
   return {
     version:1,
     tick:prev.tick+1,
@@ -172,6 +191,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
       perceptual:(prev.memory?.perceptual||[]).slice(-120)
     },
     consciousAccess,
+    frank,
     mappedEvidence:prev.mappedEvidence||{},
     lastUpdated:Date.now()
   };
@@ -183,6 +203,7 @@ export function cognitivePromptContext(state:CognitiveState){
     'This is a software architecture informed by two real mapped connectome datasets. It is not evidence of consciousness.',
     flyCoreContext(state.fly),
     humanCoreContext(state.human),
+    frankSteinContext(state.frank),
     'GLOBAL WORKSPACE:',
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
@@ -237,6 +258,11 @@ export function applyCognitiveOutcome(
     ...previous,
     fly,
     human,
+    frank:advanceFrankStein(previous.frank,{
+      prompt:input.prompt+' '+input.answer,
+      cognitive:previous,
+      intendedAction:'avaliar o resultado e atualizar memória emocional'
+    }),
     workspace:{
       ...previous.workspace,
       confidence:clamp(previous.workspace.confidence*.66+directReward*.34),
@@ -268,6 +294,7 @@ export function applyMappedSubsetEvidence(
 ):CognitiveState{
   const next:CognitiveState={
     ...previous,
+    frank:previous.frank||createFrankSteinState(),
     mappedEvidence:{
       ...(previous.mappedEvidence||{}),
       [kind]:{...summary,source:'imported-real-subset'}
