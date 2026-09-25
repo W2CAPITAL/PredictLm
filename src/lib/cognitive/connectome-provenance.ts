@@ -118,8 +118,63 @@ export const MACAQUE_CORTEX_SPATIAL_ATLAS:BrainAtlasProfile={
   ]
 };
 
+
+
+export type ProjectionAtlasProfile={
+  id:string;
+  species:string;
+  dataset:string;
+  release:string;
+  scope:string;
+  sourceUrl:string;
+  paperUrl:string;
+  neurons?:number;
+  projectionSubtypes?:number;
+  corticalInjectionSites?:number;
+  subcorticalInjectionSites?:number;
+  sourceAnimals?:number;
+  notes:string[];
+};
+
+export const MACAQUE_PFC_PROJECTOME:ProjectionAtlasProfile={
+  id:'macaque-pfc-projectome-2025',
+  species:'Macaca fascicularis (cynomolgus macaque)',
+  dataset:'Single-neuron projectomes of macaque prefrontal cortex',
+  release:'Cell 2025 / Digital Brain public atlas',
+  scope:'Whole-brain axonal projectomes of individually reconstructed macaque PFC neurons; not synapse-resolution connectivity',
+  sourceUrl:'https://macaque.digital-brain.cn/projectome/pfc',
+  paperUrl:'https://www.cell.com/cell/fulltext/S0092-8674(25)00672-4',
+  neurons:2231,
+  projectionSubtypes:32,
+  corticalInjectionSites:19,
+  sourceAnimals:7,
+  notes:[
+    '2,231 single-neuron whole-brain projectomes reconstructed from macaque prefrontal cortex.',
+    '32 projectome-based subtypes spanning intra-telencephalic, pyramidal-tract and cortico-thalamic classes.',
+    'Useful as a primate long-range projection prior; it does not identify synapses and must not be relabeled as human connectivity.'
+  ]
+};
+
+export const MACAQUE_CLAUSTRUM_CONNECTIVITY:ProjectionAtlasProfile={
+  id:'macaque-claustrum-connectivity',
+  species:'Macaca fascicularis (cynomolgus macaque)',
+  dataset:'Whole-brain connectivity of monkey claustrum',
+  release:'Digital Brain public atlas 2024',
+  scope:'Tracer-based macaque claustrum connectivity sampled from cortical, subcortical and claustrum injection sites',
+  sourceUrl:'https://macaque.digital-brain.cn/connectivity-atlas/claustrum',
+  paperUrl:'https://macaque.digital-brain.cn/claustrum',
+  corticalInjectionSites:148,
+  subcorticalInjectionSites:15,
+  notes:[
+    'Tracer dataset includes 148 cortical injection sites and 15 subcortical sites, plus 5 sites in the claustrum.',
+    'Useful as a primate claustrum/brain-wide connectivity prior only.',
+    'It is not a complete macaque whole-brain synaptic connectome and cannot be treated as direct human connectivity.'
+  ]
+};
+
 export const CONNECTOME_PROFILES=[FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX] as const;
 export const BRAIN_ATLAS_PROFILES=[MACAQUE_CORTEX_SPATIAL_ATLAS] as const;
+export const PROJECTION_ATLAS_PROFILES=[MACAQUE_PFC_PROJECTOME,MACAQUE_CLAUSTRUM_CONNECTIVITY] as const;
 
 export function connectomeProvenanceSummary(){
   return CONNECTOME_PROFILES.map(p=>({
