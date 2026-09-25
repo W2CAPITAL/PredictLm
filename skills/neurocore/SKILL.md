@@ -105,3 +105,29 @@ Perguntas de nome/memória consultam primeiro o estado persistente local, antes 
 
 ### Percepção ligada à simulação
 Humano e mosca recebem snapshots locais do mundo. Percepções relevantes são persistidas no IndexedDB e atualizam o Cognitive Workspace. O Fly Core da simulação e do chat `/cognitive/fly` é compartilhado.
+
+
+## Organism Engine / Multi-Brain v3.1
+
+O Cognitive Lab mantém um estado de organismo persistente em `src/lib/cognitive/organism-engine.ts`.
+
+Componentes:
+- drives homeostáticos: energia, segurança, social, novidade, descanso e curiosidade;
+- afeto funcional: valência + arousal;
+- alvo de atenção;
+- objetivo atual;
+- ação selecionada + ação alternativa;
+- telemetria interna inspecionável;
+- ensemble de múltiplos cérebros humanos **simulados** com perfis explorador, planejador, cético e social.
+
+O ensemble existe para produzir perspectivas e políticas de ação diferentes. Ele não representa pessoas reais, não lê pensamentos humanos e não é evidência de consciência.
+
+A telemetria pode ser exibida no Cognitive Lab porque é estado interno do software. Nunca chamar essa telemetria de “leitura de mente real”.
+
+### Memória verdadeira do runtime
+Perguntas sobre “vida real” devem distinguir:
+1. vida biológica externa — inexistente para o agente;
+2. experiências do runtime e da simulação — persistíveis;
+3. dados de conectoma — referência estrutural, não memória biográfica.
+
+Respostas anteriores nunca devem ser recursivamente regravadas como lembranças reais apenas por terem sido produzidas pelo modelo.
