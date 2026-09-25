@@ -127,7 +127,11 @@ export function GrokImaginePanel(){
       const sensitive=looksSpecificVisualPrompt(original);
       const semanticStatus=String(item.meta?.semanticReview?.status||'');
       if(semanticStatus==='failed')return false;
-      if(sensitive&&item.meta?.fidelityLimited&&semanticStatus!=='passed')return false;
+      if(sensitive){
+        if(item.meta?.identityExact===true)return true;
+        if(semanticStatus!=='passed')return false;
+        if(item.meta?.fidelityLimited===true)return false;
+      }
       return true;
     }));
     setPersisted(browserMediaLibraryAvailable());
@@ -547,9 +551,11 @@ export function GrokImaginePanel(){
       data.providerWarning=[data.providerWarning,semanticWarning].filter(Boolean).join(' ');
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
-      const semanticFailedSpecific=looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed';
-      const unverifiedLimitedSpecific=looksSpecificVisualPrompt(prompt)&&data.fidelityLimited&&semanticReview?.status!=='passed';
-      const blockFromRecent=semanticFailedSpecific||unverifiedLimitedSpecific;
+      const specificRequest=looksSpecificVisualPrompt(prompt);
+      const semanticFailedSpecific=specificRequest&&semanticReview?.status==='failed';
+      const unverifiedSpecific=specificRequest&&semanticReview?.status!=='passed';
+      const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed';
+      const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
       const upscaled=blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
@@ -568,7 +574,9 @@ export function GrokImaginePanel(){
           data.providerWarning,
           semanticFailedSpecific
             ? 'Esta geração específica falhou no gate de identidade e não foi adicionada às Gerações recentes.'
-            : 'Fallback de fidelidade limitada sem aprovação semântica: a imagem não foi adicionada às Gerações recentes.'
+            : unverifiedSpecific
+              ? 'Personagem específico sem verificação semântica aprovada: a imagem foi mantida apenas na sessão atual e não entrou nas Gerações recentes.'
+              : 'Fallback de fidelidade limitada sem aprovação semântica: a imagem não foi adicionada às Gerações recentes.'
         ].filter(Boolean).join(' ');
         setImageProviderWarning(data.providerWarning);
       }else await saveLibrary({
