@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.0.0"
+  version: "4.0.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v2
+# PredictLM Digital Brain / NeuroCore v4
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -105,3 +105,33 @@ Perguntas de nome/memória consultam primeiro o estado persistente local, antes 
 
 ### Percepção ligada à simulação
 Humano e mosca recebem snapshots locais do mundo. Percepções relevantes são persistidas no IndexedDB e atualizam o Cognitive Workspace. O Fly Core da simulação e do chat `/cognitive/fly` é compartilhado.
+
+## Cognitive Population v4
+
+O Cognitive Lab mantém uma população pequena de **agentes humanos simulados independentes**. Eles não representam pessoas reais e não recebem memórias biográficas de cérebros humanos.
+
+Cada agente mantém traços funcionais próprios, necessidades internas simuladas, objetivo atual, memória de trabalho/episódica/semântica, atenção, confiança, incerteza, histórico curto de ações e relatório público.
+
+A política de ação compara **observe, recall, plan, explore, speak, wait e reconsider** com ruído estocástico determinístico/reproduzível e penalidade de repetição. Não existe fila rígida de NPC.
+
+Implementação:
+- src/lib/cognitive/agent-population.ts;
+- estado agregado em CognitiveState.population;
+- reforço após cada resposta via reward/prediction-error;
+- persistência no mesmo IndexedDB isolado do Cognitive Lab.
+
+## Memória honesta
+
+Perguntas de identidade e lembrança consultam o estado persistido antes do provider, mas o runtime separa memória realmente registrada pelo software, fatos semânticos/configuração, percepções da simulação, episódios de conversa e referências de conectoma.
+
+Uma resposta de recall **não pode ser gravada novamente como se fosse uma nova memória autobiográfica**. Perguntas como “o que você lembra?” registram apenas que houve uma consulta, evitando loops autorreferentes.
+
+H01/FlyWire nunca significa “extraímos as lembranças reais daquele cérebro”. H01 fornece um fragmento cortical estrutural; FlyWire fornece conectividade de mosca. Memórias do PredictLM nascem da execução do próprio software.
+
+## Observabilidade pública
+
+/cognitive/observatory mostra mapas cerebrais funcionais em SVG, população simulada, Fly Core, Global Workspace e memória local.
+
+O painel pode expor objetivo, foco atual, memória recuperada, ação selecionada, confiança/incerteza e métricas funcionais agregadas. Ele **não** deve alegar leitura de mente, EEG/fMRI real nem revelar chain-of-thought privada do modelo. O relatório é um estado público projetado para inspeção.
+
+O Chat normal em /, Human Core, Fly Core e Dual continuam superfícies isoladas; nenhum modo cognitivo deve substituir o histórico do Chat normal.
