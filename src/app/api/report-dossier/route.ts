@@ -51,7 +51,7 @@ const exampleMarkdown=[
 ].join('\n');
 
 function optionMeta(raw:any){
-  const kind=(['relatorio-executivo','dossie-juridico','due-diligence','relatorio-tecnico','pesquisa','generico'].includes(String(raw?.kind))
+  const kind=(["relatorio-executivo","relatorio-operacional","relatorio-financeiro","relatorio-equipe","relatorio-tecnico","relatorio-incidente","relatorio-projeto","relatorio-comercial","relatorio-marketing","relatorio-rh","relatorio-risco","relatorio-compliance","auditoria","comparativo","dossie-juridico","due-diligence","pesquisa","generico"].includes(String(raw?.kind))
     ? String(raw.kind)
     : undefined) as DossierKind|undefined;
   const classification=(['publico','interno','confidencial','restrito'].includes(String(raw?.classification))
@@ -83,7 +83,7 @@ export async function GET(req:Request){
     methods:['GET','POST'],
     maxBytes:MAX_BYTES,
     formats:['json','html'],
-    kinds:['relatorio-executivo','dossie-juridico','due-diligence','relatorio-tecnico','pesquisa','generico'],
+    kinds:["relatorio-executivo","relatorio-operacional","relatorio-financeiro","relatorio-equipe","relatorio-tecnico","relatorio-incidente","relatorio-projeto","relatorio-comercial","relatorio-marketing","relatorio-rh","relatorio-risco","relatorio-compliance","auditoria","comparativo","dossie-juridico","due-diligence","pesquisa","generico"],
     classifications:['publico','interno','confidencial','restrito'],
     contract:REPORT_DOSSIER_CONTRACT,
     example:'/api/report-dossier?example=1',
