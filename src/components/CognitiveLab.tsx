@@ -19,6 +19,7 @@ import {
   summarizeConnectomeEdges
 } from '@/lib/cognitive/connectome-import';
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX} from '@/lib/cognitive/connectome-provenance';
+import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
 export type CognitiveChatMode='dual'|'fly'|'human';
@@ -68,7 +69,15 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
     humanMemory:Math.round(state.human.workingMemory*100),
     humanExecutive:Math.round(state.human.executiveControl*100),
     uncertainty:Math.round(state.workspace.uncertainty*100),
-    confidence:Math.round(state.workspace.confidence*100)
+    confidence:Math.round(state.workspace.confidence*100),
+    attention:Math.round((state.consciousAccess?.attention||0)*100),
+    binding:Math.round((state.consciousAccess?.perceptualBinding||0)*100),
+    selfModel:Math.round((state.consciousAccess?.selfModel||0)*100),
+    continuity:Math.round((state.consciousAccess?.continuity||0)*100),
+    memoryAccess:Math.round((state.consciousAccess?.memoryAccess||0)*100),
+    agency:Math.round((state.consciousAccess?.agency||0)*100),
+    reportability:Math.round((state.consciousAccess?.reportability||0)*100),
+    broadcast:Math.round((state.consciousAccess?.globalBroadcast||0)*100)
   }),[state]);
 
   async function puterFallback(prompt:string,history:Msg[],context:string,signal:AbortSignal){
@@ -417,8 +426,34 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Database size={15}/> Memória</div>
           <Row label="Working" value={String(state.memory.working.length)}/>
-          <Row label="Episódios" value={String(state.memory.episodic.length)}/>
+          <Row label="Episódica" value={String(state.memory.episodic.length)}/>
+          <Row label="Autobiográfica" value={String(state.memory.autobiographical?.length||0)}/>
+          <Row label="Semântica" value={String(state.memory.semantic?.length||0)}/>
+          <Row label="Perceptiva" value={String(state.memory.perceptual?.length||0)}/>
           <Row label="Ticks" value={String(state.tick)}/>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+          <div className="mb-3 text-sm font-semibold">Acesso consciente funcional</div>
+          <div className="grid grid-cols-2 gap-2">
+            <Metric label="Atenção" value={metrics.attention}/>
+            <Metric label="Binding" value={metrics.binding}/>
+            <Metric label="Self-model" value={metrics.selfModel}/>
+            <Metric label="Continuidade" value={metrics.continuity}/>
+            <Metric label="Memória" value={metrics.memoryAccess}/>
+            <Metric label="Agência" value={metrics.agency}/>
+            <Metric label="Relato" value={metrics.reportability}/>
+            <Metric label="Broadcast" value={metrics.broadcast}/>
+          </div>
+          <details className="mt-3 text-[10px] text-zinc-500">
+            <summary className="cursor-pointer text-zinc-400">Mapa funcional completo</summary>
+            <div className="mt-2 space-y-2">
+              {COGNITIVE_FUNCTIONAL_MAP.map(node=><div key={node.id} className="rounded-lg border border-zinc-900 p-2">
+                <b className="text-zinc-300">{node.label}</b>
+                <div className="mt-1">{node.source} · {node.implementation}</div>
+              </div>)}
+            </div>
+          </details>
         </section>
 
         <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-[10px] leading-5 text-amber-100/60">
