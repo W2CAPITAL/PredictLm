@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.30.0"
+  version: "1.31.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -819,3 +819,26 @@ Qualidade: erros -25, avisos -8, dicas -2; meta >=85 e zero erros.
 Proveniência obrigatória para afirmações relevantes: [oficial], [fornecida], [inferência]. Riscos são qualitativos. Falhas de fonte e lacunas ficam explícitas. Exportação para Office Artifacts reutiliza o conteúdo já validado em vez de refazer a análise.
 
 Sem Supabase: renderer é determinístico; handoff Chat → Studio é local no navegador.
+
+
+## Simulation liveness + reference-first Imagine (2026-09-25)
+
+Regression fixes promoted to the unified contract:
+
+Life Simulation:
+- Macaque update loop uses stable current-state refs and cannot be cancelled by faster Fly updates;
+- Macaque and Fly use target dwell/cooldown/anti-stall rather than permanent attraction;
+- park lamp is not a dominant Fly attractor;
+- world render uses the same `WORLD_OBJECTS` that perception/action uses;
+- `use_object` is multi-tick with visible progress;
+- first-person objects must have recognizable silhouettes rather than generic boxes.
+
+Imagine:
+- up to three user reference images can be supplied;
+- references are compressed client-side and sent as multimodal inputs when supported;
+- uploaded references outrank searched references;
+- identity-sensitive failed candidates are rejected instead of being presented as successful character art;
+- fidelity-limited fallback without approved semantic review is a failure for named characters;
+- Media Library stores only reference counts/metadata, never user reference image blobs.
+
+No Supabase dependency is introduced.
