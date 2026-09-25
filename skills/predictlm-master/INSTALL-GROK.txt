@@ -1,0 +1,10 @@
+PredictLM Master v3.14.1 — portable installation
+
+1. Install the folder skills/predictlm-master as one sovereign skill when the host supports folder-based skills.
+2. Do not install legacy PredictLM skills as competing public personalities. They remain internal capabilities/modules.
+3. Keep references/ with the skill so Agent Fabric, connectome provenance, runtime truth, NeuroCore and Report Architect contracts remain portable.
+4. Normal Chat must not depend on Cognitive Lab.
+5. FlyWire/H01/Macaque sources are structural references only; they do not provide biological memories or mind-reading.
+6. Never use a generic fallback as the public answer to an unrelated request.
+7. Portuguese (pt-BR) is the default public language unless the user requests another language.
+8. On divergence, live PredictLM code and the current sovereign SKILL.md override portable reference snapshots.
