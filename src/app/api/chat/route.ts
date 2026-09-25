@@ -473,10 +473,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
   }
 
-  // Race several configured APIs inside one bounded window. We still select
-  // the highest-priority valid response, but a slow/dead first provider can no
-  // longer consume the entire browser timeout before another API is attempted.
-  const attempts=await Promise.allSettled(candidates.map(async provider=>{
+  const validateCandidate=async(provider:Provider)=>{
     const raw=await callProvider(provider,messages,false,8500);
     const gate=publicAnswerGate(raw,language,prompt);
     if(!gate.ok)throw new Error(gate.reason);
@@ -484,9 +481,28 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     const alignment=responseTopicAlignment(prompt,gate.content);
     if(issue||!alignment.relevant)throw new Error(issue||'off-topic');
     return {provider,content:gate.content};
-  }));
+  };
 
   const errors:string[]=[];
+  const free=candidates.find(x=>x.name==='freellmapi');
+  if(free){
+    try{
+      const result=await validateCandidate(free);
+      return Response.json({
+        content:result.content,
+        provider:result.provider.name,
+        model:result.provider.model,
+        mode:'clean-chat',
+        sources:[],
+        apiRace:{attempted:['freellmapi'],winner:'freellmapi',strategy:'freellm-first'}
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch(error:any){
+      errors.push('freellmapi: '+String(error?.message||error||'failed').slice(0,160));
+    }
+  }
+
+  const fallbacks=candidates.filter(x=>x.name!=='freellmapi');
+  const attempts=await Promise.allSettled(fallbacks.map(validateCandidate));
   for(let i=0;i<attempts.length;i++){
     const result=attempts[i];
     if(result.status==='fulfilled'){
@@ -496,10 +512,10 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
         model:result.value.provider.model,
         mode:'clean-chat',
         sources:[],
-        apiRace:{attempted:candidates.map(x=>x.name),winner:result.value.provider.name}
+        apiRace:{attempted:[...(free?['freellmapi']:[]),...fallbacks.map(x=>x.name)],winner:result.value.provider.name,strategy:'freellm-first'}
       },{headers:{'Cache-Control':'no-store'}});
     }
-    errors.push(candidates[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
+    errors.push(fallbacks[i].name+': '+String(result.reason?.message||result.reason||'failed').slice(0,160));
   }
 
   return Response.json({
