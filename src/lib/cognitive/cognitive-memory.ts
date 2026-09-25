@@ -1,6 +1,7 @@
 'use client';
 
 import {createCognitiveState,type CognitiveState} from './cognitive-workspace';
+import {normalizeOrganismState} from './organism-engine';
 
 const DB='predictlm-cognitive-lab-v1';
 const STORE='state';
@@ -35,6 +36,7 @@ function normalizeState(raw:any):CognitiveState{
       semantic:Array.isArray(raw.memory?.semantic)?raw.memory.semantic.slice(-120):base.memory.semantic,
       perceptual:Array.isArray(raw.memory?.perceptual)?raw.memory.perceptual.slice(-120):[]
     },
+    organism:normalizeOrganismState(raw.organism),
     mappedEvidence:raw.mappedEvidence||{},
     lastUpdated:Number(raw.lastUpdated||Date.now())
   };
