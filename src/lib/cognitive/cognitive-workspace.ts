@@ -15,7 +15,7 @@ export interface CognitiveMemoryTrace{
   id:string;
   at:number;
   kind:'identity'|'preference'|'event'|'semantic'|'perceptual'|'association';
-  actor:'user'|'fly'|'human'|'dual'|'world';
+  actor:'user'|'fly'|'human'|'dual'|'frank'|'world';
   text:string;
   salience:number;
   strength:number;
