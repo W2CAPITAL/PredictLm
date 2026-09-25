@@ -691,25 +691,14 @@ export async function POST(req:Request){
 
     const configured=primaryProviders(providers());
     if(!configured.length){
-      if(body?.mode==='simulation-plan'||body?.mode==='media-director'){
-        return Response.json({
-          available:false,
-          content:null,
-          code:'NO_CONFIGURED_GENERATOR',
-          message:'Este modo precisa de um gerador compatível configurado; o chat normal do PredictLM continua funcionando sem provider remoto.'
-        },{status:503,headers:{'Cache-Control':'no-store'}});
-      }
-      const kind=classifyConversation(prompt);
-      const content=generativeOfflineReply(prompt,kind);
       return Response.json({
         available:false,
-        content,
-        provider:'predictlm-core',
-        model:'internal',
-        code:content?'PREDICTLM_INTERNAL':'NO_REMOTE_PROVIDER',
-        mode:body?.mode==='clean-chat'?'clean-chat':'predictlm-core',
-        sources:[]
-      },{status:content?200:503,headers:{'Cache-Control':'no-store'}});
+        content:null,
+        code:body?.mode==='simulation-plan'||body?.mode==='media-director'
+          ? 'NO_CONFIGURED_GENERATOR'
+          : 'NO_REMOTE_PROVIDER',
+        message:'Nenhum provider server-side está configurado. O cliente deve continuar para Neural Local/WebLLM/knowledge fallback.'
+      },{status:503,headers:{'Cache-Control':'no-store'}});
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
@@ -925,20 +914,13 @@ export async function POST(req:Request){
         errors.push(String(error?.message||error).slice(0,300));
       }
     }
-    const internal=generativeOfflineReply(prompt,classifyConversation(prompt))||answerAnchor;
-    if(internal){
-      return Response.json({
-        content:internal,
-        provider:'predictlm-core',
-        model:'internal',
-        cache:'miss',
-        code:'PREDICTLM_INTERNAL_AFTER_PROVIDER_FAILURE',
-        attempted:candidates.length,
-        budgetMs:REQUEST_BUDGET_MS,
-        sources:[]
-      },{headers:{'Cache-Control':'no-store'}});
-    }
-    return Response.json({error:'O PredictLM não encontrou uma resposta interna válida neste turno.',code:'NO_VALID_ANSWER',attempted:candidates.length,budgetMs:REQUEST_BUDGET_MS},{status:502,headers:{'Cache-Control':'no-store'}});
+    return Response.json({
+      error:'Os providers configurados não produziram uma resposta válida. Continue pelas rotas locais/knowledge do PredictLM.',
+      code:'NO_VALID_PROVIDER_ANSWER',
+      attempted:candidates.length,
+      errors:errors.slice(0,4),
+      budgetMs:REQUEST_BUDGET_MS
+    },{status:502,headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
     return Response.json({error:String(error?.message||error)},{status:500});
   }
