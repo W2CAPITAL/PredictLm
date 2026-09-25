@@ -157,8 +157,8 @@ async function duckDuckGoImageSearch(query:string,limit:number):Promise<VisualRe
   if(!htmlResponse.ok)throw new Error('DuckDuckGo Images bootstrap '+htmlResponse.status);
   const html=await htmlResponse.text();
   const vqd=
-    html.match(/vqd=['"]([^'"]+)['"]/)?.[1]||
-    html.match(/vqd=([\d-]+)/)?.[1]||
+    html.match(/vqd["']?\s*[:=]\s*["']([^"']+)["']/i)?.[1]||
+    html.match(/vqd\s*=\s*([\d-]+)/i)?.[1]||
     '';
   if(!vqd)throw new Error('DuckDuckGo Images token indisponível');
 
