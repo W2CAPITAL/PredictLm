@@ -21,6 +21,7 @@ import {
   LIFE_WORLD_WIDTH,
   WORLD_OBJECTS,
   perceiveFlyWorld,
+  worldObject,
   perceiveHumanWorld
 } from '@/lib/life-world-open';
 import {
@@ -83,6 +84,7 @@ export function GrokSimulationPanel(){
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
+  const [toolBusy,setToolBusy]=useState(false);
   const [cameraZoom,setCameraZoom]=useState(1);
   const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'>('world');
   const canvas=useRef<HTMLCanvasElement>(null);
@@ -174,6 +176,88 @@ export function GrokSimulationPanel(){
     },520);
     return()=>window.clearTimeout(timer);
   },[agent,state,agentBusy]);
+
+  useEffect(()=>{
+    if(!hydrated||toolBusy)return;
+    const last=agent.history[agent.history.length-1];
+    if(!last?.ok||last.action.type!=='use_object'||!last.action.objectId)return;
+    const obj=worldObject(last.action.objectId);
+    if(!obj)return;
+    const canResearch=obj.affordances.includes('research')||obj.kind==='computer'||obj.kind==='phone';
+    if(!canResearch||!agent.tools.internetEnabled)return;
+    if(state.tick-agent.tools.lastInternetTick<8)return;
+
+    let cancelled=false;
+    const run=async()=>{
+      setToolBusy(true);
+      const topic=[
+        state.person.goal,
+        agent.mind.currentWant,
+        agent.mind.currentFocus,
+        obj.label
+      ].filter(Boolean).join(' · ').slice(0,420);
+      const notes:string[]=[];
+      try{
+        const r=await fetch('/api/research',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({query:topic,limit:6,depth:'balanced'})
+        });
+        const data=await r.json().catch(()=>({}));
+        if(r.ok&&!cancelled){
+          const rows=[...(Array.isArray(data?.web)?data.web:[]),...(Array.isArray(data?.news)?data.news:[])]
+            .slice(0,3)
+            .map((x:any)=>String(x?.title||'Fonte')+': '+String(x?.description||x?.summary||'').replace(/\s+/g,' ').slice(0,180));
+          if(rows.length)notes.push('Internet: '+rows.join(' | '));
+        }
+      }catch{}
+
+      if(agent.tools.codeEnabled&&obj.kind==='computer'&&state.tick-agent.tools.lastCodeTick>=16){
+        try{
+          const r=await fetch('/api/simulation/code?pick='+(agent.autonomy.decisionCount%11),{cache:'no-store'});
+          const data=await r.json().catch(()=>({}));
+          if(r.ok&&!cancelled){
+            notes.push('Código próprio: '+String(data?.path||'')+' · símbolos '+(Array.isArray(data?.symbols)?data.symbols.slice(0,10).join(', '):''));
+          }
+        }catch{}
+      }
+
+      if(!cancelled&&notes.length){
+        const note=notes.join('\n').slice(0,1200);
+        setAgent(prev=>{
+          const next=normalizeLifeAgentState(prev);
+          return {
+            ...next,
+            knowledge:Math.min(100,next.knowledge+Math.min(8,2+notes.length*2)),
+            tools:{
+              ...next.tools,
+              lastInternetTick:state.tick,
+              lastCodeTick:notes.some(x=>x.startsWith('Código próprio:'))?state.tick:next.tools.lastCodeTick,
+              notes:[...next.tools.notes,note].slice(-20)
+            }
+          };
+        });
+        setState(prev=>({
+          ...prev,
+          person:{...prev.person,currentAction:'Pesquisou e incorporou conhecimento externo'},
+          lastEvent:'Frank aprendeu algo usando '+obj.label+'.',
+          memories:[{
+            id:'tool-'+prev.tick+'-'+Date.now().toString(36),
+            tick:prev.tick,day:prev.day,minute:prev.minute,
+            summary:note.slice(0,220),valence:.64,salience:.78,kind:'event'
+          },...prev.memories].slice(0,24)
+        }));
+      }
+      if(!cancelled)setToolBusy(false);
+    };
+    void run();
+    return()=>{cancelled=true};
+  },[
+    hydrated,toolBusy,state.tick,state.person.goal,
+    agent.history.length,agent.tools.internetEnabled,agent.tools.codeEnabled,
+    agent.tools.lastInternetTick,agent.tools.lastCodeTick,
+    agent.autonomy.decisionCount,agent.mind.currentWant,agent.mind.currentFocus
+  ]);
 
   // Autonomia IA: cria novo plano quando o anterior termina, mas só se o usuário a ativou.
   useEffect(()=>{
@@ -316,7 +400,8 @@ export function GrokSimulationPanel(){
         bench:['#8a6546','#60462f'],bookshelf:['#6c5140','#49362b'],table:['#87664e','#604736'],
         coffee:['#9a6850','#6c4838'],shelf:['#8f969c','#62686d'],treadmill:['#555d65','#343a40'],
         clinic_bed:['#c7dddd','#88aaac'],plant:['#4f8658','#31583a'],art:['#9a79ad','#644c72'],
-        trash:['#555b60','#373b3f'],door:['#77543e','#52392b']
+        trash:['#555b60','#373b3f'],door:['#77543e','#52392b'],window:['#8fd6f2','#4f8297'],
+        radio:['#66586f','#463c4d'],book:['#b68b59','#7d5e3d'],mirror:['#b9d9df','#6f8f96']
       };
       const [top,side]=colors[obj.kind]||['#777','#555'];
       drawBox(obj.x-obj.w/2,obj.y-obj.h/2,obj.w,obj.h,Math.max(5,obj.z),top,side);
@@ -690,6 +775,7 @@ export function GrokSimulationPanel(){
             <span><Users size={12}/>{relation.name}: {relation.affinity}%</span>
             <span>Comida: {agent.inventory.food}</span>
             <span>Conhecimento: {agent.knowledge}</span>
+            <span>{toolBusy?'Pesquisando…':'Internet '+(agent.tools.internetEnabled?'on':'off')}</span>
           </div>
           <div className="sim-agent-vitals">
             <span>Carreira <b>{agent.skills.career}</b></span>
@@ -744,6 +830,12 @@ export function GrokSimulationPanel(){
             {humanVision.visible.slice(0,4).map(item=><span key={'h-'+item.id}>{item.label} · {Math.round(item.distance)}</span>)}
             {flyVision.visible.slice(0,4).map(item=><span key={'f-'+item.id}>🪰 {item.label}</span>)}
           </div>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Brain size={14}/><b>Aprendizado externo</b><span>internet + próprio código</span></div>
+          <small className="sim-note">Acesso é deliberado pelo agente ao usar computador/celular; código é leitura pública allowlisted, sem secrets/env.</small>
+          {(agent.tools.notes.length?agent.tools.notes.slice(-3).reverse():['Ainda não pesquisou nada.']).map((note,i)=><small className="sim-note" key={i}>{note}</small>)}
         </section>
 
         <section className="sim-panel memories">
