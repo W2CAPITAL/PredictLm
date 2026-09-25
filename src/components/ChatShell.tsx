@@ -559,7 +559,7 @@ export function ChatShell({onOpenLegal}:Props){
         kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
       );
 
-      const deliverProviderCandidate=(result:typeof candidate)=>{
+      const deliverProviderCandidate=(result:any)=>{
         if(!result.ok)return false;
         const apiSources=filterDisplayedSources(prompt,[
           ...web.sources,
