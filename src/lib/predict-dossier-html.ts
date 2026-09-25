@@ -464,7 +464,7 @@ export function renderReportHtml(markdown:string,options:RenderDossierOptions={}
 export function coerceDossier(input:any,options:RenderDossierOptions={}):DossierDocument{
   if(!input||typeof input!=='object')return parseDossierMarkdown('',options);
 
-  const kindValues:DossierKind[]=['relatorio-executivo','dossie-juridico','due-diligence','relatorio-tecnico','pesquisa','generico'];
+  const kindValues:DossierKind[]=['relatorio-executivo','relatorio-operacional','relatorio-financeiro','relatorio-equipe','relatorio-tecnico','relatorio-incidente','relatorio-projeto','relatorio-comercial','relatorio-marketing','relatorio-rh','relatorio-risco','relatorio-compliance','auditoria','comparativo','dossie-juridico','due-diligence','pesquisa','generico'];
   const classValues:DossierClassification[]=['publico','interno','confidencial','restrito'];
   const requestedKind=String(input.meta?.kind||options.meta?.kind||'');
   const requestedClass=String(input.meta?.classification||options.meta?.classification||'');
