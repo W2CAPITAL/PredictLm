@@ -40,6 +40,7 @@ import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
 import {advanceCognitiveWorkspace,recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
+import {lifeMindSummary} from '@/lib/life-agent-mind';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
@@ -702,6 +703,20 @@ export function GrokSimulationPanel(){
         </section>
 
         <section className="sim-panel">
+          <div className="sim-panel-title"><Sparkles size={14}/><b>Mente pública · Frank</b><span>estado que governa ações</span></div>
+          <small className="sim-note"><b>Quer:</b> {agent.mind.currentWant}</small>
+          <small className="sim-note"><b>Foco:</b> {agent.mind.currentFocus}</small>
+          <small className="sim-note"><b>Pensamento público:</b> {agent.mind.publicThought}</small>
+          <div className="sim-metrics">
+            <span>Tédio {Math.round(agent.mind.boredom*100)}%</span>
+            <span>Novidade {Math.round(agent.mind.noveltySeeking*100)}%</span>
+            <span>Social {Math.round(agent.mind.socialDrive*100)}%</span>
+            <span>Domínio {Math.round(agent.mind.masteryDrive*100)}%</span>
+          </div>
+          <details className="sim-agent-log"><summary>Estado mental completo</summary><pre>{lifeMindSummary(agent.mind)}</pre></details>
+        </section>
+
+        <section className="sim-panel">
           <div className="sim-panel-title"><Brain size={14}/><b>NeuroCore</b><span>Digital Brain</span></div>
           <div className="circuit-list">{circuits.map(([id,value])=><div key={id}><span>{id}</span><i><u style={{width:Math.round(value*100)+'%'}}/></i><b>{Math.round(value*100)}%</b></div>)}</div>
           <small className="sim-note">O cérebro digital permanece ativo fora da simulação; aqui ele também controla saliência, memória, inibição, estado social e ação da personagem.</small>
@@ -716,7 +731,9 @@ export function GrokSimulationPanel(){
             <div><span>central complex</span><i><u style={{width:Math.round(fly.core.centralComplex*100)+'%'}}/></i><b>{Math.round(fly.core.centralComplex*100)}%</b></div>
             <div><span>mushroom body</span><i><u style={{width:Math.round(fly.core.mushroomBody*100)+'%'}}/></i><b>{Math.round(fly.core.mushroomBody*100)}%</b></div>
           </div>
-          <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
+          <small className="sim-note"><b>Quer:</b> {fly.goal}</small>
+          <small className="sim-note"><b>Comportamento:</b> {fly.behavior}. Tédio {Math.round((fly.boredom||0)*100)}%. Alvos recentes: {(fly.lastTargets||[]).slice(0,4).join(', ')||'nenhum'}.</small>
+          <small className="sim-note">O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
         </section>
 
         <section className="sim-panel">
