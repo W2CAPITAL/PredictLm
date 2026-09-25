@@ -254,17 +254,21 @@ export async function POST(req:Request){
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
     const automaticReferenceUrls=referencePlan.references.map(x=>x.imageUrl).filter(Boolean).slice(0,3);
+    const referenceCapableFallback=needsStrongIdentity&&automaticReferenceUrls.length>0;
+    const fallbackModel=referenceCapableFallback
+      ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
+      : requestedModel;
     return Response.json({
-      url:localRenderUrl(providerPrompt,width,height,seed,requestedModel,effectivePromptMode!=='literal',automaticReferenceUrls),
+      url:localRenderUrl(providerPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
       provider:'pollinations-proxy',
-      model:requestedModel,
+      model:fallbackModel,
       width,
       height,
       seed,
       identityLocked:true,
       referenceQuery:referencePlan.query||null,
       referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
-      referenceImagesPassed:automaticReferenceUrls.length,
+      referenceImagesPassed:referenceCapableFallback?automaticReferenceUrls.length:0,
       automaticReferenceCount:automaticReferenceUrls.length,
       userReferenceCount:userInline.length,
       searchedReferenceCount:searchedInline.length,
@@ -279,9 +283,11 @@ export async function POST(req:Request){
       style,
       styleLocked,
       fidelityLimited:true,
-      providerWarning:automaticReferenceUrls.length
-        ? 'Fallback público com referências automáticas encaminhadas. A fidelidade depende de o modelo ativo aceitar image-reference; a verificação semântica continua separada.'
-        : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
+      providerWarning:referenceCapableFallback
+        ? 'Fallback de personagem usa modelo image-to-image com referências automáticas; a revisão semântica valida o resultado antes de persistir.'
+        : automaticReferenceUrls.length
+          ? 'Referências automáticas foram encontradas, mas o fallback atual não declarou suporte visual suficiente para tratá-las como grounding.'
+          : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
     });
   }catch(error:any){
     return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
