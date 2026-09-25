@@ -104,6 +104,31 @@ export function GrokImaginePanel(){
   );
   const motionPlan=useMemo(()=>buildLocalMotionPlan(prompt,ratio.label),[prompt,ratio.label]);
 
+  async function referenceDataUrl(file:File){
+    const objectUrl=URL.createObjectURL(file);
+    try{
+      const image=await new Promise<HTMLImageElement>((resolve,reject)=>{
+        const img=new Image();
+        img.onload=()=>resolve(img);
+        img.onerror=()=>reject(new Error('Imagem de referência inválida.'));
+        img.src=objectUrl;
+      });
+      const maxSide=1280;
+      const scale=Math.min(1,maxSide/Math.max(1,image.naturalWidth,image.naturalHeight));
+      const width=Math.max(1,Math.round(image.naturalWidth*scale));
+      const height=Math.max(1,Math.round(image.naturalHeight*scale));
+      const canvas=document.createElement('canvas');
+      canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(!ctx)throw new Error('Canvas indisponível.');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
+      ctx.drawImage(image,0,0,width,height);
+      return canvas.toDataURL('image/webp',.86);
+    }finally{
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
   async function addReferenceFiles(files:FileList|null){
     if(!files?.length)return;
     const incoming=Array.from(files).slice(0,Math.max(0,3-referenceImages.length));
@@ -113,17 +138,13 @@ export function GrokImaginePanel(){
         setError('Referência ignorada: use PNG, JPEG ou WebP.');
         continue;
       }
-      if(file.size>4_500_000){
-        setError('Referência ignorada: cada imagem deve ter no máximo 4,5 MB.');
+      if(file.size>8_000_000){
+        setError('Referência ignorada: arquivo original acima de 8 MB.');
         continue;
       }
-      const data=await new Promise<string>((resolve,reject)=>{
-        const reader=new FileReader();
-        reader.onload=()=>resolve(String(reader.result||''));
-        reader.onerror=()=>reject(reader.error||new Error('Falha ao ler referência.'));
-        reader.readAsDataURL(file);
-      }).catch(()=> '');
-      if(data)accepted.push({name:file.name.slice(0,120),data});
+      const data=await referenceDataUrl(file).catch(()=> '');
+      if(data&&data.length<1_900_000)accepted.push({name:file.name.slice(0,120),data});
+      else if(data)setError('Referência ignorada: mesmo comprimida, ficou grande demais para envio seguro.');
     }
     if(accepted.length){
       setReferenceImages(prev=>[...prev,...accepted].slice(0,3));
