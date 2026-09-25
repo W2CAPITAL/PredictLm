@@ -143,7 +143,7 @@ function isolateSingleProvider(name:'nvidia'|'gemini'|'anthropic'|'deepseek'){
     process.env.ANTHROPIC_MODEL='claude-sonnet-4-6';
   }else{
     process.env.DEEPSEEK_API_KEY='deepseek-test-key';
-    process.env.DEEPSEEK_BASE_URL='https://api.deepseek.com/v1';
+    process.env.DEEPSEEK_BASE_URL='https://api.deepseek.com/v1'; // legacy value: route must normalize it
     process.env.DEEPSEEK_MODEL='deepseek-flash';
   }
   process.env.PREDICTLM_PROVIDER_ORDER=name;
@@ -242,7 +242,7 @@ test('DeepSeek adapter uses OpenAI-compatible chat completions',async()=>{
   isolateSingleProvider('deepseek');
   const mock=mockOpenAICompatible({
     provider:'deepseek',
-    url:'https://api.deepseek.com/v1/chat/completions',
+    url:'https://api.deepseek.com/chat/completions',
     key:'deepseek-test-key',
     model:'deepseek-flash'
   });
@@ -267,4 +267,45 @@ test('Claude adapter uses Anthropic Messages API contract',async()=>{
     assert.match(data.content,/Lua|Sol|Terra/i);
     assert.equal(mock.calls.length,1);
   }finally{mock.restore()}
+});
+
+
+test('NVIDIA Nemotron DeepThink uses thinking_token_budget with room for visible output',async()=>{
+  isolateSingleProvider('nvidia');
+  const original=globalThis.fetch;
+  let seen=false;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    assert.equal(String(input),'https://integrate.api.nvidia.com/v1/chat/completions');
+    const headers=init?.headers as Record<string,string>;
+    assert.equal(String(headers?.Authorization||''),'Bearer nvidia-test-key');
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,'nvidia/nemotron-3.5-lightning-30b-a3b');
+    assert.deepEqual(body.chat_template_kwargs,{enable_thinking:true});
+    assert.equal(typeof body.thinking_token_budget,'number');
+    assert.ok(body.thinking_token_budget>0);
+    assert.ok(body.max_tokens>body.thinking_token_budget);
+    assert.equal('reasoning_budget' in body,false);
+    seen=true;
+    return new Response(JSON.stringify({
+      choices:[{message:{content:'A Lua apresenta fases porque vemos porções diferentes de sua metade iluminada pelo Sol enquanto ela orbita a Terra.'}}]
+    }),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try{
+    const req=new Request('http://predictlm.test/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        prompt:'Explique por que a Lua tem fases.',
+        language:'pt-BR',
+        messages:[],
+        researchContext:'',
+        deep:true
+      })
+    });
+    const response=await POST(req);
+    const data=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'nvidia');
+    assert.equal(seen,true);
+  }finally{globalThis.fetch=original}
 });
