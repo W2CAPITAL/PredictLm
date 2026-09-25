@@ -1,5 +1,7 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
+import {advanceMacaqueCore,createMacaqueCoreState,macaqueCoreContext,type MacaqueCoreState} from './macaque-core';
+import {humanPrimateBridgeContext} from './human-primate-bridge';
 import {cognitiveFunctionalMapContext} from './functional-map';
 import {advanceOrganism,createOrganismState,learnOrganismOutcome,organismContext,type OrganismState} from './organism-engine';
 
@@ -15,7 +17,7 @@ export interface CognitiveMemoryTrace{
   id:string;
   at:number;
   kind:'identity'|'preference'|'event'|'semantic'|'perceptual'|'association';
-  actor:'user'|'fly'|'human'|'dual'|'world';
+  actor:'user'|'fly'|'human'|'macaque'|'dual'|'world';
   text:string;
   salience:number;
   strength:number;
@@ -39,6 +41,7 @@ export interface CognitiveState{
   tick:number;
   fly:FlyCoreState;
   human:HumanCoreState;
+  macaque:MacaqueCoreState;
   workspace:{
     mode:'reflexive'|'deliberative'|'balanced';
     salience:number;
@@ -74,6 +77,7 @@ export function createCognitiveState():CognitiveState{
     tick:0,
     fly:createFlyCoreState(),
     human:createHumanCoreState(),
+    macaque:createMacaqueCoreState(),
     workspace:{
       mode:'balanced',
       salience:.4,
@@ -129,13 +133,14 @@ export function createCognitiveState():CognitiveState{
 export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prompt:string):CognitiveState{
   const prev=previous?.version===1?previous:createCognitiveState();
   const fly=advanceFlyCore(prev.fly,prompt);
-  const human=advanceHumanCore(prev.human,prompt);
+  const macaque=advanceMacaqueCore(prev.macaque,prompt);
+  const human=advanceHumanCore(prev.human,prompt,macaque);
 
   const reflex=clamp(fly.salience*.32+fly.actionSelection*.28+fly.threat*.2+fly.centralComplex*.2);
   const deliberate=clamp(human.workingMemory*.24+human.executiveControl*.28+human.metacognition*.22+human.recurrentIntegration*.26);
   const mode:CognitiveState['workspace']['mode']=reflex>deliberate+.14?'reflexive':deliberate>reflex+.14?'deliberative':'balanced';
-  const salience=clamp(fly.salience*.45+human.neuro.circuits.salience*.55);
-  const uncertainty=clamp(fly.predictionError*.35+human.predictiveError*.65);
+  const salience=clamp(fly.salience*.35+human.neuro.circuits.salience*.5+macaque.regionalIntegration*.15);
+  const uncertainty=clamp(fly.predictionError*.3+human.predictiveError*.6+macaque.uncertainty*.1);
   const inhibition=clamp(fly.inhibition*.4+human.inhibition*.6);
   const exploration=clamp(fly.exploration*.55+human.neuro.curiosity*.45);
   const actionReadiness=clamp(fly.actionSelection*.48+human.neuro.circuits.action*.3+human.executiveControl*.22);
@@ -144,7 +149,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
   const organism=advanceOrganism(prev.organism,{prompt,fly,human,workspaceUncertainty:uncertainty});
   const consciousAccess:ConsciousAccessState={
     attention:clamp(prevAccess.attention*.5+salience*.3+human.neuro.circuits.attention*.2),
-    perceptualBinding:clamp(prevAccess.perceptualBinding*.52+human.recurrentIntegration*.24+fly.centralComplex*.24),
+    perceptualBinding:clamp(prevAccess.perceptualBinding*.5+human.recurrentIntegration*.22+fly.centralComplex*.2+macaque.regionalIntegration*.08),
     selfModel:clamp(prevAccess.selfModel*.7+human.metacognition*.18+confidence*.12),
     continuity:clamp(prevAccess.continuity*.72+Math.min(1,(prev.memory?.episodic?.length||0)/12)*.18+human.workingMemory*.1),
     memoryAccess:clamp(prevAccess.memoryAccess*.52+human.workingMemory*.24+fly.mushroomBody*.24),
@@ -167,6 +172,7 @@ export function advanceCognitiveWorkspace(previous:CognitiveState|undefined,prom
     tick:prev.tick+1,
     fly,
     human,
+    macaque,
     workspace:{mode,salience,confidence,uncertainty,inhibition,exploration,actionReadiness,broadcast},
     memory:{
       working:[clean(prompt,260),...(prev.memory?.working||[])].filter(Boolean).slice(0,8),
@@ -188,6 +194,8 @@ export function cognitivePromptContext(state:CognitiveState){
     'This is a software architecture informed by two real mapped connectome datasets. It is not evidence of consciousness.',
     flyCoreContext(state.fly),
     humanCoreContext(state.human),
+    macaqueCoreContext(state.macaque),
+    humanPrimateBridgeContext(state.human,state.macaque),
     'GLOBAL WORKSPACE:',
     'Mode '+state.workspace.mode+'. Salience '+Math.round(state.workspace.salience*100)+'%; uncertainty '+Math.round(state.workspace.uncertainty*100)+'%; inhibition '+Math.round(state.workspace.inhibition*100)+'%; exploration '+Math.round(state.workspace.exploration*100)+'%.',
     'Broadcast controls: '+state.workspace.broadcast.join(', ')+'.',
@@ -349,7 +357,7 @@ export function recordCognitiveMemory(
 
 export function captureConversationMemory(
   previous:CognitiveState,
-  input:{prompt:string;answer:string;mode:'fly'|'human'|'dual'}
+  input:{prompt:string;answer:string;mode:'fly'|'human'|'macaque'|'dual'}
 ){
   let next=previous;
   const prompt=clean(input.prompt,360);
@@ -383,7 +391,7 @@ export function captureConversationMemory(
 
 export function recordPerceptionMemory(
   previous:CognitiveState,
-  actor:'fly'|'human',
+  actor:'fly'|'human'|'macaque',
   text:string,
   salience=.62
 ){
@@ -392,15 +400,16 @@ export function recordPerceptionMemory(
   });
 }
 
-export function cognitiveIdentity(mode:'fly'|'human'|'dual'){
+export function cognitiveIdentity(mode:'fly'|'human'|'macaque'|'dual'){
   if(mode==='fly')return 'Mosca Predict';
   if(mode==='human')return 'PredictLM Human Core';
+  if(mode==='macaque')return 'PredictLM Macaque Core';
   return 'PredictLM Cognitive Lab';
 }
 
 export function cognitiveDirectRecall(
   state:CognitiveState,
-  mode:'fly'|'human'|'dual',
+  mode:'fly'|'human'|'macaque'|'dual',
   prompt:string
 ){
   const q=clean(prompt,220).toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
