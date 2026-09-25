@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, Eye, Brain, Bug, ChevronDown, Code2, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
+import { Activity, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, Scale, Search, Send, Sparkles, ThumbsDown, ThumbsUp, Trash2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
@@ -31,6 +31,7 @@ import { GrokImaginePanel } from '@/components/GrokImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
 import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
 import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
+import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -395,6 +396,35 @@ export function ChatShell({onOpenLegal}:Props){
     }
   }
 
+  function prepareReportArtifact(prompt:string,content:string){
+    const intent=detectReportIntent(prompt);
+    if(!intent.wantsReport)return null;
+    const rendered=renderReportHtml(content,{
+      meta:{kind:intent.kind,classification:'confidencial'}
+    });
+    try{
+      sessionStorage.setItem('predictlm:dossier-prefill',content);
+      sessionStorage.setItem('predictlm:dossier-kind',intent.kind);
+    }catch{}
+    if(!intent.wantsHtml)return {content,media:[] as any[],quality:rendered.quality};
+    const blob=new Blob([rendered.html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const summary=rendered.dossier.sections.find(x=>x.role==='summary')?.body||'';
+    const publicContent=[
+      rendered.dossier.bottomLine?'**Conclusão em uma frase:** '+rendered.dossier.bottomLine:'',
+      summary,
+      'HTML pronto para baixar. O conteúdo completo também foi enviado ao Dossiê Studio.'
+    ].filter(Boolean).join('\n\n');
+    const filename=(rendered.dossier.title||'dossie')
+      .normalize('NFD').replace(/\p{M}/gu,'')
+      .replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'dossie';
+    return {
+      content:publicContent,
+      media:[{kind:'file' as const,url,label:'Dossiê HTML',temporary:true,downloadName:filename+'.html',mime:'text/html'}],
+      quality:rendered.quality
+    };
+  }
+
   async function send(){
     const prompt=input.trim();
     if(!prompt||busy)return;
@@ -405,6 +435,7 @@ export function ChatShell({onOpenLegal}:Props){
     const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const simulationLaunch=detectSimulationLaunchRequest(prompt);
+    const reportIntent=detectReportIntent(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
     const brainContext=advanceBrowserDigitalBrainContext(prompt).context;
@@ -681,7 +712,7 @@ export function ChatShell({onOpenLegal}:Props){
       // history -> API -> SSE tokens. No RAG/skills/gates are inserted before
       // the model for ordinary conversation. Specialized/deep/current turns
       // keep the richer PredictLM pipeline below.
-      const directStreamEligible=!s.deepThink&&!needsWeb&&!tutorIntent&&prompt.length<=5000;
+      const directStreamEligible=!s.deepThink&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport&&prompt.length<=5000;
       if(directStreamEligible){
         setActivity(['Predict Auto · conectando ao modelo']);
         const streamed=await requestStreamingChat({
@@ -729,24 +760,27 @@ export function ChatShell({onOpenLegal}:Props){
           ...web.sources,
           ...(Array.isArray(result.data?.sources)?result.data.sources:[])
         ],8);
+        const report=prepareReportArtifact(prompt,result.text);
         s.addMessage({
           role:'assistant',
-          content:result.text,
+          content:report?.content||result.text,
           engine:'Predict Auto',
           sources:showExecutionDetails?apiSources:[],
-          ...(showExecutionDetails?{
-            reasoningSummary:buildReasoningSummary({
+          ...(report?.media?.length?{media:report.media}:{}),
+          ...(showExecutionDetails||report?{
+            reasoningSummary:showExecutionDetails?buildReasoningSummary({
               kind,
               webCount:apiSources.length,
               provider:true,
               anchor:!!answerAnchor,
               deep:s.deepThink
-            }),
+            }):undefined,
             actions:[
               result.data?.provider==='freellmapi'
                 ? 'FreeLLMAPI respondeu como provider padrão'
                 : 'Provider mesh respondeu',
               ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
+              ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[]),
               'Resposta final validada antes de exibir'
             ]
           }:{}),
@@ -1145,6 +1179,7 @@ export function ChatShell({onOpenLegal}:Props){
         <button className={screen==='build'?'active':''} onClick={()=>{setScreen('build');closeSidebarOnMobile()}}><span><Code2 size={16}/></span>Build</button>
         <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Simulação</button>
         <button onClick={()=>{closeSidebarOnMobile();onOpenLegal?.()}}><span><Scale size={16}/></span>Processos</button>
+        <button onClick={()=>{window.location.href='/dossie-studio'}}><span><FileText size={16}/></span>Dossiês</button>
         <button className={screen==='imagine'?'active':''} onClick={()=>{setScreen('imagine');closeSidebarOnMobile()}}><span><ImageIcon size={16}/></span>Imagine</button>
         <button className={screen==='vision'?'active':''} onClick={()=>{setScreen('vision');closeSidebarOnMobile()}}><span><Eye size={16}/></span>Visão</button>
         <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><span><Library size={16}/></span>Library</button>
