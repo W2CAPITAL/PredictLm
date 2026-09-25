@@ -1,0 +1,473 @@
+{
+  "version": 2,
+  "suite": "media-generation-v2",
+  "cases": [
+    {
+      "id": "real-video-auto-prefers-temporal-provider",
+      "input": {
+        "mode": "video",
+        "provider": "auto",
+        "prompt": "Naruto Kurama lutando com Sasuke Perfect Susanoo",
+        "deepThink": true,
+        "deepResearch": true
+      },
+      "expect": {
+        "notFinalProviders": [
+          "browser-mediarecorder",
+          "predict-storyboard"
+        ],
+        "requiresTaskOrVideoUrl": true,
+        "temporalGeneration": true,
+        "referenceGrounding": true
+      }
+    },
+    {
+      "id": "veo-reference-images-use-real-assets",
+      "input": {
+        "provider": "gemini",
+        "duration": 4,
+        "resolution": "720p",
+        "referenceImages": [
+          "data:image/png;base64,<fixture>"
+        ]
+      },
+      "expect": {
+        "effectiveDuration": 8,
+        "referenceImagesMax": 3,
+        "usesInlineImageBytes": true
+      }
+    },
+    {
+      "id": "structured-provider-error-never-leaks-object-object",
+      "input": {
+        "error": {
+          "error": {
+            "message": "quota exceeded"
+          }
+        }
+      },
+      "expect": {
+        "visibleTextContains": "quota exceeded",
+        "visibleTextExcludes": "[object Object]"
+      }
+    },
+    {
+      "id": "deep-media-planning",
+      "input": {
+        "deepThink": true,
+        "deepResearch": true,
+        "prompt": "produto futurista em chuva noturna"
+      },
+      "expect": {
+        "researchDepth": "comprehensive",
+        "directorBrief": true,
+        "finalPromptContainsTemporalDirectionsForVideo": true
+      }
+    },
+    {
+      "id": "no-real-provider-honest-fallback",
+      "input": {
+        "configuredTemporalProviders": []
+      },
+      "expect": {
+        "autoAvailable": false,
+        "localFallbackLabeledNonGenerative": true,
+        "noClaimOfNeuralVideo": true
+      }
+    },
+    {
+      "id": "comfyui-real-video-bridge",
+      "input": {
+        "provider": "comfyui",
+        "workflowConfigured": true
+      },
+      "expect": {
+        "submitEndpoint": "/prompt",
+        "pollEndpoint": "/history",
+        "assetEndpoint": "/view",
+        "requiresRealOutputFile": true
+      }
+    },
+    {
+      "id": "firecrawl-only-visual-grounding",
+      "input": {
+        "firecrawlConfigured": true,
+        "googleConfigured": false,
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "referencesAttempted": [
+          "firecrawl",
+          "pinterest-via-firecrawl"
+        ],
+        "googleRequired": false,
+        "missingGoogleWarning": false
+      }
+    },
+    {
+      "id": "grok-imagine-parity-persists-expanded-prompt",
+      "input": {
+        "mode": "image",
+        "style": "Anime",
+        "prompt": "Naruto Kurama lutando com Sasuke Susanoo perfeito"
+      },
+      "expect": {
+        "realMediaRoute": true,
+        "promptExpanded": true,
+        "styleInPrompt": true,
+        "promptOriginalPersisted": true,
+        "seedPersisted": true,
+        "modelPersisted": true
+      }
+    },
+    {
+      "id": "technical-review-never-fakes-perfect-semantic-score",
+      "input": {
+        "reviewType": "pixel-heuristic"
+      },
+      "expect": {
+        "maxScore": 94,
+        "label": "Qualidade técnica",
+        "semanticApprovalImplied": false
+      }
+    },
+    {
+      "id": "specific-character-auto-uses-literal",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "crie o naruto kurama lutando com o sasuke susanoo perfeito"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "deepThinkRewrite": false,
+        "deepResearchRewrite": false,
+        "identityGrounding": true,
+        "firecrawlReferences": true
+      }
+    },
+    {
+      "id": "literal-regeneration-keeps-user-prompt",
+      "input": {
+        "mode": "image",
+        "promptMode": "literal",
+        "regenerate": true,
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "creativeRewrite": false,
+        "newSeed": true,
+        "negativeConstraints": true,
+        "referenceGrounding": true
+      }
+    },
+    {
+      "id": "generic-concept-auto-uses-imagine",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "uma cidade flutuante ao amanhecer"
+      },
+      "expect": {
+        "effectivePromptMode": "imagine",
+        "cinematicExpansion": true
+      }
+    },
+    {
+      "id": "image-plus-text-surface",
+      "input": {
+        "mode": "image",
+        "prompt": "duas forças elementais em confronto"
+      },
+      "expect": {
+        "realImage": true,
+        "shortPtBrCaption": true,
+        "captionDoesNotExposeTechnicalPrompt": true
+      }
+    },
+    {
+      "id": "library-hides-technical-prompt-leaks",
+      "input": {
+        "prompt": "[ESTILO] Fotografia de fantasia hiper-realista e cinematográfica...",
+        "caption": "Epic anime battle key visual, highly detailed, 4k"
+      },
+      "expect": {
+        "cardUsesDisplayTitle": true,
+        "cardUsesSafeCaption": true,
+        "visibleTextExcludes": [
+          "[ESTILO]",
+          "Epic anime battle key visual",
+          "seed",
+          "4k"
+        ]
+      }
+    },
+    {
+      "id": "freeza-auto-literal-and-canonical",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça o freeza",
+        "firecrawlConfigured": true
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "referenceQueryIncludes": [
+          "Frieza",
+          "Dragon Ball"
+        ],
+        "negativeIncludes": [
+          "armored demon",
+          "Goku face"
+        ],
+        "canonicalIdentityLock": true
+      }
+    },
+    {
+      "id": "dragon-ball-oozaru-auto-literal",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça o macaco de dragon ball anime 4k"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "displayTitle": "Oozaru de Dragon Ball",
+        "referenceQueryIncludes": [
+          "Oozaru",
+          "Great Ape"
+        ],
+        "negativeIncludes": [
+          "ordinary monkey portrait",
+          "armored demon"
+        ]
+      }
+    },
+    {
+      "id": "naruto-four-tails-disambiguates-son-goku",
+      "input": {
+        "promptMode": "auto",
+        "prompt": "faça a bijuu de quatro caudas do anime naruto"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "referenceQueryIncludes": [
+          "Naruto",
+          "Four Tails",
+          "Son Goku",
+          "Bijuu"
+        ],
+        "negativeIncludes": [
+          "Dragon Ball Goku",
+          "missing four tails"
+        ]
+      }
+    },
+    {
+      "id": "old-library-items-normalize-on-read",
+      "input": {
+        "prompt": "Naruto Uzumaki blonde spiky hair whisker marks orange jacket Epic anime key visual",
+        "meta": {}
+      },
+      "expect": {
+        "displayTitle": "Naruto",
+        "captionPtBr": true,
+        "technicalPromptNotUsedAsCardTitle": true
+      }
+    },
+    {
+      "id": "anime-franchise-defaults-to-anime",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "prompt": "Naruto Kurama vs Sasuke Perfect Susanoo"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Anime",
+        "deepThinkDefault": false,
+        "deepResearchDefault": false
+      }
+    },
+    {
+      "id": "media-director-blocks-unrequested-ai-motifs",
+      "input": {
+        "mode": "image",
+        "promptMode": "imagine",
+        "deepThink": true,
+        "prompt": "duas guerreiras em um campo florido"
+      },
+      "expect": {
+        "directorProhibits": [
+          "binary",
+          "neural networks",
+          "circuits",
+          "drones",
+          "holograms",
+          "cyberpunk",
+          "robots",
+          "dimensional rifts"
+        ],
+        "unlessUserRequested": true
+      }
+    },
+    {
+      "id": "pollinations-fallback-shows-fidelity-warning",
+      "input": {
+        "configuredStrongImageProviders": [],
+        "provider": "pollinations-proxy"
+      },
+      "expect": {
+        "fidelityLimited": true,
+        "visibleProviderWarning": true,
+        "providerPreservedAfterUpscale": true
+      }
+    },
+    {
+      "id": "media-library-does-not-require-supabase",
+      "input": {
+        "supabaseConfigured": false,
+        "browserLocalStorage": true
+      },
+      "expect": {
+        "libraryMode": "browser-local",
+        "worksWithoutSupabase": true,
+        "maxItems": 60,
+        "persistsDataUrls": false
+      }
+    },
+    {
+      "id": "literal-regeneration-no-review-rewrite",
+      "input": {
+        "promptMode": "literal",
+        "regenerate": true,
+        "prompt": "faça o Freeza"
+      },
+      "expect": {
+        "sameUserPrompt": true,
+        "newSeed": true,
+        "creativeReviewHints": false
+      }
+    },
+    {
+      "id": "named-person-auto-literal-photoreal",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "styleLocked": false,
+        "prompt": "faça o Elon Musk",
+        "firecrawlConfigured": true
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Photoreal",
+        "referenceQueryIncludes": [
+          "Elon Musk",
+          "portrait",
+          "face"
+        ],
+        "negativeIncludes": [
+          "cyborg",
+          "robot face",
+          "different person"
+        ],
+        "humanIdentityLock": true
+      }
+    },
+    {
+      "id": "white-blue-eye-dragon-not-lizard",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "prompt": "faça um dragão branco de olhos azuis"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "identityLockIncludes": [
+          "mythological",
+          "dragon",
+          "white",
+          "blue"
+        ],
+        "negativeIncludes": [
+          "lizard",
+          "gecko",
+          "iguana",
+          "small reptile"
+        ],
+        "publicProviderEnhance": false
+      }
+    },
+    {
+      "id": "manual-style-wins-for-named-person",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Editorial",
+        "styleLocked": true,
+        "prompt": "faça o Elon Musk"
+      },
+      "expect": {
+        "effectiveStyle": "Editorial",
+        "automaticPhotorealOverride": false
+      }
+    },
+    {
+      "id": "veo-inline-data-rejected-retries-text-only",
+      "input": {
+        "provider": "gemini",
+        "firstResponse": {
+          "status": 400,
+          "error": "inlineData isn't supported by this model"
+        }
+      },
+      "expect": {
+        "retryCount": 1,
+        "retryVisualInputs": false,
+        "hard502AfterFirstFailure": false,
+        "compatibilityWarning": true
+      }
+    },
+    {
+      "id": "media-director-provider-failure-is-nonblocking",
+      "input": {
+        "mode": "media-director",
+        "allChatProvidersFail": true
+      },
+      "expect": {
+        "httpStatus": 200,
+        "content": null,
+        "code": "MEDIA_DIRECTOR_UNAVAILABLE",
+        "videoGenerationMayContinue": true
+      }
+    },
+    {
+      "id": "naruto-matchup-auto-wide-canonical",
+      "input": {
+        "mode": "image",
+        "promptMode": "auto",
+        "style": "Cinematic",
+        "aspect": "1:1",
+        "aspectLocked": false,
+        "prompt": "Naruto Kurama lutando contra Sasuke Susanoo perfeito"
+      },
+      "expect": {
+        "effectivePromptMode": "literal",
+        "effectiveStyle": "Anime",
+        "effectiveAspect": "16:9",
+        "canonicalLockIncludes": [
+          "nine distinct tails",
+          "Perfect Susanoo",
+          "full body",
+          "wings",
+          "central clash"
+        ],
+        "negativeIncludes": [
+          "humanoid Kurama",
+          "Susanoo torso only",
+          "central explosion hiding both avatars"
+        ]
+      }
+    }
+  ]
+}

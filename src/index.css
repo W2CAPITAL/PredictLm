@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #0a0a0b;
+    color: #e4e4e7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .forge-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
+  }
+  .forge-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .forge-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .forge-scroll::-webkit-scrollbar-thumb {
+    background-color: #3f3f46;
+    border-radius: 3px;
+  }
+  .forge-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #52525b;
+  }
+  .forge-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e4e4e7;
+    width: 100%;
+  }
+  .forge-input::placeholder {
+    color: #71717a;
+  }
+  .forge-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+  .forge-btn-primary {
+    background: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+  }
+  .forge-btn-primary:hover {
+    background: #2563eb;
+  }
+  .forge-btn-primary:disabled {
+    background: #1e3a5f;
+    color: #71717a;
+    cursor: not-allowed;
+  }
+  .forge-btn-ghost {
+    background: transparent;
+    color: #a1a1aa;
+    padding: 6px 10px;
+  }
+  .forge-btn-ghost:hover {
+    background: #27272a;
+    color: #e4e4e7;
+  }
+  .forge-panel {
+    background: #131316;
+    border: 1px solid #27272a;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .forge-tab {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #71717a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .forge-tab:hover {
+    color: #a1a1aa;
+    background: #27272a;
+  }
+  .forge-tab-active {
+    color: #e4e4e7;
+    background: #27272a;
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, #131316 25%, #1a1a1f 50%, #131316 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+.cm-editor {
+  height: 100%;
+  background: #0a0a0b !important;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+.cm-editor .cm-gutters {
+  background: #0a0a0b !important;
+  border-right: 1px solid #27272a !important;
+  color: #52525b !important;
+}
+.cm-editor .cm-activeLineGutter {
+  background: #131316 !important;
+  color: #a1a1aa !important;
+}
+.cm-editor .cm-activeLine {
+  background: #131316 !important;
+}
+.cm-editor .cm-content {
+  caret-color: #3b82f6 !important;
+}
+.cm-editor .cm-selectionBackground {
+  background: #1e3a5f !important;
+}
+.cm-editor.cm-focused {
+  outline: none !important;
+}

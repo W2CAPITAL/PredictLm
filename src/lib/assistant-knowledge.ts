@@ -1,0 +1,80 @@
+import { TRAINING_KNOWLEDGE } from './training/learned-lessons';
+
+export interface KnowledgeEntry {
+  id:string;
+  title:string;
+  tags:string[];
+  source:string;
+  body:string;
+}
+
+export const assistantKnowledge:KnowledgeEntry[]=[
+  ...TRAINING_KNOWLEDGE,
+  {id:'suitecrm',title:'Mature CRM domain model',tags:['crm','suitecrm','sales','contacts','accounts','enterprise'],source:'SuiteCRM/SuiteCRM',body:'SuiteCRM demonstrates the breadth of a mature CRM: accounts, contacts, opportunities, activities, extensibility, permissions, self-hosting and long-lived business data. PredictLM should avoid reducing a CRM to three pipeline cards when the user asks for a serious financial or operational CRM.'},
+  {id:'trycompai-crm',title:'Agent-first CRM architecture',tags:['crm','agents','queue','tools','skills','evidence','postgres'],source:'trycompai/crm',body:'Comp AI CRM treats the agent as an autonomous worker with its own deployment, task queue, tools, skills, evidence rules and optional integrations. The product should plan around capabilities that actually exist and list missing keys up front instead of failing tool-by-tool.'},
+  {id:'relaticle-crm',title:'CRM API, schema and MCP depth',tags:['crm','relaticle','mcp','crud','schema','workspace','tests'],source:'relaticle/relaticle',body:'Relaticle shows production CRM depth: full CRUD, customizable schema, MCP tools, workspace isolation, REST APIs and extensive automated tests. For full CRM requests, PredictLM should consider data model, API boundaries, workspace isolation and testing in addition to UI.'},
+  {id:'bolt-new',title:'Bolt.new browser development model',tags:['bolt','webcontainers','browser','full-stack','terminal','deploy'],source:'stackblitz/bolt.new',body:'Bolt demonstrates that an AI coding surface should control files, packages, terminal, runtime, preview and deployment in one browser workspace. Its key UX is prompt → execute in environment → preview → iterate, not a static code viewer.'},
+  {id:'bolt-diy',title:'Bolt.diy extensible provider architecture',tags:['bolt.diy','providers','mcp','snapshots','diff','git','electron'],source:'stackblitz-labs/bolt.diy',body:'Bolt.diy separates the agent harness from model providers, supports snapshots, diffs, file locking, Git, deployment, MCP and an Electron surface. PredictLM should keep provider choice independent from the workspace and preserve reversible project state.'},
+  {id:'kiro',title:'Kiro spec-driven development',tags:['kiro','specs','steering','hooks','skills','permissions','checkpoints'],source:'kirodotdev/Kiro',body:'Kiro emphasizes requirements, design and implementation specs, correctness checks, steering rules, custom agents, hooks, permissions and checkpoints. The lesson for PredictLM is to make Build mode spec-aware and review changes against requirements before shipping.'},
+  {id:'ralph',title:'Ralph iterative orchestration',tags:['ralph','orchestrator','loops','backpressure','agents','tests'],source:'mikeyobrien/ralph-orchestrator',body:'Ralph keeps specialized agents in an iteration loop until completion or a stop condition. Backpressure rejects incomplete work when tests, lint or typecheck fail. PredictLM can use this as an orchestration pattern rather than a one-shot generator.'},
+  {id:'memory-forge',title:'Editable conversation memory',tags:['memory','sessions','edit','resume','fork','audit'],source:'voidcraft-dev/memory-forge-rs',body:'Memory Forge treats conversation history as an editable artifact. Users can correct wrong assumptions, inject missing context, archive sessions and export them. PredictLM should preserve chat history separately from build logs and allow memory correction.'},
+  {id:'aicodeguide',title:'AI coding practices',tags:['ai coding','vibe coding','agents','mcp','practice'],source:'automata/aicodeguide',body:'AI coding quality comes from model capability plus context, tools, verification and workflow. Better prompts alone are not enough. PredictLM should combine retrieval, environment tools, tests and reversible edits.'},
+  {id:'microsoft-ai-beginners',title:'AI foundations',tags:['ai','ml','neural networks','fundamentals','ethics'],source:'microsoft/AI-For-Beginners',body:'AI systems include classical methods and neural models. A repository of lessons can supply knowledge and examples, but it does not itself become a trained language model. Inference capability must come from a model/runtime.'},
+  {id:'microsoft-agents',title:'Agent lifecycle',tags:['agents','production','tools','memory','evaluation','observability'],source:'microsoft/Building-AI-Agents-From-Zero-To-Production',body:'Production agents need a lifecycle: define goals, select model and tools, manage context and memory, evaluate outputs, add observability and deploy with guardrails. PredictLM should expose these as product capabilities, not hidden assumptions.'},
+  {id:'clone-wars',title:'Open source product alternatives',tags:['clone','opensource','alternatives','products'],source:'GorvGoyl/Clone-Wars',body:'Clone Wars catalogs open-source alternatives to popular products. The useful pattern is reference-driven product reconstruction: identify capabilities, workflows and UX primitives, then implement an original system without blindly copying proprietary code.'},
+  {id:'opencode',title:'Agentic code workspace',tags:['opencode','agent','code','terminal','tools'],source:'anomalyco/opencode + opencode-ai/opencode',body:'OpenCode-style systems treat coding as an agent loop over repository context, tools, edits and verification. PredictLM Build mode should reason over the current project rather than regenerate from scratch.'},
+  {id:'codex',title:'Coding agent execution model',tags:['codex','coding agent','patch','tests','repository'],source:'openai/codex',body:'Coding agents are most useful when they inspect the repository, make targeted edits, run validation and explain results. The core pattern is environment-aware execution with checkpoints.'},
+  {id:'langflow',title:'Composable AI flows',tags:['langflow','flows','nodes','agents','pipelines'],source:'langflow-ai/langflow',body:'Composable node/flow systems make agent pipelines understandable and reusable. PredictLM can represent research, planning, coding, testing and review as explicit stages.'},
+  {id:'nextchat',title:'Normal conversational AI surface',tags:['chat','nextchat','conversation','models','ui'],source:'ChatGPTNextWeb/NextChat',body:'A normal AI surface should prioritize conversation: history, model/mode controls, composer, attachments and readable answers. Coding tools should be a mode, not the entire default interface.'},
+  {id:'firebase-studio',title:'Chat and code as separate surfaces',tags:['firebase studio','code','preview','workspace','switch'],source:'product-pattern',body:'Firebase Studio-like UX separates conversational prompting from a developer workspace. A user can stay in normal assistant mode, then switch into code/build mode when the task needs files, editor and preview.'},
+  {id:'onlook',title:'Visual editing over code',tags:['onlook','visual editor','dom','code'],source:'onlook-dev/onlook',body:'Visual editing is strongest when clicks on the rendered UI map back to code context. PredictLM Inspect mode should be a bridge into targeted edits, not a disconnected canvas.'},
+  {id:'fireplexity',title:'Source-aware research',tags:['research','search','sources','firecrawl'],source:'firecrawl/fireplexity',body:'Research mode should gather current sources, preserve URLs and distinguish retrieved evidence from generated synthesis.'},
+  {id:'security',title:'Review-first security',tags:['security','secrets','xss','validation','ship'],source:'vibe-security skill references',body:'Generated apps should be checked for exposed credentials, unsafe HTML, insecure network requests, unvalidated inputs and missing tests before deployment.'},
+  {id:'design',title:'Design quality system',tags:['design','taste','spacing','hierarchy','responsive'],source:'design skill references',body:'Premium UI quality comes from consistent spacing, typography hierarchy, restrained color, clear states, responsiveness and functional interaction. Visual polish should follow function, not replace it.'},
+  {id:'autodev-runtime',title:'AutoDev agent runtime',tags:['autodev','subagents','recovery','codebase','qa','project rules'],source:'phodal/auto-dev + PredictLM original runtime',body:'PredictLM uses the architectural patterns of agent-as-tool, task routing, project rules, recovery, codebase investigation and QA. The implementation is native to PredictLM and keeps runtime details out of the final answer.'},
+  {id:'prompt-os',title:'PredictLM Prompt OS',tags:['prompt','eval','rag','agents','response','focus'],source:'Agenta + DocsGPT + Agno + Giselle + Inkeep + CleanMyPrompt',body:'The Prompt OS classifies intent, retrieves a small set of relevant prompt patterns, keeps evidence grounded and prevents fallback/provider/skill boilerplate from replacing the requested answer.'},
+  {id:'legal-agent-pack',title:'Legal skill federation',tags:['legal','advocacia','processo','revisional','peticao','auditoria'],source:'legal-skills + gestao-escritorio + resumo-autos + auditor-estrategico-juridico + legal-ai-skills',body:'Legal workflows should separate facts, evidence, procedural posture, thesis, counter-thesis, filing requirements and human-gated external actions. Court facts remain grounded in official sources.'},
+  {id:'media-production',title:'Agentic media production',tags:['video','imagem','storyboard','motion','shorts','cinema'],source:'Agnes Video Generator + OpenMontage + Toonflow + Pixelle Video + Forge Film + Short Video Maker',body:'A serious media pipeline goes beyond a single prompt: plan scenes and continuity, generate or source assets, review, compose, render, export and preserve metadata. PredictLM uses lightweight browser motion by default and keeps heavy model runtimes optional.'},
+];
+
+const tokenize=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/[^a-z0-9]+/).filter(x=>x.length>2);
+const RETRIEVAL_STOPWORDS=new Set([
+  'como','posso','pode','podem','quero','preciso','criar','fazer','montar','comecar','começar','aprender','ensine',
+  'passo','passos','zero','sobre','para','uma','umas','uns','que','qual','quais','isso','isto','esse','essa','este',
+  'esta','meu','minha','seu','sua','agora','hoje','ajuda','ajude','explica','explique'
+]);
+
+export function knowledgeQueryTokens(query:string){
+  return tokenize(query).filter(x=>!RETRIEVAL_STOPWORDS.has(x));
+}
+
+export function retrieveKnowledge(query:string,limit=6){
+  const q=knowledgeQueryTokens(query);
+  if(!q.length)return [];
+  return assistantKnowledge.map(entry=>{
+    const title=tokenize(entry.title);
+    const tags=tokenize(entry.tags.join(' '));
+    const body=tokenize(entry.body+' '+entry.source);
+    const titleSet=new Set(title);
+    const tagSet=new Set(tags);
+    const bodySet=new Set(body);
+    let score=0;
+    let strong=0;
+    let bodyHits=0;
+    for(const token of q){
+      if(titleSet.has(token)){score+=7;strong++;continue;}
+      if(tagSet.has(token)){score+=8;strong++;continue;}
+      if(bodySet.has(token)){score+=3;bodyHits++;continue;}
+      if(token.length>=5&&(title.some(x=>x.startsWith(token)||token.startsWith(x))||tags.some(x=>x.startsWith(token)||token.startsWith(x)))){
+        score+=3;strong++;
+      }
+    }
+    if(query.toLowerCase().includes(entry.id.replace(/-/g,' '))){score+=8;strong++;}
+    const relevant=q.length===1?(strong>=1||bodyHits>=1):(strong>=1||bodyHits>=2);
+    return {entry,score,relevant};
+  }).filter(x=>x.relevant&&x.score>=3).sort((a,b)=>b.score-a.score).slice(0,limit).map(x=>x.entry);
+}
+
+export function knowledgeContext(query:string,limit=5){
+  return retrieveKnowledge(query,limit).map((x,i)=>'['+(i+1)+'] '+x.title+' — '+x.body+' Source: '+x.source).join('\n');
+}

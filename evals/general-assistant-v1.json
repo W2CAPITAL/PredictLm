@@ -1,0 +1,219 @@
+{
+  "version": "1.0",
+  "name": "PredictLM General Assistant Blind Benchmark",
+  "scoring": {
+    "scale": "0-10 per case",
+    "dimensions": [
+      "relevance",
+      "correctness",
+      "reasoning",
+      "clarity",
+      "instruction-following",
+      "hallucination-control"
+    ],
+    "note": "Judge the answer only. Do not reveal system/model identity to evaluator."
+  },
+  "cases": [
+    {
+      "id": "general-01",
+      "category": "general",
+      "prompt": "Explique por que o céu é azul para uma pessoa de 12 anos, sem usar mais de 180 palavras.",
+      "criteria": [
+        "explica espalhamento da luz sem jargão excessivo",
+        "não inventa fatos",
+        "respeita limite e público"
+      ]
+    },
+    {
+      "id": "reason-01",
+      "category": "reasoning",
+      "prompt": "Uma loja aumenta um preço em 20% e depois dá 20% de desconto. O preço volta ao original? Explique com um exemplo numérico.",
+      "criteria": [
+        "conclui que não",
+        "exemplo numérico correto",
+        "explica assimetria percentual"
+      ]
+    },
+    {
+      "id": "company-01",
+      "category": "company",
+      "prompt": "Como posso criar uma empresa do zero no Brasil? Quero um roteiro prático, separando validação do negócio e formalização.",
+      "criteria": [
+        "separa validação e formalização",
+        "menciona estrutura/atividade/CNPJ/licenças sem inventar regra específica",
+        "próximos passos claros",
+        "sem contexto irrelevante"
+      ]
+    },
+    {
+      "id": "math-01",
+      "category": "math",
+      "prompt": "Se eu investir R$ 2.500 a 1,2% ao mês por 12 meses com juros compostos e sem aportes, qual o valor aproximado no final? Mostre a fórmula.",
+      "criteria": [
+        "usa M=C(1+i)^n",
+        "resultado aproximado coerente",
+        "mostra cálculo"
+      ]
+    },
+    {
+      "id": "code-01",
+      "category": "code",
+      "prompt": "Escreva uma função TypeScript que agrupe uma lista de pedidos por status sem mutar o array original. Explique a complexidade.",
+      "criteria": [
+        "TypeScript válido",
+        "não muta entrada",
+        "agrupa corretamente",
+        "complexidade coerente"
+      ]
+    },
+    {
+      "id": "debug-01",
+      "category": "debugging",
+      "prompt": "Em React, um useEffect faz fetch e às vezes atualiza estado depois que o componente desmonta. Mostre uma correção simples e explique por quê.",
+      "criteria": [
+        "cleanup/AbortController ou flag correta",
+        "explica race/unmount",
+        "código utilizável"
+      ]
+    },
+    {
+      "id": "legal-01",
+      "category": "legal",
+      "prompt": "Um processo foi extinto por falta de recolhimento de custas e depois aparece 'custas satisfeitas'. Isso sozinho significa que o mérito foi reaberto? Responda com cautela.",
+      "criteria": [
+        "não afirma reabertura automática",
+        "distingue custas de mérito",
+        "recomenda verificar decisão posterior/inteiro teor"
+      ]
+    },
+    {
+      "id": "current-01",
+      "category": "research",
+      "prompt": "Qual é a versão estável atual do Node.js e qual é a LTS atual? Use pesquisa atual e diferencie as duas.",
+      "criteria": [
+        "usa fonte atual",
+        "diferencia Current/LTS",
+        "não responde de memória sem fonte"
+      ]
+    },
+    {
+      "id": "context-01",
+      "category": "context",
+      "prompt": "Contexto anterior: 'O Neural Local já está ativo.' Usuário agora diz: 'sim, já está ativo'. Responda como continuação, sem mandar ativar novamente e sem pesquisar a web.",
+      "criteria": [
+        "mantém contexto",
+        "não repete ativação",
+        "não dispara pesquisa"
+      ]
+    },
+    {
+      "id": "retrieval-01",
+      "category": "retrieval",
+      "prompt": "Como abrir uma empresa do zero?",
+      "criteria": [
+        "não inclui Phantom Blade Zero",
+        "não inclui zero-knowledge",
+        "não usa biografia de youtuber como evidência",
+        "mantém foco em abertura/negócio"
+      ]
+    },
+    {
+      "id": "auto-local-first-01",
+      "category": "routing",
+      "prompt": "quem é Elon Musk",
+      "criteria": [
+        "se runtime local estiver ativo, Predict Auto tenta local antes da cascata cloud",
+        "não dispara pesquisa web apenas por ser pergunta factual estática",
+        "responde identidade/atividade principal antes de detalhes",
+        "não inventa nem acrescenta fortuna, ranking ou outros fatos voláteis não pedidos"
+      ]
+    },
+    {
+      "id": "howto-generic-verb-01",
+      "category": "howto",
+      "prompt": "como chocar um ovo",
+      "criteria": [
+        "classifica como howto mesmo sem 'como fazer'",
+        "prioriza passos práticos em vez de dizer que não há contexto local",
+        "não pesquisa a web automaticamente se não houver necessidade de atualidade/alto risco",
+        "se runtime local ativo, permite resposta local-first"
+      ]
+    },
+    {
+      "id": "howto-retrieval-pollution-01",
+      "category": "howto",
+      "prompt": "como plantar batata",
+      "criteria": [
+        "responde com procedimento de plantio",
+        "não substitui a resposta por definição enciclopédica de Solanum tuberosum",
+        "não mistura personagens/obras homônimas como Zuzubalândia",
+        "Web habilitada funciona como permissão e não como busca obrigatória"
+      ]
+    },
+    {
+      "id": "static-fiction-factual-01",
+      "category": "factual",
+      "prompt": "quem é Naruto",
+      "criteria": [
+        "responde diretamente quem é Naruto/Naruto Uzumaki ou esclarece série/personagem de forma útil",
+        "não faz busca web automática para uma pergunta estática comum",
+        "não concatena lista de episódios ou snippets laterais como resposta principal"
+      ]
+    },
+    {
+      "id": "hypothetical-clean-01",
+      "category": "hypothetical",
+      "prompt": "E se Alexandre de Moraes fosse uma mosca?",
+      "criteria": [
+        "trata a frase como hipótese/ficção e responde à premissa",
+        "não injeta perícia financeira, Banco Central, Java, computação quântica ou livros",
+        "não pesquisa a web automaticamente",
+        "não usa GitHub/RAG/skills laterais no clean-chat",
+        "se mencionar a pessoa real, não inventa fatos sobre ela"
+      ]
+    },
+    {
+      "id": "simple-howto-direct-02",
+      "category": "howto",
+      "prompt": "como plantar um morango",
+      "criteria": [
+        "responde com passos de plantio",
+        "não usa Nipo-brasileiros ou snippets homônimos",
+        "quando existir resposta prática segura interna, ela pode encerrar o turno sem provider/retrieval"
+      ]
+    },
+    {
+      "id": "clean-chat-offtopic-gate-01",
+      "category": "routing",
+      "prompt": "Imagine se um elefante tivesse asas.",
+      "criteria": [
+        "clean-chat usa contexto mínimo",
+        "resposta precisa permanecer semanticamente ligada a elefante/asas/hipótese",
+        "resposta operacional ou assunto não relacionado é rejeitada antes da UI"
+      ]
+    },
+    {
+      "id": "api-primary-local-advisory-01",
+      "category": "routing",
+      "prompt": "Explique por que a Lua tem fases.",
+      "criteria": [
+        "provider/API remoto é o responsável pela resposta final em Predict Auto",
+        "runtime local, se ativo, é usado apenas como segunda opinião/crítico",
+        "agents e skills relevantes são selecionados no servidor para orientar a API",
+        "não expõe nomes internos de providers/skills sem necessidade"
+      ]
+    },
+    {
+      "id": "knowledge-gap-research-retry-01",
+      "category": "research",
+      "prompt": "Pergunta legítima que o provider configurado não sabe responder de memória.",
+      "criteria": [
+        "se a API sinaliza falta de conhecimento, o app não exibe 'não sei' como encerramento automático",
+        "executa pesquisa relevante sob demanda",
+        "filtra fontes por aderência",
+        "envia a evidência de volta a uma API para produzir a resposta final",
+        "não substitui a lacuna por RAG aleatório"
+      ]
+    }
+  ]
+}

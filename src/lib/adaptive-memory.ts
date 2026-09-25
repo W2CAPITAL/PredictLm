@@ -1,0 +1,190 @@
+'use client';
+
+import { conversationAnswerIssue } from './chat-intelligence';
+
+export type ExperienceSource='local-model'|'webllm'|'native-model'|'build'|'feedback'|'instruction';
+
+export interface AdaptiveExperience{
+  id:string;
+  prompt:string;
+  answer:string;
+  terms:string[];
+  source:ExperienceSource;
+  confidence:number;
+  uses:number;
+  createdAt:number;
+  updatedAt:number;
+}
+
+const KEY='predictlm-adaptive-memory-v1';
+const LIMIT=420;
+
+function normalize(text:string){
+  return String(text||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+}
+function terms(text:string){
+  const stop=new Set(['para','como','uma','umas','uns','que','isso','essa','esse','the','and','with','from','this','that','you','your','app','predictlm']);
+  const out=normalize(text).split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!stop.has(x));
+  return Array.from(new Set(out)).slice(0,60);
+}
+function hash(text:string){
+  let h=2166136261;
+  for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}
+  return (h>>>0).toString(36);
+}
+function safeToStore(text:string){
+  const s=String(text||'');
+  if(!s.trim())return false;
+  if(/(?:api[_-]?key|secret|token|password|senha)\s*[:=]\s*\S+/i.test(s))return false;
+  if(/-----BEGIN [A-Z ]+PRIVATE KEY-----/.test(s))return false;
+  if(/\b(?:sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{20,}\.)/.test(s))return false;
+  return true;
+}
+
+function highRiskFactPattern(text:string){
+  const s=String(text||'');
+  return /https?:\/\/|\b\d{2}\/\d{2}\/\d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\bR\$\s?\d|\bUS\$\s?\d|\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/i.test(s);
+}
+function load():AdaptiveExperience[]{
+  if(typeof window==='undefined')return [];
+  try{
+    const raw=localStorage.getItem(KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch{return []}
+}
+function save(rows:AdaptiveExperience[]){
+  if(typeof window==='undefined')return;
+  try{localStorage.setItem(KEY,JSON.stringify(rows.slice(0,LIMIT)))}catch{}
+}
+function similarity(queryTerms:string[],row:AdaptiveExperience){
+  if(!queryTerms.length||!row.terms.length)return 0;
+  const set=new Set(row.terms);
+  let overlap=0;
+  for(const t of queryTerms)if(set.has(t))overlap++;
+  return overlap/Math.max(3,Math.min(queryTerms.length,row.terms.length));
+}
+
+export function isAdaptiveInstruction(text:string){
+  const s=normalize(text);
+  return /\b(a partir de agora|sempre|nunca|prefiro|minha preferencia|lembre que|lembre se de|aprenda que|quero que voce|quando eu pedir|use sempre|nao use|de agora em diante)\b/.test(s);
+}
+
+export function captureAdaptiveInstruction(instruction:string){
+  if(typeof window==='undefined'||!safeToStore(instruction)||!isAdaptiveInstruction(instruction))return false;
+  const text=String(instruction).trim().slice(0,1600);
+  if(text.length<8)return false;
+  const now=Date.now();
+  const id='instruction-'+hash(normalize(text));
+  const rows=load();
+  const existing=rows.find(x=>x.id===id);
+  if(existing){
+    existing.updatedAt=now;
+    existing.uses+=1;
+    existing.confidence=Math.min(.99,existing.confidence+.03);
+    save(rows.sort((x,y)=>y.updatedAt-x.updatedAt));
+    return true;
+  }
+  rows.unshift({
+    id,
+    prompt:text,
+    answer:'Instrução persistente do usuário: '+text,
+    terms:terms(text),
+    source:'instruction',
+    confidence:.96,
+    uses:1,
+    createdAt:now,
+    updatedAt:now
+  });
+  save(rows.sort((x,y)=>y.updatedAt-x.updatedAt));
+  return true;
+}
+
+export function adaptiveInstructionContext(limit=8){
+  return load()
+    .filter(row=>row.source==='instruction'&&row.confidence>=.75)
+    .sort((a,b)=>b.updatedAt-a.updatedAt)
+    .slice(0,Math.max(1,limit))
+    .map(row=>'INSTRUÇÃO DO USUÁRIO: '+row.prompt.slice(0,700))
+    .join('\n');
+}
+
+export function captureAdaptiveExperience(prompt:string,answer:string,source:ExperienceSource='local-model'){
+  if(typeof window==='undefined'||!safeToStore(prompt)||!safeToStore(answer))return;
+  if(source!=='instruction'&&conversationAnswerIssue(prompt,answer))return;
+  const p=String(prompt).trim().slice(0,1200);
+  const a=String(answer).trim().slice(0,2200);
+  if(a.length<40)return;
+
+  const now=Date.now();
+  const id=hash(normalize(p)+'|'+normalize(a.slice(0,700)));
+  const rows=load();
+  const existing=rows.find(x=>x.id===id);
+  if(existing){
+    existing.uses+=1;
+    existing.updatedAt=now;
+    existing.confidence=Math.min(.86,existing.confidence+.04);
+    save(rows.sort((x,y)=>y.updatedAt-x.updatedAt));
+    return;
+  }
+  rows.unshift({
+    id,prompt:p,answer:a,terms:terms(p+' '+a),
+    source,
+    confidence:source==='instruction'?.96:source==='feedback'?.82:highRiskFactPattern(a)?.34:.5,
+    uses:1,
+    createdAt:now,
+    updatedAt:now
+  });
+  save(rows.sort((x,y)=>(y.confidence-y.confidence)||(y.updatedAt-x.updatedAt)));
+}
+
+export function adaptiveRecall(query:string,limit=4){
+  const q=terms(query);
+  const now=Date.now();
+  return load()
+    .filter(row=>row.source==='instruction'||(!conversationAnswerIssue(row.prompt,row.answer)&&!conversationAnswerIssue(query,row.answer)))
+    .map(row=>{
+      const ageDays=Math.max(0,(now-row.updatedAt)/86400000);
+      const trusted=row.source==='feedback'||row.confidence>=.68||row.uses>=3;
+      const score=(trusted?similarity(q,row)*2.2:similarity(q,row)*.55)+row.confidence+Math.min(.3,row.uses*.03)-Math.min(.25,ageDays*.003);
+      return {row,score,trusted};
+    })
+    .filter(x=>x.trusted&&x.score>=.78)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,limit)
+    .map(x=>x.row);
+}
+
+export function adaptiveContext(query:string,limit=4){
+  return adaptiveRecall(query,limit)
+    .map(row=>'Experiência local relevante:\nPedido: '+row.prompt.slice(0,420)+'\nResultado útil: '+row.answer.slice(0,900))
+    .join('\n\n');
+}
+
+export function rateAdaptiveAnswer(answer:string,positive:boolean){
+  if(typeof window==='undefined'||!answer.trim())return;
+  const needle=normalize(answer).slice(0,500);
+  const rows=load();
+  let touched=false;
+  for(const row of rows){
+    const candidate=normalize(row.answer).slice(0,500);
+    const same=hash(candidate)===hash(needle)||candidate===needle;
+    if(!same)continue;
+    touched=true;
+    row.updatedAt=Date.now();
+    row.confidence=positive?Math.min(.98,row.confidence+.24):Math.max(0,row.confidence-.45);
+    row.uses+=positive?1:0;
+  }
+  save(rows.filter(x=>x.confidence>.16).sort((a,b)=>b.updatedAt-a.updatedAt));
+  return touched;
+}
+
+export function adaptiveMemoryStats(){
+  const rows=load();
+  return {
+    count:rows.length,
+    trusted:rows.filter(x=>x.confidence>=.7).length,
+    instructions:rows.filter(x=>x.source==='instruction').length,
+    lastUpdated:rows[0]?.updatedAt||null
+  };
+}
