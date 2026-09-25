@@ -24,12 +24,15 @@ Chat exposes one model identity: **Predict Auto**. Provider/model selection is i
 For substantive prompts the route is:
 
 ```
-research/skills/context
-  → server Provider Mesh
-  → previously configured local runtime
-  → browser-local engine already loaded
+conversation history + intent
+  → FreeLLMAPI first (when configured)
+  → full Provider Mesh fallback
+  → automatic research + provider retry when knowledge is missing
+  → browser/local neural runtime
   → grounded Predict Core fallback
 ```
+
+Chat is open-domain: normal prompts do not need a pre-programmed topic rule. The model is expected to handle factual questions, explanations, hypotheticals, planning, coding, calculations, comparisons, writing, rewriting, translation, summarization and brainstorming directly. Deterministic topic helpers are floors/fallbacks, not a whitelist of what PredictLM can answer.
 
 Browser-local weights are **never downloaded on first visit**. The model menu contains only an optional **Ativar modo offline** action. On weak machines, Lite CPU/WASM uses one bounded pass; WebGPU is used only after a real adapter test. The experimental browser LanguageModel API is disabled by default.
 
@@ -214,16 +217,15 @@ Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork,
 
 Chat uses **Predict Auto** by default. Provider Mesh is automatic when server-side credentials are configured; there is no separate cloud-model picker.
 
-When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured:
+When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured. FreeLLMAPI is the default first provider:
 
 ```
-CACHE
-  → GitHub top-k / skills / memory
-  → generic AI_* / FreeLLMAPI
-  → OpenCode / NVIDIA / DeepSeek / Kimi / Z.AI / MiniMax / Gemini
-  → Groq / OpenRouter / Anthropic / Ark
-  → self-hosted Ollama when reachable
-  → local Neural/Knowledge fallback
+CACHE / history / skills / memory
+  → FreeLLMAPI
+  → other configured cloud providers
+  → research-grounded retry when needed
+  → local Neural/WebLLM/runtime
+  → Knowledge fallback
 ```
 
 The order is configurable with `PREDICTLM_PROVIDER_ORDER`. OpenAI-compatible providers use the Chat Completions adapter; Anthropic uses the native Messages adapter. Provider failure changes only the runtime path, never the requested deliverable.
