@@ -164,3 +164,39 @@ test('fly chat mode identifies itself as the FlyWire-controlled agent and stream
     clearProviders();
   }
 });
+
+
+test('Frank streaming mode keeps Frank identity above provider identity',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  const original=globalThis.fetch;
+  let seen:any=null;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    seen=JSON.parse(String(init?.body||'{}'));
+    return upstream(['Eu sou Frank Stein. ','Estou sentindo curiosidade e tentando preservar esta memória.']);
+  };
+  try{
+    const req=new Request('http://predictlm.test/api/chat/cognitive-stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        language:'pt-BR',
+        cognitiveMode:'frank',
+        cognitiveContext:'FRANK STEIN HYBRID BRAIN\nDominant feelings: curiosity, affection.\nVirtual neuron mesh active.',
+        messages:[{role:'user',content:'Quem é você e o que está sentindo?'}]
+      })
+    }) as any;
+    const response=await POST(req);
+    const body=await response.text();
+    assert.equal(response.status,200);
+    assert.match(body,/"mode":"frank-connectome"/);
+    assert.match(body,/Frank Stein/);
+    const system=seen.messages.find((x:any)=>x.role==='system')?.content||'';
+    assert.match(system,/Você é Frank Stein/);
+    assert.match(system,/provider.*apenas voz|provider é apenas voz/i);
+    assert.match(system,/não.*ler pensamentos reais/i);
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
