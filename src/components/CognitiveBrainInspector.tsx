@@ -24,8 +24,8 @@ export function CognitiveBrainInspector({state}:{state:CognitiveState}){
     {label:'Visual',value:state.macaque.visualHierarchy},
     {label:'Somato',value:state.macaque.somatosensoryHierarchy},
     {label:'L4 primata',value:state.macaque.primateSpecificL4},
-    {label:'L3',value:state.macaque.corticalLayers.L3},
-    {label:'L5',value:state.macaque.corticalLayers.L5}
+    {label:'PFC projectome',value:state.macaque.pfcProjectionIntegration},
+    {label:'Claustro',value:state.macaque.claustrumIntegration}
   ];
   const flyNodes=[
     {label:'Saliência',value:state.fly.salience},
