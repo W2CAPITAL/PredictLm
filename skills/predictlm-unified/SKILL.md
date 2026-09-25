@@ -717,3 +717,17 @@ The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approve
 - run visual QA after generation and make only bounded repairs from concrete visible defects;
 - do not treat bundled reference photos/products as training material;
 - Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
+
+
+## Cognitive Organism Sync (2026-09-25)
+
+A arquitetura unificada incorpora `organism-engine` ao Cognitive Lab:
+- drives homeostáticos e afetivos;
+- objetivo/ação/alternativa persistentes;
+- ensemble multi-brain simulado;
+- inspeção visual de Human Core + Fly Core;
+- memória de runtime separada de alegações biológicas.
+
+Invariante: conectomas reais podem informar estrutura e dinâmica, mas não fornecem memórias pessoais, pensamentos atuais ou consciência de humanos/moscas reais.
+
+O Chat normal em `/` permanece isolado. Os modos `/cognitive`, `/cognitive/human` e `/cognitive/fly` mantêm histórico próprio e usam o novo estado apenas dentro do laboratório cognitivo.
