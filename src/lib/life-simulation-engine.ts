@@ -255,6 +255,45 @@ export function applySimulationInstruction(state:LifeSimulationState,instruction
   return {state:next,forcedDestination:dest};
 }
 
+export function advanceLifeWorldPassive(input:LifeSimulationState,minutes=10){
+  const state:LifeSimulationState={
+    ...input,
+    tick:input.tick+1,
+    minute:input.minute+minutes,
+    person:{...input.person},
+    needs:{...input.needs},
+    relationships:input.relationships.map(x=>({...x})),
+    memories:[...input.memories],
+    places:[...input.places],
+    neuro:{...input.neuro,circuits:{...input.neuro.circuits}}
+  };
+  if(state.minute>=24*60){state.minute-=24*60;state.day+=1}
+  state.needs=updateNeeds(state,state.person.location,false);
+
+  const evt=maybeEvent(state);
+  if(evt){
+    state.lastEvent=evt.summary;
+    state.memories=addMemory(state,evt.summary,evt.kind,evt.valence,evt.salience);
+    if(evt.summary.includes('despesa'))state.person.money=Math.max(0,state.person.money-45);
+    if(evt.kind==='social')state.needs.social=n(state.needs.social+8);
+  }else{
+    state.lastEvent='Tempo passou · '+formatTime(state.minute)+' · '+state.person.currentAction;
+  }
+
+  state.person.mood=mood(state);
+  state.neuro=advanceNeuroState(state.neuro,[
+    'simulação de vida',
+    'tempo passivo',
+    state.person.currentAction,
+    state.lastEvent,
+    'objetivo '+state.person.goal,
+    'estresse '+state.needs.stress,
+    'energia '+state.needs.energy,
+    'social '+state.needs.social
+  ].join(' · '));
+  return state;
+}
+
 export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDestination?:LifeLocation|null){
   const state:LifeSimulationState={
     ...input,
