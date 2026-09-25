@@ -6,7 +6,7 @@ export const LIFE_WORLD_HEIGHT=600;
 export type WorldObjectKind=
   |'bed'|'sofa'|'tv'|'fridge'|'stove'|'shower'|'computer'|'phone'|'desk'
   |'tree'|'bench'|'fountain'|'bookshelf'|'table'|'coffee'|'shelf'|'treadmill'
-  |'clinic_bed'|'plant'|'lamp'|'art'|'trash'|'door';
+  |'clinic_bed'|'plant'|'lamp'|'art'|'trash'|'door'|'window'|'radio'|'book'|'mirror';
 
 export interface LifeWorldObject{
   id:string;
@@ -39,9 +39,19 @@ export interface VisionSnapshot{
   fovDeg:number;
   range:number;
   visible:VisionItem[];
+  stimuli:string[];
   seesOtherAgent:boolean;
   otherAgentDistance:number|null;
   summary:string;
+}
+
+export interface LifeWorldStimulus{
+  id:string;
+  label:string;
+  kind:'light'|'sound'|'smell'|'notification'|'air'|'motion';
+  x:number;
+  y:number;
+  intensity:number;
 }
 
 export const WORLD_OBJECTS:LifeWorldObject[]=[
@@ -87,8 +97,59 @@ export const WORLD_OBJECTS:LifeWorldObject[]=[
   {id:'world-tree1',label:'Árvore da rua',kind:'tree',location:'Parque',x:348,y:232,z:45,w:20,h:20,affordances:['observe'],salience:.32,flyAttraction:.84},
   {id:'world-tree2',label:'Árvore da rua',kind:'tree',location:'Parque',x:628,y:356,z:48,w:22,h:22,affordances:['observe'],salience:.34,flyAttraction:.86},
   {id:'world-bench',label:'Banco da praça',kind:'bench',location:'Parque',x:606,y:296,z:6,w:30,h:10,affordances:['rest','observe','talk'],salience:.4,flyAttraction:.18},
-  {id:'world-lamp',label:'Poste de luz',kind:'lamp',location:'Parque',x:676,y:246,z:52,w:8,h:8,affordances:['observe'],salience:.58,flyAttraction:.92}
+  {id:'world-lamp',label:'Poste de luz',kind:'lamp',location:'Parque',x:676,y:246,z:52,w:8,h:8,affordances:['observe'],salience:.58,flyAttraction:.92},
+
+  {id:'home-door',label:'Porta de casa',kind:'door',location:'Casa',x:294,y:478,z:28,w:12,h:6,affordances:['transition','observe'],salience:.38,flyAttraction:.24},
+  {id:'home-window1',label:'Janela da sala',kind:'window',location:'Casa',x:278,y:390,z:30,w:18,h:5,affordances:['look_out','observe'],salience:.46,flyAttraction:.58},
+  {id:'home-window2',label:'Janela do quarto',kind:'window',location:'Casa',x:64,y:402,z:30,w:18,h:5,affordances:['look_out','observe'],salience:.42,flyAttraction:.54},
+  {id:'home-radio',label:'Rádio',kind:'radio',location:'Casa',x:170,y:410,z:10,w:12,h:8,affordances:['listen','fun'],salience:.4,flyAttraction:.1},
+  {id:'home-mirror',label:'Espelho',kind:'mirror',location:'Casa',x:64,y:500,z:24,w:12,h:4,affordances:['observe','self'],salience:.34,flyAttraction:.08},
+
+  {id:'work-door',label:'Porta do trabalho',kind:'door',location:'Trabalho',x:708,y:205,z:28,w:12,h:6,affordances:['transition'],salience:.3,flyAttraction:.2},
+  {id:'work-window',label:'Janela do escritório',kind:'window',location:'Trabalho',x:904,y:80,z:30,w:22,h:5,affordances:['look_out','observe'],salience:.44,flyAttraction:.56},
+
+  {id:'cafe-door',label:'Porta do café',kind:'door',location:'Café',x:414,y:346,z:28,w:12,h:6,affordances:['transition'],salience:.34,flyAttraction:.28},
+  {id:'cafe-window',label:'Janela do café',kind:'window',location:'Café',x:568,y:260,z:26,w:18,h:5,affordances:['look_out','observe'],salience:.5,flyAttraction:.64},
+  {id:'cafe-radio',label:'Som ambiente',kind:'radio',location:'Café',x:444,y:274,z:18,w:10,h:8,affordances:['listen','fun'],salience:.34,flyAttraction:.08},
+
+  {id:'market-door',label:'Porta do mercado',kind:'door',location:'Mercado',x:738,y:488,z:30,w:14,h:6,affordances:['transition'],salience:.32,flyAttraction:.24},
+  {id:'market-window',label:'Vitrine do mercado',kind:'window',location:'Mercado',x:916,y:390,z:28,w:24,h:5,affordances:['look_out','observe'],salience:.46,flyAttraction:.58},
+
+  {id:'clinic-door',label:'Porta da clínica',kind:'door',location:'Clínica',x:390,y:170,z:28,w:12,h:6,affordances:['transition'],salience:.3,flyAttraction:.18},
+  {id:'clinic-window',label:'Janela da clínica',kind:'window',location:'Clínica',x:564,y:62,z:28,w:20,h:5,affordances:['look_out'],salience:.36,flyAttraction:.42},
+
+  {id:'library-door',label:'Porta da biblioteca',kind:'door',location:'Biblioteca',x:374,y:552,z:28,w:12,h:6,affordances:['transition'],salience:.3,flyAttraction:.18},
+  {id:'library-window',label:'Janela da biblioteca',kind:'window',location:'Biblioteca',x:594,y:476,z:30,w:20,h:5,affordances:['look_out','observe'],salience:.42,flyAttraction:.48},
+  {id:'library-book',label:'Livro aberto',kind:'book',location:'Biblioteca',x:494,y:530,z:9,w:12,h:8,affordances:['read','study'],salience:.62,flyAttraction:.04}
 ];
+
+
+export function worldStimuli(state:LifeSimulationState):LifeWorldStimulus[]{
+  const hour=((state.minute/60)%24+24)%24;
+  const dayLight=hour>=6&&hour<=18?Math.sin(((hour-6)/12)*Math.PI):0;
+  const mealHour=(hour>=7&&hour<=9)||(hour>=11&&hour<=14)||(hour>=18&&hour<=21);
+  const night=1-dayLight;
+  const rows:LifeWorldStimulus[]=[
+    {id:'sun',label:dayLight>.2?'luz natural entrando pelas janelas':'ambiente escuro',kind:'light',x:480,y:300,intensity:.2+dayLight*.8},
+    {id:'park-air',label:'vento e movimento das folhas',kind:'air',x:180,y:140,intensity:.35+.2*Math.abs(Math.sin(state.tick*.17))},
+    {id:'park-sound',label:'sons do parque',kind:'sound',x:190,y:150,intensity:.3+.15*Math.abs(Math.sin(state.tick*.29))},
+    {id:'cafe-smell',label:'cheiro de café e comida',kind:'smell',x:505,y:310,intensity:mealHour?.85:.42},
+    {id:'street-light',label:'luz artificial do poste',kind:'light',x:676,y:246,intensity:.2+night*.75}
+  ];
+  if(state.tick%17===0)rows.push({id:'phone-note',label:'notificação no celular',kind:'notification',x:190,y:470,intensity:.9});
+  if(state.tick%23===0)rows.push({id:'work-note',label:'alerta no computador',kind:'notification',x:780,y:112,intensity:.76});
+  if(state.tick%31===0)rows.push({id:'motion',label:'movimento inesperado ao longe',kind:'motion',x:630,y:310,intensity:.68});
+  return rows;
+}
+
+function perceivedStimuli(x:number,y:number,range:number,state:LifeSimulationState){
+  return worldStimuli(state)
+    .map(s=>({...s,distance:Math.hypot(s.x-x,s.y-y)}))
+    .filter(s=>s.distance<=range&&s.intensity/(1+s.distance/120)>.12)
+    .sort((a,b)=>(b.intensity/(1+b.distance/120))-(a.intensity/(1+a.distance/120)))
+    .slice(0,5)
+    .map(s=>s.label);
+}
 
 const normAngle=(a:number)=>{
   let x=a;
@@ -124,12 +185,13 @@ export function perceiveHumanWorld(
   const visible=visibleObjects(state.person.x,state.person.y,heading,190,125)
     .sort((a,b)=>(b.salience/(1+b.distance/80))-(a.salience/(1+a.distance/80)))
     .slice(0,12);
+  const stimuli=perceivedStimuli(state.person.x,state.person.y,210,state);
   const otherDistance=fly?Math.hypot(fly.x-state.person.x,fly.y-state.person.y):null;
   const seesOther=otherDistance!=null&&otherDistance<115;
   return {
-    actor:'human',fovDeg:125,range:190,visible,
+    actor:'human',fovDeg:125,range:190,visible,stimuli,
     seesOtherAgent:seesOther,otherAgentDistance:otherDistance,
-    summary:'Humano enxerga '+(visible.map(x=>x.label).join(', ')||'apenas o ambiente próximo')+(seesOther?' e a Mosca Predict':'')+'.'
+    summary:'Humano enxerga '+(visible.map(x=>x.label).join(', ')||'apenas o ambiente próximo')+(stimuli.length?'; percebe '+stimuli.join(', '):'')+(seesOther?' e a Mosca Predict':'')+'.'
   };
 }
 
@@ -141,11 +203,12 @@ export function perceiveFlyWorld(
   const visible=visibleObjects(fly.x,fly.y,heading,165,320,obj=>.45+obj.flyAttraction)
     .sort((a,b)=>(b.salience/(1+b.distance/70))-(a.salience/(1+a.distance/70)))
     .slice(0,16);
+  const stimuli=perceivedStimuli(fly.x,fly.y,190,state);
   const otherDistance=Math.hypot(state.person.x-fly.x,state.person.y-fly.y);
   return {
-    actor:'fly',fovDeg:320,range:165,visible,
+    actor:'fly',fovDeg:320,range:165,visible,stimuli,
     seesOtherAgent:otherDistance<150,otherAgentDistance:otherDistance,
-    summary:'Mosca percebe '+(visible.map(x=>x.label).join(', ')||'movimento e contraste do ambiente')+(otherDistance<150?' e o humano':'')+'.'
+    summary:'Mosca percebe '+(visible.map(x=>x.label).join(', ')||'movimento e contraste do ambiente')+(stimuli.length?'; estímulos '+stimuli.join(', '):'')+(otherDistance<150?' e o humano':'')+'.'
   };
 }
 
@@ -170,7 +233,7 @@ export function objectUtility(
   if(obj.affordances.includes('study')||obj.affordances.includes('research'))score+=(100-n.focus)*.22+state.neuro.curiosity*26;
   if(obj.affordances.includes('work'))score+=(state.person.money<400?28:8)+n.focus*.18;
   if(obj.affordances.includes('health'))score+=(100-n.health)*.62;
-  if(obj.affordances.includes('observe')||obj.affordances.includes('relax'))score+=(100-n.fun)*.22+n.stress*.25;
+  if(obj.affordances.includes('observe')||obj.affordances.includes('relax')||obj.affordances.includes('look_out')||obj.affordances.includes('listen'))score+=(100-n.fun)*.22+n.stress*.25;
   if(obj.affordances.includes('create'))score+=state.neuro.curiosity*20;
   const jitter=((Math.sin((tick+1)*(obj.id.length+3)*12.9898)+1)/2)*11;
   return score+jitter;
