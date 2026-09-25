@@ -142,6 +142,8 @@ Proveniência:
 - 264 tipos celulares definidos por transcriptoma;
 - 42.076.954 células corticais espacialmente anotadas;
 - 1.493.240 células usadas na taxonomia snRNA-seq;
+- 2.231 projectomes de neurônios PFC com 32 subtipos de projeção;
+- conectividade do claustro amostrada por 148 sítios corticais e 15 subcorticais;
 - atlas de córtex cerebral, **não** conectoma sináptico de cérebro inteiro.
 
 Arquivos:
@@ -153,7 +155,7 @@ Arquivos:
 
 O Human Core usa:
 1. **H01 humano direto** onde existe cobertura real;
-2. **proxy cortical macaque** de baixo peso para organização cortical homóloga fora do fragmento H01;
+2. **proxy macaque** de baixo peso para organização cortical homóloga, projeções PFC de longo alcance e conectividade do claustro fora do fragmento H01;
 3. **unknown/unresolved** quando nem H01 nem o atlas macaque fornecem evidência adequada.
 
 Nunca transformar proxy macaque em “medição humana”. Não inventar sinapses humanas, regiões subcorticais, conectoma humano inteiro, memórias biológicas ou pensamentos.
