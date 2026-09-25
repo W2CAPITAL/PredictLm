@@ -554,11 +554,64 @@ export function ChatShell({onOpenLegal}:Props){
       const localFallback=direct||practicalAnchor||factualAnchor||
         ((kind==='hypothetical'||kind==='howto')?offlineAnchor:null);
 
+      const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
+      const cleanEligible=!needsWeb&&prompt.length<=900&&(
+        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
+      );
+
       setActivity([
-        'PREDICT CORE · preparando contexto',
-        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · gerando resposta']:['KNOWLEDGE · verificando resposta interna']),
+        'FREELLM FIRST · consultando provider padrão',
+        'PREDICT CORE · aplicando contexto e validações',
         ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
         'VERIFY · validando aderência ao pedido'
+      ]);
+
+      let candidate=await requestApiAnswer({
+        prompt,
+        language,
+        kind,
+        messages,
+        researchContext,
+        localAdvisory:'',
+        answerAnchor,
+        brainContext,
+        deep:s.deepThink,
+        clean:cleanEligible,
+        signal:turnController.signal
+      });
+
+      if(candidate.ok){
+        const apiSources=filterDisplayedSources(prompt,[
+          ...web.sources,
+          ...(Array.isArray(candidate.data?.sources)?candidate.data.sources:[])
+        ],8);
+        s.addMessage({
+          role:'assistant',
+          content:candidate.text,
+          engine:'Predict Auto',
+          sources:apiSources,
+          reasoningSummary:buildReasoningSummary({
+            kind,
+            webCount:apiSources.length,
+            provider:true,
+            anchor:!!answerAnchor,
+            deep:s.deepThink
+          }),
+          actions:[
+            candidate.data?.provider==='freellmapi'?'FreeLLMAPI respondeu como provider padrão':'Provider mesh respondeu após a tentativa do FreeLLMAPI',
+            'PredictLM aplicou contexto, skills e validação',
+            ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
+            'Resposta final validada antes de exibir'
+          ],
+          status:'done'
+        });
+        return;
+      }
+
+      setActivity([
+        'FREELLM FIRST · resposta indisponível ou rejeitada',
+        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · tentando rota local']:['KNOWLEDGE · tentando rota interna']),
+        'VERIFY · preservando o pedido'
       ]);
 
       const tryLocalBrain=async()=>{
@@ -686,11 +739,6 @@ export function ChatShell({onOpenLegal}:Props){
 
       const advisoryText='';
 
-      const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
-      const cleanEligible=!needsWeb&&prompt.length<=900&&(
-        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
-      );
-
       setActivity([
         'PREDICT ROUTER · consultando providers opcionais',
         'PREDICT CORE · mantendo skills e contratos relevantes',
@@ -699,24 +747,10 @@ export function ChatShell({onOpenLegal}:Props){
         'VERIFY · bloqueando resposta fora do pedido'
       ]);
 
-      let candidate=await requestApiAnswer({
-        prompt,
-        language,
-        kind,
-        messages,
-        researchContext,
-        localAdvisory:advisoryText,
-        answerAnchor,
-        brainContext,
-        deep:s.deepThink,
-        clean:cleanEligible,
-        signal:turnController.signal
-      });
-
       // A clean route is intentionally minimal. If the task needs more depth,
       // retry once through the full API agent/skill mesh before researching.
       if(!candidate.ok&&cleanEligible){
-        setActivity(['PREDICT ROUTER · rota remota limpa insuficiente','PREDICT CORE · ampliando contexto relevante','VERIFY · segunda tentativa']);
+        setActivity(['FREELLM FIRST · rota limpa insuficiente','PREDICT ROUTER · tentando rota completa','VERIFY · segunda tentativa']);
         candidate=await requestApiAnswer({
           prompt,
           language,
