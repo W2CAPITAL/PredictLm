@@ -13,6 +13,12 @@ export interface FlySimulationState{
   tick:number;
   behavior:'explore'|'inspect'|'avoid'|'hover'|'approach';
   targetLabel:string;
+  targetId:string|null;
+  targetX:number;
+  targetY:number;
+  targetTicks:number;
+  visited:string[];
+  decision:string;
   lastStimulus:string;
   visible:string[];
   lastUtterance:string;
@@ -21,6 +27,35 @@ export interface FlySimulationState{
 }
 
 const clamp=(v:number,min:number,max:number)=>Math.max(min,Math.min(max,v));
+
+function hash(input:string){
+  let h=2166136261>>>0;
+  for(let i=0;i<input.length;i++){
+    h^=input.charCodeAt(i);
+    h=Math.imul(h,16777619);
+  }
+  h^=h<<13;h^=h>>>17;h^=h<<5;
+  return h>>>0;
+}
+function rnd(input:string){
+  return hash(input)/4294967295;
+}
+function chooseWeighted<T extends {score:number}>(rows:T[],key:string){
+  if(!rows.length)return null;
+  const safe=rows.map(row=>({...row,weight:Math.max(.001,row.score)}));
+  const total=safe.reduce((n,row)=>n+row.weight,0);
+  let cursor=rnd(key)*total;
+  for(const row of safe){
+    cursor-=row.weight;
+    if(cursor<=0)return row as T & {weight:number};
+  }
+  return safe[safe.length-1] as T & {weight:number};
+}
+function boundary(v:number,min:number,max:number){
+  if(v<min)return min+(min-v)*.45;
+  if(v>max)return max-(v-max)*.45;
+  return v;
+}
 
 export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
   return {
@@ -34,6 +69,12 @@ export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
     tick:0,
     behavior:'explore',
     targetLabel:'ambiente',
+    targetId:null,
+    targetX:520,
+    targetY:130,
+    targetTicks:0,
+    visited:[],
+    decision:'explorar o ambiente inicial',
     lastStimulus:'ambiente inicial',
     visible:[],
     lastUtterance:'',
@@ -57,103 +98,160 @@ export function stepFlySimulation(
   const prev=previous?.version===1?previous:createFlySimulationState();
   const width=input.width||LIFE_WORLD_WIDTH;
   const height=input.height||LIFE_WORLD_HEIGHT;
-  const currentZ=Number.isFinite(prev.z)?prev.z:34;
-  const currentVz=Number.isFinite(prev.vz)?prev.vz:1.2;
-  const dx=input.personX-prev.x;
-  const dy=input.personY-prev.y;
-  const distance=Math.max(1,Math.hypot(dx,dy));
-  const nearPerson=distance<90;
+  const tick=prev.tick+1;
   const world=input.worldState||({
     person:{x:input.personX,y:input.personY,heading:0,location:input.personLocation},
     needs:{},neuro:{}
   } as any);
   const vision=perceiveFlyWorld(prev,world);
-  const bestVisual=vision.visible[0];
+  const dxHuman=input.personX-prev.x;
+  const dyHuman=input.personY-prev.y;
+  const humanDistance=Math.max(1,Math.hypot(dxHuman,dyHuman));
+  const nearPerson=humanDistance<95;
   const observation=[
-    'simulacao',
+    'simulação',
     'local '+input.personLocation,
-    input.personAction||'sem ação',
-    nearPerson?'humano próximo':'exploração livre',
+    input.personAction||'sem ação humana',
+    nearPerson?'humano próximo':'humano distante',
     vision.summary
   ].join(' · ');
-
   const core=advanceFlyCore(prev.core,observation);
-  let behavior:FlySimulationState['behavior']='explore';
 
-  const stimulus=bestVisual?worldObject(bestVisual.id):null;
-  const stimulusDistance=bestVisual?.distance??Infinity;
-  const stimulusAttraction=stimulus?.flyAttraction??0;
+  const priorVisited=Array.isArray(prev.visited)?prev.visited:[];
+  const visualCandidates=vision.visible.map(item=>{
+    const obj=worldObject(item.id);
+    const attraction=obj?.flyAttraction??.2;
+    const novelty=priorVisited.includes(item.id)?.36:1;
+    const distanceUtility=1/(1+item.distance/70);
+    const score=.08+item.salience*.42+attraction*.34+distanceUtility*.25+core.exploration*.12;
+    return {item,obj,score:score*novelty};
+  });
 
-  if(core.threat>.55&&nearPerson)behavior='avoid';
-  else if(bestVisual&&stimulusAttraction>.7&&stimulusDistance<150)behavior='approach';
-  else if(bestVisual&&core.salience>.55&&stimulusDistance<105)behavior='inspect';
-  else if(core.inhibition>.64&&core.exploration<.52)behavior='hover';
+  let behavior:FlySimulationState['behavior']=prev.behavior||'explore';
+  let targetId=prev.targetId||null;
+  let targetX=Number.isFinite(prev.targetX)?prev.targetX:prev.x;
+  let targetY=Number.isFinite(prev.targetY)?prev.targetY:prev.y;
+  let targetLabel=prev.targetLabel||'ambiente';
+  let targetTicks=Math.max(0,(prev.targetTicks||0)-1);
+  let decision=prev.decision||'continuar explorando';
 
-  const phase=(prev.tick+1)*.43;
-  let tx=Math.cos(phase)*2.4;
-  let ty=Math.sin(phase*1.37)*1.8;
+  const currentStillVisible=targetId&&vision.visible.some(x=>x.id===targetId);
+  const threatInterrupt=core.threat>.56&&nearPerson;
+  const staleTarget=targetTicks<=0||(!currentStillVisible&&targetId!==null);
+  const canInterrupt=threatInterrupt||staleTarget||core.predictionError>.72;
 
-  if(behavior==='avoid'){
-    tx+=(-dx/distance)*4.2;
-    ty+=(-dy/distance)*3.3;
-  }else if(behavior==='inspect'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*1.2;
-    ty+=((tyObj-prev.y)/od)*1.0;
-  }else if(behavior==='approach'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx+=((txObj-prev.x)/od)*2.7;
-    ty+=((tyObj-prev.y)/od)*2.2;
-  }else if(behavior==='hover'){
-    tx*=.35;
-    ty*=.35;
-  }else{
-    tx+=Math.cos(phase*.53)*core.exploration*2.4;
-    ty+=Math.sin(phase*.71)*core.exploration*2.0;
+  if(threatInterrupt){
+    behavior='avoid';
+    targetId=null;
+    const awayX=prev.x-(dxHuman/humanDistance)*(110+70*rnd('fly-away-x|'+tick+'|'+prev.x.toFixed(1)));
+    const awayY=prev.y-(dyHuman/humanDistance)*(90+60*rnd('fly-away-y|'+tick+'|'+prev.y.toFixed(1)));
+    targetX=clamp(awayX,24,width-24);
+    targetY=clamp(awayY,24,height-24);
+    targetLabel='distância segura';
+    targetTicks=4+Math.floor(rnd('fly-away-ticks|'+tick)*6);
+    decision='interromper o plano atual por ameaça próxima';
+  }else if(canInterrupt){
+    const picked=chooseWeighted(visualCandidates,'fly-target|'+tick+'|'+prev.x.toFixed(1)+'|'+prev.y.toFixed(1));
+    const inspectBias=core.salience*.52+core.mushroomBody*.18;
+    if(picked&&picked.score>.18){
+      targetId=picked.item.id;
+      targetX=picked.item.x;
+      targetY=picked.item.y;
+      targetLabel=picked.item.label;
+      const attraction=picked.obj?.flyAttraction??.2;
+      behavior=attraction>.64&&picked.item.distance>46?'approach':'inspect';
+      if(inspectBias<.42&&core.exploration>.58)behavior='explore';
+      targetTicks=behavior==='inspect'
+        ? 3+Math.floor(rnd('fly-inspect|'+tick)*5)
+        : 5+Math.floor(rnd('fly-approach|'+tick)*8);
+      decision=(behavior==='inspect'?'inspecionar ':'aproximar de ')+targetLabel+' por saliência, novidade e distância';
+    }else if(core.inhibition>.7&&core.exploration<.44){
+      behavior='hover';
+      targetId=null;
+      targetX=prev.x;
+      targetY=prev.y;
+      targetLabel='ponto atual';
+      targetTicks=2+Math.floor(rnd('fly-hover|'+tick)*5);
+      decision='pairar porque exploração está baixa e inibição está alta';
+    }else{
+      behavior='explore';
+      targetId=null;
+      const angle=rnd('fly-angle|'+tick+'|'+priorVisited.join(','))*Math.PI*2;
+      const longStep=rnd('fly-step-kind|'+tick)>.78;
+      const distance=longStep
+        ? 120+160*rnd('fly-long-step|'+tick)
+        : 45+95*rnd('fly-short-step|'+tick);
+      targetX=clamp(prev.x+Math.cos(angle)*distance,24,width-24);
+      targetY=clamp(prev.y+Math.sin(angle)*distance,24,height-24);
+      targetLabel='nova área';
+      targetTicks=5+Math.floor(rnd('fly-explore-ticks|'+tick)*10);
+      decision=longStep?'exploração longa para quebrar repetição espacial':'exploração local guiada por novidade';
+    }
   }
 
-  const vx=clamp(prev.vx*.55+tx*.45,-5,5);
-  const vy=clamp(prev.vy*.55+ty*.45,-4,4);
-  const desiredZ=behavior==='avoid'?58:behavior==='inspect'?42:behavior==='hover'?36:48+Math.sin(phase*.82)*10;
-  const vz=clamp(currentVz*.5+(desiredZ-currentZ)*.12,-4,4);
-  const z=clamp(currentZ+vz,20,76);
-  let x=prev.x+vx;
-  let y=prev.y+vy;
+  const tx=targetX-prev.x;
+  const ty=targetY-prev.y;
+  const targetDistance=Math.max(1,Math.hypot(tx,ty));
+  const speed=behavior==='avoid'?5.1:behavior==='approach'?3.9:behavior==='inspect'?2.2:behavior==='hover'?.55:3.0;
+  const jitterScale=behavior==='hover'?.18:.42;
+  const jitterX=(rnd('fly-jx|'+tick+'|'+targetLabel)-.5)*jitterScale;
+  const jitterY=(rnd('fly-jy|'+tick+'|'+targetLabel)-.5)*jitterScale;
+  let desiredVx=(tx/targetDistance)*speed+jitterX;
+  let desiredVy=(ty/targetDistance)*speed+jitterY;
 
-  if(x<18||x>width-18)x=clamp(width-x,18,width-18);
-  if(y<20||y>height-22)y=clamp(height-y,20,height-22);
+  if(targetDistance<18&&behavior!=='avoid'){
+    desiredVx*=.34;
+    desiredVy*=.34;
+    targetTicks=Math.min(targetTicks,2);
+  }
 
-  const shouldSpeak=core.salience>.7&&core.inhibition<.62&&(prev.silenceTicks>5||prev.tick%13===0);
-  const targetLabel=behavior==='approach'||behavior==='inspect'
-    ? (bestVisual?.label||'humano')
-    : behavior==='avoid'
-      ? 'distância segura'
-      : input.personLocation;
+  const vx=clamp(prev.vx*.46+desiredVx*.54,-5.4,5.4);
+  const vy=clamp(prev.vy*.46+desiredVy*.54,-4.8,4.8);
+  let x=boundary(prev.x+vx,18,width-18);
+  let y=boundary(prev.y+vy,20,height-22);
+
+  if(!Number.isFinite(x))x=width/2;
+  if(!Number.isFinite(y))y=height/2;
+
+  const currentZ=Number.isFinite(prev.z)?prev.z:34;
+  const currentVz=Number.isFinite(prev.vz)?prev.vz:1.2;
+  const desiredZ=behavior==='avoid'
+    ? 62
+    : behavior==='inspect'
+      ? 35+16*rnd('fly-z-inspect|'+tick)
+      : behavior==='hover'
+        ? currentZ
+        : 30+38*rnd('fly-z-free|'+tick);
+  const vz=clamp(currentVz*.48+(desiredZ-currentZ)*.13,-4,4);
+  const z=clamp(currentZ+vz,20,78);
+
+  const arrived=targetDistance<22;
+  const visited=targetId&&arrived
+    ? [...priorVisited.filter(id=>id!==targetId),targetId].slice(-7)
+    : priorVisited.slice(-7);
+
+  const changed=behavior!==prev.behavior||targetLabel!==prev.targetLabel;
+  const shouldSpeak=changed&&core.salience>.58&&core.inhibition<.7
+    ? rnd('fly-speak-change|'+tick)>.35
+    : core.salience>.78&&prev.silenceTicks>8&&rnd('fly-speak-salient|'+tick)>.78;
   const utterance=shouldSpeak
     ? behavior==='avoid'
-      ? 'Bzz! longe.'
+      ? 'Bzz! afastando.'
       : behavior==='approach'
         ? 'Bzz… '+targetLabel+'.'
         : behavior==='inspect'
-          ? 'Bzz? olhando '+targetLabel+'.'
-          : 'Bzz… explorando.'
+          ? 'Bzz? '+targetLabel+'.'
+          : behavior==='hover'
+            ? 'Bzz… parado.'
+            : 'Bzz… outra direção.'
     : '';
 
   return {
     version:1,
-    x,
-    y,
-    vx,
-    vy,
-    z,
-    vz,
-    tick:prev.tick+1,
-    behavior,
-    targetLabel,
+    x,y,vx,vy,z,vz,tick,
+    behavior,targetLabel,targetId,targetX,targetY,targetTicks,visited,decision,
     lastStimulus:observation,
-    visible:vision.visible.map(x=>x.label).slice(0,8),
+    visible:vision.visible.map(item=>item.label).slice(0,8),
     lastUtterance:utterance,
     silenceTicks:utterance?0:(prev.silenceTicks||0)+1,
     core
@@ -163,8 +261,8 @@ export function stepFlySimulation(
 export function flySimulationBubble(state:FlySimulationState){
   if(state.lastUtterance)return state.lastUtterance;
   if(state.behavior==='avoid')return 'zzzt — afastando';
-  if(state.behavior==='inspect')return 'bzz? observando';
-  if(state.behavior==='approach')return 'bzz → chegando perto';
+  if(state.behavior==='inspect')return 'bzz? observando '+state.targetLabel;
+  if(state.behavior==='approach')return 'bzz → '+state.targetLabel;
   if(state.behavior==='hover')return 'bzz… pairando';
-  return 'bzz · explorando';
+  return 'bzz · '+(state.decision||'explorando');
 }
