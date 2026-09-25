@@ -72,6 +72,13 @@ export interface LifeAgentState{
   skills:{career:number;cooking:number;fitness:number;logic:number;social:number;creativity:number};
   home:{cleanliness:number;comfort:number};
   mind:LifeAgentMind;
+  tools:{
+    internetEnabled:boolean;
+    codeEnabled:boolean;
+    lastInternetTick:number;
+    lastCodeTick:number;
+    notes:string[];
+  };
   autonomy:{enabled:boolean;manualOverride:boolean;decisionCount:number;lastDecision:string};
 }
 
@@ -108,6 +115,7 @@ export function createLifeAgentState():LifeAgentState{
     skills:{career:18,cooking:12,fitness:16,logic:20,social:18,creativity:14},
     home:{cleanliness:76,comfort:72},
     mind:createLifeAgentMind(),
+    tools:{internetEnabled:true,codeEnabled:true,lastInternetTick:-999,lastCodeTick:-999,notes:[]},
     autonomy:{enabled:true,manualOverride:false,decisionCount:0,lastDecision:'Autonomia perceptiva ativa.'}
   };
 }
@@ -133,6 +141,13 @@ export function normalizeLifeAgentState(raw:any):LifeAgentState{
       comfort:clamp(Number(raw.home?.comfort??base.home.comfort)||0)
     },
     mind:normalizeLifeAgentMind(raw.mind),
+    tools:{
+      internetEnabled:raw.tools?.internetEnabled!==false,
+      codeEnabled:raw.tools?.codeEnabled!==false,
+      lastInternetTick:Number(raw.tools?.lastInternetTick??-999)||-999,
+      lastCodeTick:Number(raw.tools?.lastCodeTick??-999)||-999,
+      notes:Array.isArray(raw.tools?.notes)?raw.tools.notes.map((x:any)=>String(x).slice(0,800)).slice(-20):[]
+    },
     autonomy:{
       enabled:Boolean(raw.autonomy?.manualOverride?raw.autonomy?.enabled:true),
       manualOverride:Boolean(raw.autonomy?.manualOverride),
@@ -798,6 +813,8 @@ export function agentWorldObservation(state:LifeSimulationState,agentInput:LifeA
     'Habilidades: carreira '+agent.skills.career+' · culinária '+agent.skills.cooking+' · fitness '+agent.skills.fitness+' · lógica '+agent.skills.logic+' · social '+agent.skills.social+' · criatividade '+agent.skills.creativity,
     'Casa: limpeza '+agent.home.cleanliness+' · conforto '+agent.home.comfort,
     'Autonomia: '+(agent.autonomy.enabled?'ativa':'manual')+' · decisões '+agent.autonomy.decisionCount,
+    'Ferramentas: internet '+(agent.tools.internetEnabled?'on':'off')+' · código '+(agent.tools.codeEnabled?'on':'off'),
+    'Notas aprendidas: '+(agent.tools.notes.slice(-4).join(' | ')||'nenhuma'),
     'ESTADO MENTAL PÚBLICO:\n'+lifeMindSummary(agent.mind),
     'Plano atual: '+(agent.plan?agent.plan.objective+' · '+agent.plan.status+' · passo '+agent.plan.cursor+'/'+agent.plan.actions.length:'nenhum'),
     'Últimas ações: '+agent.history.slice(-5).map(x=>(x.ok?'OK ':'ERRO ')+x.action.type+': '+x.message).join(' | ')
