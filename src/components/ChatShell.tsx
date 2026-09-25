@@ -547,9 +547,9 @@ export function ChatShell({onOpenLegal}:Props){
       let research=web.items.length?synthesizeResearch(prompt,web.items):null;
       let researchContext=web.text;
 
-      // PredictLM-first: local/browser intelligence is allowed to author the
-      // public answer. Remote providers are optional accelerators, never a
-      // prerequisite for completing a normal chat turn.
+      // FreeLLM-first: the provider mesh gets the first chance to generate a
+      // substantive answer. PredictLM still supplies context, validation and
+      // local/knowledge fallbacks when providers are unavailable.
       const offlineAnchor=generativeOfflineReply(prompt,kind);
       const localFallback=direct||practicalAnchor||factualAnchor||
         ((kind==='hypothetical'||kind==='howto')?offlineAnchor:null);
@@ -1065,7 +1065,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>PredictLM-first · local + knowledge</small></span></div>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>FreeLLM padrão · APIs + local fallback</small></span></div>
       </div>
     </aside>
     {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
