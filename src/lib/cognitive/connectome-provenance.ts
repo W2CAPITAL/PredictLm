@@ -68,7 +68,58 @@ export const H01_HUMAN_CORTEX:ConnectomeProfile={
   ]
 };
 
+
+
+export type BrainAtlasProfile={
+  id:string;
+  species:string;
+  dataset:string;
+  release:string;
+  scope:string;
+  license:string;
+  sourceUrl:string;
+  paperUrl:string;
+  regions:number;
+  cellTypes:number;
+  spatialCells:number;
+  snRnaCells:number;
+  notes:string[];
+  structuralFeatures:string[];
+};
+
+export const MACAQUE_CORTEX_SPATIAL_ATLAS:BrainAtlasProfile={
+  id:'macaque-cortex-spatial-atlas-2023',
+  species:'Macaca fascicularis (cynomolgus macaque)',
+  dataset:'Macaque cortex single-cell spatial transcriptome atlas',
+  release:'Cell 2023 / BSDC CSTR 33145.11.BSDC.1685409749.1663093488869060610',
+  scope:'Whole cerebral cortex atlas across 143 macaque cortical regions; not a synapse-resolution connectome and not a whole-brain connectome',
+  license:'Open-access paper; dataset redistribution follows source repository terms',
+  sourceUrl:'https://macaque.digital-brain.cn/spatial-omics',
+  paperUrl:'https://doi.org/10.1016/j.cell.2023.06.009',
+  regions:143,
+  cellTypes:264,
+  spatialCells:42076954,
+  snRnaCells:1493240,
+  notes:[
+    'Spatial transcriptomics and snRNA-seq atlas of the cynomolgus macaque cerebral cortex.',
+    'The study reports 264 transcriptome-defined cortical cell types across 143 cortical regions.',
+    'The spatial map contains 42,076,954 annotated cortical cells; snRNA-seq taxonomy used 1,493,240 cells from cortical regions.',
+    'Use as a primate cortical proxy for organization and cell-type priors only; it does not provide human memories, human thoughts, or missing human synapses.',
+    'The user-supplied BSDC dataset id 1888063966518173697 points to a mouse-brain spatial-transcriptome dataset, so it is not used as the macaque source.'
+  ],
+  structuralFeatures:[
+    'whole-cortex regional parcellation',
+    'six-layer cortical cell-type distributions',
+    'glutamatergic and GABAergic cell-type priors',
+    'non-neuronal cell-class distributions',
+    'visual-system cortical hierarchy',
+    'somatosensory-system cortical hierarchy',
+    'primate-specific layer-4-enriched cell types'
+  ]
+};
+
 export const CONNECTOME_PROFILES=[FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX] as const;
+export const BRAIN_ATLAS_PROFILES=[MACAQUE_CORTEX_SPATIAL_ATLAS] as const;
 
 export function connectomeProvenanceSummary(){
   return CONNECTOME_PROFILES.map(p=>({
