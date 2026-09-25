@@ -64,6 +64,8 @@ export interface LifeObjectInteraction{
   verb:string;
   tick:number;
   startedAt:number;
+  durationMs?:number;
+  expiresAt?:number;
 }
 
 export interface LifeSimulationState{
@@ -277,6 +279,7 @@ export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDe
     places:[...input.places],
     neuro:{...input.neuro,circuits:{...input.neuro.circuits}}
   };
+  if(state.objectInteraction?.expiresAt&&Date.now()>state.objectInteraction.expiresAt)state.objectInteraction=null;
 
   if(state.minute>=24*60){state.minute-=24*60;state.day+=1}
   const destination=forcedDestination||chooseDestination(state);
