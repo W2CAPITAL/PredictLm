@@ -102,7 +102,7 @@ export function humanPrimateBridgeContext(human:HumanCoreState,macaque:MacaqueCo
     'Direct human evidence: '+summary.directHuman.map(x=>x.label).join(', ')+'.',
     'Macaque proxy coverage: '+summary.macaqueProxy.map(x=>x.label).join(', ')+'.',
     'Still unresolved: '+summary.unresolved.map(x=>x.label).join(', ')+'.',
-    'Proxy weight '+Math.round((human.crossSpeciesProxy?.proxyWeight||0)*100)+'%; macaque regional integration '+Math.round(macaque.regionalIntegration*100)+'%; PFC projection prior '+Math.round(macaque.pfcProjectionIntegration*100)+'%; claustrum prior '+Math.round(macaque.claustrumIntegration*100)+'%.'
+    'Proxy weight '+Math.round((human.crossSpeciesProxy?.proxyWeight||0)*100)+'%; macaque regional integration '+Math.round(macaque.regionalIntegration*100)+'%; PFC projection prior '+Math.round(macaque.pfcProjectionIntegration*100)+'%; claustrum prior '+Math.round(macaque.claustrumIntegration*100)+'%.',
     'Rule: macaque data can fill software priors for homologous cortical organization, but provenance must stay macaque-proxy and must never be presented as direct human measurement.'
   ].join('\n');
 }
