@@ -1,4 +1,5 @@
 import type {Metadata} from 'next';
+import './processos.css';
 import {ProcessIntelligenceCenter} from '@/components/ProcessIntelligenceCenter';
 
 export const metadata:Metadata={
