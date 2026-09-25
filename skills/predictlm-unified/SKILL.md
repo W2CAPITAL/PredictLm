@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.33.0"
+  version: "1.34.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -871,3 +871,20 @@ Kinds: executive, operational, financial, team, technical, incident, project, co
 Complex/high-risk reports auto-escalate to Council X10. Unknown report categories use the custom blueprint.
 
 The output remains Report Architect dossier markdown and preserves [oficial]/[fornecida]/[inferência]. Internal brains are reviewers, never sources.
+
+
+## Vision / simple-chat / character fidelity sync (2026-09-25)
+
+Vision:
+- multimodal semantic analysis first;
+- local ImageNet classifier only fallback;
+- weak non-animal local predictions abstain.
+
+Simple Chat:
+- knowledge-off means no RAG/GitHub retrieval and no source cards;
+- material prompt modifiers are preserved before selecting a procedural shortcut.
+
+Imagine:
+- automatic references must be consumed by an image-input model;
+- reference-sensitive public fallback prefers `kontext`/other reference-capable models, not text-only `flux`;
+- semantic identity review can use the configured multimodal provider mesh.
