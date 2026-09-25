@@ -1,4 +1,5 @@
-import {humanBrainEnsembleContext,HUMAN_ENSEMBLE_SUBJECTS} from './human-brain-ensemble';
+import {humanBrainEnsembleContext,HUMAN_BRAIN_ENSEMBLE,HUMAN_ENSEMBLE_SUBJECTS} from './human-brain-ensemble';
+import {crossSpeciesBridgeContext} from './cross-species-bridge';
 import {createEmotionState,advanceEmotionState,type EmotionState} from './emotion-memory';
 import type {CognitiveState} from './cognitive-workspace';
 
@@ -28,7 +29,7 @@ const clamp=(x:number,min=0,max=1)=>Math.max(min,Math.min(max,x));
 export function createFrankSteinState():FrankSteinState{
   const emotion=createEmotionState();
   return {
-    version:1,name:'Frank Stein',tick:0,humanDatasets:5,humanReferencePeople:HUMAN_ENSEMBLE_SUBJECTS,
+    version:1,name:'Frank Stein',tick:0,humanDatasets:HUMAN_BRAIN_ENSEMBLE.length,humanReferencePeople:HUMAN_ENSEMBLE_SUBJECTS,
     flyFallbackEnabled:true,emotion,imageryDrive:.46,memoryReconstruction:.48,socialMind:.42,embodiedSelf:.55,
     publicMentalState:{
       perceiving:'nenhum estímulo dominante',
@@ -90,6 +91,7 @@ export function frankSteinContext(state:FrankSteinState){
   return [
     'FRANK STEIN HYBRID BRAIN — synthetic cognitive architecture, not a claim of biological consciousness.',
     humanBrainEnsembleContext(),
+    crossSpeciesBridgeContext(),
     'FlyWire whole-fly circuits serve as a fallback/control reference where equivalent whole-human synaptic mapping is unavailable.',
     'Virtual neural populations: '+state.emotion.neural.totalVirtualUnits+' computational units.',
     'Current emotion: '+state.emotion.activeFeeling+'.',
