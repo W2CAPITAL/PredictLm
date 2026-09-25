@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.14.3",
+  "version": "3.15.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -135,6 +135,7 @@
   "releaseGates": {
     "simulationLiveness": "macaque/fly timers, cooldowns, anti-stall, real object registry, multi-tick actions",
     "characterFidelity": "user references first; semantic failure or unverified limited fallback cannot become valid final character art",
-    "automaticVisualGrounding": "named characters auto-search Google/Firecrawl and no-key image fallback; manual upload optional"
+    "automaticVisualGrounding": "named characters auto-search Google/Firecrawl and no-key image fallback; manual upload optional",
+    "universalReportIntelligence": "dynamic report taxonomy; FORGE + AEGIS + PARALLAX + CHAIR; Council X10 auto-escalation for complex reports; quality >=85"
   }
 }
