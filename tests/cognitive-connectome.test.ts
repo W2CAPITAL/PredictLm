@@ -17,7 +17,9 @@ import {
 import {
   FLYWIRE_FAFB_V783,
   H01_HUMAN_CORTEX,
-  MACAQUE_CORTEX_SPATIAL_ATLAS
+  MACAQUE_CORTEX_SPATIAL_ATLAS,
+  MACAQUE_PFC_PROJECTOME,
+  MACAQUE_CLAUSTRUM_CONNECTIVITY
 } from '../src/lib/cognitive/connectome-provenance';
 import {humanPrimateCoverageSummary} from '../src/lib/cognitive/human-primate-bridge';
 
@@ -187,6 +189,10 @@ test('macaque atlas provenance matches the published cortical atlas and is not m
   assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.spatialCells,42076954);
   assert.equal(MACAQUE_CORTEX_SPATIAL_ATLAS.snRnaCells,1493240);
   assert.match(MACAQUE_CORTEX_SPATIAL_ATLAS.scope,/not a synapse-resolution connectome/i);
+  assert.equal(MACAQUE_PFC_PROJECTOME.neurons,2231);
+  assert.equal(MACAQUE_PFC_PROJECTOME.projectionSubtypes,32);
+  assert.equal(MACAQUE_CLAUSTRUM_CONNECTIVITY.corticalInjectionSites,148);
+  assert.equal(MACAQUE_CLAUSTRUM_CONNECTIVITY.subcorticalInjectionSites,15);
 });
 
 test('Human Core uses macaque only as explicit cortical proxy and keeps unresolved gaps',()=>{
@@ -195,10 +201,12 @@ test('Human Core uses macaque only as explicit cortical proxy and keeps unresolv
   assert.match(state.human.crossSpeciesProxy.sourceSpecies,/Macaca fascicularis/i);
   assert.ok(state.human.crossSpeciesProxy.proxyWeight>0);
   assert.ok(state.human.crossSpeciesProxy.proxyWeight<=.28);
+  assert.ok(state.macaque.pfcProjectionIntegration>=0&&state.macaque.pfcProjectionIntegration<=1);
+  assert.ok(state.macaque.claustrumIntegration>=0&&state.macaque.claustrumIntegration<=1);
   assert.ok(state.human.crossSpeciesProxy.unresolved.some(x=>/whole-brain human synaptic connectome/i.test(x)));
   const coverage=humanPrimateCoverageSummary();
   assert.ok(coverage.directHuman.length>=1);
-  assert.ok(coverage.macaqueProxy.length>=2);
+  assert.ok(coverage.macaqueProxy.length>=4);
   assert.ok(coverage.unresolved.length>=2);
   const context=cognitivePromptContext(state);
   assert.match(context,/MACAQUE CORTEX CORE/);
