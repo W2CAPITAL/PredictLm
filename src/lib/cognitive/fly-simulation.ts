@@ -13,6 +13,13 @@ export interface FlySimulationState{
   tick:number;
   behavior:'explore'|'inspect'|'avoid'|'hover'|'approach';
   targetLabel:string;
+  targetId:string|null;
+  targetDwellTicks:number;
+  avoidTargetId:string|null;
+  avoidUntilTick:number;
+  stalledTicks:number;
+  lastX:number;
+  lastY:number;
   lastStimulus:string;
   visible:string[];
   lastUtterance:string;
@@ -28,24 +35,38 @@ const clamp=(v:number,min:number,max:number)=>Math.max(min,Math.min(max,v));
 export function createFlySimulationState(core?:FlyCoreState):FlySimulationState{
   return {
     version:1,
-    x:470,
-    y:92,
-    vx:1.8,
-    vy:.9,
-    z:34,
-    vz:1.2,
-    tick:0,
-    behavior:'explore',
-    targetLabel:'ambiente',
-    lastStimulus:'ambiente inicial',
-    visible:[],
-    lastUtterance:'',
-    silenceTicks:0,
-    wanderTargetX:720,
-    wanderTargetY:150,
-    targetAge:0,
+    x:470,y:92,vx:1.8,vy:.9,z:34,vz:1.2,tick:0,behavior:'explore',
+    targetLabel:'ambiente',targetId:null,targetDwellTicks:0,avoidTargetId:null,avoidUntilTick:0,
+    stalledTicks:0,lastX:470,lastY:92,lastStimulus:'ambiente inicial',visible:[],lastUtterance:'',
+    silenceTicks:0,wanderTargetX:720,wanderTargetY:150,targetAge:0,
     core:core?.version===1?core:createFlyCoreState()
   };
+}
+
+function normalizeState(previous:FlySimulationState|undefined){
+  const base=createFlySimulationState(previous?.core);
+  if(!previous||previous.version!==1)return base;
+  return {
+    ...base,...previous,
+    targetId:typeof previous.targetId==='string'?previous.targetId:null,
+    targetDwellTicks:Number.isFinite(previous.targetDwellTicks)?previous.targetDwellTicks:0,
+    avoidTargetId:typeof previous.avoidTargetId==='string'?previous.avoidTargetId:null,
+    avoidUntilTick:Number.isFinite(previous.avoidUntilTick)?previous.avoidUntilTick:0,
+    stalledTicks:Number.isFinite(previous.stalledTicks)?previous.stalledTicks:0,
+    lastX:Number.isFinite(previous.lastX)?previous.lastX:previous.x,
+    lastY:Number.isFinite(previous.lastY)?previous.lastY:previous.y
+  };
+}
+
+function targetScore(item:{id:string;distance:number;salience:number}){
+  const obj=worldObject(item.id);
+  if(!obj)return -Infinity;
+  let score=item.salience*19-item.distance*.045+(obj.flyAttraction||0)*18;
+  if(obj.kind==='flower'||obj.kind==='fruit_tree'||obj.kind==='coffee')score+=16;
+  if(obj.kind==='fridge'||obj.kind==='stove'||obj.kind==='table')score+=8;
+  if(obj.kind==='lamp')score-=18;
+  if(obj.kind==='bench'||obj.kind==='printer'||obj.kind==='whiteboard')score-=8;
+  return score;
 }
 
 export function stepFlySimulation(
@@ -60,7 +81,7 @@ export function stepFlySimulation(
     height?:number;
   }
 ):FlySimulationState{
-  const prev=previous?.version===1?previous:createFlySimulationState();
+  const prev=normalizeState(previous);
   const width=input.width||LIFE_WORLD_WIDTH;
   const height=input.height||LIFE_WORLD_HEIGHT;
   const currentZ=Number.isFinite(prev.z)?prev.z:34;
@@ -74,26 +95,39 @@ export function stepFlySimulation(
     needs:{},neuro:{}
   } as any);
   const vision=perceiveFlyWorld(prev,world);
-  const bestVisual=vision.visible[0];
-  const observation=[
-    'simulacao',
-    'local '+input.personLocation,
-    input.personAction||'sem ação',
-    nearPerson?'humano próximo':'exploração livre',
-    vision.summary
-  ].join(' · ');
+  const cooled=prev.avoidTargetId&&prev.tick<prev.avoidUntilTick?prev.avoidTargetId:null;
+  const currentVisible=prev.targetId?vision.visible.find(v=>v.id===prev.targetId):null;
+  const candidates=vision.visible.filter(v=>v.id!==cooled).sort((a,b)=>targetScore(b)-targetScore(a));
+  let bestVisual=currentVisible&&currentVisible.id!==cooled?currentVisible:(candidates[0]||null);
+  let targetId=bestVisual?.id||null;
 
+  const observation=[
+    'simulacao','local '+input.personLocation,input.personAction||'sem ação',
+    nearPerson?'humano próximo':'exploração livre',vision.summary
+  ].join(' · ');
   const core=advanceFlyCore(prev.core,observation);
-  let behavior:FlySimulationState['behavior']='explore';
 
   const stimulus=bestVisual?worldObject(bestVisual.id):null;
   const stimulusDistance=bestVisual?.distance??Infinity;
   const stimulusAttraction=stimulus?.flyAttraction??0;
+  let targetDwellTicks=targetId&&targetId===prev.targetId&&stimulusDistance<20?prev.targetDwellTicks+1:0;
+  let avoidTargetId=prev.avoidTargetId;
+  let avoidUntilTick=prev.avoidUntilTick;
 
+  // A fly samples a stimulus, then leaves. No object is allowed to become a permanent magnet.
+  if(targetId&&stimulusDistance<18&&targetDwellTicks>=6){
+    avoidTargetId=targetId;
+    avoidUntilTick=prev.tick+30;
+    targetId=null;
+    bestVisual=null;
+    targetDwellTicks=0;
+  }
+
+  let behavior:FlySimulationState['behavior']='explore';
   if(core.threat>.55&&nearPerson)behavior='avoid';
-  else if(bestVisual&&stimulusAttraction>.7&&stimulusDistance<150)behavior='approach';
-  else if(bestVisual&&core.salience>.55&&stimulusDistance<105)behavior='inspect';
-  else if(core.inhibition>.72&&core.exploration<.42&&prev.tick%14<2)behavior='hover';
+  else if(bestVisual&&stimulusAttraction>.72&&stimulusDistance>20&&stimulusDistance<165)behavior='approach';
+  else if(bestVisual&&stimulusDistance<=45)behavior='inspect';
+  else if(core.inhibition>.76&&core.exploration<.36&&prev.tick%19===0)behavior='hover';
 
   const seed=((prev.tick+1)*1103515245 + Math.round(prev.x*97) + Math.round(prev.y*193))>>>0;
   const randA=(seed%10000)/10000;
@@ -101,98 +135,83 @@ export function stepFlySimulation(
   let wanderTargetX=Number.isFinite(prev.wanderTargetX)?prev.wanderTargetX:720;
   let wanderTargetY=Number.isFinite(prev.wanderTargetY)?prev.wanderTargetY:150;
   let targetAge=(Number.isFinite(prev.targetAge)?prev.targetAge:0)+1;
+  const movedLast=Math.hypot(prev.x-prev.lastX,prev.y-prev.lastY);
+  let stalledTicks=behavior!=='hover'&&movedLast<.55?prev.stalledTicks+1:0;
   const waypointDistance=Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y);
-  const needsNewWaypoint=waypointDistance<38||targetAge>42;
+  const needsNewWaypoint=waypointDistance<38||targetAge>38||stalledTicks>=4;
 
   if(needsNewWaypoint){
-    wanderTargetX=24+randA*Math.max(40,width-48);
-    wanderTargetY=26+randB*Math.max(40,height-54);
+    wanderTargetX=22+randA*Math.max(44,width-44);
+    wanderTargetY=24+randB*Math.max(44,height-48);
     targetAge=0;
+    if(stalledTicks>=4){
+      avoidTargetId=prev.targetId||avoidTargetId;
+      avoidUntilTick=prev.tick+24;
+      targetId=null;bestVisual=null;targetDwellTicks=0;behavior='explore';stalledTicks=0;
+    }
   }
 
-  let tx=0;
-  let ty=0;
-
+  let tx=0,ty=0;
   if(behavior==='avoid'){
-    tx=(-dx/distance)*4.4;
-    ty=(-dy/distance)*3.5;
-  }else if(behavior==='inspect'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx=((txObj-prev.x)/od)*3.6;
-    ty=((tyObj-prev.y)/od)*3.1;
-  }else if(behavior==='approach'){
-    const txObj=bestVisual?.x??input.personX,tyObj=bestVisual?.y??input.personY;
-    const od=Math.max(1,Math.hypot(txObj-prev.x,tyObj-prev.y));
-    tx=((txObj-prev.x)/od)*6.2;
-    ty=((tyObj-prev.y)/od)*5.5;
+    tx=(-dx/distance)*5.8;ty=(-dy/distance)*5.1;
+  }else if((behavior==='inspect'||behavior==='approach')&&bestVisual){
+    const od=Math.max(1,Math.hypot(bestVisual.x-prev.x,bestVisual.y-prev.y));
+    const speed=behavior==='approach'?7.1:4.6;
+    tx=((bestVisual.x-prev.x)/od)*speed;
+    ty=((bestVisual.y-prev.y)/od)*(speed*.9);
   }else if(behavior==='hover'){
-    tx=0;
-    ty=0;
+    tx=0;ty=0;
   }else{
     const wd=Math.max(1,Math.hypot(wanderTargetX-prev.x,wanderTargetY-prev.y));
-    const jitterX=(randA-.5)*.7;
-    const jitterY=(randB-.5)*.7;
-    tx=((wanderTargetX-prev.x)/wd)*(4.1+core.exploration*4.2)+jitterX;
-    ty=((wanderTargetY-prev.y)/wd)*(3.6+core.exploration*3.9)+jitterY;
+    const jitterX=(randA-.5)*1.3;
+    const jitterY=(randB-.5)*1.3;
+    tx=((wanderTargetX-prev.x)/wd)*(5.0+core.exploration*4.6)+jitterX;
+    ty=((wanderTargetY-prev.y)/wd)*(4.5+core.exploration*4.2)+jitterY;
   }
 
-  const inertia=behavior==='hover' ? .62 : .28;
-  const vx=clamp(prev.vx*inertia+tx*(1-inertia),-11,11);
-  const vy=clamp(prev.vy*inertia+ty*(1-inertia),-10,10);
-  const altitudeJitter=(randA-.5)*8;
-  const desiredZ=behavior==='avoid'?68:behavior==='inspect'?38:behavior==='hover'?34:52+altitudeJitter*1.4;
-  const vz=clamp(currentVz*.5+(desiredZ-currentZ)*.12,-6,6);
-  const z=clamp(currentZ+vz,14,92);
-  let x=prev.x+vx;
-  let y=prev.y+vy;
+  const inertia=behavior==='hover'?.5:.2;
+  let vx=clamp(prev.vx*inertia+tx*(1-inertia),-12,12);
+  let vy=clamp(prev.vy*inertia+ty*(1-inertia),-11,11);
+  const altitudeJitter=(randA-.5)*10;
+  const desiredZ=behavior==='avoid'?72:behavior==='inspect'?34:behavior==='hover'?38:54+altitudeJitter*1.3;
+  let vz=clamp(currentVz*.42+(desiredZ-currentZ)*.16,-7,7);
+  let z=clamp(currentZ+vz,12,96);
+  let x=prev.x+vx,y=prev.y+vy;
 
-  if(x<18||x>width-18)x=clamp(width-x,18,width-18);
-  if(y<20||y>height-22)y=clamp(height-y,20,height-22);
+  // Reflect at world bounds instead of teleporting to the opposite side.
+  if(x<16){x=16;vx=Math.abs(vx)}
+  if(x>width-16){x=width-16;vx=-Math.abs(vx)}
+  if(y<18){y=18;vy=Math.abs(vy)}
+  if(y>height-20){y=height-20;vy=-Math.abs(vy)}
+  if(z<=12&&vz<0)vz=Math.abs(vz);
+  if(z>=96&&vz>0)vz=-Math.abs(vz);
 
   const shouldSpeak=core.salience>.7&&core.inhibition<.62&&(prev.silenceTicks>5||prev.tick%13===0);
-  const targetLabel=behavior==='approach'||behavior==='inspect'
-    ? (bestVisual?.label||'humano')
-    : behavior==='avoid'
-      ? 'distância segura'
-      : input.personLocation;
+  const targetLabel=(behavior==='approach'||behavior==='inspect')&&bestVisual
+    ? bestVisual.label
+    : behavior==='avoid'?'distância segura':input.personLocation;
   const utterance=shouldSpeak
-    ? behavior==='avoid'
-      ? 'Bzz! longe.'
-      : behavior==='approach'
-        ? 'Bzz… '+targetLabel+'.'
-        : behavior==='inspect'
-          ? 'Bzz? olhando '+targetLabel+'.'
-          : 'Bzz… explorando.'
-    : '';
+    ? behavior==='avoid'?'Bzz! longe.'
+      : behavior==='approach'?'Bzz… '+targetLabel+'.'
+        : behavior==='inspect'?'Bzz? verificando '+targetLabel+'.'
+          :'Bzz… mudando de rota.'
+    :'';
 
   return {
-    version:1,
-    x,
-    y,
-    vx,
-    vy,
-    z,
-    vz,
-    tick:prev.tick+1,
-    behavior,
-    targetLabel,
-    lastStimulus:observation,
-    visible:vision.visible.map(x=>x.label).slice(0,8),
-    lastUtterance:utterance,
-    silenceTicks:utterance?0:(prev.silenceTicks||0)+1,
-    wanderTargetX,
-    wanderTargetY,
-    targetAge,
-    core
+    ...prev,
+    x,y,vx,vy,z,vz,tick:prev.tick+1,behavior,targetLabel,targetId,targetDwellTicks,
+    avoidTargetId,avoidUntilTick,stalledTicks,lastX:prev.x,lastY:prev.y,lastStimulus:observation,
+    visible:vision.visible.map(v=>v.label).slice(0,10),
+    lastUtterance:utterance,silenceTicks:utterance?0:(prev.silenceTicks||0)+1,
+    wanderTargetX,wanderTargetY,targetAge,core
   };
 }
 
 export function flySimulationBubble(state:FlySimulationState){
   if(state.lastUtterance)return state.lastUtterance;
   if(state.behavior==='avoid')return 'zzzt — afastando';
-  if(state.behavior==='inspect')return 'bzz? observando';
-  if(state.behavior==='approach')return 'bzz → chegando perto';
+  if(state.behavior==='inspect')return 'bzz? verificando';
+  if(state.behavior==='approach')return 'bzz → aproximando';
   if(state.behavior==='hover')return 'bzz… pairando';
-  return 'bzz · explorando';
+  return 'bzz · rota nova';
 }
