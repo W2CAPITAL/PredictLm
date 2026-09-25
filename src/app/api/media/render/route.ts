@@ -6,8 +6,13 @@ function clamp(value:number,min:number,max:number){
   return Math.max(min,Math.min(max,Math.round(value||0)));
 }
 
-function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean){
-  const base=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'https://image.pollinations.ai/prompt/').trim();
+function upstreamUrl(
+  prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean,
+  references:string[]=[]
+){
+  const key=String(process.env.POLLINATIONS_API_KEY||'').trim();
+  const configured=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
+  const base=configured||(key?'https://gen.pollinations.ai/image/':'https://image.pollinations.ai/prompt/');
   const root=base.endsWith('/')?base:base+'/';
   const q=new URLSearchParams({
     width:String(width),
@@ -19,6 +24,7 @@ function upstreamUrl(prompt:string,width:number,height:number,seed:number,model:
     enhance:enhance?'true':'false',
     model:model||'flux'
   });
+  for(const ref of references.slice(0,3))q.append('image',ref);
   return root+encodeURIComponent(prompt)+'?'+q.toString();
 }
 
@@ -31,7 +37,8 @@ async function fetchImage(url:string){
       cache:'no-store',
       headers:{
         Accept:'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        'User-Agent':'PredictLM-Media/6.1'
+        'User-Agent':'PredictLM-Media/6.2',
+        ...(process.env.POLLINATIONS_API_KEY?{'Authorization':'Bearer '+process.env.POLLINATIONS_API_KEY}:{})
       }
     });
   }finally{clearTimeout(timer)}
@@ -47,16 +54,25 @@ export async function GET(req:Request){
   const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(url.searchParams.get('seed'))||1)));
   const model=String(url.searchParams.get('model')||'flux').slice(0,40);
   const enhance=String(url.searchParams.get('enhance')||'false').toLowerCase()==='true';
+  const references=url.searchParams.getAll('reference')
+    .map(x=>String(x||'').trim())
+    .filter(x=>{
+      try{
+        const u=new URL(x);
+        return u.protocol==='https:'||u.protocol==='http:';
+      }catch{return false}
+    })
+    .slice(0,3);
 
   try{
-    const target=upstreamUrl(prompt,width,height,seed,model,enhance);
+    const target=upstreamUrl(prompt,width,height,seed,model,enhance,references);
     let upstream=await fetchImage(target);
 
     // Uma segunda tentativa curta com turbo cobre indisponibilidade específica
     // do modelo sem devolver HTML quebrado como se fosse uma imagem.
     if(!upstream.ok&&model!=='turbo'){
       await new Promise(r=>setTimeout(r,900));
-      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,'turbo',enhance));
+      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,'turbo',enhance,references));
     }
 
     if(!upstream.ok){
@@ -79,7 +95,8 @@ export async function GET(req:Request){
         'Content-Type':type,
         'Content-Length':String(body.byteLength),
         'Cache-Control':'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400',
-        'X-Predict-Media':'pollinations-proxy'
+        'X-Predict-Media':'pollinations-proxy',
+        'X-Predict-Reference-Count':String(references.length)
       }
     });
   }catch(error:any){
