@@ -39,10 +39,24 @@ test('approach_object walks toward the object and use_object leaves visible inte
     state=result.state;agent=result.agent;
   }
   assert.equal(agent.plan?.cursor,1);
-  const used=executeNextLifeAgentAction(state,agent)!;
-  assert.equal(used.completed,true);
-  assert.equal(used.state.objectInteraction?.objectId,'work-pc1');
-  assert.match(used.state.objectInteraction?.verb||'',/trabalho|tarefas|produzindo/i);
-  assert.ok((used.state.objectInteraction?.durationMs||0)>=5000);
-  assert.ok((used.state.objectInteraction?.expiresAt||0)>(used.state.objectInteraction?.startedAt||0));
+  const moneyBefore=state.person.money;
+  const firstUse=executeNextLifeAgentAction(state,agent)!;
+  state=firstUse.state;agent=firstUse.agent;
+  assert.equal(firstUse.completed,false);
+  assert.equal(agent.plan?.cursor,1);
+  assert.equal(state.objectInteraction?.objectId,'work-pc1');
+  assert.match(state.objectInteraction?.verb||'',/trabalho|tarefas|produzindo/i);
+  assert.ok((state.objectInteraction?.durationMs||0)>=2400);
+  assert.ok((state.objectInteraction?.expiresAt||0)>(state.objectInteraction?.startedAt||0));
+  assert.ok((agent.plan?.actions[1].progress||0)>0);
+  assert.ok((agent.plan?.actions[1].progress||0)<1);
+
+  let useTicks=1;
+  while(agent.plan?.cursor===1&&useTicks++<12){
+    const result=executeNextLifeAgentAction(state,agent)!;
+    state=result.state;agent=result.agent;
+  }
+  assert.equal(agent.plan?.cursor,2);
+  assert.ok(useTicks>=3);
+  assert.ok(state.person.money>moneyBefore);
 });
