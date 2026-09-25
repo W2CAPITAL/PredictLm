@@ -24,7 +24,7 @@ self.onmessage=async(event:MessageEvent<{id:number;pixels:Uint8ClampedArray;widt
     }
     self.postMessage({id,type:'progress',message:'Analisando a imagem…'});
     const start=performance.now();
-    const output=await classifier(new RawImage(pixels,width,height,4),{top_k:5});
+    const output=await classifier(new RawImage(pixels,width,height,4),{top_k:20});
     const labels=(classifier.model.config as unknown as {id2label:Record<string,string>}).id2label||{};
     const offset=Object.keys(labels).length===1001?1:0;
     const ids=new Map(Object.entries(labels).map(([k,v])=>[v,Number(k)]));
