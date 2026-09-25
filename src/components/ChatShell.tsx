@@ -850,10 +850,13 @@ export function ChatShell({onOpenLegal}:Props){
           signal:turnController.signal
         });
         if(puter.ok){
+          const report=prepareReportArtifact(prompt,puter.text);
           s.addMessage({
             role:'assistant',
-            content:puter.text,
+            content:report?.content||puter.text,
             engine:'Predict Auto',
+            ...(report?.media?.length?{media:report.media}:{}),
+            ...(report?{actions:['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']}:{}),
             status:'done'
           });
           return;
@@ -892,22 +895,25 @@ export function ChatShell({onOpenLegal}:Props){
           const minQuality=kind==='howto'?2:kind==='factual'?0:-1;
           if(publicText&&aligned.relevant&&!weak&&answerQuality(prompt,publicText)>=minQuality){
             const localSources=filterDisplayedSources(prompt,local.sources||[],8);
+            const report=prepareReportArtifact(prompt,publicText);
             s.addMessage({
               role:'assistant',
-              content:publicText,
+              content:report?.content||publicText,
               engine:'Predict Auto',
               sources:showExecutionDetails?localSources:[],
-              ...(showExecutionDetails?{
-                reasoningSummary:buildReasoningSummary({
+              ...(report?.media?.length?{media:report.media}:{}),
+              ...(showExecutionDetails||report?{
+                reasoningSummary:showExecutionDetails?buildReasoningSummary({
                   kind,
                   webCount:localSources.length,
                   localBrain:true,
                   anchor:!!localFallback,
                   deep:s.deepThink
-                }),
+                }):undefined,
                 actions:[
                   'Resposta local validada',
-                  ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[])
+                  ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
+                  ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
                 ]
               }:{}),
               status:'done'
@@ -942,16 +948,19 @@ export function ChatShell({onOpenLegal}:Props){
           const gate=publicAnswerGate(runtimeReply.content,language,prompt);
           const publicText=gate.ok?gate.content:sanitizePublicAnswer(runtimeReply.content,prompt);
           if(publicText&&responseTopicAlignment(prompt,publicText).relevant&&!signalsKnowledgeGap(publicText)){
+            const report=prepareReportArtifact(prompt,publicText);
             s.addMessage({
               role:'assistant',
-              content:publicText,
+              content:report?.content||publicText,
               engine:'Predict Auto',
               sources:filterDisplayedSources(prompt,runtimeReply.sources||[],8),
+              ...(report?.media?.length?{media:report.media}:{}),
               reasoningSummary:buildReasoningSummary({kind,webCount:runtimeReply.sources?.length||0,localBrain:true,deep:s.deepThink}),
               actions:[
                 'PredictLM Core executou o runtime local',
                 'Resposta final passou pelo Prompt OS, memória, skills e gate público',
-                'Provider remoto não foi necessário nesta etapa'
+                'Provider remoto não foi necessário nesta etapa',
+                ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
               ],
               status:'done'
             });
