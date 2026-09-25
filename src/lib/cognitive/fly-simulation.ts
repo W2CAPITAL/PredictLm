@@ -137,7 +137,7 @@ export function stepFlySimulation(
     ty=((wanderTargetY-prev.y)/wd)*(1.2+core.exploration*1.8)+jitterY;
   }
 
-  const inertia=behavior==='hover'?.72:.5;
+  const inertia=behavior==='hover' ? .72 : .5;
   const vx=clamp(prev.vx*inertia+tx*(1-inertia),-5,5);
   const vy=clamp(prev.vy*inertia+ty*(1-inertia),-4,4);
   const altitudeJitter=(randA-.5)*8;
