@@ -47,3 +47,24 @@ test('Fly simulation preserves the mapped FlyWire core metadata',()=>{
   assert.equal(fly.core.mappedSubgraph.neuronScale,139255);
   assert.equal(fly.core.mappedSubgraph.synapseScale,54500000);
 });
+
+
+test('fly exploration uses changing waypoints instead of a permanent circular orbit',()=>{
+  let fly=createFlySimulationState();
+  const firstTarget={x:fly.wanderTargetX,y:fly.wanderTargetY};
+  const visited:Array<[number,number]>=[];
+  for(let i=0;i<130;i++){
+    fly=stepFlySimulation(fly,{
+      personX:80,
+      personY:70,
+      personAction:'parado',
+      personLocation:'longe'
+    });
+    if(i%10===0)visited.push([fly.x,fly.y]);
+  }
+  assert.ok(fly.targetAge<96);
+  assert.ok(fly.wanderTargetX!==firstTarget.x||fly.wanderTargetY!==firstTarget.y);
+  const xs=visited.map(v=>Math.round(v[0]/20));
+  const ys=visited.map(v=>Math.round(v[1]/20));
+  assert.ok(new Set(xs).size>=3||new Set(ys).size>=3);
+});
