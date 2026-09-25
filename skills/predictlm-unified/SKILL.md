@@ -748,14 +748,16 @@ O ensemble cognitivo deve registrar estado, hipótese, ação candidata, alterna
 Cognitive Lab agora mantém três referências:
 - FlyWire FAFB v783 — conectoma inteiro de mosca;
 - H01 — fragmento humano cortical em resolução sináptica;
-- Macaque cortex spatial transcriptome atlas — córtex de primata não-humano em escala celular/regional.
+- Macaque cortex spatial transcriptome atlas — córtex de primata não-humano em escala celular/regional;
+- Macaque PFC projectome — 2.231 neurônios reconstruídos / 32 subtipos de projeção;
+- Macaque claustrum connectivity — tracer priors de 148 sítios corticais e 15 subcorticais.
 
 O Macaque Core não “vira humano”. O bridge classifica cada capacidade/estrutura como:
 - `direct-human`;
 - `macaque-proxy`;
 - `unresolved`.
 
-O proxy macaque só pode preencher priors de organização cortical homóloga e deve permanecer com proveniência explícita. Ele não autoriza afirmar cérebro humano completo, conectoma sináptico humano inteiro, regiões subcorticais humanas reconstruídas, memórias biológicas ou pensamentos reais.
+O proxy macaque só pode preencher priors de organização cortical homóloga, projeções PFC de longo alcance e conectividade do claustro, sempre com proveniência explícita. Ele não autoriza afirmar cérebro humano completo, conectoma sináptico humano inteiro, regiões subcorticais humanas reconstruídas, memórias biológicas ou pensamentos reais.
 
 Rotas isoladas:
 - `/cognitive/human`;
