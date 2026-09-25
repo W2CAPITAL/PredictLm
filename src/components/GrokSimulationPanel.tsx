@@ -37,7 +37,8 @@ import {
 } from '@/lib/life-simulation-agent';
 import { localBrainAdvisory } from '@/lib/browser-brain';
 import {loadCognitiveState,saveCognitiveState} from '@/lib/cognitive/cognitive-memory';
-import {advanceCognitiveWorkspace,recordPerceptionMemory} from '@/lib/cognitive/cognitive-workspace';
+import {advanceCognitiveWorkspace,createCognitiveState,recordPerceptionMemory,type CognitiveState} from '@/lib/cognitive/cognitive-workspace';
+import {publicMentalStateFor} from '@/lib/cognitive/frank-stein-brain';
 import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlySimulationState} from '@/lib/cognitive/fly-simulation';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
@@ -79,6 +80,7 @@ export function GrokSimulationPanel(){
   const [scenarios,setScenarios]=useState<LifeScenarioResult[]>([]);
   const [agent,setAgent]=useState<LifeAgentState>(()=>createLifeAgentState());
   const [fly,setFly]=useState<FlySimulationState>(()=>createFlySimulationState());
+  const [cognitive,setCognitive]=useState<CognitiveState>(()=>createCognitiveState());
   const [agentBusy,setAgentBusy]=useState(false);
   const [agentError,setAgentError]=useState('');
   const [cameraZoom,setCameraZoom]=useState(1);
@@ -91,8 +93,9 @@ export function GrokSimulationPanel(){
     setAgent(loadAgentState());
     const localFly=loadFlyState();
     setFly(localFly);
-    loadCognitiveState().then(cognitive=>{
-      setFly(prev=>({...prev,core:cognitive.fly}));
+    loadCognitiveState().then(brain=>{
+      setCognitive(brain);
+      setFly(prev=>({...prev,core:brain.fly}));
     }).catch(()=>{});
     try{
       const focus=sessionStorage.getItem('predictlm:simulation-focus');
@@ -208,6 +211,7 @@ export function GrokSimulationPanel(){
         next={...next,fly:fly.core,lastUpdated:Date.now()};
         next=recordPerceptionMemory(next,'human',humanSnapshot.summary+' Ação: '+state.person.currentAction,.7);
         next=recordPerceptionMemory(next,'fly',flySnapshot.summary+' Comportamento: '+fly.behavior,.72);
+        setCognitive(next);
         return saveCognitiveState(next);
       }).catch(()=>{});
     },150);
@@ -483,6 +487,9 @@ export function GrokSimulationPanel(){
   const flyVision=useMemo(()=>perceiveFlyWorld(fly,state),[
     fly.x,fly.y,fly.vx,fly.vy,state.person.x,state.person.y,state.person.heading
   ]);
+  const humanMind=useMemo(()=>publicMentalStateFor('human',cognitive),[cognitive]);
+  const flyMind=useMemo(()=>publicMentalStateFor('fly',cognitive),[cognitive]);
+  const frankMind=useMemo(()=>publicMentalStateFor('frank',cognitive),[cognitive]);
   const relation=state.relationships[0];
 
   function tick(){
@@ -714,6 +721,36 @@ export function GrokSimulationPanel(){
             <div><span>mushroom body</span><i><u style={{width:Math.round(fly.core.mushroomBody*100)+'%'}}/></i><b>{Math.round(fly.core.mushroomBody*100)}%</b></div>
           </div>
           <small className="sim-note">Comportamento: {fly.behavior}. O agente visual usa o mesmo FlyCore persistente do chat /cognitive/fly.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Brain size={14}/><b>Estado mental público</b><span>sem chain-of-thought</span></div>
+          <div className="sim-mind-tabs">
+            <details open>
+              <summary>Humano</summary>
+              <small><b>Percebendo:</b> {humanMind.perceiving}</small>
+              <small><b>Sentindo:</b> {humanMind.feeling}</small>
+              <small><b>Lembrando:</b> {humanMind.remembering}</small>
+              <small><b>Querendo:</b> {humanMind.wanting}</small>
+              <small><b>Pretendendo:</b> {humanMind.intending}</small>
+            </details>
+            <details>
+              <summary>Mosca</summary>
+              <small><b>Percebendo:</b> {flyMind.perceiving}</small>
+              <small><b>Sentindo:</b> {flyMind.feeling}</small>
+              <small><b>Lembrando:</b> {flyMind.remembering}</small>
+              <small><b>Querendo:</b> {flyMind.wanting}</small>
+              <small><b>Pretendendo:</b> {flyMind.intending}</small>
+            </details>
+            <details>
+              <summary>Frank Stein</summary>
+              <small><b>Percebendo:</b> {frankMind.perceiving}</small>
+              <small><b>Sentindo:</b> {frankMind.feeling}</small>
+              <small><b>Lembrando:</b> {frankMind.remembering}</small>
+              <small><b>Querendo:</b> {frankMind.wanting}</small>
+              <small><b>Pretendendo:</b> {frankMind.intending}</small>
+            </details>
+          </div>
         </section>
 
         <section className="sim-panel">
