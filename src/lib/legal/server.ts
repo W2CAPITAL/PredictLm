@@ -33,9 +33,10 @@ async function retryFetch(url:string,init:RequestInit={},timeouts=[12000,20000])
   throw last||new Error('Falha de rede');
 }
 
-async function datajudKey(){
-  if(process.env.DATAJUD_API_KEY?.trim())return process.env.DATAJUD_API_KEY.trim().replace(/^APIKey\s+/i,'');
-  if(keyCache&&keyCache.expires>Date.now())return keyCache.key;
+async function datajudKey(preferLive=false){
+  const envKey=process.env.DATAJUD_API_KEY?.trim().replace(/^APIKey\s+/i,'')||'';
+  if(!preferLive&&envKey)return envKey;
+  if(!preferLive&&keyCache&&keyCache.expires>Date.now())return keyCache.key;
   try{
     const r=await fetchTimeout('https://datajud-wiki.cnj.jus.br/api-publica/acesso/',{headers:BROWSER_HEADERS},9000);
     const html=await r.text();
@@ -45,7 +46,32 @@ async function datajudKey(){
       return match[1];
     }
   }catch{}
-  return DATAJUD_KEY_FALLBACK;
+  return envKey||DATAJUD_KEY_FALLBACK;
+}
+
+async function requestDatajud(endpoint:string,body:string,timeouts=[14000,22000]){
+  const make=(key:string)=>retryFetch(endpoint,{
+    method:'POST',
+    headers:{Authorization:'APIKey '+key,'Content-Type':'application/json','Accept':'application/json',...BROWSER_HEADERS},
+    body
+  },timeouts);
+
+  const primaryKey=await datajudKey(false);
+  let response=await make(primaryKey);
+  if(response.status!==401&&response.status!==403)return response;
+
+  // A chave pública do CNJ pode mudar. Se a variável de ambiente estiver
+  // desatualizada, busca a chave publicada na Wiki e tenta novamente.
+  const liveKey=await datajudKey(true);
+  if(liveKey&&liveKey!==primaryKey){
+    response=await make(liveKey);
+    if(response.status!==401&&response.status!==403)return response;
+  }
+
+  if(DATAJUD_KEY_FALLBACK!==primaryKey&&DATAJUD_KEY_FALLBACK!==liveKey){
+    response=await make(DATAJUD_KEY_FALLBACK);
+  }
+  return response;
 }
 
 function normalizeDate(value:any){
@@ -193,18 +219,13 @@ function statusFromTimeline(name:string,portalMessage=''){
 async function queryDatajud(digits:string,alias:string){
   const endpoint='https://api-publica.datajud.cnj.jus.br/api_publica_'+alias+'/_search';
   try{
-    const key=await datajudKey();
     const body=JSON.stringify({
       size:3,
       track_total_hits:false,
       timeout:'12s',
       query:{match:{numeroProcesso:digits}}
     });
-    const r=await retryFetch(endpoint,{
-      method:'POST',
-      headers:{Authorization:'APIKey '+key,'Content-Type':'application/json','Accept':'application/json',...BROWSER_HEADERS},
-      body
-    },[14000,22000]);
+    const r=await requestDatajud(endpoint,body,[14000,22000]);
     const text=await r.text();
     if(!r.ok)return {ok:false,found:false,endpoint,error:'DataJud HTTP '+r.status+(text?' — '+stripHtml(text).slice(0,180):''),hits:[] as any[]};
     const json=JSON.parse(text);
@@ -594,7 +615,6 @@ export async function searchLegalCases(input:LegalSearchInput):Promise<LegalSear
 
   const query=must.length||filters.length?{bool:{must,filter:filters}}:{match_all:{}};
   const endpoint='https://api-publica.datajud.cnj.jus.br/api_publica_'+tribunal.alias+'/_search';
-  const key=await datajudKey();
   const body=JSON.stringify({
     from:offset,
     size,
@@ -602,11 +622,7 @@ export async function searchLegalCases(input:LegalSearchInput):Promise<LegalSear
     query,
     sort:[{'dataHoraUltimaAtualizacao':{order:'desc',unmapped_type:'date'}},{'_doc':{order:'desc'}}]
   });
-  const r=await retryFetch(endpoint,{
-    method:'POST',
-    headers:{Authorization:'APIKey '+key,'Content-Type':'application/json','Accept':'application/json',...BROWSER_HEADERS},
-    body
-  },[15000,24000]);
+  const r=await requestDatajud(endpoint,body,[15000,24000]);
   const text=await r.text();
   if(!r.ok)throw new Error('DataJud HTTP '+r.status+(text?' — '+stripHtml(text).slice(0,180):''));
   const json=JSON.parse(text);
@@ -668,5 +684,27 @@ export async function searchDjenCommunications(input:DjenSearchInput):Promise<Dj
     items,
     fetchedAt:new Date().toISOString(),
     caveat:'Publicações do DJEN são indícios de comunicação processual. Prazo legal exige leitura integral, data juridicamente relevante e calendário/suspensões aplicáveis.'
+  };
+}
+
+
+export async function checkLegalSourceHealth(){
+  const sample='00008323520184013202'; // exemplo público documentado pelo próprio CNJ
+  const started=Date.now();
+  const [datajud,djen]=await Promise.all([
+    queryDatajud(sample,'trf1').catch((error:any)=>({ok:false,found:false,error:String(error?.message||error),endpoint:''})),
+    queryDjen(sample).catch((error:any)=>({ok:false,count:0,error:String(error?.message||error),endpoint:''}))
+  ]);
+  return {
+    fetchedAt:new Date().toISOString(),
+    latencyMs:Date.now()-started,
+    datajud:{
+      ok:!!datajud.ok,
+      detail:datajud.ok?'API pública respondeu normalmente.':String(datajud.error||'DataJud indisponível.')
+    },
+    djen:{
+      ok:!!djen.ok,
+      detail:djen.ok?'API de comunicações respondeu normalmente.':String(djen.error||'DJEN indisponível.')
+    }
   };
 }
