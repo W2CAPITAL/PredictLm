@@ -1,5 +1,6 @@
 import {advanceFlyCore,createFlyCoreState,flyCoreContext,type FlyCoreState} from './fly-core';
 import {advanceHumanCore,createHumanCoreState,humanCoreContext,type HumanCoreState} from './human-core';
+import {cognitiveFunctionalMapContext} from './functional-map';
 
 export interface CognitiveEpisode{
   at:number;
@@ -195,6 +196,7 @@ export function cognitivePromptContext(state:CognitiveState){
     state.mappedEvidence.human
       ? 'Imported H01 real-subset evidence: '+state.mappedEvidence.human.nodes+' nodes, '+state.mappedEvidence.human.edges+' edges; excitatory share '+Math.round(state.mappedEvidence.human.excitation*100)+'%.'
       : 'Human core currently uses the published H01-derived cortical structural profile; no raw subset is loaded.',
+    'FUNCTIONAL MAP:\n'+cognitiveFunctionalMapContext(),
     'Use this only to improve attention, continuity, calibration and action selection. Never narrate it unless the user explicitly asks to inspect the Cognitive Lab.'
   ].join('\n\n');
 }
