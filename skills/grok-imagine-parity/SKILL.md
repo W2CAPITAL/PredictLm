@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -301,3 +301,17 @@ Pedidos de personagem/franquia específica são identity-sensitive e usam Litera
 - revisão semântica pode acionar tentativas extras **limitadas** de recuperação de identidade; nunca loop infinito;
 - uma imagem de personagem específico que continua `semanticReview.status=failed` pode ser mostrada com aviso, mas não deve entrar em `Gerações recentes` como se estivesse aprovada;
 - fallback textual/público continua explicitamente `fidelityLimited`; não mascarar baixa fidelidade como sucesso verificado.
+
+
+## Verified Character Library v1.7
+
+Para pedido identity-sensitive, `Gerações recentes` é uma galeria de resultados aprovados, não um log bruto de tentativas.
+
+- `semanticReview.status=failed` → nunca persistir/exibir em Recent;
+- personagem específico sem `semanticReview.status=passed` → manter apenas na sessão atual com aviso, não adicionar em Recent;
+- `fidelityLimited=true` + identidade específica → não adicionar em Recent;
+- exceção: referência persistente exata (`identityExact=true`) já aprovada como asset;
+- ao carregar biblioteca antiga, esconder itens identity-sensitive sem verificação aprovada, evitando cards “Freeza” com Goku/clone/personagem errado;
+- reparos de identidade continuam limitados; não gerar infinitamente.
+
+O Cognitive Creative Brain pode melhorar composição e criatividade, mas nunca substituir o semantic fidelity gate.
