@@ -15,7 +15,7 @@ import { humanPresenceContext } from '@/lib/human-presence';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
-import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -55,9 +55,8 @@ function providers():Provider[]{
   // Vercel deployments can authenticate AI Gateway with the platform OIDC
   // token, so production chat does not depend on a manually copied API key.
   const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
-  const gatewayModel=process.env.AI_GATEWAY_MODEL
-    ||(process.env.VERCEL_OIDC_TOKEN?'nvidia/nemotron-3.5-lightning':'');
-  if(gatewayKey&&gatewayModel){
+  const gatewayModel=process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning';
+  if(gatewayKey){
     push({
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
@@ -104,8 +103,8 @@ function providers():Provider[]{
   if(process.env.OPENCODE_API_KEY&&process.env.OPENCODE_MODEL){
     push({name:'opencode',base:process.env.OPENCODE_BASE_URL||'https://opencode.ai/zen/v1',key:process.env.OPENCODE_API_KEY,model:process.env.OPENCODE_MODEL});
   }
-  if(process.env.NVIDIA_API_KEY&&process.env.NVIDIA_MODEL){
-    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL});
+  if(process.env.NVIDIA_API_KEY){
+    push({name:'nvidia',base:process.env.NVIDIA_BASE_URL||'https://integrate.api.nvidia.com/v1',key:process.env.NVIDIA_API_KEY,model:process.env.NVIDIA_MODEL||'nvidia/nemotron-3.5-lightning-30b-a3b'});
   }
   if(process.env.DEEPSEEK_API_KEY&&process.env.DEEPSEEK_MODEL){
     const configured=(process.env.DEEPSEEK_BASE_URL||'https://api.deepseek.com').replace(/\/$/,'');
@@ -123,24 +122,24 @@ function providers():Provider[]{
   if(process.env.MINIMAX_API_KEY&&process.env.MINIMAX_MODEL){
     push({name:'minimax',base:process.env.MINIMAX_BASE_URL||'https://api.minimax.io/v1',key:process.env.MINIMAX_API_KEY,model:process.env.MINIMAX_MODEL});
   }
-  if(process.env.GEMINI_API_KEY&&process.env.GEMINI_MODEL){
-    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL});
+  if(process.env.GEMINI_API_KEY){
+    push({name:'gemini',base:process.env.GEMINI_BASE_URL||'https://generativelanguage.googleapis.com/v1beta/openai',key:process.env.GEMINI_API_KEY,model:process.env.GEMINI_MODEL||'gemini-3.8-flash'});
   }
-  if(process.env.ANTHROPIC_API_KEY&&process.env.ANTHROPIC_MODEL){
-    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL,protocol:'anthropic'});
+  if(process.env.ANTHROPIC_API_KEY){
+    push({name:'anthropic',base:process.env.ANTHROPIC_BASE_URL||'https://api.anthropic.com/v1',key:process.env.ANTHROPIC_API_KEY,model:process.env.ANTHROPIC_MODEL||'claude-sonnet-5',protocol:'anthropic'});
   }
   if(process.env.ARK_API_KEY&&process.env.ARK_MODEL){
     push({name:'ark',base:process.env.ARK_BASE_URL||'https://ark.cn-beijing.volces.com/api/v3',key:process.env.ARK_API_KEY,model:process.env.ARK_MODEL});
   }
-  if(process.env.GROQ_API_KEY&&process.env.GROQ_MODEL){
-    push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL});
+  if(process.env.GROQ_API_KEY){
+    push({name:'groq',base:'https://api.groq.com/openai/v1',key:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL||'openai/gpt-oss-120b'});
   }
-  if(process.env.OPENROUTER_API_KEY&&process.env.OPENROUTER_MODEL){
+  if(process.env.OPENROUTER_API_KEY){
     push({
       name:'openrouter',
       base:'https://openrouter.ai/api/v1',
       key:process.env.OPENROUTER_API_KEY,
-      model:process.env.OPENROUTER_MODEL,
+      model:process.env.OPENROUTER_MODEL||'openrouter/auto',
       headers:{'X-Title':'PredictLM'}
     });
   }
