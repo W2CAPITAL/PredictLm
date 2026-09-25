@@ -173,7 +173,19 @@ export function practicalHowToReply(prompt:string){
   if(/\bcuidar\b/.test(p)&&/\bsuculentas?\b/.test(p))return 'Para cuidar de uma suculenta:\n\n1. Use vaso com furos e substrato bem drenado.\n2. Deixe em lugar muito claro e adapte ao sol aos poucos; a necessidade varia pela espécie.\n3. Regue bem somente quando o substrato estiver seco, deixando a água escorrer.\n4. Evite água parada e retire folhas mortas. Folhas moles e solo úmido por muitos dias sugerem excesso de água.';
   if(/\b(fazer|cozinhar)\b/.test(p)&&/\barroz\b/.test(p)&&!/\b(integral|japones|risoto)\b/.test(p))return 'Para fazer arroz branco comum:\n\n1. Aqueça um pouco de óleo e refogue alho ou cebola, se quiser.\n2. Adicione 1 xícara de arroz e mexa rapidamente.\n3. Coloque cerca de 2 xícaras de água quente e sal a gosto.\n4. Quando ferver, reduza o fogo e cozinhe com a panela parcialmente tampada até a água secar e o grão ficar macio. Se ainda estiver duro, acrescente um pouco de água.\n5. Desligue, deixe descansar tampado por cerca de 5 minutos e solte com um garfo. A quantidade de água pode variar conforme o arroz.';
   if(/\b(empresa|negocio|negócio|cnpj|mei|sociedade)\b/.test(p)&&/(criar|abrir|montar|comecar|começar|do zero)/.test(p))return companyHowTo();
-  if(/\b(carro|automovel|automóvel|veiculo|veículo)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
+  if(/\b(carro|automovel|automóvel|veiculo|veículo|trator|caminhao|caminhão)\b/.test(p)&&/(criar|fazer|montar|construir|do zero)/.test(p))return carHowTo();
+  if(/\b(tamandua|tamanduá|robo|robô|robot)\b/.test(p)&&/(criar|crie|fazer|montar|construir)/.test(p))return [
+    '**Trate um tamanduá-robô como um projeto de robótica + design biomimético**, não como um brinquedo improvisado.',
+    '',
+    '1. **Defina escala e função.** Brinquedo, exposição, pesquisa ou protótipo determinam peso, autonomia, custo e segurança.',
+    '2. **Escolha a locomoção.** Para a primeira versão, rodas ou esteiras são muito mais confiáveis que pernas articuladas.',
+    '3. **Monte o chassi.** Alumínio leve, acrílico ou madeira podem receber bateria, motores, controladora e sensores.',
+    '4. **Transforme o focinho em sensor.** Distância, câmera, temperatura ou outro sensor podem simular o comportamento de farejar sem criar um mecanismo perigoso.',
+    '5. **Programe comportamentos simples.** Evitar obstáculos, seguir linha, procurar um alvo e movimentar cabeça/cauda com servos.',
+    '6. **Teste por módulos.** Energia, locomoção, sensores e carenagem devem funcionar separadamente antes da montagem final.',
+    '',
+    'Se você disser a escala e o objetivo, dá para transformar isso em lista de peças, diagrama elétrico e código de controle.'
+  ].join('\n');
   if(/\b(dragao|dragon)\b/.test(p)&&/\b(metal|aco|ferro|solda|soldagem|escultura)\b/.test(p))return metalDragonHowTo();
   if(/startup|start-up/.test(p))return startupHowTo();
   if(/criar.*(app|aplicativo|sistema|site)|fazer.*(app|aplicativo|sistema|site)/.test(p)){
@@ -193,6 +205,73 @@ export function practicalHowToReply(prompt:string){
     ].join('\n');
   }
   return null;
+}
+
+
+/**
+ * Último recurso interno do PredictLM quando nenhum modelo/provider consegue
+ * concluir o turno. Ele nunca depende de Grok, Claude, GPT ou outra API.
+ */
+export function generativeOfflineReply(prompt:string,kind?:ConversationKind):string|null{
+  const p=clean(prompt);
+  if(!p)return null;
+
+  const practical=practicalHowToReply(prompt);
+  if(practical)return practical;
+  const factual=stableFactualReply(prompt);
+  if(factual)return factual;
+
+  if(/\bmosca\b/.test(p)&&(/\bfal/.test(p)||/\bvoz\b/.test(p))){
+    return [
+      '**Uma mosca falante seria uma hipótese de ficção, mas dá para manter a lógica do animal.**',
+      '',
+      'Ela provavelmente falaria de forma curta e acelerada, porque percebe mudanças visuais muito rápido e reage o tempo todo a movimento, luz, cheiro e ameaça.',
+      '',
+      'Uma versão plausível teria algum mecanismo fictício que convertesse vibração ou sinais do sistema nervoso em voz. A fala poderia soar assim: *“Sombra! Vira! Açúcar à esquerda! Janela de novo não!”*',
+      '',
+      'Em uma história, isso funciona melhor se a personalidade nascer do comportamento real da mosca: hiperalerta, curiosa, oportunista e frustrada com superfícies transparentes.'
+    ].join('\n');
+  }
+
+  if(kind==='hypothetical'||isHypotheticalPrompt(prompt)){
+    const topic=prompt.replace(/^(?:como seria(?: se)?|e se|imagine se|imagina se|suponha que|supondo que|o que aconteceria se)\s+/i,'').trim()||'isso';
+    return [
+      '**Cenário hipotético: '+topic.slice(0,140)+'.**',
+      '',
+      'Uma forma útil de pensar nisso é separar quatro camadas:',
+      '1. o que mudaria imediatamente;',
+      '2. quais limites físicos, biológicos ou técnicos continuariam valendo;',
+      '3. quais efeitos apareceriam depois como consequência;',
+      '4. qual seria a versão mais plausível e qual seria a versão puramente fantástica.',
+      '',
+      'A partir daí, a resposta pode ser desenvolvida como explicação realista, comédia ou ficção científica.'
+    ].join('\n');
+  }
+
+  if(kind==='howto'||isGenericHowTo(prompt)){
+    return [
+      '**Dá para estruturar isso sem depender de uma API externa.**',
+      '',
+      '1. Defina exatamente o resultado final e a escala.',
+      '2. Liste requisitos, materiais, ferramentas, orçamento e riscos.',
+      '3. Divida o projeto em módulos independentes.',
+      '4. Construa primeiro o menor protótipo que permita testar a ideia.',
+      '5. Valide segurança e funcionamento antes de aumentar potência, tamanho ou complexidade.',
+      '6. Documente cada falha e corrija uma variável por vez.',
+      '',
+      'Com o objeto ou objetivo exato, o PredictLM consegue transformar essa estrutura em um plano mais específico.'
+    ].join('\n');
+  }
+
+  if(kind==='casual')return 'Estou aqui. Pode continuar.';
+
+  return [
+    'O PredictLM conseguiu manter o turno ativo sem depender de um provider externo, mas não encontrou conhecimento local específico o bastante para produzir uma resposta factual detalhada com segurança.',
+    '',
+    '**Pedido recebido:** '+prompt.trim().slice(0,320),
+    '',
+    'O caminho correto neste caso é usar o Neural Local/WebLLM quando carregado, knowledge packs ou pesquisa quando necessária; providers externos permanecem opcionais.'
+  ].join('\n');
 }
 
 export function signalsKnowledgeGap(content:string){
