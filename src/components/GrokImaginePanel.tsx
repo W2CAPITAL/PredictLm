@@ -193,13 +193,26 @@ export function GrokImaginePanel(){
   useEffect(()=>{
     let live=true;
     try{
-      const prefill=sessionStorage.getItem('predictlm:imagine-prefill');
-      if(prefill){
-        setPrompt(prefill);
-        setPromptMode('literal');
-        setStyle('Cinematic');
-        setStyleManuallyChosen(false);
+      const rawPrefill=sessionStorage.getItem('predictlm:imagine-prefill');
+      if(rawPrefill){
+        let trustedText='';
+        try{
+          const envelope=JSON.parse(rawPrefill);
+          const fresh=Number.isFinite(Number(envelope?.createdAt))&&Date.now()-Number(envelope.createdAt)<15*60*1000;
+          const trustedSource=['chat-user-action','media-user-action','cognitive-user-action'].includes(String(envelope?.source||''));
+          if(envelope?.v===1&&fresh&&trustedSource)trustedText=String(envelope?.text||'').trim().slice(0,6000);
+        }catch{
+          // Legacy plain-string prefills are intentionally discarded. Old builds
+          // could leave unrelated prompts in sessionStorage and reopen Imagine
+          // with text the user did not explicitly place there.
+        }
         sessionStorage.removeItem('predictlm:imagine-prefill');
+        if(trustedText){
+          setPrompt(trustedText);
+          setPromptMode('literal');
+          setStyle('Cinematic');
+          setStyleManuallyChosen(false);
+        }
       }
     }catch{}
     const loadedGallery=loadBrowserMediaLibrary() as MediaItem[];
