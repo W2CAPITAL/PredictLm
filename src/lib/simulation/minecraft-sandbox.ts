@@ -569,7 +569,7 @@ export function raidVoxelDungeon(state:VoxelWorldState,structure:VoxelStructure)
   inventory=addItem(inventory,'emerald',2+Math.floor(roll*6));
   inventory=addItem(inventory,roll>.76?'diamond':roll>.42?'gold_ingot':'iron_ingot',1+Math.floor(roll*2));
   if(roll>.84)inventory=addItem(inventory,'artifact',1);
-  const discoveries={...state.discoveries,[clearedKey]:true};
+  const discoveries:Record<string,true>={...state.discoveries,[clearedKey]:true as const};
   let next:VoxelWorldState={
     ...state,inventory,discoveries,
     player:{...state.player,experience:state.player.experience+18},
