@@ -16,6 +16,7 @@ import { detectReportIntent, REPORT_DOSSIER_CONTRACT } from '@/lib/predict-dossi
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
+import {callOpenAIResponses} from '@/lib/server/openai-responses';
 import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { gameStudioContext } from '@/lib/game-studio-fabric';
@@ -25,7 +26,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
-type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>;protocol?:'openai'|'anthropic'};
+type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>;protocol?:'openai'|'openai-responses'|'anthropic'};
 
 declare global{
   var __predictlmChatCache:Map<string,{expires:number,value:any}>|undefined;
@@ -68,12 +69,13 @@ function providers():Provider[]{
       model:gatewayModel
     });
   }
-  if(process.env.OPENAI_API_KEY&&process.env.OPENAI_MODEL){
+  if(process.env.OPENAI_API_KEY){
     push({
       name:'openai',
       base:process.env.OPENAI_BASE_URL||'https://api.openai.com/v1',
       key:process.env.OPENAI_API_KEY,
-      model:process.env.OPENAI_MODEL
+      model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
+      protocol:'openai-responses'
     });
   }
   if(process.env.XAI_API_KEY&&process.env.XAI_MODEL){
@@ -470,6 +472,15 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
+    if(provider.protocol==='openai-responses'){
+      const content=await callOpenAIResponses(provider as any,messages as any,{
+        deep,
+        timeoutMs,
+        maxTokens:deep?1800:1000
+      });
+      recordProviderSuccess(provider);
+      return content;
+    }
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
