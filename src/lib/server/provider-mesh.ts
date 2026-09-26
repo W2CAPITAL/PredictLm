@@ -1,6 +1,7 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import {callOpenAIResponses} from '@/lib/server/openai-responses';
 
-export type ProviderProtocol='openai'|'anthropic';
+export type ProviderProtocol='openai'|'openai-responses'|'anthropic';
 export interface ProviderSpec{
   name:string;
   base:string;
@@ -50,7 +51,8 @@ export function configuredProviders(){
       name:'openai',
       base:process.env.OPENAI_BASE_URL||'https://api.openai.com/v1',
       key:process.env.OPENAI_API_KEY,
-      model:process.env.OPENAI_MODEL||'gpt-5.6-luna'
+      model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
+      protocol:'openai-responses'
     });
   }
   if(process.env.XAI_API_KEY){
@@ -155,6 +157,15 @@ export async function callProviderText(
   const timeoutMs=Math.max(1000,options.timeoutMs||16000);
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
+    if(provider.protocol==='openai-responses'){
+      const text=await callOpenAIResponses(provider,messages,{
+        deep,
+        timeoutMs,
+        maxTokens:options.maxTokens
+      });
+      recordProviderSuccess(provider);
+      return text;
+    }
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
