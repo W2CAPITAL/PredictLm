@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.37.0"
+  version: "1.38.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -19,17 +19,9 @@ Fazer outro agente operar o PredictLM como uma segunda IA especializada, sem tra
 ## Loop
 RECALL → ROUTE → PLAN → FORGE → AEGIS → COUNCIL X10 quando necessário → EXECUTE → VERIFY → CAPTURE → IMPROVE.
 
-## Modos
-- chat
-- build
-- research
-- tutor
-- processos
-- legal/revisional
-- imagine/media
-- memory
-- self-improve
-- skill federation
+## Superfície pública
+
+O produto usa **um único Chat AI**. Build, Research, Processos/DataJud/DJEN, tutor, jurídico, memória e cognitive mesh são capacidades internas detectadas pelo pedido. Imagine/Simulação/Visão podem continuar como superfícies visuais especializadas quando realmente precisam de UI própria.
 
 ## Continuidade
 Se existe build/chat/processo/contexto atual:
@@ -60,11 +52,14 @@ Pode:
 
 Ato externo de protocolo, assinatura, pagamento ou acordo exige confirmação humana. Não usa e-CPF/conta de terceiro e não burla controle do tribunal.
 
-## Build
-Preserva arquivos e projeto atual. Toda alteração deve distinguir:
-- o que foi realmente editado;
-- o que foi realmente testado;
-- o que ainda é recomendação.
+## Build dentro do Chat
+Preserva arquivos e projeto atual. Pedidos de criação/edição de software acionam Build no próprio Chat e devem:
+- selecionar contexto por relevância sem resumir/truncar código crítico;
+- preferir tier forte para implementação/revisão;
+- executar smoke + Council + changed-file review;
+- empacotar TypeScript/TSX, aliases e dependências reais;
+- anexar ZIP reproduzível;
+- distinguir o que foi editado, testado e ainda é recomendação.
 
 ## Media
 Imagem: pedido → `grok-imagine-parity` → expansão cinematográfica → Firecrawl-first identity/reference grounding → provider real → review → histórico com prompt original + expandido + seed + model.
@@ -936,3 +931,12 @@ The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approve
 - run visual QA after generation and make only bounded repairs from concrete visible defects;
 - do not treat bundled reference photos/products as training material;
 - Arcads routes, model availability, limits and credits are volatile service examples and require live verification before execution.
+
+
+## JEV-inspired routing
+
+A política interna usa `fast | balanced | strong | long` com base em complexidade, raciocínio, ferramentas e pressão de contexto. Retained context fica verbatim; contexto antigo irrelevante pode ser removido. Build/Deep/Research/Legal complexos não devem ser silenciosamente rebaixados para tiny/free models.
+
+## Unified cognitive mesh
+
+FlyWire Fly + H01 Human + Macaque priors + MICrONS/Allen Mouse participam do mesmo workspace cognitivo do Chat. São fontes/controladores com proveniência separada; não representam cérebros biológicos completos executando no navegador.
