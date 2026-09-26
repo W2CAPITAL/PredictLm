@@ -24,12 +24,12 @@ The 0.5B/1.5B class is no longer treated as PredictLM's primary intelligence.
 | --- | --- | ---: | --- |
 | Lite compatibility | Qwen3-1.7B-q4f16_1-MLC | ~2.0 GB | weak WebGPU / fallback |
 | Smart default | Qwen3.5-4B-q4f16_1-MLC | ~3.9 GB | normal modern PC |
-| Power | Qwen3-8B-q4f16_1-MLC | ~5.7 GB | stronger GPU |
+| Power | Qwen3.5-9B-q4f16_1-MLC | ~6.4 GB | stronger GPU |
 
 `src/lib/webllm-runtime.ts` performs hardware-aware selection:
 
 ```text
-8B -> 4B -> 1.7B
+9B -> 4B -> 1.7B
 ```
 
 The loader performs the real allocation/self-test. `navigator.deviceMemory` and CPU core count are only conservative hints.
@@ -77,7 +77,7 @@ dataset -> training run -> frozen eval -> compare -> promote/rollback
 
 ## Non-goals
 
-- Do not force an 8B model onto a weak PC.
+- Do not force a 9B model onto a weak PC.
 - Do not call a 0.5B/1.5B compatibility model the full PredictLM intelligence.
 - Do not require Ollama.
 - Do not claim that RAG or feedback memory changes neural weights.
