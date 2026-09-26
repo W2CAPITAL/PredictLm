@@ -14,7 +14,8 @@
     "eval:general": "node scripts/evals/general-assistant.mjs",
     "knowledge:sync": "node scripts/knowledge/sync-github.mjs",
     "learning:sync": "node scripts/learning/sync-global.mjs",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts",
+    "learn:continuous": "node scripts/continuous-learning/run.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.2.1",
