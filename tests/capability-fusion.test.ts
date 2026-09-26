@@ -7,17 +7,17 @@ import {planAgenticRun,selectSkillContracts} from '../src/lib/agent-runtime/agen
 
 test('all user-requested capability sources remain registered',()=>{
   const health=fusionHealth();
-  assert.equal(health.requestedCoverage.expected,58);
-  assert.equal(health.requestedCoverage.covered,58);
+  assert.equal(health.requestedCoverage.expected,59);
+  assert.equal(health.requestedCoverage.covered,59);
   assert.deepEqual(health.requestedCoverage.missing,[]);
   assert.equal(health.requestedCoverage.complete,true);
-  assert.equal(REQUESTED_FUSION_REPOS.length,58);
+  assert.equal(REQUESTED_FUSION_REPOS.length,59);
 });
 
 test('implementation audit maps every requested source to real app surfaces',()=>{
   const audit=fusionImplementationAudit();
-  assert.equal(audit.expected,58);
-  assert.equal(audit.registered,58);
+  assert.equal(audit.expected,59);
+  assert.equal(audit.registered,59);
   assert.equal(audit.complete,true);
   assert.deepEqual(audit.missing,[]);
   for(const row of audit.rows){
@@ -31,7 +31,9 @@ test('Game Studio skill is selected for Simulation but not generic Build',()=>{
   const sim=selectSkillContracts('simulação de vida multiagente com memória e mundo persistente','simulation',10).map(x=>x.id);
   const build=selectSkillContracts('crie um jogo web em React e TypeScript','build',10).map(x=>x.id);
   assert.ok(sim.includes('game-studio-fabric'));
+  assert.ok(sim.includes('mirofish-simulation'));
   assert.ok(!build.includes('game-studio-fabric'));
+  assert.ok(!build.includes('mirofish-simulation'));
 });
 
 test('Simulation agent plan uses studio roles while Build keeps normal build roles',()=>{
