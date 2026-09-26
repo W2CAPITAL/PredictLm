@@ -12,6 +12,7 @@ import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
+import { jevRouteDecision, jevSelectWorkspaceFiles } from '@/lib/jev-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -119,7 +120,7 @@ function compactFilePayload(files:WorkspaceFile[]){
   return files.map(file=>({
     path:file.path,
     language:file.language,
-    content:compactText(file.content,2600)
+    content:file.content.slice(0,18000)
   }));
 }
 
@@ -138,7 +139,8 @@ export async function POST(req:Request){
     const files=normalizeFiles(body?.files);
     const mode=String(body?.mode||'deep');
     const deep=mode!=='fast';
-    const providers=rankProviders('software build code architecture '+task,deep);
+    const routeDecision=jevRouteDecision(task,{deep,hasTools:true,build:true,contextChars:files.reduce((n,x)=>n+x.content.length,0)});
+    const providers=rankProviders('software build code architecture '+task+' route '+routeDecision.tier,true);
     if(!providers.length){
       return Response.json({error:'Nenhum provider server-side configurado para o Build.',code:'NO_PROVIDER'},{status:503});
     }
@@ -204,7 +206,8 @@ export async function POST(req:Request){
       tests:[]
     };
     const filesToChange=(Array.isArray(architecture?.filesToChange)?architecture.filesToChange:[]).map((x:any)=>String(x));
-    const relevant=pickRelevantFiles(files,filesToChange,task);
+    const jevSelection=jevSelectWorkspaceFiles(files,task+' '+filesToChange.join(' '),{maxFiles:18,maxChars:90000});
+    const relevant=jevSelection.files.length?jevSelection.files:pickRelevantFiles(files,filesToChange,task);
 
     const implementerSystem=[
       BUILD_SYSTEM,
@@ -307,6 +310,7 @@ export async function POST(req:Request){
       runLedger,
       agentic:{
         mode:runPlan.staged?'staged':'direct',
+        jev:{tier:routeDecision.tier,confidence:routeDecision.confidence,reasons:routeDecision.reasons,context:jevSelection.stats},
         roles:runPlan.roles,
         skills:skillContractContext(task,'build',10).split('\n').slice(1).map(x=>x.split(' — ')[0].replace('SKILL ','')),
         providers:{
