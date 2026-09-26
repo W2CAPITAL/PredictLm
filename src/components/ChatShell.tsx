@@ -520,6 +520,106 @@ export function ChatShell({onOpenLegal}:Props){
     };
   }
 
+  async function runBuildInsideChat(task:string){
+    const initial=useStudio.getState();
+    const before=Object.values(initial.files);
+    const turn=resolveBuildTurn(task,before,initial.messages);
+    if(turn.kind==='conversation')return false;
+
+    if(turn.kind==='new-project'){
+      initial.newBuild();
+    }
+    const live=useStudio.getState();
+    const baseFiles=Object.values(live.files);
+    setActivity([
+      'BUILD · entendendo o projeto atual',
+      'JEV ROUTER · selecionando tier forte',
+      'AGENTS · implementando mudança',
+      'VERIFY · testando arquivos',
+      'PACKAGE · preparando ZIP executável'
+    ]);
+
+    const response=await fetch('/api/agent',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        prompt:turn.effectivePrompt,
+        files:baseFiles,
+        mode:s.deepThink?'max':'deep'
+      })
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!Array.isArray(data?.files)||!data.files.length){
+      throw new Error(data?.error||'O Build não produziu arquivos utilizáveis.');
+    }
+
+    const merged=new Map(baseFiles.map(file=>[file.path,file]));
+    for(const file of repairWorkspaceFiles(data.files))merged.set(file.path,file);
+    const finalFiles=repairWorkspaceFiles(Array.from(merged.values()));
+    const smoke=runLocalSmokeTest(finalFiles);
+    const council=runLocalCouncil(finalFiles);
+    const review=runBuildDiffReview(baseFiles,finalFiles);
+
+    live.mergeFiles(finalFiles);
+    live.addMessage({role:'user',content:task});
+    live.addMessage({role:'assistant',content:String(data.explanation||'Build aplicado no projeto atual.')});
+    live.addRun({
+      title:task,
+      status:smoke.ok&&!review.blocking?'done':'error',
+      steps:[
+        'Smoke '+smoke.score+'/100',
+        'Council '+council.score+'/100',
+        'Changed-file review '+review.score+'/100',
+        ...(review.findings||[]).slice(0,4).map((x:any)=>String(x.severity||'check').toUpperCase()+' '+x.path+': '+x.title)
+      ]
+    });
+
+    const pkg=buildRunnableProject(finalFiles);
+    const zip=new JSZip();
+    for(const file of pkg)zip.file(file.path,file.content);
+    zip.file('predictlm-build.json',JSON.stringify({
+      project:live.projectName,
+      task,
+      exportedAt:new Date().toISOString(),
+      smoke:smoke.score,
+      council:council.score,
+      review:review.score
+    },null,2));
+    const blob=await zip.generateAsync({type:'blob'});
+    const url=URL.createObjectURL(blob);
+    const changed=(review.changedPaths||[]).slice(0,12);
+    const quality=Math.round((smoke.score+council.score+review.score)/3);
+    s.addMessage({
+      role:'assistant',
+      content:[
+        '**Build aplicado no projeto atual.**',
+        String(data.explanation||''),
+        '',
+        '**Validação:** '+quality+'/100 · smoke '+smoke.score+' · council '+council.score+' · review '+review.score,
+        changed.length?'**Arquivos alterados:** '+changed.join(', '):'',
+        review.blocking?'**Atenção:** o review ainda encontrou bloqueio; o ZIP foi gerado para inspeção, não tratado como produção pronta.':'ZIP executável gerado e anexado.'
+      ].filter(Boolean).join('\n\n'),
+      engine:'PredictLM · Build no Chat',
+      media:[{
+        kind:'file',
+        url,
+        label:'Projeto '+live.projectName,
+        downloadName:(live.projectName||'predict-app').replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.zip',
+        mime:'application/zip',
+        temporary:true
+      }],
+      actions:[
+        'Projeto atual preservado',
+        'Provider forte selecionado pelo roteador',
+        'Arquivos aplicados ao workspace',
+        'Smoke/Council/review executados',
+        'ZIP executável empacotado'
+      ],
+      status:'done'
+    });
+    return true;
+  }
+
   async function send(){
     const prompt=input.trim();
     if(!prompt||busy)return;
