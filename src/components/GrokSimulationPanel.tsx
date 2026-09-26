@@ -46,6 +46,7 @@ import {LifeFirstPersonViewport,type PovOtherAgent} from '@/components/LifeFirst
 import { emergentSwarmContext, simulateEmergentSwarm } from '@/lib/simulation/emergent-swarm';
 import {gameStudioContext,gameStudioPlan} from '@/lib/game-studio-fabric';
 import {capabilityFusionContext,fusionSourcesFor} from '@/lib/fusion/capability-fabric';
+import {MinecraftSimulationPanel} from '@/components/MinecraftSimulationPanel';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
@@ -109,6 +110,7 @@ export function GrokSimulationPanel(){
   const [agentError,setAgentError]=useState('');
   const [cameraZoom,setCameraZoom]=useState(1);
   const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'|'macaque'>('world');
+  const [simulationView,setSimulationView]=useState<'life'|'voxel'>('life');
   const canvas=useRef<HTMLCanvasElement>(null);
   const stateRef=useRef(state);
   const flyRef=useRef(fly);
@@ -765,6 +767,21 @@ export function GrokSimulationPanel(){
     ['Estresse',state.needs.stress]
   ] as const;
 
+  if(simulationView==='voxel')return <section className="sim-shell">
+    <header className="sim-head">
+      <div>
+        <span className="sim-kicker"><Activity size={12}/> LIFE SIMULATION STUDIO · GAME STUDIO</span>
+        <h1>Voxel World</h1>
+        <p>Mundo procedural persistente inspirado nas referências Minecraft clone · Game Studio exclusivo da Simulação · Unity Fabric ativo</p>
+      </div>
+      <div className="sim-clock">
+        <button onClick={()=>setSimulationView('life')}>Vida</button>
+        <button className="active" onClick={()=>setSimulationView('voxel')}>Voxel / Minecraft</button>
+      </div>
+    </header>
+    <MinecraftSimulationPanel/>
+  </section>;
+
   return <section className="sim-shell">
     <header className="sim-head">
       <div>
@@ -773,6 +790,8 @@ export function GrokSimulationPanel(){
         <p>Voxel life world · Humano + Macaque Core + FlyWire · POV 3D próprio · objetos físicos · memória persistente</p>
       </div>
       <div className="sim-clock">
+        <button className="active" onClick={()=>setSimulationView('life')}>Vida</button>
+        <button onClick={()=>setSimulationView('voxel')}>Voxel / Minecraft</button>
         <Clock3 size={15}/><b>{simulationClock(state)}</b><span>{state.person.mood}</span>
       </div>
     </header>
