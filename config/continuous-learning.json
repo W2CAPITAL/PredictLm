@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "publish": {
+    "branch": "continuous-learning",
+    "path": "learning-data/index.json",
+    "liveUrl": "https://raw.githubusercontent.com/W2CAPITAL/PredictLm/continuous-learning/learning-data/index.json"
+  },
+  "policy": {
+    "acceptScore": 0.74,
+    "maxRecords": 2500,
+    "maxNewRecordsPerRun": 60,
+    "githubReposPerRun": 8,
+    "githubDiscoveriesPerRun": 6,
+    "feedsPerRun": 2,
+    "academicTopicsPerRun": 1,
+    "maxSummaryChars": 1100,
+    "codePromotion": "proposal-only",
+    "autoMerge": false,
+    "instructionDataOnly": true
+  },
+  "topics": [
+    {
+      "id": "programming",
+      "label": "Programação e arquitetura de software",
+      "priority": 5,
+      "githubQueries": [
+        "language:TypeScript agent framework stars:>500",
+        "local first TypeScript stars:>200"
+      ],
+      "arxivQuery": "software engineering agents",
+      "skills": [
+        "agent-fabric",
+        "build-review",
+        "github-knowledge"
+      ]
+    },
+    {
+      "id": "local-ai",
+      "label": "IA local, browser e baixo consumo",
+      "priority": 5,
+      "githubQueries": [
+        "webgpu llm browser stars:>200",
+        "local llm wasm stars:>100"
+      ],
+      "arxivQuery": "local language model inference browser",
+      "skills": [
+        "runtime-federation",
+        "local-runtime-router",
+        "token-budget"
+      ]
+    },
+    {
+      "id": "ai-agents",
+      "label": "Agentes, memória e raciocínio",
+      "priority": 5,
+      "githubQueries": [
+        "ai agents memory orchestration stars:>300"
+      ],
+      "arxivQuery": "large language model agents memory planning",
+      "skills": [
+        "agent-fabric",
+        "capability-fusion",
+        "second-brain"
+      ]
+    },
+    {
+      "id": "web-platform",
+      "label": "Web, Next.js, React e performance",
+      "priority": 4,
+      "githubQueries": [
+        "nextjs performance agent stars:>100",
+        "react architecture typescript stars:>500"
+      ],
+      "arxivQuery": "web performance software systems",
+      "skills": [
+        "node-stack",
+        "design-system",
+        "testing"
+      ]
+    },
+    {
+      "id": "cybersecurity",
+      "label": "Cibersegurança defensiva",
+      "priority": 5,
+      "githubQueries": [
+        "defensive security scanner stars:>500",
+        "secure coding static analysis stars:>500"
+      ],
+      "arxivQuery": "software vulnerability detection defensive security",
+      "skills": [
+        "vibe-security",
+        "defensive-bug-hunter",
+        "fraud-shield"
+      ]
+    },
+    {
+      "id": "neuroscience",
+      "label": "Neurociência e modelos neurais",
+      "priority": 4,
+      "githubQueries": [
+        "computational neuroscience simulation stars:>100",
+        "connectome neuroscience stars:>50"
+      ],
+      "arxivQuery": "computational neuroscience connectome neural dynamics",
+      "skills": [
+        "neurocore"
+      ]
+    },
+    {
+      "id": "legal-tech",
+      "label": "Legal tech, jurisprudência e automação jurídica",
+      "priority": 4,
+      "githubQueries": [
+        "legal tech rag law stars:>50",
+        "legal knowledge graph stars:>50"
+      ],
+      "arxivQuery": "legal information retrieval language models",
+      "skills": [
+        "datajud",
+        "lexis-twincore-x10",
+        "lexispredict-saas"
+      ]
+    },
+    {
+      "id": "simulation",
+      "label": "Simulação, agentes e mundos persistentes",
+      "priority": 4,
+      "githubQueries": [
+        "multi agent simulation world stars:>100",
+        "voxel engine browser stars:>100"
+      ],
+      "arxivQuery": "multi agent simulation persistent world",
+      "skills": [
+        "game-studio-fabric",
+        "mirofish-simulation",
+        "life-simulation"
+      ]
+    },
+    {
+      "id": "media-ai",
+      "label": "Imagem, vídeo e mídia generativa",
+      "priority": 3,
+      "githubQueries": [
+        "image generation workflow stars:>500",
+        "video generation workflow stars:>300"
+      ],
+      "arxivQuery": "controllable image video generation identity consistency",
+      "skills": [
+        "grok-imagine-parity",
+        "image-skill",
+        "higgsfield-media"
+      ]
+    },
+    {
+      "id": "automation",
+      "label": "Automação, produtividade e integração",
+      "priority": 3,
+      "githubQueries": [
+        "automation workflow agent stars:>500",
+        "browser automation agent stars:>500"
+      ],
+      "arxivQuery": "software automation autonomous agents",
+      "skills": [
+        "agent-browser",
+        "capability-fusion",
+        "agent-powerups"
+      ]
+    }
+  ],
+  "feeds": [
+    {
+      "id": "github-changelog",
+      "name": "GitHub Changelog",
+      "url": "https://github.blog/changelog/feed/",
+      "topic": "programming",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "official-update"
+    },
+    {
+      "id": "mdn-blog",
+      "name": "MDN Blog",
+      "url": "https://developer.mozilla.org/en-US/blog/rss.xml",
+      "topic": "web-platform",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "official-update"
+    },
+    {
+      "id": "cisa-advisories",
+      "name": "CISA Cybersecurity Advisories",
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "topic": "cybersecurity",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "government-advisory"
+    },
+    {
+      "id": "google-ai-blog",
+      "name": "Google AI",
+      "url": "https://blog.google/technology/ai/rss/",
+      "topic": "ai-agents",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "vendor-primary"
+    }
+  ],
+  "topicSkillMap": {
+    "programming": [
+      "agent-fabric",
+      "build-review",
+      "github-knowledge"
+    ],
+    "local-ai": [
+      "runtime-federation",
+      "local-runtime-router",
+      "token-budget"
+    ],
+    "ai-agents": [
+      "agent-fabric",
+      "second-brain",
+      "capability-fusion"
+    ],
+    "web-platform": [
+      "node-stack",
+      "testing",
+      "design-system"
+    ],
+    "cybersecurity": [
+      "vibe-security",
+      "defensive-bug-hunter",
+      "fraud-shield"
+    ],
+    "neuroscience": [
+      "neurocore"
+    ],
+    "legal-tech": [
+      "datajud",
+      "lexis-twincore-x10",
+      "lexispredict-saas"
+    ],
+    "simulation": [
+      "game-studio-fabric",
+      "mirofish-simulation",
+      "life-simulation"
+    ],
+    "media-ai": [
+      "grok-imagine-parity",
+      "image-skill"
+    ],
+    "automation": [
+      "agent-browser",
+      "agent-powerups",
+      "capability-fusion"
+    ]
+  },
+  "spreadsheet": {
+    "sheets": [
+      "APRENDIZADO",
+      "FONTES",
+      "GITHUB",
+      "SKILLS",
+      "CODIGO",
+      "PENDENCIAS",
+      "AUDITORIA"
+    ]
+  }
+}
