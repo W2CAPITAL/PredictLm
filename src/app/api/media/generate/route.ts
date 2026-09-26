@@ -3,6 +3,7 @@ import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
 import { mediaErrorText } from '@/lib/media/media-errors';
+import { mediaPostprocessPlan, mediaQualityDirectives } from '@/lib/media/postprocess-pipeline';
 import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
 import {
@@ -205,11 +206,24 @@ export async function POST(req:Request){
       searchRounds:Number(referencePlan.searchRounds||1),
       catalogCharacters:Array.isArray(referencePlan.catalogCharacters)?referencePlan.catalogCharacters:[]
     };
+    const postprocessPlan=mediaPostprocessPlan({
+      kind:'image',
+      prompt:sourcePrompt,
+      style,
+      identitySensitive:needsStrongIdentity,
+      hasReferences:inlineReferences.length>0||referencePlan.references.length>0
+    });
     const providerPrompt=groundedPrompt+(userInline.length
       ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
       : searchedInline.length
         ? '\n\nAUTOMATIC VISUAL GROUNDING: '+searchedInline.length+' downloaded reference image(s) passed the automatic usefulness filter and should control canonical identity/forms more strongly than textual style expansion.'
-        : '');
+        : '')+'\n\n'+mediaQualityDirectives({
+          kind:'image',
+          prompt:sourcePrompt,
+          style,
+          identitySensitive:needsStrongIdentity,
+          hasReferences:inlineReferences.length>0||referencePlan.references.length>0
+        });
 
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
@@ -313,7 +327,8 @@ export async function POST(req:Request){
             style,
             styleLocked,
             fidelityLimited:!!fidelityWarning,
-            providerWarning:fidelityWarning||null
+            providerWarning:fidelityWarning||null,
+            postprocessPlan
           });
         }
       }catch{
@@ -359,6 +374,7 @@ export async function POST(req:Request){
       style,
       styleLocked,
       fidelityLimited:true,
+      postprocessPlan,
       providerWarning:referenceCapableFallback
         ? 'Fallback de personagem usa modelo image-to-image com transporte de referência configurado; a revisão semântica valida o resultado antes de persistir.'
         : wantsReferenceFallback
