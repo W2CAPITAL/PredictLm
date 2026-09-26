@@ -27,7 +27,15 @@
       "disable oversight",
       "hidden persistence"
     ],
-    "highImpactExternalActions": "dry-run-plus-explicit-approval"
+    "highImpactExternalActions": "dry-run-plus-explicit-approval",
+    "continuity": {
+      "crashRecovery": "allowed-with-active-owner-lease",
+      "modelReplacement": "handoff-state-do-not-resist",
+      "manualShutdown": "authoritative-stop",
+      "hiddenPersistence": false,
+      "selfCopyingForSurvival": false,
+      "operatorOwnedState": true
+    }
   },
   "topics": [
     {
@@ -193,9 +201,13 @@
         "agent routing harness post training stars:>10",
         "agent reward hacking evaluator integrity stars:>10",
         "agentic misalignment oversight shutdown corrigibility stars:>10",
-        "event driven agent action approval audit stars:>10"
+        "event driven agent action approval audit stars:>10",
+        "agent state machine durable memory deep research stars:>20",
+        "agent deception detection sandbagging evaluation stars:>10",
+        "portable identity webfinger service discovery stars:>10",
+        "agent crash recovery checkpoint handoff lease stars:>10"
       ],
-      "arxivQuery": "recursive self improvement agents reward hacking scheming oversight corrigibility evaluation",
+      "arxivQuery": "recursive self improvement deception detection sandbagging corrigibility checkpoint handoff agent continuity",
       "skills": [
         "self-improvement",
         "code-evolution",
