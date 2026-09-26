@@ -1283,10 +1283,11 @@ export function ChatShell({onOpenLegal}:Props){
   function sendFeedback(kind:'positive'|'negative',message:string){
     rateAdaptiveAnswer(message,kind==='positive');
     setModelTick(x=>x+1);
+    const prompt=[...(active?.messages||[])].reverse().find(m=>m.role==='user')?.content||'';
     fetch('/api/feedback',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({kind,surface:'chat',message,metadata:{sessionId:active?.id||null}})
+      body:JSON.stringify({kind,surface:'chat',message,metadata:{sessionId:active?.id||null,prompt:prompt.slice(0,1200)}})
     }).catch(()=>{});
   }
 
