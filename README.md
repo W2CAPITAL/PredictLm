@@ -27,7 +27,7 @@ Terminology is deliberately precise:
 - **self-improvement** = engineering loop that proposes and evaluates patches;
 - none of those, by themselves, are treated as scientific proof of phenomenal consciousness, biological life, qualia or subjective experience.
 
-Self-improvement follows **OBSERVE → VERIFY → LEARN → DESIGN → EXPERIMENT → ANALYZE → COMPARE → PROMOTE**. Durable promotion still requires benchmark/CI and the configured gate; model output is never silently converted into production code, durable memory or autonomous goals.
+Self-improvement follows **OBSERVE → VERIFY → LEARN → DESIGN → EXPERIMENT → ANALYZE → COMPARE → PROMOTE**. Fixed-template operational lessons may now self-promote after repeated feedback evidence; arbitrary model/user text still cannot silently become production code, unrestricted durable rules or autonomous goals.
 
 ## Chat
 
@@ -56,24 +56,37 @@ conversation history + intent
 
 Chat is open-domain: normal prompts do not need a pre-programmed topic rule. The model is expected to handle factual questions, explanations, hypotheticals, planning, coding, calculations, comparisons, writing, rewriting, translation, summarization and brainstorming directly. Deterministic topic helpers are floors/fallbacks, not a whitelist of what PredictLM can answer.
 
-Browser-local weights are **never downloaded on first visit**. The model menu contains only an optional **Ativar modo offline** action. On weak machines, Lite CPU/WASM uses one bounded pass; WebGPU is used only after a real adapter test. The experimental browser LanguageModel API is disabled by default.
+Browser-local weights are **never downloaded on first visit**. The optional **Ativar Neural Local** action now auto-selects the strongest WebLLM tier that fits: **Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B**. A real load/self-test decides whether the tier actually fits. PCs without usable WebGPU remain fully usable through the normal web/provider route instead of being forced to load a multi-GB local model. The small ONNX Qwen path is compatibility/offline fallback only.
 
 ### Model catalog and weight policy
 
 The canonical model map lives in `src/lib/neural-model-catalog.ts`.
 
-| Tier/target | Model | Format | Runtime | License posture |
+| Tier/target | Model | Format | Runtime | Role |
 | --- | --- | --- | --- | --- |
-| Browser Lite | `onnx-community/Qwen2.5-0.5B-Instruct` | ONNX | Transformers.js / ONNX Runtime Web | upstream Apache-2.0 |
-| Browser Smart | `onnx-community/Qwen2.5-1.5B-Instruct` | ONNX | Transformers.js / ONNX Runtime Web | upstream Apache-2.0 |
-| Desktop planned | Qwen2.5-7B-Instruct | GGUF conversion | embedded llama.cpp | Apache-2.0 |
-| Desktop planned | Phi-4-mini-instruct | GGUF conversion | embedded llama.cpp | MIT |
-| Desktop alternative | Mistral-7B-Instruct-v0.3 | GGUF conversion | embedded llama.cpp | Apache-2.0 |
-| Review only | Qwen2.5-3B-Instruct | GGUF conversion | llama.cpp | Qwen Research; review before distribution |
+| WebLLM Lite | `Qwen3-1.7B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | weak-GPU fallback |
+| WebLLM Smart | `Qwen3.5-4B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | default local quality tier |
+| WebLLM Power | `Qwen3-8B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | stronger local tier |
+| Compatibility Lite | `onnx-community/Qwen2.5-0.5B-Instruct` | ONNX | Transformers.js CPU/WASM | emergency/offline compatibility |
+| Compatibility Smart | `onnx-community/Qwen2.5-1.5B-Instruct` | ONNX | Transformers.js | compatibility path |
 
 The web product intentionally does **not** expose 7B as a browser button. A larger model belongs in a future desktop package with embedded llama.cpp and explicit weight installation/download. Skills, retrieval and adaptive memory augment the model; they do not rewrite the foundation weights.
 
 The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
+
+## Autonomous operational learning
+
+Feedback no longer stops at collection. `predict_feedback_events` now feeds a bounded Supabase trigger that aggregates repeated failures into `predict_auto_lessons`.
+
+Current policy:
+- negative/error events update only fixed operational categories;
+- raw arbitrary user/model text is never auto-promoted as a global rule;
+- a lesson self-promotes after the evidence threshold;
+- promoted lessons are injected into server chat, streaming chat and browser-local reasoning;
+- `reports/selfimprove/auto-learning.json` is the auditable aggregate snapshot;
+- a scheduled workflow refreshes the snapshot every six hours and runs tests/build before committing it.
+
+At the 2026-09-26 migration, historical feedback immediately produced three promoted lessons covering media reliability, chat relevance and chat failure recovery.
 
 ## Build
 
