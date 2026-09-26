@@ -1,4 +1,5 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { jevRouteDecision } from '@/lib/jev-policy';
 
 export type ProviderProtocol='openai'|'anthropic';
 export interface ProviderSpec{
@@ -42,7 +43,7 @@ export function configuredProviders(){
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
       key:gatewayKey,
-      model:process.env.AI_GATEWAY_MODEL||'anthropic/claude-sonnet-4.6'
+      model:process.env.AI_GATEWAY_MODEL||'google/gemini-3.8-flash'
     });
   }
   if(process.env.OPENAI_API_KEY){
@@ -139,8 +140,19 @@ function modelBonus(model:string,task:TaskClass){
 export function rankProviders(prompt:string,deep=false){
   const providers=rankHealthyProviders(configuredProviders().filter(provider=>!isAuxiliaryLocalProvider(provider)));
   const task=taskClass(prompt,deep);
+  const route=jevRouteDecision(prompt,{deep,hasTools:task==='code'||task==='research',build:task==='code'&&/\b(build|implemente|corrija|refator|deploy|app|site|sistema)\b/i.test(prompt),research:task==='research'});
   return providers
-    .map((provider,index)=>({provider,index,score:modelBonus(provider.model,task)-index*0.15}))
+    .map((provider,index)=>{
+      let score=modelBonus(provider.model,task)-index*0.12;
+      const m=provider.model.toLowerCase();
+      if(route.tier==='strong'||route.tier==='long'){
+        if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))score+=24;
+        if(/mini|lite|free|haiku|luna/.test(m))score-=12;
+      }else if(route.tier==='fast'){
+        if(/flash|luna|mini|lite|haiku/.test(m))score+=8;
+      }
+      return {provider,index,score};
+    })
     .sort((a,b)=>b.score-a.score)
     .map(x=>x.provider);
 }
