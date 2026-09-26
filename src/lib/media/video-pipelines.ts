@@ -1,5 +1,6 @@
 import { compactText } from '@/lib/token-budget';
 import {mediaContinuityContext} from '@/lib/media/continuity-tracker';
+import {unityFabricContext} from '@/lib/unity-fabric';
 
 export type MediaPipelinePattern={
   id:string;
@@ -101,6 +102,9 @@ export function buildGenerativeVideoPrompt(input:{
     style:input.style,
     aspect:input.aspect
   });
+  const unitySceneGuidance=/\b(unity|gameplay|game|jogo|voxel|3d|camera|câmera|cinematic|cinemático)\b/i.test(input.prompt)
+    ? unityFabricContext()
+    : '';
   const pieces=[
     subject,
     'Generate one coherent real moving video clip, not a slideshow, not a still image with pan/zoom, and not a sequence of unrelated frames.',
@@ -111,6 +115,7 @@ export function buildGenerativeVideoPrompt(input:{
     'Specify camera position and motion only when it improves the shot; avoid impossible camera teleportation and abrupt scene cuts unless explicitly requested.',
     'For dialogue/audio requests, include dialogue, SFX and ambience as explicit audio cues. Otherwise prefer natural synchronized ambience.',
     continuity,
+    unitySceneGuidance,
     brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
     research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
   ].filter(Boolean);
