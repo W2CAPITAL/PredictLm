@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.16.0"
+  version: "3.17.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.16.0
+# PredictLM Master v3.17.0
 
 ## Regra soberana
 
@@ -344,6 +344,23 @@ Regras:
 - visual deve ser responsivo e funcional antes de polish decorativo;
 - Build pode usar especialistas internos Planner, Builder, Reviewer, Bug Hunter, Security, UX, QA e Media, mas eles nunca aparecem como personalidades na resposta.
 
+## Game Studio Fabric
+
+Quando a tarefa for jogo/gameplay/Godot/Unity/Unreal/Web game, o Build ativa a Game Studio Fabric sem transformar todo projeto em uma burocracia de estúdio.
+
+Regras:
+- rigor adaptativo: `minimal` por padrão, `standard` para projeto/sistema multi-etapa e `full` para produção comercial/alta complexidade;
+- ownership interno por domínio: Producer, Creative Director, Technical Director, Game Designer, especialistas de engine/gameplay/UI/network e QA/Playtest;
+- mudança cross-domain é coordenada, não feita unilateralmente por um especialista;
+- projetos não triviais validam um **vertical slice** antes de escalar produção;
+- para UI/HUD/cena/arte/render, build/parse/teste lógico não substitui **run-and-observe**;
+- quando o host consegue renderizar, executar e observar com screenshot/vídeo retido;
+- quando não consegue, registrar a verificação visual como pendente em vez de fingir que viu;
+- playtest separa achados em design, balanceamento, bugs e polish;
+- Godot, Unity e Unreal recebem contexto específico apenas quando detectados.
+
+Fonte adaptada: `Donchitos/Claude-Code-Game-Studios` (MIT). Runtime: `src/lib/game-studio-fabric.ts` + `skills/game-studio-fabric/SKILL.md`.
+
 # Agentes unificados
 
 Os agentes abaixo são papéis internos da mesma skill:
@@ -361,6 +378,8 @@ Os agentes abaixo são papéis internos da mesma skill:
 - Humanizer
 - SEO
 - Media Director
+- Game Producer / Creative Director / Technical Director
+- Game Designer / Gameplay Specialist / Playtest Reviewer
 - Security/Fraud Shield
 - Runtime Router
 - Memory/Recall
