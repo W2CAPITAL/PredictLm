@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { conversationAnswerIssue, responseTopicAlignment } from '@/lib/chat-intelligence';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
+import { jevRouteDecision } from '@/lib/jev-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -26,7 +27,7 @@ function serverCanReach(base:string){
   return !(process.env.VERCEL&&loopbackBase(base));
 }
 
-function providerList():Provider[]{
+function providerList(prompt=''):Provider[]{
   const out:Provider[]=[];
   const seen=new Set<string>();
   const push=(provider:Provider)=>{
@@ -113,15 +114,25 @@ function providerList():Provider[]{
     });
   }
 
-  const preferred=(process.env.PREDICTLM_STREAM_PROVIDER_ORDER
-    ||process.env.PREDICTLM_PROVIDER_ORDER
-    ||'freellmapi,groq,vercel-gateway,gemini,deepseek,nvidia,openrouter,openai')
+  const explicit=process.env.PREDICTLM_STREAM_PROVIDER_ORDER||process.env.PREDICTLM_PROVIDER_ORDER;
+  const route=jevRouteDecision(prompt,{hasTools:false});
+  const preferred=(explicit
+    ||'vercel-gateway,gemini,openai,deepseek,nvidia,groq,openrouter,freellmapi')
     .split(',').map(x=>x.trim()).filter(Boolean);
-  const rank=(name:string)=>{
-    const index=preferred.indexOf(name);
-    return index<0?999:index;
+  const rank=(provider:Provider)=>{
+    const index=preferred.indexOf(provider.name);
+    let score=index<0?999:index;
+    if(!explicit){
+      const m=provider.model.toLowerCase();
+      // Quality floor: Predict Auto should not silently downgrade ordinary Chat
+      // below the configured Gemini-class gateway just to save latency/cost.
+      if(provider.name==='vercel-gateway'||/gemini-3\.8-flash/.test(m))score-=20;
+      if((route.tier==='strong'||route.tier==='long')&&/mini|lite|free|luna|haiku/.test(m))score+=30;
+      if(provider.name==='freellmapi')score+=20;
+    }
+    return score;
   };
-  return out.sort((a,b)=>rank(a.name)-rank(b.name));
+  return out.sort((a,b)=>rank(a)-rank(b));
 }
 
 function systemPrompt(language:string,autoLearning=''){
@@ -232,7 +243,9 @@ function emitValidatedAnswer(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const candidates=providerList().slice(0,8);
+  const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
+  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
+  const candidates=providerList(String(prompt)).slice(0,8);
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
@@ -244,8 +257,6 @@ export async function POST(req:NextRequest){
     },{status:503,headers:{'Cache-Control':'no-store'}});
   }
 
-  const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
-  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
   const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
   const messages=safeMessages(body?.messages,language,autoLearning);
 
