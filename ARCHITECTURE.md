@@ -1,4 +1,4 @@
-# PredictLM architecture — v5
+# PredictLM architecture — v6
 
 ## Product surfaces
 
@@ -107,3 +107,58 @@ These are architecture/knowledge references, not vendored copies.
 - **Vercel:** web surface, server routes and static app.
 - **Browser:** preview, local persistence, optional local neural inference.
 - **Desktop/native bridge (future/optional):** shell, full terminal, filesystem, DaVinci, APK tools and heavyweight local runtimes.
+
+
+## Cognitive architecture
+
+PredictLM's cognitive layer is a software control architecture, not a scientific claim of phenomenal consciousness.
+
+Persistent/inspectable concepts include:
+- self-model and stable entity identity;
+- attention/salience/inhibition;
+- working, episodic, autobiographical and semantic memory;
+- prediction error and confidence;
+- metacognition as uncertainty/contradiction/evidence-demand control;
+- software homeostasis/drives;
+- cognitive workspace/global-broadcast-style coordination;
+- Human/Macaque/Fly reference cores with provenance boundaries.
+
+Evidence classes remain separate:
+1. measured/published neuroscience data;
+2. derived controller behavior;
+3. simulated runtime state;
+4. unresolved/unknown.
+
+No derived or simulated state is promoted to a biological measurement.
+
+## Gated self-improvement
+
+The engineering loop is:
+
+```
+OBSERVE -> VERIFY -> LEARN -> DESIGN -> EXPERIMENT
+        -> ANALYZE -> COMPARE -> PROMOTE
+```
+
+The experiment store should preserve baseline commit, hypothesis, candidate patch, tests/evals, metrics, failures and promotion decision. Candidate-selection techniques may search the engineering space, but they do not grant external autonomous goals or bypass CI/human gates.
+
+Patterns are informed by:
+- GAIR-NLP/ASI-Evolve for evaluation-driven program evolution;
+- MIT-licensed ACI work for memory layering/observability;
+- jasonkresch/bots for bounded evolutionary simulation/fitness;
+- ASI Alliance material for self-audit/failure-mode references.
+
+Repositories that make stronger sentience/consciousness claims are treated as engineering/research references; their labels are not imported as evidence.
+
+## Chat semantic firewall
+
+Normal Chat has a strict boundary before output:
+- current/research tasks may retrieve evidence;
+- ordinary conversation is kept out of broad RAG;
+- retrieval is context, never the final answer by itself;
+- provider drafts must pass semantic alignment;
+- streamed provider output is buffered/validated before public emission;
+- `Relacionado:`, README dumps, skill names and internal context are rejected;
+- captured production failures live in regression tests.
+
+This firewall was introduced after the 2026-09-26 baseline exposed systematic retrieval contamination.
