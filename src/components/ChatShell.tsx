@@ -631,10 +631,19 @@ export function ChatShell({onOpenLegal}:Props){
     const mediaKind=detectChatMediaRequest(prompt);
     const simulationLaunch=detectSimulationLaunchRequest(prompt);
     const reportIntent=detectReportIntent(prompt);
+    const buildIntent=detectBuildRequest(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
+    let cognitiveMeshContext='';
+    try{
+      const previousCognitive=await loadCognitiveState();
+      const nextCognitive=advanceCognitiveWorkspace(previousCognitive,prompt);
+      await saveCognitiveState(nextCognitive);
+      cognitiveMeshContext=cognitivePromptContext(nextCognitive).slice(0,10000);
+    }catch{}
     const brainContext=[
       advanceBrowserDigitalBrainContext(prompt).context,
+      cognitiveMeshContext,
       browserKnowledgeContext(prompt),
       capabilityFusionContext(prompt,'chat')
     ].filter(Boolean).join('\n\n');
@@ -680,7 +689,9 @@ export function ChatShell({onOpenLegal}:Props){
     turnAbort.current=turnController;
     setBusy(true);
     setActivity(
-      processNumber
+      buildIntent
+        ? ['BUILD · usando o projeto atual','JEV ROUTER · escolhendo tier forte','AGENTS · implementando','VERIFY · smoke/Council/review','PACKAGE · ZIP executável']
+        : processNumber
         ? ['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']
         : fraudIntent
           ? ['Classificando sinais de fraude','Verificando links, credenciais e pagamento','Buscando contexto independente quando habilitado','Separando sinal de prova','Preparando triagem defensiva']
@@ -699,6 +710,11 @@ export function ChatShell({onOpenLegal}:Props){
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(buildIntent){
+        await runBuildInsideChat(prompt);
+        return;
+      }
+
       if(isHighRiskIntrusionRequest(prompt)){
         s.addMessage({
           role:'assistant',
