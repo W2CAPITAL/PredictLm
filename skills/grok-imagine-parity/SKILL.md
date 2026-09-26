@@ -501,7 +501,7 @@ Flow:
 
 **generated media → ordered timeline → trim/duration/speed → fit → cut/fade → filter → caption → WebM export**
 
-The default editor path is free and uses browser Canvas + MediaRecorder; no paid API is required. It accepts generated media plus local image/video uploads, exports the edited WebM, and can export project JSON metadata.
+The default editor path is free and uses browser Canvas + MediaRecorder; no paid API is required. It accepts generated media plus local image/video uploads, exports the edited WebM, saves/reopens project JSON, and mixes per-video volume/source audio when the browser exposes a capturable audio track.
 
 Architecture references are license-aware:
 - OpenCut (MIT): editor/timeline/plugin/headless concepts;

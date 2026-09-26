@@ -10,7 +10,8 @@ Capabilities:
 - basic visual filters;
 - natural caption overlay;
 - WebM export with MediaRecorder;
-- JSON project export for resumable edits.
+- JSON project export and import for resumable edits;
+- per-video volume and best-effort source-audio preservation when the browser exposes an audio track.
 
 Reference projects:
 - OpenCut (MIT): editor, timeline, plugin and headless architecture;

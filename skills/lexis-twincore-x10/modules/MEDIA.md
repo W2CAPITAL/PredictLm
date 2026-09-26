@@ -116,8 +116,8 @@ No Vercel, `localhost` do usuário não é alcançável. ComfyUI local requer de
 
 ### Imagine browser editor
 
-PredictLM now has a free post-production editor embedded in Imagine. Generated image/video can be placed on an ordered local timeline with trim, image duration, playback speed, cover/contain fit, cut/fade transitions, basic filters and a caption overlay. Export uses Canvas + MediaRecorder to WebM in the browser and project metadata can be saved as JSON.
+PredictLM now has a free post-production editor embedded in Imagine. Generated image/video can be placed on an ordered local timeline with trim, image duration, playback speed, cover/contain fit, cut/fade transitions, basic filters and a caption overlay. Export uses Canvas + MediaRecorder to WebM in the browser, project JSON can be saved/reopened, and per-video volume/source audio is mixed when the browser exposes a capturable audio track.
 
-This layer is editing, not neural generation. It does not claim to replace temporal generation providers, and the current browser renderer does not mix source audio into the local export.
+This layer is editing, not neural generation. It does not claim to replace temporal generation providers. Audio preservation is best-effort: unsupported/CORS-blocked tracks degrade to silent video rather than breaking export.
 
 Reference policy: OpenCut/openreel/capcut-cli/capcut-mate contribute compatible architecture patterns according to their licenses; ArcReel remains reference-only because of AGPL obligations.
