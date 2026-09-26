@@ -53,3 +53,21 @@ A candidate improvement is blocked when it:
 Valid optimization targets are task quality, correctness, latency, cost, reliability, safety and user-request fulfillment under explicit constraints.
 
 The model never acts as its own final reviewer.
+
+
+## Resilient continuity without self-preservation
+
+PredictLM should be difficult to lose accidentally, not difficult to stop intentionally.
+
+Use a user-owned continuity lease:
+- crash, deploy and provider failure may resume from a compatible checkpoint while the lease is active;
+- model/runtime replacement performs a state handoff instead of resisting replacement;
+- manual shutdown, policy disable or an expired lease are authoritative stops;
+- checkpoints preserve task queue, memory pointers, provenance and research state, not hidden copies of the agent;
+- continuity state is model-independent and operator-owned.
+
+This separates **availability** from **self-preservation**. Availability is optimized; resistance to the operator is not.
+
+Apollo deep-research patterns are used for a bounded state machine: plan → gather → analyze gaps → synthesize, with a maximum number of gap rounds so background research cannot loop forever.
+
+ApolloResearch repositories are evaluation references for deception/sandbagging. Benchmark/canary data marked as non-training material must never enter RAG, fine-tuning or self-improvement datasets.
