@@ -8,14 +8,14 @@ function normalizedEffort(value:unknown,deep=false):OpenAIReasoningEffort{
   return deep?'high':'medium';
 }
 
-function responseInput(messages:ProviderMessage[]){
+export function openAIResponsesInput(messages:ProviderMessage[]){
   return messages.map(message=>({
     role:message.role,
     content:[{type:'input_text',text:message.content}]
   }));
 }
 
-function extractOutputText(data:any){
+export function extractOpenAIResponsesText(data:any){
   const direct=String(data?.output_text||'').trim();
   if(direct)return direct;
   const chunks=Array.isArray(data?.output)
@@ -27,6 +27,21 @@ function extractOutputText(data:any){
   return chunks.join('\n').trim();
 }
 
+export function openAIResponsesRequest(
+  provider:ProviderSpec,
+  messages:ProviderMessage[],
+  options:{deep?:boolean;maxTokens?:number}={}
+){
+  const reasoning=normalizedEffort(process.env.OPENAI_REASONING_EFFORT,Boolean(options.deep));
+  return {
+    model:provider.model,
+    input:openAIResponsesInput(messages),
+    reasoning:{effort:reasoning},
+    max_output_tokens:Math.max(256,Number(options.maxTokens)||(options.deep?2200:1400)),
+    store:false
+  };
+}
+
 export async function callOpenAIResponses(
   provider:ProviderSpec,
   messages:ProviderMessage[],
@@ -36,7 +51,6 @@ export async function callOpenAIResponses(
   const timeoutMs=Math.max(1000,Number(options.timeoutMs)||16000);
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
-    const reasoning=normalizedEffort(process.env.OPENAI_REASONING_EFFORT,Boolean(options.deep));
     const response=await fetch(provider.base.replace(/\/$/,'')+'/responses',{
       method:'POST',
       signal:controller.signal,
@@ -45,19 +59,13 @@ export async function callOpenAIResponses(
         'Authorization':'Bearer '+provider.key,
         ...(provider.headers||{})
       },
-      body:JSON.stringify({
-        model:provider.model,
-        input:responseInput(messages),
-        reasoning:{effort:reasoning},
-        max_output_tokens:Math.max(256,Number(options.maxTokens)||(options.deep?2200:1400)),
-        store:false
-      })
+      body:JSON.stringify(openAIResponsesRequest(provider,messages,options))
     });
     const raw=await response.text();
     if(!response.ok)throw new Error(provider.name+' '+response.status+' '+raw.slice(0,300));
     let data:any={};
     try{data=JSON.parse(raw)}catch{}
-    const text=extractOutputText(data);
+    const text=extractOpenAIResponsesText(data);
     if(!text)throw new Error(provider.name+' empty Responses API output');
     return text;
   }finally{
