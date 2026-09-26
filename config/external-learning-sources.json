@@ -13,7 +13,12 @@
       "name": "Ciência Todo Dia",
       "url": "https://www.youtube.com/@CienciaTodoDia",
       "mode": "public-metadata",
-      "domains": ["science","physics","astronomy","scientific-literacy"],
+      "domains": [
+        "science",
+        "physics",
+        "astronomy",
+        "scientific-literacy"
+      ],
       "searchHint": "site:youtube.com/@CienciaTodoDia",
       "note": "Official verified channel. Use as complementary science explainer source; cross-check claims with primary/academic sources for high-stakes or disputed topics."
     },
@@ -23,7 +28,13 @@
       "name": "LinkedIn Learning",
       "url": "https://www.linkedin.com/learning",
       "mode": "user-authorized",
-      "domains": ["technology","business","creative","career","learning"],
+      "domains": [
+        "technology",
+        "business",
+        "creative",
+        "career",
+        "learning"
+      ],
       "searchHint": "site:linkedin.com/learning",
       "note": "Course discovery/metadata may be used. Full course videos/materials are protected; ingest only user-provided or otherwise authorized notes/transcript excerpts."
     },
@@ -33,8 +44,27 @@
       "name": "Project Gutenberg / GITenberg",
       "url": "https://www.gutenberg.org/",
       "mode": "work-by-work-rights-check",
-      "domains": ["books","public-domain","history","literature"],
+      "domains": [
+        "books",
+        "public-domain",
+        "history",
+        "literature"
+      ],
       "note": "Check the specific work and Project Gutenberg terms before indexing or redistributing."
+    },
+    {
+      "id": "user-video-vcehvw-onha",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference vceHVwxOnhA",
+      "url": "https://www.youtube.com/watch?v=vceHVwxOnhA",
+      "mode": "public-metadata",
+      "domains": [
+        "self-improvement",
+        "image-generation",
+        "video-generation"
+      ],
+      "searchHint": "vceHVwxOnhA",
+      "note": "User supplied this public video as a learning reference. Until title/description/transcript can be verified, keep it metadata-only; do not invent its contents or mirror a copyrighted transcript. Authorized notes/transcript excerpts may be distilled later."
     }
   ]
 }
