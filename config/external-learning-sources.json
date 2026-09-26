@@ -365,6 +365,38 @@
         "biointelligence"
       ],
       "note": "Published whole-body larval synaptic connectome. Use for distributed segmental/effector organization; runtime state remains synthetic."
+    },
+    {
+      "id": "user-video-evgdz7g0jli",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference EvGDZ7G0jLI",
+      "url": "https://www.youtube.com/watch?v=EvGDZ7G0jLI",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "bioai",
+        "simulation",
+        "agents",
+        "self-improvement"
+      ],
+      "searchHint": "EvGDZ7G0jLI",
+      "note": "User supplied this video to improve the unified BioAI. Public retrieval did not expose reliable title/description/transcript in this pass, so keep metadata-only and do not invent contents."
+    },
+    {
+      "id": "user-video-qqoymtywqku",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference qQoYmTYWqkU",
+      "url": "https://www.youtube.com/watch?v=qQoYmTYWqkU",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "bioai",
+        "simulation",
+        "agents",
+        "learning"
+      ],
+      "searchHint": "qQoYmTYWqkU",
+      "note": "User supplied this video to improve the unified BioAI. Public retrieval did not expose reliable title/description/transcript in this pass, so keep metadata-only and do not invent contents."
     }
   ]
 }
