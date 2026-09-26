@@ -263,6 +263,9 @@
       "CODIGO",
       "PENDENCIAS",
       "AUDITORIA"
-    ]
+    ],
+    "mode": "public-csv-import",
+    "baseUrl": "https://raw.githubusercontent.com/W2CAPITAL/PredictLm/continuous-learning/learning-data",
+    "credentialsRequired": false
   }
 }
