@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.3.0"
+  version: "3.4.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.2
+# PredictLM Digital Brain / NeuroCore v3.4
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -201,3 +201,37 @@ O cérebro cognitivo pode modular:
 - disciplina de fidelidade.
 
 Para personagens/identidades específicas, criatividade só começa **depois** do identity lock. Human Core atua como crítico de execução/fidelidade; Macaque visual hierarchy/PFC/claustrum podem informar composição; novelty do Organism Engine pode variar enquadramento e atmosfera. Nenhum desses sinais pode trocar identidade, anatomia canônica, traje, cores, número de personagens, forma/poder ou ação pedida.
+
+
+## Scientific truth contract v3.4
+
+A proposta do Cognitive Lab é usar neurociência computacional **de verdade**, com separação explícita entre evidência e simulação.
+
+Quatro classes obrigatórias:
+
+1. **MEASURED / PUBLISHED DATA**
+   - metadados, escalas, regiões, cell types, projectomes e subconjuntos de arestas vindos de datasets/papers identificados;
+   - exemplos: FlyWire FAFB v783, H01 e atlas cortical macaque.
+
+2. **DERIVED CONTROLLER**
+   - parâmetros e dinâmica de software derivados de motifs, organização regional, excitação/inibição, integração e priors publicados;
+   - não são neurônios biológicos executando no navegador.
+
+3. **SIMULATED RUNTIME STATE**
+   - memória do agente, publicThought, objetivo, confiança, emoção funcional, ações, biografia sintética e experiências dentro do sandbox;
+   - nasce no runtime do PredictLM e nunca deve ser atribuída aos organismos/datasets originais.
+
+4. **UNRESOLVED / UNKNOWN**
+   - lacunas sem evidência suficiente permanecem desconhecidas;
+   - não preencher automaticamente um conectoma humano inteiro com macaque, FlyWire ou inferência narrativa.
+
+Regra de produto: **quanto maior a alegação, maior a exigência de proveniência**. O Lab deve preferir “não coberto” a transformar proxy em medição direta.
+
+A UI e respostas do Cognitive Lab devem distinguir:
+- humano direto (H01);
+- proxy de primata (macaque);
+- conectoma de mosca (FlyWire);
+- controlador derivado;
+- estado sintético do runtime.
+
+Isso torna o sistema brain-inspired e data-grounded sem vender simulação como observação biológica.
