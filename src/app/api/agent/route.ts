@@ -120,7 +120,7 @@ function compactFilePayload(files:WorkspaceFile[]){
   return files.map(file=>({
     path:file.path,
     language:file.language,
-    content:file.content.slice(0,18000)
+    content:file.content
   }));
 }
 
@@ -206,7 +206,7 @@ export async function POST(req:Request){
       tests:[]
     };
     const filesToChange=(Array.isArray(architecture?.filesToChange)?architecture.filesToChange:[]).map((x:any)=>String(x));
-    const jevSelection=jevSelectWorkspaceFiles(files,task+' '+filesToChange.join(' '),{maxFiles:18,maxChars:90000});
+    const jevSelection=jevSelectWorkspaceFiles(files,task+' '+filesToChange.join(' '),{maxFiles:18,maxChars:120000});
     const relevant=jevSelection.files.length?jevSelection.files:pickRelevantFiles(files,filesToChange,task);
 
     const implementerSystem=[
