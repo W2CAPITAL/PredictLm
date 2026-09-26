@@ -8,7 +8,6 @@ import { buildProjectScaffold, inferProductRequirements } from './app-scaffolder
 import { inferSaaSBlueprint } from './saas-product-fabric';
 import { inferDomainAppBlueprint } from './domain-engine-fabric';
 import { buildReferencePlaybook } from './build-reference-playbook';
-import { gameStudioPlan } from './game-studio-fabric';
 
 export type BuildPhaseStatus='done'|'skip'|'warn';
 export interface BuildPhase {
@@ -134,30 +133,14 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   const requirements=inferProductRequirements(prompt,String(effectiveIntent));
   const saasBlueprint=inferSaaSBlueprint(prompt,String(effectiveIntent));
   const domainBlueprint=inferDomainAppBlueprint(prompt);
-  const gamePlan=gameStudioPlan(prompt);
   const referencePlaybook=buildReferencePlaybook(prompt,5);
-  const referenceNotes=[
-    ...referencePlaybook.flatMap(item=>item.guidance.slice(0,2).map(g=>item.source+': '+g)),
-    ...(gamePlan.active?[
-      'Game Studio: engine='+gamePlan.engine+', rigor='+gamePlan.rigor,
-      'Game Studio gates: '+gamePlan.gates.join(' · '),
-      'Game Studio evidence: '+gamePlan.evidence.join(' · ')
-    ]:[])
-  ];
+  const referenceNotes=referencePlaybook.flatMap(item=>item.guidance.slice(0,2).map(g=>item.source+': '+g));
   if(referencePlaybook.length){
     phases.push({
       id:'reference-playbook',
       label:'Capability fusion',
       status:'done',
       detail:referencePlaybook.map(x=>x.source).join(', ')
-    });
-  }
-  if(gamePlan.active){
-    phases.push({
-      id:'game-studio',
-      label:'Game Studio Fabric',
-      status:'done',
-      detail:'engine '+gamePlan.engine+' · rigor '+gamePlan.rigor+' · '+gamePlan.gates.join(' · ')
     });
   }
   const tentativePack=buildRunnableProject(merged);
