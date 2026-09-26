@@ -1,4 +1,4 @@
-export type BioSpeciesId='human'|'macaque'|'fly'|'celegans'|'mouse'|'zebrafish';
+export type BioSpeciesId='human'|'macaque'|'fly'|'celegans'|'mouse'|'zebrafish'|'ciona'|'platynereis';
 
 export type EvidenceClass='measured'|'published'|'derived-controller'|'simulated-runtime'|'unresolved';
 
@@ -129,6 +129,24 @@ export const BIO_BRAIN_SOURCES:BioBrainSource[]=[
     scope:'whole-brain larval EM volume with queryable synapses and reconstructed validated circuits',
     source:'Svara et al., Nature Methods 2022; mapzebrain/Z-Brain references',
     notes:'Whole-brain imaging resource does not mean every neuron/synapse has been fully proofread or functionally characterized.'
+  },
+  {
+    id:'ciona-cns-2016',
+    species:'ciona',
+    label:'Ciona intestinalis larval CNS connectome',
+    evidence:'published',
+    scope:'full synaptic connectome of one tadpole larva CNS with 177 neurons and neuromuscular outputs',
+    source:'Ryan, Lu & Meinertzhagen, eLife 2016',
+    notes:'Small chordate CNS useful for asymmetry, sensory relay and compact brain-to-motor organization; one larval specimen is not a universal species brain.'
+  },
+  {
+    id:'platynereis-whole-body-2025',
+    species:'platynereis',
+    label:'Platynereis dumerilii whole-body larval connectome',
+    evidence:'published',
+    scope:'whole-body synaptic connectome of a 3-day segmented annelid larva with nervous system and effectors',
+    source:'Veraszto et al., eLife 2025; JekelyLab public data/code reference',
+    notes:'Useful for distributed whole-body coordination, multimodal effectors and segmental control; software controller only.'
   }
 ];
 
@@ -229,6 +247,32 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       prediction:clamp(.46+b.uncertainty*.2),
       weight:.68,
       rationale:'brain-wide sensorimotor mapping and visually grounded circuit reconstruction'
+    },
+    {
+      species:'ciona',
+      attention:clamp(.4+b.salience*.3),
+      novelty:clamp(.32+b.novelty*.24),
+      memory:clamp(.3+b.salience*.16),
+      inhibition:clamp(.34+b.uncertainty*.18),
+      action:clamp(.62+(actionish ? .18 : .08)),
+      sensory:clamp(.68+(simulation ? .14 : 0)),
+      social:.08,
+      prediction:clamp(.34+b.uncertainty*.18),
+      weight:.58,
+      rationale:'compact chordate sensory relay, left-right asymmetry and brain-to-motor organization'
+    },
+    {
+      species:'platynereis',
+      attention:clamp(.38+b.salience*.32),
+      novelty:clamp(.42+b.novelty*.28),
+      memory:clamp(.32+b.salience*.18),
+      inhibition:clamp(.36+b.uncertainty*.16),
+      action:clamp(.64+(actionish ? .18 : .08)),
+      sensory:clamp(.7+(simulation ? .14 : 0)),
+      social:.12,
+      prediction:clamp(.4+b.uncertainty*.18),
+      weight:.6,
+      rationale:'whole-body multisensory integration, segmental coordination and distributed effector control'
     }
   ];
 }
@@ -271,7 +315,7 @@ export function createBioIntelligenceState():BioIntelligenceState{
     version:1,
     experiences:0,
     lastUpdated:Date.now(),
-    speciesUse:{human:0,macaque:0,fly:0,celegans:0,mouse:0,zebrafish:0},
+    speciesUse:{human:0,macaque:0,fly:0,celegans:0,mouse:0,zebrafish:0,ciona:0,platynereis:0},
     recent:[]
   };
 }
