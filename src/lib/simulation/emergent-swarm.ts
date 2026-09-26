@@ -71,7 +71,7 @@ export function simulateEmergentSwarm(state:LifeSimulationState,size=12):Emergen
   const counts=new Map<EmergentAgent['policy'],number>();
   for(const a of agents)counts.set(a.policy,(counts.get(a.policy)||0)+1);
   const dominantPolicy=[...counts.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]||'explore';
-  const diversity=counts.size/counts.size?Math.round((counts.size/4)*100):0;
+  const diversity=counts.size?Math.round((counts.size/4)*100):0;
   return {
     generation:Math.floor(state.tick/12)+1,
     agents:agents.sort((a,b)=>b.fitness-a.fitness),
