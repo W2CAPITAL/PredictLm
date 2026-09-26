@@ -1,5 +1,6 @@
 import { advanceNeuroState, createNeuroState, type NeuroState } from './neurocore';
 import { ENTITY_SELF_MODEL } from './entity-self-model';
+import { emitAppLearningEvent } from './app-learning';
 
 export type LifeLocation='Casa'|'Trabalho'|'Café'|'Parque'|'Mercado'|'Clínica'|'Biblioteca';
 
@@ -241,6 +242,7 @@ function addMemory(state:LifeSimulationState,summary:string,kind:LifeMemory['kin
 }
 
 export function applySimulationInstruction(state:LifeSimulationState,instruction:string){
+  emitAppLearningEvent({surface:'simulation/life',action:'instruction',kind:'simulation',success:true,novelty:.58,salience:.66,metadata:{tick:state.tick,location:state.person.location}});
   const q=norm(instruction);
   let next={...state,person:{...state.person},memories:[...state.memories]};
   const name=instruction.match(/(?:nome|chama(?:da)?|personagem)\s*(?:é|e|:)?\s*([A-Za-zÀ-ÿ]{2,24})/i)?.[1];
@@ -329,6 +331,16 @@ export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDe
     'social '+state.needs.social
   ].join(' · '));
 
+  emitAppLearningEvent({
+    surface:'simulation/life',
+    action:'step '+state.person.currentAction,
+    kind:'simulation',
+    success:true,
+    novelty:state.lastEvent===state.person.currentAction+' · '+formatTime(state.minute)?.36:.7,
+    uncertainty:state.neuro.uncertainty,
+    salience:Math.min(1,.42+state.needs.stress/180+(evt?.salience||0)*.32),
+    metadata:{tick:state.tick,day:state.day,minute:state.minute,location:state.person.location,mood:state.person.mood}
+  });
   return state;
 }
 
@@ -417,6 +429,7 @@ export function simulateLifeScenarios(
   instruction:string,
   options?:{deep?:boolean}
 ):LifeScenarioResult[]{
+  emitAppLearningEvent({surface:'simulation/life',action:'counterfactual-scenarios',kind:'simulation',success:true,novelty:.82,salience:.72,metadata:{tick:state.tick,deep:options?.deep!==false}});
   const deep=options?.deep!==false;
   const scenarios:LifeScenarioResult[]=[
     runScenarioTrajectory(state,instruction,{
