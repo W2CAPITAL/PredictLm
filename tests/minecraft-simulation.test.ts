@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   ALL_MINECRAFT_SIM_REFERENCES,
   MINECRAFT_DUNGEONS_SECONDARY,
@@ -90,4 +92,28 @@ test('Game Studio local voxel plan mutates the real world state instead of narra
   assert.notEqual(executed.state.player.x,world.player.x);
   assert.ok(executed.state.stats.distance>world.stats.distance);
   assert.ok(executed.records.some(x=>x.action.type==='move'&&x.ok));
+});
+
+
+test('GitHub knowledge config contains every Minecraft clone, Dungeons secondary reference and UnEngine',()=>{
+  const config=JSON.parse(fs.readFileSync(path.resolve('config/github-knowledge-sources.json'),'utf8'));
+  const sources=new Map((config.sources||[]).map((x:any)=>[x.repo,x]));
+  const expected=[
+    'fogleman/Craft',
+    'dgreenheck/minecraft-threejs-clone',
+    '0xfabian/mc',
+    'pquiring/jfcraft',
+    'obiwac/python-minecraft-clone',
+    'Aidanhouk/Minecraft-Clone',
+    'zardoy/minecraft-web-client',
+    'zardoy/mcraft-arwes',
+    'JEFFY1234599/block-craft-browser-edition',
+    'TheDoctor200/MinecraftDungeonsLauncher',
+    'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',
+    'jbruening/UnEngine'
+  ];
+  for(const repo of expected)assert.ok(sources.has(repo),'missing knowledge source '+repo);
+  assert.equal((sources.get('TheDoctor200/MinecraftDungeonsLauncher') as any)?.mode,'reference-only');
+  assert.equal((sources.get('GuyRoosevelt/Minecraft-Dungeons-The-Awakening') as any)?.mode,'allow');
+  assert.equal((sources.get('jbruening/UnEngine') as any)?.mode,'allow');
 });
