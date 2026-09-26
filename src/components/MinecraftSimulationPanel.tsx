@@ -288,7 +288,7 @@ export function MinecraftSimulationPanel(){
   function placeAt(x:number,y:number,z:number){
     const result=placeVoxelBlock(world,x,y,z,selected);
     setWorld(result.state);setMessage(result.message);
-    emitAppLearningEvent({surface:'simulation/voxel',action:'place '+selected,kind:'simulation',success:result.ok,novelty:.52,salience:result.ok?.55:.8});
+    emitAppLearningEvent({surface:'simulation/voxel',action:'place '+selected,kind:'simulation',success:result.ok,novelty:.52,salience:result.ok ? .55 : .8});
   }
 
   function handleCanvasClick(e:React.MouseEvent<HTMLCanvasElement>){
