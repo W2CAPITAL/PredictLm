@@ -134,7 +134,7 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     transport:'webllm',
     optional:true,
     hardware:'WebGPU browser · GPU accelerated',
-    note:'Primary browser-local accelerator. Predict Auto auto-selects Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B according to hardware and falls back cleanly if the model does not fit.'
+    note:'Primary browser-local accelerator. Predict Auto auto-selects Qwen3.5 9B → Qwen3.5 4B → Qwen3 1.7B according to hardware and falls back cleanly if the model does not fit.'
   },
   {
     id:'freellmapi',
