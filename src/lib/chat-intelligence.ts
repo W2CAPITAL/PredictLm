@@ -604,7 +604,10 @@ export function responseTopicAlignment(prompt:string,content:string){
 
   // Generative/transformative requests often produce correct outputs without
   // repeating command words or even the original topic literally.
-  const generative=/^(?:escreva|redija|crie|gere|invente|imagine|traduza|reescreva|reformule|resuma|corrija|melhore|transforme|continue|complete|fa[cç]a)\b/.test(p);
+  const generative=/^(?:escreva|redija|invente|imagine|traduza|reescreva|reformule|resuma|corrija|melhore|transforme|continue|complete)\b/.test(p);
+  // Creation/action verbs such as "crie", "gere" and "faça" are NOT exempt
+  // from topical validation. A previous shortcut accepted any long text for
+  // prompts like "crie uma conta no GitHub", allowing unrelated RAG dumps.
   if(generative&&c.length>=20)return {relevant:true,score:1,subject:[] as string[]};
 
   // Direct Q&A and arithmetic may be correct precisely because the answer
@@ -623,6 +626,9 @@ export function responseTopicAlignment(prompt:string,content:string){
 
   const subject=p.split(/[^a-z0-9]+/).filter(x=>x.length>=3&&!TOPIC_STOPWORDS.has(x));
   if(!subject.length)return {relevant:true,score:1,subject:[] as string[]};
+  if(/\bfill?ers?\b/.test(p)&&!/\bfill?ers?\b/.test(c)){
+    return {relevant:false,score:0,subject};
+  }
   let hits=0;
   for(const token of subject){
     const variants=TOPIC_SYNONYMS[token]||[token];
