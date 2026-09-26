@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.15.3",
+  "version": "3.17.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -40,7 +40,18 @@
     "fly-core",
     "human-core-h01",
     "macaque-core",
-    "report-architect"
+    "report-architect",
+    "capability-fusion",
+    "game-studio-fabric",
+    "game-studio-rigor",
+    "game-studio-role-routing",
+    "vertical-slice-gate",
+    "run-and-observe-visual-qa",
+    "playtest-evidence",
+    "godot-unity-unreal-specialists",
+    "comfyui-image-workflow",
+    "comfyui-video-workflow",
+    "firecrawl-research-adapter"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
@@ -115,7 +126,9 @@
     "media-pipelines",
     "cognitive-lab",
     "macaque-core",
-    "report-architect"
+    "report-architect",
+    "capability-fusion",
+    "game-studio-fabric"
   ],
   "legacySkillsAreInternal": true,
   "connectomeCores": {
@@ -130,7 +143,8 @@
     "references/DATAJUD-NEURAL-MESH.md",
     "references/NEUROCORE-CORES.md",
     "references/RELATORIOS-DOSSIES.md",
-    "references/RUNTIME-FEDERATION.md"
+    "references/RUNTIME-FEDERATION.md",
+    "references/CAPABILITY-FUSION.md"
   ],
   "releaseGates": {
     "simulationLiveness": "macaque/fly timers, cooldowns, anti-stall, real object registry, multi-tick actions",
@@ -141,6 +155,8 @@
     "cleanSimpleChat": "simple stable turns do not inject unrelated GitHub/RAG sources; knowledge:false is a hard boundary",
     "characterReferenceRuntime": "named characters use actual image-input models for automatic references and multimodal semantic review",
     "observableVisualGrounding": "multi-query character search, bounded recovery, real reference download, optional VLM screening, generation/reviewer telemetry, rejected candidates remain inspectable but unsaved",
-    "animeCharacterCatalogGrounding": "AniList character identity resolution precedes web-image search; franchise-aware disambiguation; no streaming/torrent integration"
+    "animeCharacterCatalogGrounding": "AniList character identity resolution precedes web-image search; franchise-aware disambiguation; no streaming/torrent integration",
+    "gameStudioVisualProof": "player-visible game changes require run-and-observe evidence when renderable; otherwise explicit NOT VERIFIED gap",
+    "verticalSlice": "non-trivial game projects validate a representative end-to-end slice before broad production scaling"
   }
 }
