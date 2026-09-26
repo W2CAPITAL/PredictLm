@@ -5,7 +5,6 @@ import {
   v3,
   type UnitySceneSnapshot
 } from '@/lib/unity-fabric';
-import {chooseBioAIVoxelGoal} from '@/lib/bioai';
 
 export const VOXEL_CHUNK_SIZE=16;
 export const VOXEL_WORLD_HEIGHT=128;
