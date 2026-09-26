@@ -75,7 +75,7 @@ export function stepVoxelBioAI(state:VoxelWorldState):VoxelWorldState{
       ...agent,
       goal,
       tick:agent.tick+1,
-      hunger:clamp(agent.hunger-(agent.tick%18===0?.18:0))
+      hunger:clamp(agent.hunger-(agent.tick%18===0 ? .18 : 0))
     }
   };
   next.bioAI.hunger=clamp(agent.hunger-(agent.tick%18===0 ? .18 : 0));
