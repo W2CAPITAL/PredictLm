@@ -106,7 +106,10 @@ Nunca alegar que o modelo local estava processando com o dispositivo desligado.
 
 ## Google Sheets
 
-A planilha online usa estas abas:
+O caminho padrão é zero-secret: o workflow publica sete CSVs na branch pública
+`continuous-learning`, e a planilha online os consome com `IMPORTDATA`.
+
+Abas:
 - APRENDIZADO
 - FONTES
 - GITHUB
@@ -115,8 +118,9 @@ A planilha online usa estas abas:
 - PENDENCIAS
 - AUDITORIA
 
-Credenciais ficam exclusivamente em GitHub Secrets. Nunca colocar chave privada ou ID
-sensível no bundle client-side.
+Não é necessário colocar credenciais do Google no GitHub para esse espelho. O writer
+direto por service account existe apenas como opção para instalações que quiserem
+gravação direta em vez do espelho CSV.
 
 ## Auditoria
 
