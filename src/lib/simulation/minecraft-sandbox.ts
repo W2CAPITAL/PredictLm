@@ -137,10 +137,14 @@ export const CRAFT_RECIPES:CraftRecipe[]=[
   {id:'wood_pickaxe',label:'Picareta de madeira',input:{planks:3,stick:2},output:{wood_pickaxe:1},table:true},
   {id:'stone_pickaxe',label:'Picareta de pedra',input:{cobblestone:3,stick:2},output:{stone_pickaxe:1},table:true},
   {id:'iron_pickaxe',label:'Picareta de ferro',input:{iron_ingot:3,stick:2},output:{iron_pickaxe:1},table:true},
+  {id:'wood_sword',label:'Espada de madeira',input:{planks:2,stick:1},output:{wood_sword:1},table:true},
+  {id:'stone_sword',label:'Espada de pedra',input:{cobblestone:2,stick:1},output:{stone_sword:1},table:true},
+  {id:'iron_sword',label:'Espada de ferro',input:{iron_ingot:2,stick:1},output:{iron_sword:1},table:true},
   {id:'furnace',label:'Fornalha',input:{cobblestone:8},output:{furnace:1},table:true},
   {id:'torch',label:'Tochas',input:{coal:1,stick:1},output:{torch:4}},
   {id:'chest',label:'Baú',input:{planks:8},output:{chest:1},table:true},
-  {id:'bricks',label:'Tijolos',input:{cobblestone:4},output:{bricks:4},table:true}
+  {id:'bricks',label:'Tijolos',input:{cobblestone:4},output:{bricks:4},table:true},
+  {id:'bread',label:'Pão',input:{wheat:3},output:{bread:1},table:false}
 ];
 
 export const SMELT_RECIPES:Record<string,{fuel:number;output:string}>={
@@ -360,10 +364,11 @@ export function mobsForChunk(state:VoxelWorldState,cx:number,cz:number):VoxelMob
     if(daylight)kind=r>.88?'villager':r>.58?'cow':r>.28?'pig':'sheep';
     else kind=r>.82?'spider':r>.45?'skeleton':'zombie';
     const hostile=!daylight&&kind!=='villager';
-    out.push({id:chunkKey(cx,cz,state.player.dimension)+':mob:'+i,kind,x,y,z,health:hostile?20:10,hostile,label:kind.replace('_',' ')});
+    const id=chunkKey(cx,cz,state.player.dimension)+':mob:'+i;
+    if(!state.discoveries[id+':defeated'])out.push({id,kind,x,y,z,health:hostile?20:10,hostile,label:kind.replace('_',' ')});
   }
   for(const structure of structureForChunk(state,cx,cz)){
-    if(structure.kind==='dungeon'){
+    if(structure.kind==='dungeon'&&!state.discoveries[structure.id+':guard:defeated']){
       out.push({id:structure.id+':guard',kind:'dungeon_guard',x:structure.x,y:terrainHeight(state.seed,structure.x,structure.z)+1,z:structure.z,health:34,hostile:true,label:'Guardião da masmorra'});
     }
   }
@@ -510,7 +515,15 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     if(mob.kind==='spider')inventory=addItem(inventory,'string',1);
     if(['cow','pig','sheep'].includes(mob.kind))inventory=addItem(inventory,'food',1);
     if(mob.kind==='dungeon_guard'||mob.kind==='boss')inventory=addItem(inventory,'emerald',2+Math.floor(hash2(state.seed,state.tick,mob.id.length,520)*5));
-    next={...next,inventory,stats:{...next.stats,mobsDefeated:next.stats.mobsDefeated+1},player:{...next.player,experience:next.player.experience+5}};
+    const experience=next.player.experience+5;
+    const level=Math.max(next.player.level,Math.floor(experience/20));
+    next={
+      ...next,
+      inventory,
+      discoveries:{...next.discoveries,[mob.id+':defeated']:true},
+      stats:{...next.stats,mobsDefeated:next.stats.mobsDefeated+1},
+      player:{...next.player,experience,level}
+    };
     next=withEvent(next,'combat','Derrotou '+mob.label+'.');
     return{state:next,ok:true,message:'Derrotou '+mob.label+'.'};
   }
@@ -537,6 +550,30 @@ export function raidVoxelDungeon(state:VoxelWorldState,structure:VoxelStructure)
   };
   next=withEvent(next,'dungeon','Concluiu '+structure.label+' e abriu o baú de recompensa.');
   return{state:next,ok:true,message:'Masmorra concluída; saque adicionado ao inventário.'};
+}
+
+export function eatVoxelFood(state:VoxelWorldState,item='food'){
+  const value=item==='bread'?6:item==='food'?5:item==='rotten_flesh'?2:0;
+  if(value<=0)return{state,ok:false,message:'Esse item não é comida.'};
+  if((state.inventory[item]||0)<1)return{state,ok:false,message:'Comida indisponível.'};
+  const inventory=addItem(state.inventory,item,-1);
+  const hunger=clamp(state.player.hunger+value,0,20);
+  const next=withEvent({...state,inventory,player:{...state.player,hunger}},'eat','Comeu '+item+'; fome '+Math.round(hunger*10)/10+'/20.');
+  return{state:next,ok:true,message:'Fome recuperada.'};
+}
+
+export function farmVoxelBlock(state:VoxelWorldState,x:number,z:number,plant=false){
+  const surface=surfaceAt(state,x,z);
+  if(plant){
+    if(surface.block!=='farmland')return{state,ok:false,message:'É preciso terra arada para plantar.'};
+    if((state.inventory.wheat_seed||0)<1&&state.player.mode!=='creative')return{state,ok:false,message:'Sem sementes.'};
+    const inventory=state.player.mode==='creative'?state.inventory:addItem(state.inventory,'wheat_seed',-1);
+    const modifications={...state.modifications,[key(surface.x,surface.y+1,surface.z,state.player.dimension)]:'wheat' as VoxelBlockId};
+    return{state:withEvent({...state,inventory,modifications},'farm','Plantou trigo.'),ok:true,message:'Trigo plantado.'};
+  }
+  if(surface.block!=='grass'&&surface.block!=='dirt')return{state,ok:false,message:'Só grama/terra pode ser arada.'};
+  const modifications={...state.modifications,[key(surface.x,surface.y,surface.z,state.player.dimension)]:'farmland' as VoxelBlockId};
+  return{state:withEvent({...state,modifications},'farm','Preparou terra arada.'),ok:true,message:'Terra arada.'};
 }
 
 export function setVoxelMode(state:VoxelWorldState,mode:'survival'|'creative'){
