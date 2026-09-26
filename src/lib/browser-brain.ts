@@ -62,6 +62,29 @@ function parseMath(input:string){
   return deterministicMathResult(input)?.value??null;
 }
 
+const autoLearningCache=new Map<string,{expires:number,context:string}>();
+
+async function runtimeAutoLearningContextClient(prompt:string){
+  if(typeof window==='undefined'||typeof fetch!=='function')return '';
+  const key=prompt.toLowerCase().replace(/\s+/g,' ').trim().slice(0,500);
+  const cached=autoLearningCache.get(key);
+  if(cached&&cached.expires>Date.now())return cached.context;
+  try{
+    const controller=new AbortController();
+    const timer=window.setTimeout(()=>controller.abort(),1800);
+    const r=await fetch('/api/learning/runtime?q='+encodeURIComponent(prompt.slice(0,1500))+'&surface=chat',{
+      signal:controller.signal,
+      cache:'no-store'
+    });
+    window.clearTimeout(timer);
+    if(!r.ok)return '';
+    const data=await r.json();
+    const context=String(data?.context||'').slice(0,2600);
+    autoLearningCache.set(key,{expires:Date.now()+60_000,context});
+    return context;
+  }catch{return ''}
+}
+
 export function browserCapabilities(){
   const native=process.env.NEXT_PUBLIC_PREDICT_NATIVE_LANGUAGE_MODEL==='1'&&!!(typeof window!=='undefined'&&(window.LanguageModel||window.ai?.languageModel));
   const webgpu=typeof navigator!=='undefined'&&!!(navigator as any).gpu;
@@ -558,6 +581,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
   const learned=adaptiveContext(prompt,4);
   const instructions=adaptiveInstructionContext(8);
   const globalLessons=globalLearningContext(prompt,3);
+  const autoLessons=await runtimeAutoLearningContextClient(prompt);
   const humanLens=humanAdversarialContext(prompt);
   const humanPresence=humanPresenceContext(prompt);
   const masterContext=predictLMMasterContext(prompt,deepMode);
@@ -575,6 +599,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
       {label:'Memória adaptativa local',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Autoaprendizado promovido',text:autoLessons,priority:9},
       {label:'PredictLM Master',text:masterContext,priority:10},
       {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
