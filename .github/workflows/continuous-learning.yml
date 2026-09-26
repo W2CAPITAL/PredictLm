@@ -1,6 +1,13 @@
 name: PredictLM Continuous Learning
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/continuous-learning/**'
+      - 'config/continuous-learning.json'
+      - 'config/github-knowledge-sources.json'
+      - '.github/workflows/continuous-learning.yml'
   schedule:
     - cron: '17 * * * *'
   workflow_dispatch:
