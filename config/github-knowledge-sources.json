@@ -3822,6 +3822,28 @@
         "comparative-connectomics"
       ],
       "reason": "GPL-3.0 research repository for the published Platynereis connectome; keep implementation/data reference-only in the commercial core."
+    },
+    {
+      "repo": "OpenBMB/ChatDev",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/user_guide/en/",
+        "workflow/README.md"
+      ],
+      "domains": [
+        "multi-agent",
+        "orchestration",
+        "workflow",
+        "build",
+        "research",
+        "simulation",
+        "observability"
+      ],
+      "weight": 1.24,
+      "reason": "Apache-2.0 source code. In PredictLM, ChatDev patterns are adapted only as orchestration/observability; all roles share one PredictLM BioAI identity/state. Do not ingest non-commercial datasets/WareHouse artifacts as training data."
     }
   ]
 }
