@@ -79,3 +79,26 @@ Referências arquiteturais:
 - 269652/artificial-consciousness-ai — separação entre memória episódica/autobiográfica/semântica e observabilidade;
 - jasonkresch/bots — seleção/mutação/fitness para simulação controlada;
 - asi-alliance/Max_folio — failure modes/self-audit como referência, sem importar autonomia irrestrita.
+
+
+## Autonomous operational promotion
+
+A partir de 2026-09-26, o loop de feedback possui uma faixa autônoma de baixo risco:
+
+```text
+feedback negativo/erro
+  -> classificação fixa
+  -> contagem de evidências
+  -> confiança
+  -> promoção automática de lição operacional
+  -> Chat / Stream / Browser Brain
+```
+
+Regras:
+- só templates operacionais pré-definidos podem se autopromover;
+- threshold atual: 3 eventos;
+- dados crus do usuário não viram instrução global automaticamente;
+- código executável e pesos do modelo continuam exigindo benchmark/test/build/rollback;
+- o snapshot agregado fica em `reports/selfimprove/auto-learning.json`.
+
+Isso fecha o nível memória/comportamento do autoaprendizado sem abrir auto-modificação irrestrita de produção.
