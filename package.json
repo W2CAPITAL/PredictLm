@@ -15,7 +15,8 @@
     "knowledge:sync": "node scripts/knowledge/sync-github.mjs",
     "learning:sync": "node scripts/learning/sync-global.mjs",
     "test": "node --import tsx --test tests/*.test.ts",
-    "eval:production": "node --import tsx --test tests/production-regressions.test.ts"
+    "eval:production": "node --import tsx --test tests/production-regressions.test.ts",
+    "selfimprove:plan": "node scripts/selfimprove/plan.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.2.1",
