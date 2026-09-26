@@ -294,7 +294,7 @@ function voxelPlanGate(raw:string){
   if(!candidate)return null;
   try{
     const data=JSON.parse(candidate);
-    const allowed=new Set(['move','mine','place','craft','smelt','attack','raid','eat','farm','dimension','wait','set_mode']);
+    const allowed=new Set(['move','mine','place','craft','smelt','attack','trade','raid','eat','farm','dimension','wait','set_mode']);
     const blocks=new Set(['dirt','cobblestone','stone','grass','sand','wood','planks','glass','torch','crafting_table','furnace','chest','farmland','wheat','bricks','obsidian']);
     const dimensions=new Set(['overworld','infernal','void']);
     const modes=new Set(['survival','creative']);
@@ -340,10 +340,10 @@ async function voxelPlanResponse(configured:Provider[],body:any,prompt:string){
     'O mundo é um sandbox Minecraft-class persistente, procedural e efetivamente sem fronteira de gameplay em X/Z. Não escreva narrativa que o motor não consiga executar.',
     'Retorne SOMENTE JSON válido; nunca escreva prosa fora do JSON e nunca exponha chain-of-thought.',
     'Formato: {"objective":"...","summary":"...","actions":[{"type":"move","dx":1,"dz":0,"steps":6,"reason":"explorar"},{"type":"mine"},{"type":"craft","recipe":"planks"}]}',
-    'Ações permitidas: move, mine, place, craft, smelt, attack, raid, eat, farm, dimension, wait, set_mode.',
+    'Ações permitidas: move, mine, place, craft, smelt, attack, trade, raid, eat, farm, dimension, wait, set_mode.',
     'Blocos colocáveis: dirt, cobblestone, stone, grass, sand, wood, planks, glass, torch, crafting_table, furnace, chest, farmland, wheat, bricks, obsidian.',
     'Dimensões: overworld, infernal, void. Modos: survival, creative.',
-    'Regras: no survival respeite inventário e materiais; craft/smelt devem usar itens existentes; raid só faz sentido em dungeon do chunk; attack mira mob próximo; mine/place podem usar coordenadas ou operar perto do jogador.',
+    'Regras: no survival respeite inventário e materiais; craft/smelt devem usar itens existentes; trade requer aldeão próximo e esmeralda; raid só faz sentido em dungeon do chunk; attack mira mob hostil/próximo; mine/place podem usar coordenadas ou operar perto do jogador.',
     'Para construir estruturas, decomponha em poucas ações realmente executáveis; não prometa castelos inteiros em um único place. Para exploração, use move com steps <= 24.',
     'Priorize progresso real: obter recursos → fabricar ferramentas → explorar → construir → lutar → encontrar estruturas/dungeons → sobreviver.',
     'Papéis internos: '+agentPlan.roles.join(' → ')+'.',
