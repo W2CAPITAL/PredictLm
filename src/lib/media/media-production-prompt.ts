@@ -1,4 +1,5 @@
 import { compactText } from '@/lib/token-budget';
+import {bioAiSurfaceDirectives} from '@/lib/bioai';
 
 export type MediaReferenceRole='identity'|'geometry'|'opening-frame'|'ending-frame'|'motion-style'|'audio';
 
@@ -23,7 +24,8 @@ export function imageProductionDirectives(input:{prompt:string;style:string;aspe
     'Use one intentional camera position, readable silhouettes, foreground/midground/background separation and a clear focal hierarchy.',
     'Lighting, materials, anatomy and perspective must agree physically; effects may support the subject but must not hide it.',
     'Do not invent extra characters, logos, props, powers or text. Exact typography/signage should be treated as a separate precision asset unless explicitly required in-frame.',
-    'Style: '+style+'. Aspect/composition target: '+aspect+'.'
+    'Style: '+style+'. Aspect/composition target: '+aspect+'.',
+    bioAiSurfaceDirectives('image',subject)
   ].join(' '),1100);
 }
 
@@ -47,6 +49,7 @@ export function compileVideoProductionPrompt(input:VideoProductionInput){
     'AUDIO: When dialogue is requested keep lines short and explicit; otherwise use synchronized ambience/SFX that match the visible action. Do not invent narration unless asked.',
     'PRECISION TEXT: Treat exact signage/UI/long typography as a separate edit asset when the provider cannot render it reliably.',
     'END STATE: The final frame must clearly show the requested outcome and remain consistent with the opening identity/location.',
+    bioAiSurfaceDirectives('video',subject),
     continuity?('CONTINUITY LEDGER: '+continuity):'',
     director?('DIRECTOR BRIEF: '+director):'',
     research?('RESEARCH NOTES: '+research):'',
