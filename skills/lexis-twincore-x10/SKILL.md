@@ -6,7 +6,7 @@ description: >
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.23.0"
+  version: "5.24.0"
   type: meta-orchestrator
   cores: 2
   council: 10
@@ -14,7 +14,7 @@ metadata:
   superseded_by: predictlm-master
 ---
 
-# LEXIS TwinCore X10 v5.22.0
+# LEXIS TwinCore X10 v5.24.0
 
 ## Relação com PredictLM Master
 TwinCore X10 agora é um subsistema interno da **PredictLM Master**. FORGE, AEGIS, Council X10, Chair, Centum e PARALLAX não competem por controle da resposta pública; todos obedecem ao contrato soberano de `skills/predictlm-master/SKILL.md`.
@@ -189,6 +189,20 @@ Regras:
 
 Se o host tiver escrita em GitHub/filesystem, a TwinCore pode criar branch, editar, testar e abrir PR.
 Se o host não tiver escrita, gera patch completo, changelog e versão proposta; não finge que se atualizou.
+
+## Game Studio Fabric
+
+Tarefas de jogos podem acionar a `skills/game-studio-fabric/SKILL.md` como módulo interno da PredictLM Master.
+
+Contrato:
+- mínimo de processo necessário ao risco do projeto;
+- papéis de direção/produção/especialistas são internos e não viram personas públicas;
+- vertical slice antes de escalar produção não trivial;
+- mudança visual exige run-and-observe quando o host puder renderizar;
+- ausência de render/engine deve aparecer como lacuna de verificação, nunca como teste fictício;
+- playtest é evidência de experiência e deve ser separado de teste lógico.
+
+Fonte: Donchitos/Claude-Code-Game-Studios (MIT).
 
 ## Skill Federation
 
