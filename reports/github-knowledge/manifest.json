@@ -1,8 +1,35 @@
 {
-  "generatedAt": "2026-09-26T19:51:05.568Z",
-  "knowledgeVersion": "58fd8011ae9fa8e3",
-  "chunkCount": 4758,
+  "generatedAt": "2026-09-26T20:13:12.552Z",
+  "knowledgeVersion": "064d5f128255bb56",
+  "chunkCount": 4766,
   "sources": [
+    {
+      "repo": "dbreunig/building-with-jev-skill",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "tamaratran/fast-jev-compaction",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "e3f262a7f4d42bd8dd32ced30d26176f7cb545b0",
+      "files": 1,
+      "chunks": 13,
+      "error": null
+    },
+    {
+      "repo": "gargpratyush/jev-router",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "38da6b84ea01241bfc41fbddc0928d0f40a703f0",
+      "files": 1,
+      "chunks": 14,
+      "error": null
+    },
     {
       "repo": "krusemediallc/arcads-claude-code",
       "mode": "allow",
@@ -25,9 +52,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "97bacbbce514ba44c7a79107e865305aca3f2962",
+      "commit": "064f2f6b09cca13fcab5c5f422dea0ad33694cd9",
       "files": 2,
-      "chunks": 63,
+      "chunks": 44,
       "error": null
     },
     {
@@ -682,7 +709,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "cb1dc4f15b6aec59f80dfac74c06d1427e76ec4e",
+      "commit": "9e8c049dd8622d66898d5654c7444cffc7432eac",
       "files": 1,
       "chunks": 12,
       "error": null

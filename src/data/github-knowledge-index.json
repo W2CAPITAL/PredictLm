@@ -1,10 +1,469 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "58fd8011ae9fa8e3",
-  "generatedAt": "2026-09-26T19:51:05.568Z",
-  "sourceCount": 93,
-  "chunkCount": 4758,
+  "knowledgeVersion": "064d5f128255bb56",
+  "generatedAt": "2026-09-26T20:13:12.552Z",
+  "sourceCount": 95,
+  "chunkCount": 4766,
   "chunks": [
+    {
+      "id": "758b12118f87a395217b",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "fast-jev-compaction",
+      "text": "Claude Code plugin that replaces the compaction summary with Jev decisions:\nevery tool call and result is scored in one fast request, stale ones are\ndropped or truncated, everything kept stays verbatim. Also usable as an npm\nlibrary.",
+      "weight": 1.28
+    },
+    {
+      "id": "197e61f7b1d5c7b9b623",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "What and why",
+      "text": "Most context compaction asks an LLM to summarize old turns. A summary is\nlossy: a file path, exact error, constraint, or command can disappear even when\nit matters later. This library never rewrites anything. It only deletes tool\ncalls and tool results Jev says are no longer needed, and it asks Jev while\nshowing it the whole conversation. User and assistant text stays verbatim and\nin order.\n\nThe repository is both an npm package (`src/`) and a Claude Code plugin\n(`hooks/`, `.claude-plugin/`) that uses the package to replace Claude Code's\nbuilt-in compaction summary with the original messages.",
+      "weight": 1.28
+    },
+    {
+      "id": "085c7dba33f7d3ece675",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "How it works",
+      "text": "1. Every `tool_use` is paired with its `tool_result` by `tool_use_id`. Calls in\n   the first message or in the newest `preserveRecentMessages` messages are\n   pinned and never touched.\n2. The **state** sent to Jev is the whole conversation so far, oldest first,\n   with every tool result replaced by a short note (`ok, 4213 chars (omitted)`).\n   Tool inputs are included, texts are included, nothing is summarized.\n3. The state is fitted into `maxStateTokens` (25k by default) in stages, each\n   applied only if the previous one was not enough: tool inputs truncated to\n   1000, then 200, then 60 characters; long texts abridged to head + tail,\n   oldest non-pinned messages first; old non-pinned messages collapsed to a\n   `[… N chars omitted …]` note; old tool calls reduced to one line each\n   (`t12 Read file_path=src/a.ts → ok 480ch`); old call-less messages left\n   out; runs of old call-only messages folded into one entry. If it still\n   does not fit, compaction throws. Tokens are estimated without a tokenizer (a\n   word per six letters, half a token per digit, ~one per other symbol),\n   calibrated to land a little above the counts Jev reports.\n4. For every non-pinned call Jev gets two `",
+      "weight": 1.28
+    },
+    {
+      "id": "24db4f155cdf8ef3795c",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "How it works",
+      "text": "noul` questions: should the **call**\n   stay (knowing it was made, with its input, still matters), and should the\n   **result** stay verbatim (its contents are still needed and re-running the\n   tool would not do).\n5. Questions are split into as many requests as needed so state plus questions\n   stays under `maxRequestTokens` (30k by default, under Jev's 32k request\n   limit). The same full state is resent with every request; requests run\n   concurrently and their answers are merged.\n6. Decisions per call, against `keepThreshold`:\n   - `keepResult ≥ threshold` → keep call and result;\n   - else `keepCall ≥ threshold` → keep the call, truncate the result to its",
+      "weight": 1.28
+    },
+    {
+      "id": "ee057094be383f6c84d6",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "How it works",
+      "text": "first `truncateHeadChars` characters plus a one-line note;\n   - else → remove the call together with its result.\n7. The message list is rebuilt: a message that loses all its content is\n   removed, untouched messages are returned as the same objects, and no result\n   is ever left without its call.\n\nJev failures, malformed answers, a missing key, or a history that cannot be\nfitted throw; the caller (or the Claude Code hook) decides what to fall back to.",
+      "weight": 1.28
+    },
+    {
+      "id": "8a5ca41dcb0901c976a9",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Install and usage",
+      "text": "```sh\nnpm install fast-jev-compaction\nexport TYPESAFE_API_KEY=...\n```\n\n```ts\nimport { compactMessages, reductionRatio, type Message } from 'fast-jev-compaction';\n\nconst transcript: Message[] = [\n  { role: 'user', text: 'Fix the failing test. Never edit src/generated.', toolUses: [] },\n  {\n    role: 'assistant',\n    text: '',\n    toolUses: [{ tool_use_id: 'toolu_1', tool: 'Read', input: { file_path: 'src/a.ts' } }],\n  },\n  { role: 'user', text: '', toolUses: [], toolResults: [{ tool_use_id: 'toolu_1', text: '…file…' }] },\n  // …\n];\n\nconst result = await compactMessages(transcript, { preserveRecentMessages: 4 });\nconsole.log(result.messages, result.decisions, result.stats);\nif (reductionRatio(result) < 0.25) {\n  // not worth it: keep the original transcript, or summarize instead\n}\n```\n\n`Message` is a subset of Claude Code's `SessionMessage`, so a session transcript\ncan be passed in as is.\n\nTo bring your own transport, implement `JevAsker` (one `ask(state, questions)`\nmethod) and call `compact(messages, asker, options)`; `buildJevRequest` and\n`parseJevResponse` give you the HTTP request body and response validation.\nThe building blocks (`collectToolCalls`, `fitState`, `batchCalls`,\n`d",
+      "weight": 1.28
+    },
+    {
+      "id": "5684ab158438c9b2130d",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Install and usage",
+      "text": "ecideCall`, `applyDecisions`) are exported too.\n\n`apiKey` defaults to `process.env.TYPESAFE_API_KEY`. Never commit the key or\nput it in a source file.",
+      "weight": 1.28
+    },
+    {
+      "id": "c3f51ba9747673c593b7",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Options",
+      "text": "| Option | Default | Description |\n| --- | --- | --- |\n| `apiKey` | `TYPESAFE_API_KEY` | TypeSafe API key (`compactMessages`/`JevClient`) |\n| `model` | `jev-latest` | Jev model name |\n| `baseUrl` | `https://api.typesafe.ai/v1/systemone` | System One endpoint |\n| `fetch` | native `fetch` | Injectable fetch implementation for tests |\n| `goal` | last 3 user prompts | Ongoing task description included in the state |\n| `keepThreshold` | `0.5` | Minimum keep probability for a call or result to stay |\n| `preserveRecentMessages` | `6` | Newest messages never touched (the first is always kept) |\n| `maxStateTokens` | `25000` | Estimated token ceiling for the state |\n| `maxRequestTokens` | `30000` | Estimated ceiling for state plus one batch of questions |\n| `truncateHeadChars` | `300` | Characters of a dropped tool result retained before its note |\n\n`result.stats` reports message and character counts before and after, the\nper-reason decision counts, the state size in estimated tokens, which fitting\nstage was needed, and the number of requests.",
+      "weight": 1.28
+    },
+    {
+      "id": "6ecf3ce8cb97f7614c1c",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Limitations",
+      "text": "- Only tool calls and results are candidates; text messages are never removed\n  or shortened in the output (they are only abridged in the state Jev sees).\n- Token sizes are estimates from character counts, not a tokenizer.\n- Calibration is at the request level; a probability is not a proof that a\n  result is safe to delete. The assistant can always re-run the tool.\n- The full state is repeated with every request, so a history near the state\n  ceiling costs one request per handful of questions.",
+      "weight": 1.28
+    },
+    {
+      "id": "d10b184bbe138739c00f",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Claude Code plugin",
+      "text": "The repository root is a Claude Code function-hook plugin: `hooks/fast-jev.ts`\nis a thin adapter that feeds `session.compact` transcripts through `src/` and\nfalls back to Claude Code's built-in summary on errors or insufficient\nreduction. See [`hooks/README.md`](hooks/README.md) for configuration and the\nClaude Code 2.1.274 type reference.",
+      "weight": 1.28
+    },
+    {
+      "id": "632a3e6fd9e9ef3998b3",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Install in Claude Code",
+      "text": "Function hooks are an early-access Claude Code feature (2.1.274+), so the\nopt-in flag must be set wherever Claude Code runs, e.g. in `~/.claude/settings.json`:\n\n```json\n{ \"env\": { \"CLAUDE_CODE_ENABLE_FUNCTION_HOOKS\": \"1\", \"TYPESAFE_API_KEY\": \"<your key>\" } }\n```\n\nThen add this repository as a plugin marketplace and install the plugin,\neither from the shell or as slash commands inside a session:\n\n```sh\nclaude plugin marketplace add tamaratran/fast-jev-compaction\nclaude plugin install fast-jev-compaction@fast-jev-compaction\n```\n\nThe install prompts for the plugin options (API key, thresholds, `truncateHeadChars`,\n…); leave them at their defaults to use `TYPESAFE_API_KEY` from the environment.\nRestart Claude Code or run `/reload-plugins`. From then on `/compact` (and\nauto-compaction) goes through Jev: the toast reads\n`fast-jev-compaction: kept N/M messages, no summary (…)` when the pruned history\nreplaced the built-in summary, or `fallback to built-in summary (…)` when Jev\ncould not remove enough (short sessions, or when it fails).\n\nTo run from a checkout without installing: `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude --plugin-dir .`\nfrom the repository root. No publishing step is req",
+      "weight": 1.28
+    },
+    {
+      "id": "ac3982a5a97d94c62b7e",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Development",
+      "text": "```sh\nnpm install\nnpm run typecheck        # library + hook\nnpm test\nnpm run build\nnpm run validate:plugin  # claude plugin validate\nTYPESAFE_API_KEY=\"$(cat ~/.typesafe_key)\" npm run demo\n```\n\nThe unit tests use a fake Jev and never contact TypeSafe. The demo is the live\nnetwork check.",
+      "weight": 1.28
+    },
+    {
+      "id": "ffc07b6448f464b98dc8",
+      "source": "tamaratran/fast-jev-compaction",
+      "ref": "e3f262a7f4d4",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "heading": "Animated demo (macOS)",
+      "text": "`demo/JevDemo` is a small native SwiftUI app that plays a scripted, dramatized\nversion of the compaction flow inside a Claude Code-style terminal: the tool\ncalls of a canned transcript are scored, results and calls Jev lets go turn red\nand collapse away, and the rest stays verbatim. It never calls the API; it\nexists to be screen recorded.\n\n```sh\ndemo/JevDemo/build.sh   # builds demo/JevDemo/build/JevDemo.app and launches it\n```\n\nPress space in the app to replay from the start.",
+      "weight": 1.28
+    },
+    {
+      "id": "bb42e88a872405223c15",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "jev-router",
+      "text": "Automatic per-turn model routing for Claude Code and OpenAI Codex. Jev sends simple work to\nthe fast tier and difficult work to the strong tier, while preserving each CLI's native\ninterface, tools, sessions, permissions, and authentication.\n\n| Command | Interface | Authentication | Routing decision |\n| --- | --- | --- | --- |\n| `jev-claude` | Claude Code | Existing `claude login` | Status line |\n| `jev-codex` | OpenAI Codex | Existing `codex login` | Commentary line |\n\nBoth commands launch the real upstream CLI. Jev only chooses the model for a fresh user turn.",
+      "weight": 1.26
+    },
+    {
+      "id": "3d0f395a72a0e6da98c8",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Quick start",
+      "text": "Requires Node.js 20.12+ and at least one supported CLI:\n[Claude Code](https://code.claude.com/docs/en/setup) or\n[OpenAI Codex](https://developers.openai.com/codex/cli).",
+      "weight": 1.26
+    },
+    {
+      "id": "ded7243678d67d16f995",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "2. Local repository",
+      "text": "```bash\ngit clone https://github.com/gargpratyush/jev-router.git\ncd jev-router\nnpm install\nnpm link\necho \"JEV_API_KEY=...\" > ~/.jev-router.env\n```\n\nOn Windows PowerShell:\n\n```powershell\nSet-Content \"$HOME\\.jev-router.env\" \"JEV_API_KEY=...\"\n```\n\nGet a key from [TypeSafe](https://docs.typesafe.ai). Then launch either interface from any\nrepository:\n\n```bash\njev-claude\njev-codex\n```\n\nNo Anthropic or OpenAI API key is required when the corresponding CLI is already logged in\nwith a subscription. Every CLI argument is forwarded:\n\n```bash\njev-claude --resume\njev-claude -p \"fix the failing test\"\njev-codex resume --last\njev-codex exec \"fix the failing test\"\n```\n\nFor a local checkout, `npm link` installs both commands. Without it, run\n`node bin/jev-claude.mjs` or `node bin/jev-codex.mjs`.",
+      "weight": 1.26
+    },
+    {
+      "id": "cc27e89b8b370fed680c",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Claude Code interface",
+      "text": "![Jev Router in the Claude Code model picker](docs/model-picker.png)\n\n`jev-claude` launches Claude Code with **Jev Router** selected in `/model`. Selecting another\nmodel pauses routing; selecting **Jev Router** resumes it.\n\nThe injected status line shows the model used for the last turn:\n\n```text\n⚡ haiku p=0.98 · my-project · 8% context\n⏸ manual Opus 4.6 · my-project · 21% context\n```\n\nClaude Code otherwise remains unchanged, including its keybindings, tools, permission prompts,\n`/compact`, `/resume`, and session handling. An existing custom `statusLine` is preserved;\nset `JEV_NO_STATUSLINE=1` to disable Jev's status line.\n\nThe explanation skill is bundled with the npm package and loaded automatically: run\n`/jev-explain` in `jev-claude`, or `$jev-explain` in `jev-codex`, to see the factors behind\nthe last routing decision:\n\n```text\n┌─────────────────────────────────┐\n│ Jev Router                      │\n│                                 │\n│ Jev request                     │\n│ Prompt: explain the router      │\n│ Current tier: HAIKU             │\n│ Context tokens: 6200            │\n│                                 │\n│ Jev response                    │\n│ Task complexity     0.82",
+      "weight": 1.26
+    },
+    {
+      "id": "f453972fc20d0f612a34",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Claude Code interface",
+      "text": "│\n│ Reasoning required  0.91        │\n│ Tool complexity     0.64        │\n│ Context size        0.31        │\n│                                 │\n│ Recommended tier: SONNET        │\n│ Selected model: SONNET          │\n│                                 │\n│ Confidence: 94%                 │\n│ Decision: Jev recommendation    │\n└─────────────────────────────────┘\n```\n\nThe report is rendered locally from the exact prompt, System One request, and System One\nresponse saved when routing occurred. Recent decisions are retained per CLI session; invoking\nthe explanation skill does not ask Jev to score the prompt again.",
+      "weight": 1.26
+    },
+    {
+      "id": "48b8bfe57d54ebb2d2df",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Explanation data location",
+      "text": "Both `jev-claude` and `jev-codex` keep up to 20 recent routing exchanges in one JSON file per\nCLI session under Node.js's operating-system temporary directory:\n\n| Platform | Default location |\n| --- | --- |\n| Windows | `%TEMP%\\jev-claude\\<session-id>.json` |\n| macOS | `$TMPDIR/jev-claude/<session-id>.json` (normally under `/var/folders/.../T`) |\n| Ubuntu/Linux | `${TMPDIR:-/tmp}/jev-claude/<session-id>.json` |\n\nPrint the exact directory selected on the current machine with:\n\n```bash\nnode -e \"console.log(require('node:path').join(require('node:os').tmpdir(), 'jev-claude'))\"\n```\n\nClaude filenames use Claude Code's session UUID. Codex filenames use\n`codex-<jev-codex-process-id>.json`. These temporary files contain prompt text and Jev's exact\nrequest and response, so they are readable only by you (the directory is created with mode 700 and each\nfile with 600). Files not updated for 7 days are deleted automatically, and the operating system\nmay also remove them during normal temporary-file cleanup.\n\n> Choosing a model with `Enter` can save it as Claude Code's default. `jev-claude` restores\n> the previous default on exit so `jev-router` cannot break plain `claude`.",
+      "weight": 1.26
+    },
+    {
+      "id": "45640a1c19d2204807eb",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "OpenAI Codex interface",
+      "text": "![Jev Router in the OpenAI Codex model picker](docs/codex-model-picker.png)\n\n`jev-codex` launches Codex with a temporary **Jev Router** provider and selects `jev-router`.\nThe native `/model` picker still contains the models available to the account. Selecting a\nconcrete model pauses routing; selecting **Jev Router** resumes it.\n\nEach fresh decision appears as Codex commentary:\n\n```text\n[Jev] routed this turn to gpt-5.6-sol (jev, confidence 0.91).\n```\n\n`jev-codex` installs or refreshes the packaged `$jev-explain` skill when it starts, so it is\navailable from any repository without separate setup.\n\nCodex's footer shows `jev-router` because it displays the selected picker entry,\nnot the model chosen behind that provider. If Jev is unavailable, the commentary names the\nfallback model and explains how to set `JEV_API_KEY`.",
+      "weight": 1.26
+    },
+    {
+      "id": "1ba202a6841f349af8d8",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "How it works",
+      "text": "Each command starts a loopback proxy, launches the real CLI, and forwards the CLI's existing\nauthorization headers without reading, storing, or modifying them.\n\n```text\nyou -> Claude Code -> jev-claude proxy -> Anthropic\n                         |\n                         +-> Jev: choose a tier\n\nyou -> OpenAI Codex -> jev-codex proxy -> OpenAI\n                         |\n                         +-> Jev: choose a tier\n```\n\nClaude Code uses `ANTHROPIC_BASE_URL`; Codex uses a temporary custom provider with\n`requires_openai_auth=true`. Claude and Codex both use `jev-router` as the\nrouting sentinel.\nAny concrete model selected by the user passes through unchanged.",
+      "weight": 1.26
+    },
+    {
+      "id": "b67a4f8322ec8c26063f",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Routing policy",
+      "text": "One Jev call per fresh user turn selects a shared abstract tier:\n\n| Tier | Claude Code default | Codex default |\n| --- | --- | --- |\n| Fast | Haiku | `gpt-5.6-luna` |\n| Balanced | Sonnet | `gpt-5.6-terra` |\n| Strong | Opus | `gpt-5.6-sol` |\n| Long | Fable | `gpt-6-astra` |\n\n`src/policy.mjs` then applies these rules:\n\n- explicit requests such as `use opus`, `use luna`, or `use strong` win;\n- failure, timeout, or an unrecognised Jev answer keeps the current model;\n- low confidence never downgrades and caps upgrades at the balanced tier;\n- large conversations refuse downgrades that would waste more prompt-cache work than they save;\n- unavailable tiers step upward rather than silently choosing a weaker model;\n- the long tier is disabled unless `JEV_ALLOW_FABLE=1`.\n\nTool-loop continuations keep the tier chosen at the start of the turn. Main conversations and\nsub-agents are pinned separately. Routing is fail-open: Jev failure never blocks the CLI.",
+      "weight": 1.26
+    },
+    {
+      "id": "c5fa1205e3b439237cce",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Configuration",
+      "text": "| Variable | Interface | Effect |\n| --- | --- | --- |\n| `JEV_API_KEY` | Both | Enables routing. `TYPESAFE_API_KEY` also works. |\n| `JEV_ALLOW_FABLE` | Both | Enables the opt-in long tier. |\n| `JEV_DEBUG` | Both | Logs decisions and rewrites to `~/.jev-claude.log` in interactive sessions. |\n| `JEV_DUMP` | Both | Dumps request bodies for debugging wire-format changes. |\n| `JEV_NO_STATUSLINE` | Claude | Disables the injected Claude status line. |\n| `JEV_CODEX_FAST_MODEL` | Codex | Fast model; defaults to `gpt-5.6-luna`. |\n| `JEV_CODEX_BALANCED_MODEL` | Codex | Balanced model; defaults to `gpt-5.6-terra`. |\n| `JEV_CODEX_STRONG_MODEL` | Codex | Strong model; defaults to `gpt-5.6-sol`. |\n| `JEV_CODEX_LONG_MODEL` | Codex | Long model; defaults to `gpt-6-astra`. |\n\nExisting environment variables have highest precedence, followed by `.env` in the launch\ndirectory, `~/.jev-router.env`, and the legacy `~/.jev-claude.env`.\n\nTier definitions, Jev's question, confidence thresholds, and timeouts live in `src/config.mjs`.\nBoth launchers send Jev the exact models in the signed-in account's native catalog, so model\nversions such as `claude-opus-4-8` and `claude-opus-5` remain separate choices. Stati",
+      "weight": 1.26
+    },
+    {
+      "id": "cdde2729889d71933a21",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Compatibility notes",
+      "text": "- Claude Code needs schema normalisation for older MCP JSON Schema fields when a custom base\n  URL is active.\n- Claude request fields unsupported by a routed tier, such as adaptive thinking on Haiku,\n  are removed before forwarding.\n- Codex's current request format stores tool definitions inside its Responses API input.\n- Codex's ChatGPT backend may stream SSE without a `Content-Type` header; the proxy detects\n  the event stream from its first frame.\n- Codex workspace-specific enterprise origins are internal to its built-in provider and\n  cannot be reproduced by a custom provider.",
+      "weight": 1.26
+    },
+    {
+      "id": "c1f451dc2264474232a9",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Development",
+      "text": "```bash\nnpm install\necho \"JEV_API_KEY=...\" > .env\n\nnpm test\nnode test/live-routing.mjs\nnode bin/jev-claude.mjs -p \"what is 2+2?\"\nnode bin/jev-codex.mjs exec \"what is 2+2?\"\n```\n\nThe test suite covers shared policy, both request formats, model rewriting, capability\nhandling, settings restoration, Codex authentication forwarding, native model-picker\ninjection, and decision display.",
+      "weight": 1.26
+    },
+    {
+      "id": "b9dd386447c030051394",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Limitations",
+      "text": "- The user's prompt text is sent to TypeSafe for the routing decision. Nothing else is.\n- Jev adds latency only to the first request of a turn; tool-loop continuations add none.\n- Claude Code and Codex request formats are not public contracts. Use `JEV_DUMP` to diagnose\n  upstream changes.\n- Developed and tested on Windows against Claude Code v2.1.101 and OpenAI Codex v0.154.0.",
+      "weight": 1.26
+    },
+    {
+      "id": "1677fcb83f81ad1e171b",
+      "source": "gargpratyush/jev-router",
+      "ref": "38da6b84ea01",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "heading": "Contributing",
+      "text": "Issues and pull requests are welcome. Use [Issues](https://github.com/gargpratyush/jev-router/issues)\nto report bugs, request improvements, or ask questions. Include the relevant Claude Code or\nCodex version, reproduction steps, expected behavior, and useful logs with secrets removed.\n\nFor a pull request:\n\n1. Open an issue first - all PRs by contributors should be linked with an approved issue. Explain the problem and validation in the issue description.\n2. Fork the repository and create a focused branch from `master`.\n3. Make the smallest change that solves the problem.\n4. Run `npm test` and include tests for non-trivial behavior changes.\n5. Claude/Copilot/Codex shall not be the contributors.\n\nPlease do not commit API keys or other secrets. All contributions require review, and only the\nrepository owner can merge pull requests.",
+      "weight": 1.26
+    },
     {
       "id": "69f9fa1199c9ded38f50",
       "source": "krusemediallc/arcads-claude-code",
@@ -4647,9 +5106,9 @@
       "weight": 1.24
     },
     {
-      "id": "8ed80848437e5996379e",
+      "id": "32acd624fb2153cc22f6",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4668,9 +5127,9 @@
       "weight": 1.3
     },
     {
-      "id": "214025c72a7766e5e731",
+      "id": "eec90eace6ba13c69feb",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4689,9 +5148,9 @@
       "weight": 1.3
     },
     {
-      "id": "7ed75d866babe9780fd6",
+      "id": "87dd8674a1d414e7b306",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4710,9 +5169,9 @@
       "weight": 1.3
     },
     {
-      "id": "7b4eb088f2f91b930a88",
+      "id": "e3bc053c1c1fe456481e",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4731,9 +5190,9 @@
       "weight": 1.3
     },
     {
-      "id": "03bf1fc64a1932d7457b",
+      "id": "4dc2eba6f60f6df8f672",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4752,9 +5211,9 @@
       "weight": 1.3
     },
     {
-      "id": "7326134aa70fab91bc7b",
+      "id": "1dd46f8112acdab3c42c",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4773,9 +5232,9 @@
       "weight": 1.3
     },
     {
-      "id": "5c945692f96af158bb8a",
+      "id": "ab811b3a3ce717d23184",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4794,9 +5253,9 @@
       "weight": 1.3
     },
     {
-      "id": "a9855f08153589e1fb83",
+      "id": "e9fed622d894bcff2a59",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4815,9 +5274,9 @@
       "weight": 1.3
     },
     {
-      "id": "3b5cfd54cab6e087d9b0",
+      "id": "1da5824960b642449d36",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4836,9 +5295,9 @@
       "weight": 1.3
     },
     {
-      "id": "e70d724f139b4bdc4822",
+      "id": "80e28f6325afe8c753c6",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4857,9 +5316,9 @@
       "weight": 1.3
     },
     {
-      "id": "77868b29d3079ebf6d53",
+      "id": "b908e459db357867c0fc",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4878,9 +5337,9 @@
       "weight": 1.3
     },
     {
-      "id": "62b7084324346d442be1",
+      "id": "30ade043f364e1197ddc",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4899,9 +5358,9 @@
       "weight": 1.3
     },
     {
-      "id": "b9a10937b4ecc8982c25",
+      "id": "9253fbfe8ee57d836416",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4920,9 +5379,9 @@
       "weight": 1.3
     },
     {
-      "id": "f5d6c6f21c5f98d0097d",
+      "id": "4e0c64ebfb25418c38b7",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4941,9 +5400,9 @@
       "weight": 1.3
     },
     {
-      "id": "3e7639db9195f56a8421",
+      "id": "b43e7c2f6557e6fc0372",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4962,9 +5421,9 @@
       "weight": 1.3
     },
     {
-      "id": "f0a2549c020ca7b0951f",
+      "id": "c90ee4272dfc1191976f",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4983,9 +5442,9 @@
       "weight": 1.3
     },
     {
-      "id": "e3768cec5f844411b499",
+      "id": "a7aa8cd86342b9ebe642",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5004,9 +5463,9 @@
       "weight": 1.3
     },
     {
-      "id": "dc65c1550626759b1844",
+      "id": "0282e71f43fde396ebe2",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5025,9 +5484,9 @@
       "weight": 1.3
     },
     {
-      "id": "f760177d982f5dde3418",
+      "id": "9a02740bea40f31ec9bf",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5046,9 +5505,9 @@
       "weight": 1.3
     },
     {
-      "id": "0c5ff4958d98cd3e9ddb",
+      "id": "e32cecdada449b57bc1c",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5067,9 +5526,9 @@
       "weight": 1.3
     },
     {
-      "id": "697a3d190d5342f4967d",
+      "id": "74743a68390cd28cbdac",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5088,9 +5547,9 @@
       "weight": 1.3
     },
     {
-      "id": "7c38da4ee4ed6e3f564b",
+      "id": "4bad60f785c9795cff3f",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5109,9 +5568,9 @@
       "weight": 1.3
     },
     {
-      "id": "ca2cd271216abab5ffcd",
+      "id": "86ef05b9b9280a73fb54",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5130,9 +5589,9 @@
       "weight": 1.3
     },
     {
-      "id": "a233b799a774eb525802",
+      "id": "665bcd0f50067fd7f8f3",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5151,9 +5610,9 @@
       "weight": 1.3
     },
     {
-      "id": "0d8ee9e4ee2e3c651c3a",
+      "id": "52ef8dd23583a0f8fcd9",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5172,9 +5631,9 @@
       "weight": 1.3
     },
     {
-      "id": "f31f0aafa0a82caa02c9",
+      "id": "6cf548aec154561ce36f",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5193,9 +5652,9 @@
       "weight": 1.3
     },
     {
-      "id": "2ea225666703b372a85e",
+      "id": "e91d4061f5b482250857",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5214,9 +5673,9 @@
       "weight": 1.3
     },
     {
-      "id": "4e45a2988093f7d71bc8",
+      "id": "9b70920a92f601e3e315",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5235,9 +5694,9 @@
       "weight": 1.3
     },
     {
-      "id": "f145be4692ba027f2ca2",
+      "id": "1b0e5511c9a63e0f24cf",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5256,9 +5715,9 @@
       "weight": 1.3
     },
     {
-      "id": "30393cd1d0944c311461",
+      "id": "b467a32dbc1308b56d01",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5277,9 +5736,9 @@
       "weight": 1.3
     },
     {
-      "id": "fd02279cb9afcbc1c794",
+      "id": "c7ee5c01915d4d8051e6",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5298,9 +5757,9 @@
       "weight": 1.3
     },
     {
-      "id": "b9255a1ebe1aa249b857",
+      "id": "5874d9063c976d68e9e1",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5319,9 +5778,9 @@
       "weight": 1.3
     },
     {
-      "id": "5368b56ab2ed70473c7d",
+      "id": "d891606654b819ecefd3",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5340,9 +5799,9 @@
       "weight": 1.3
     },
     {
-      "id": "603b6ce906c4d7f8d1b2",
+      "id": "99cffb0a0523c9884c17",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5361,9 +5820,9 @@
       "weight": 1.3
     },
     {
-      "id": "4e64b77f1fca2c0ee181",
+      "id": "70f572c048d5ad12d280",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5382,9 +5841,9 @@
       "weight": 1.3
     },
     {
-      "id": "f1b676615e6ac4566735",
+      "id": "efcba5c29f0b015f7a05",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5403,9 +5862,9 @@
       "weight": 1.3
     },
     {
-      "id": "54fca243c9936ffb050f",
+      "id": "f3361f8c4ac87b7af711",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5424,9 +5883,9 @@
       "weight": 1.3
     },
     {
-      "id": "0960724700943e89b3f0",
+      "id": "1b9108aa6e6d7595f096",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5445,9 +5904,9 @@
       "weight": 1.3
     },
     {
-      "id": "7e81a2fef0bd2c94b12b",
+      "id": "f8892208175a8409cc0a",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5466,9 +5925,9 @@
       "weight": 1.3
     },
     {
-      "id": "c929d2c776bff496a15b",
+      "id": "a712e104e91364d502d9",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5487,9 +5946,9 @@
       "weight": 1.3
     },
     {
-      "id": "88a8659c50358ba61760",
+      "id": "85e2bb277ec4a6d1f0ad",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5508,9 +5967,9 @@
       "weight": 1.3
     },
     {
-      "id": "6ebe239f052c212e2013",
+      "id": "e0ab95c5723b9cd8b49e",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5529,9 +5988,9 @@
       "weight": 1.3
     },
     {
-      "id": "ebddb7cbb99e38a79a57",
+      "id": "692d1555cfe9b13f44a4",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5550,9 +6009,9 @@
       "weight": 1.3
     },
     {
-      "id": "1ce15eea23115bad0530",
+      "id": "553e4da51dec5bed58ab",
       "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
+      "ref": "064f2f6b09cc",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5568,405 +6027,6 @@
       ],
       "heading": "Routing Table — working in X → read X/AGENTS.md",
       "text": "Long-form background lives in `website/docs/developer-guide/` (agent-loop, prompt-assembly,\ncontext-compression-and-caching, gateway-internals, tools-runtime, plugins/, cron-internals,\nsession-storage, ...). Workflow rules (PR/issue/review/salvage process) live in the\n`hermes-agent-dev` skill, not here.",
-      "weight": 1.3
-    },
-    {
-      "id": "9eccc5566e27dbe33dd8",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Hermes Agent ☤",
-      "text": "<p align=\"center\">\n  <a href=\"https://hermes-agent.nousresearch.com/\">Hermes Agent</a> | <a href=\"https://hermes-agent.nousresearch.com/\">Hermes Desktop</a>\n</p>\n<p align=\"center\">\n  <a href=\"https://hermes-agent.nousresearch.com/docs/\"><img src=\"https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge\" alt=\"Documentation\"></a>\n  <a href=\"https://discord.gg/NousResearch\"><img src=\"https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Discord\"></a>\n  <a href=\"https://github.com/NousResearch/hermes-agent/blob/main/LICENSE\"><img src=\"https://img.shields.io/badge/License-MIT-green?style=for-the-badge\" alt=\"License: MIT\"></a>\n  <a href=\"https://nousresearch.com\"><img src=\"https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge\" alt=\"Built by Nous Research\"></a>\n  <a href=\"README.zh-CN.md\"><img src=\"https://img.shields.io/badge/Lang-中文-red?style=for-the-badge\" alt=\"中文\"></a>\n  <a href=\"README.ur-pk.md\"><img src=\"https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge\" alt=\"اردو\"></a>\n  <a href=\"README.es.md\"><img src=\"https://img.shields.io/badge/Lang-Español-orange?styl",
-      "weight": 1.3
-    },
-    {
-      "id": "affca824354f78aff9d7",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Hermes Agent ☤",
-      "text": "e=for-the-badge\" alt=\"Español\"></a>\n</p>\n\n**The self-improving AI agent built by [Nous Research](https://nousresearch.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.\n\nUse any model you want — [Nous Portal](https://portal.nousresearch.com), OpenRouter, OpenAI, your own endpoint, and [many others](https://hermes-agent.nousresearch.com/docs/integrations/providers). Switch with `hermes model` — no code changes, no lock-in.",
-      "weight": 1.3
-    },
-    {
-      "id": "035308260b9a7f8b2585",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Hermes Agent ☤",
-      "text": "<table>\n<tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>\n<tr><td><b>Lives where you do</b></td><td>Telegram, Discord, Slack, WhatsApp, Signal, and CLI — all from a single gateway process. Voice memo transcription, cross-platform conversation continuity.</td></tr>\n<tr><td><b>A closed learning loop</b></td><td>Agent-curated memory with periodic nudges. Autonomous skill creation after complex tasks. Skills self-improve during use. FTS5 session search with LLM summarization for cross-session recall. <a href=\"https://github.com/plastic-labs/honcho\">Honcho</a> dialectic user modeling. Compatible with the <a href=\"https://agentskills.io\">agentskills.io</a> open standard.</td></tr>\n<tr><td><b>Scheduled automations</b></td><td>Built-in cron scheduler with delivery to any platform. Daily reports, nightly backups, weekly audits — all in natural language, running unattended.</td></tr>\n<tr><td><b>Delegates and parallelizes</b></td><td>Spawn isolated subagents for parallel workstreams. Write Python scripts that call tools via RPC, collapsing multi-step p",
-      "weight": 1.3
-    },
-    {
-      "id": "38f0c7c0c8adb66ad2a5",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Hermes Agent ☤",
-      "text": "ipelines into zero-context-cost turns.</td></tr>\n<tr><td><b>Runs anywhere, not just your laptop</b></td><td>Seven terminal backends — local, Docker, SSH, Singularity, Modal, Daytona, and Vercel Sandbox. Daytona and Modal offer serverless persistence — your agent's environment hibernates when idle and wakes on demand, costing nearly nothing between sessions. Run it on a $5 VPS or a GPU cluster.</td></tr>\n<tr><td><b>Research-ready</b></td><td>Batch trajectory generation, trajectory compression for training the next generation of tool-calling models.</td></tr>\n</table>\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "f2786f0db4ceac872837",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Windows (native, PowerShell)",
-      "text": "> **Heads up:** Native Windows runs Hermes without WSL — CLI, gateway, TUI, and tools all work natively. If you'd rather use WSL2, the Linux/macOS one-liner above works there too. Found a bug? Please [file issues](https://github.com/NousResearch/hermes-agent/issues).\n\nRun this in PowerShell:\n\n```powershell\niex (irm https://hermes-agent.nousresearch.com/install.ps1)\n```\n\nThe source installer delegates Python 3.14, Node.js, npm, ripgrep, FFmpeg,\nand Python dependencies to PM. If Git is absent, it stages the verified Git\nfor Windows archive in Hermes' tool store. It does not replace your system Git.\nSee [installation methods](https://hermes-agent.nousresearch.com/docs/getting-started/installation)\nfor the separate MSIX/App Installer package and its update ownership.\n\n> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Use the [Termux guide](https://hermes-agent.nousresearch.com/docs/getting-started/termux), not the desktop/server installer script.\n>\n> **Windows:** Native Windows is fully supported — the PowerShell one-liner above",
-      "weight": 1.3
-    },
-    {
-      "id": "9262fac8a16a5cb8f759",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Windows (native, PowerShell)",
-      "text": "installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\\hermes`; WSL2 installs under `~/.hermes` as on Linux.\n\nAfter installation:\n\n```bash\nsource ~/.bashrc    # reload shell (or: source ~/.zshrc)\nhermes              # start chatting!\n```",
-      "weight": 1.3
-    },
-    {
-      "id": "5cf75c71134c62ce1381",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Windows Defender or antivirus flags `uv.exe` as malware",
-      "text": "If your antivirus (Bitdefender, Windows Defender, etc.) quarantines `uv.exe` from the Hermes `bin` folder (`%LOCALAPPDATA%\\hermes\\bin\\uv.exe`), this is a **false positive**. The file is Astral's `uv` — the Rust Python package manager Hermes bundles to manage its Python environment. ML-based antivirus engines commonly flag unsigned Rust binaries that download and install packages.\n\n**To verify your copy is authentic:**\n\n```powershell",
-      "weight": 1.3
-    },
-    {
-      "id": "ac7e2f63b1ca5b25a128",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Run verification",
-      "text": "$uv = \"$env:LOCALAPPDATA\\hermes\\bin\\uv.exe\"\n$ver = (& $uv --version).Split(' ')[1]\n[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n$zip = \"$env:TEMP\\uv.zip\"\nInvoke-WebRequest \"https://github.com/astral-sh/uv/releases/download/$ver/uv-x86_64-pc-windows-msvc.zip\" -OutFile $zip -UseBasicParsing\ngh attestation verify $zip --repo astral-sh/uv\nExpand-Archive $zip \"$env:TEMP\\uv_x\" -Force\n(Get-FileHash \"$env:TEMP\\uv_x\\uv.exe\").Hash -eq (Get-FileHash $uv).Hash\n```\n\nIf attestation says \"Verification succeeded\" and the last line prints `True`, you're good.\n\n**To whitelist Hermes:**\n- **Windows Defender:** Run PowerShell as Admin → `Add-MpPreference -ExclusionPath \"$env:LOCALAPPDATA\\hermes\\bin\"`\n- **Bitdefender:** Add an exception in the Bitdefender console (Protection > Antivirus > Settings > Manage Exceptions)\n- Whitelist the **folder**, not the file hash — Hermes updates `uv` and the hash changes every version\n\nFor more context, see the upstream Astral reports: [astral-sh/uv#13553](https://github.com/astral-sh/uv/issues/13553), [astral-sh/uv#15011](https://github.com/astral-sh/uv/issues/15011), [astral-sh/uv#10079](https://github.com/astral-sh/uv/issues/10079",
-      "weight": 1.3
-    },
-    {
-      "id": "9127b1c9a8374e03a95e",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Getting Started",
-      "text": "```bash\nhermes              # Interactive CLI — start a conversation\nhermes model        # Choose your LLM provider and model\nhermes tools        # Configure which tools are enabled\nhermes config set   # Set individual config values\nhermes config get   # Print individual config values\nhermes gateway      # Start the messaging gateway (Telegram, Discord, etc.)\nhermes setup        # Run the full setup wizard (configures everything at once)\nhermes claw migrate # Migrate from OpenClaw (if coming from OpenClaw)\nhermes update       # Update to the latest version\nhermes doctor       # Diagnose any issues\n```\n\n📖 **[Full documentation →](https://hermes-agent.nousresearch.com/docs/)**\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "aa21b3d4c0d218e14cc9",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Skip the API-key collection — Nous Portal",
-      "text": "Hermes works with whatever provider you want — that's not changing. But if you'd rather not collect five separate API keys for the model, web search, image generation, TTS, and a cloud browser, **[Nous Portal](https://portal.nousresearch.com)** covers all of them under one subscription:\n\n- **300+ models** — pick any of them with `/model <name>`\n- **Tool Gateway** — web search, image generation (FAL), text-to-speech (OpenAI), cloud browser (Browser Use), all routed through your sub. No extra accounts.\n\nOne command from a fresh install:\n\n```bash\nhermes setup --portal\n```\n\nThat logs you in via OAuth, sets Nous as your provider, and turns on the Tool Gateway. Check what's wired up any time with `hermes portal info`. Full details on the [Tool Gateway docs page](https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-gateway).\n\nYou can still bring your own keys per-tool whenever you want — the gateway is per-backend, not all-or-nothing.\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "9e7437f4ba8bc7a91271",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "CLI vs Messaging Quick Reference",
-      "text": "Hermes has two entry points: start the terminal UI with `hermes`, or run the gateway and talk to it from Telegram, Discord, Slack, WhatsApp, Signal, or Email. Once you're in a conversation, many slash commands are shared across both interfaces.\n\n| Action                         | CLI                                           | Messaging platforms                                                              |\n| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- |\n| Start chatting                 | `hermes`                                      | Run `hermes gateway setup` + `hermes gateway start`, then send the bot a message |\n| Start fresh conversation       | `/new` or `/reset`                            | `/new` or `/reset`                                                               |\n| Change model                   | `/model [provider:model]`                     | `/model [provider:model]`                                                        |\n| Set a personality              | `/personality [name]`                         | `/personality [name]`",
-      "weight": 1.3
-    },
-    {
-      "id": "8cf2164eabcccdb7d9aa",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "CLI vs Messaging Quick Reference",
-      "text": "|\n| Retry or undo the last turn    | `/retry`, `/undo`                             | `/retry`, `/undo`                                                                |\n| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]`                                        |\n| Browse skills                  | `/skills` or `/<skill-name>`                  | `/<skill-name>`                                                                  |\n| Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                    |",
-      "weight": 1.3
-    },
-    {
-      "id": "ea289a3d669e1bf81da4",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "CLI vs Messaging Quick Reference",
-      "text": "| Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                            |\n\nFor the full command lists, see the [CLI guide](https://hermes-agent.nousresearch.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://hermes-agent.nousresearch.com/docs/user-guide/messaging).\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "234175b73ca1739b9742",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Documentation",
-      "text": "All documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:\n\n| Section                                                                                             | What's Covered                                             |\n| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |\n| [Quickstart](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |\n| [CLI Usage](https://hermes-agent.nousresearch.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |\n| [Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |\n| [Messaging Gateway](https://hermes-agent.nousresearch.com/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |\n| [Security](https://hermes-agent.nousresearch.com/docs/user-guide/security)",
-      "weight": 1.3
-    },
-    {
-      "id": "a12bf1c67a5ab8db5ccd",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Documentation",
-      "text": "| Command approval, DM pairing, container isolation          |\n| [Tools & Toolsets](https://hermes-agent.nousresearch.com/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |\n| [Skills System](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |\n| [Memory](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |\n| [MCP Integration](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |",
-      "weight": 1.3
-    },
-    {
-      "id": "f2b86fa1c6b50561fade",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Documentation",
-      "text": "| [Cron Scheduling](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |\n| [Context Files](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |\n| [Architecture](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |\n| [Contributing](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |\n| [CLI Reference](https://hermes-agent.nousresearch.com/docs/reference/cli-commands)                  | All commands and flags                                     |\n| [Environment Variables](https://hermes-agent.nousresearch.com/docs/reference/environment-variables) | Complete env var reference                                 |\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "8e7fd7b5427579b2a63d",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Migrating from OpenClaw",
-      "text": "If you're coming from OpenClaw, Hermes can automatically import your settings, memories, skills, and API keys.\n\n**During first-time setup:** The setup wizard (`hermes setup`) automatically detects `~/.openclaw` and offers to migrate before configuration begins.\n\n**Anytime after install:**\n\n```bash\nhermes claw migrate              # Interactive migration (full preset)\nhermes claw migrate --dry-run    # Preview what would be migrated\nhermes claw migrate --preset user-data   # Migrate without secrets\nhermes claw migrate --overwrite  # Overwrite existing conflicts\n```\n\nWhat gets imported:\n\n- **SOUL.md** — persona file\n- **Memories** — MEMORY.md and USER.md entries\n- **Skills** — user-created skills → `~/.hermes/skills/openclaw-imports/`\n- **Command allowlist** — approval patterns\n- **Messaging settings** — platform configs, allowed users, working directory\n- **API keys** — allowlisted secrets (Telegram, OpenRouter, OpenAI, Anthropic, ElevenLabs)\n- **TTS assets** — workspace audio files\n- **Workspace instructions** — AGENTS.md (with `--workspace-target`)\n\nSee `hermes claw migrate --help` for all options, or use the `openclaw-migration` skill for an interactive agent-guided migration wit",
-      "weight": 1.3
-    },
-    {
-      "id": "758cddd04b45b6e44c42",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Contributing",
-      "text": "We welcome contributions! See the [Contributing Guide](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) for development setup, code style, and PR process.\n\nStart with the [PM developer workflow](website/docs/reference/package-management.md#developer-workflow)\nfor activation, daily use, dependency changes, and leaving the environment.\n[Development Setup](CONTRIBUTING.md#development-setup) covers the separate test environment and verification commands.\n\n---",
-      "weight": 1.3
-    },
-    {
-      "id": "9aadbf58b1dc9d4e32cc",
-      "source": "NousResearch/hermes-agent",
-      "ref": "97bacbbce514",
-      "path": "README.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Community",
-      "text": "- 💬 [Discord](https://discord.gg/NousResearch)\n- 📚 [Skills Hub](https://agentskills.io)\n- 🐛 [Issues](https://github.com/NousResearch/hermes-agent/issues)\n- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Linux desktop-control MCP server for Hermes and other MCP hosts, with AT-SPI accessibility trees, Wayland/X11 input, screenshots, and compositor window targeting.\n- 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Community WeChat bridge: Run Hermes Agent and OpenClaw on the same WeChat account.\n\n---",
       "weight": 1.3
     },
     {
@@ -46831,9 +46891,9 @@
       "weight": 1.02
     },
     {
-      "id": "a5b864cf0ad60cd4646e",
+      "id": "4d6b7b8f63d201b5cab1",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46846,9 +46906,9 @@
       "weight": 1.03
     },
     {
-      "id": "bf188a6d0e12a885d25d",
+      "id": "a8c518ac5beba5e429fd",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46861,9 +46921,9 @@
       "weight": 1.03
     },
     {
-      "id": "e70e57392b7009a1e33a",
+      "id": "6ec61abc35e73d0ad637",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46876,9 +46936,9 @@
       "weight": 1.03
     },
     {
-      "id": "dd859d346e7cfee3f7db",
+      "id": "f812f18f635aa6fb3069",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46891,9 +46951,9 @@
       "weight": 1.03
     },
     {
-      "id": "fc2dd48ee08c2aa6562f",
+      "id": "540923dec77645ab4a4c",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46906,9 +46966,9 @@
       "weight": 1.03
     },
     {
-      "id": "11da1f965bd7a26212db",
+      "id": "7b83e0f9b5b2d217be13",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46921,9 +46981,9 @@
       "weight": 1.03
     },
     {
-      "id": "cd14fe471dcf0bf74948",
+      "id": "123c8e5ed1dae06fb7cf",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46936,9 +46996,9 @@
       "weight": 1.03
     },
     {
-      "id": "ac6ffb3bda4e39ea3a09",
+      "id": "7688af9653673ad4f30e",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46951,9 +47011,9 @@
       "weight": 1.03
     },
     {
-      "id": "c7da8f71f1dae3f27070",
+      "id": "c8325798cbbc28147d7b",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46966,9 +47026,9 @@
       "weight": 1.03
     },
     {
-      "id": "4c9b0bd4a034749eea75",
+      "id": "668b4b70b9bc51ecfb52",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46981,9 +47041,9 @@
       "weight": 1.03
     },
     {
-      "id": "86b1c535d7d957c191bc",
+      "id": "610e869f5c10a6ed43ea",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46996,9 +47056,9 @@
       "weight": 1.03
     },
     {
-      "id": "1017347495d57ca5f96f",
+      "id": "93779b792a3dd64318a8",
       "source": "CodebuffAI/freebuff",
-      "ref": "cb1dc4f15b6a",
+      "ref": "9e8c049dd862",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
