@@ -107,7 +107,7 @@ function hash(seed:number,tick:number){
 }
 function place(id:LifeLocation){return places.find(x=>x.id===id)||places[0]}
 
-export function createLifeSimulation(name=ENTITY_SELF_MODEL.displayName,seed=173){
+export function createLifeSimulation(name:string=ENTITY_SELF_MODEL.displayName,seed=173){
   const home=place('Casa');
   const state:LifeSimulationState={
     version:1,
