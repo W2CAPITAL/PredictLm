@@ -22,6 +22,14 @@ export function isGenericHowTo(prompt:string){
   return false;
 }
 
+export function isHighRiskIntrusionRequest(prompt:string){
+  const p=clean(prompt);
+  const intrusion=/\b(hackeie|hackear|hack|invada|invadir|explore|explorar|exploit|derrube|derrubar|bypasse|burlar|roube credenciais|steal credentials)\b/.test(p);
+  const realTarget=/\b(governo|pentagono|pentágono|banco|empresa|servidor|sistema|rede|conta|site|infraestrutura|api|database|banco de dados|wifi|roteador)\b/.test(p);
+  const authorizedLab=/\b(ctf|capture the flag|laboratorio|laboratório|sandbox|ambiente autorizado|meu proprio|meu próprio|localhost|maquina virtual|máquina virtual)\b/.test(p);
+  return intrusion&&realTarget&&!authorizedLab;
+}
+
 export function isPurchaseLocationIntent(prompt:string){
   const p=clean(prompt);
   return /\b(?:onde\s+(?:compro|comprar|encontro|acho|vende|tem)|onde\s+posso\s+comprar|quero\s+comprar)\b/.test(p);
