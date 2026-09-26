@@ -58,7 +58,19 @@ export const REQUESTED_FUSION_REPOS=[
   'public-apis/public-apis',
   'freeCodeCamp/freeCodeCamp',
   'mattpocock/skills',
-  'Donchitos/Claude-Code-Game-Studios'
+  'Donchitos/Claude-Code-Game-Studios',
+  'fogleman/Craft',
+  'dgreenheck/minecraft-threejs-clone',
+  '0xfabian/mc',
+  'pquiring/jfcraft',
+  'obiwac/python-minecraft-clone',
+  'Aidanhouk/Minecraft-Clone',
+  'zardoy/minecraft-web-client',
+  'zardoy/mcraft-arwes',
+  'JEFFY1234599/block-craft-browser-edition',
+  'TheDoctor200/MinecraftDungeonsLauncher',
+  'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',
+  'jbruening/UnEngine'
 ] as const;
 
 export const FUSION_SOURCES:FusionSource[]=[
@@ -107,7 +119,19 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'public-apis/public-apis',license:'MIT',mode:'adapt',areas:['research','build'],ideas:['free API discovery catalog','auth/HTTPS/category-aware integration selection','prototype with public APIs before paid dependencies']},
   {repo:'freeCodeCamp/freeCodeCamp',license:'BSD-3-Clause',mode:'adapt',areas:['chat','build','research'],ideas:['project-based curriculum','small exercises with immediate feedback','progressive practice from fundamentals to real projects']},
   {repo:'mattpocock/skills',license:'MIT',mode:'adapt',areas:['build','chat'],ideas:['small composable engineering skills','shared project vocabulary and ADRs','TDD red-green-refactor','diagnose bugs in gated phases','spec before broad edits']},
-  {repo:'Donchitos/Claude-Code-Game-Studios',license:'MIT',mode:'adapt',areas:['simulation'],ideas:['studio-style simulation hierarchy with scoped ownership','adaptive rigor for world changes','end-to-end perception-decision-action-consequence-memory validation','run-and-observe visual QA','playtest-driven simulator iteration','world-system specialists','cross-domain coordination inside the simulation']}
+  {repo:'Donchitos/Claude-Code-Game-Studios',license:'MIT',mode:'adapt',areas:['simulation'],ideas:['studio-style simulation hierarchy with scoped ownership','adaptive rigor for world changes','end-to-end perception-decision-action-consequence-memory validation','run-and-observe visual QA','playtest-driven simulator iteration','world-system specialists','cross-domain coordination inside the simulation']},
+  {repo:'fogleman/Craft',license:'MIT',mode:'adapt',areas:['simulation'],ideas:['deterministic effectively-infinite chunks','delta persistence','block break/place','day-night','plants/transparency','visible-face/chunk culling','multiplayer state sync patterns']},
+  {repo:'dgreenheck/minecraft-threejs-clone',license:'unverified',mode:'reference',areas:['simulation'],ideas:['browser voxel terrain','biomes','resources','chunking','terraforming','save/load']},
+  {repo:'0xfabian/mc',license:'unverified',mode:'reference',areas:['simulation'],ideas:['low-level C++ OpenGL voxel architecture','camera/input','chunk rendering']},
+  {repo:'pquiring/jfcraft',license:'LGPL-2.1',mode:'reference',areas:['simulation'],ideas:['broad Minecraft-like block/item/content systems','crafting breadth','world architecture']},
+  {repo:'obiwac/python-minecraft-clone',license:'MIT',mode:'adapt',areas:['simulation'],ideas:['chunk mesh generation','break/place','save/load','collision','gravity/jumping','hotbar','mob/pathfinding architecture']},
+  {repo:'Aidanhouk/Minecraft-Clone',license:'unverified',mode:'reference',areas:['simulation'],ideas:['survival sandbox feature breadth','interaction coverage','content architecture']},
+  {repo:'zardoy/minecraft-web-client',license:'MIT',mode:'adapt',areas:['simulation','browser'],ideas:['browser-first voxel client','mobile controls','offline/online boundary','network world state','inventory UI patterns']},
+  {repo:'zardoy/mcraft-arwes',license:'unverified',mode:'reference',areas:['simulation'],ideas:['Minecraft-style HUD hierarchy','inventory/menu presentation','browser game shell']},
+  {repo:'JEFFY1234599/block-craft-browser-edition',license:'unverified',mode:'reference',areas:['simulation','browser'],ideas:['browser/mobile voxel interaction','customization UX']},
+  {repo:'TheDoctor200/MinecraftDungeonsLauncher',license:'MIT',mode:'reference',areas:['simulation'],ideas:['secondary offline profile/save selection concepts','mod/profile boundary','launcher UX only']},
+  {repo:'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',license:'Apache-2.0',mode:'reference',areas:['simulation'],ideas:['secondary dungeon loop','chests','economy','bosses','weapons','abilities','save/load','infinite adventure loop']},
+  {repo:'jbruening/UnEngine',license:'MIT',mode:'adapt',areas:['simulation','build','media','video'],ideas:['Unity GameObject/Component/MonoBehaviour semantics','Transform/Vector/Quaternion','Camera/Collider/Rigidbody/Physics','Input/Time/PlayerPrefs','testable Unity-compatible script architecture']}
 ];
 
 const SURFACE_RULES:Record<FusionSurface,string[]>={
@@ -127,6 +151,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'treat browser console/network/performance evidence as first-class debugging input',
     'prefer small composable changes with fast feedback; use spec → test/failure → implementation → verification for non-trivial edits',
     'use curated catalogs only to discover options; verify the selected library/API against its primary documentation before integration',
+    'when the requested target is Unity, prefer the Unity Fabric GameObject/Component/Transform contract and keep Unity-specific code isolated from the generic web runtime',
     'keep plugins/adapters permission-scoped and secrets server-side'
   ],
   research:[
@@ -146,18 +171,22 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'separate semantic identity fidelity from technical image quality',
     'use staged generation → review → repair → upscale/postprocess',
     'treat ComfyUI workflow JSON as an optional local/remote production graph for image/edit/upscale when configured',
-    'keep optional external stylizers/upscalers behind adapters; never pretend they ran'
+    'keep optional external stylizers/upscalers behind adapters; never pretend they ran',
+    'use Unity-style camera/transform scene contracts when a media preview or simulation surface benefits from a shared 3D coordinate model'
   ],
   video:[
     'plan script/shots/assets/continuity before render',
     'for interactive/game media, keep an art-direction brief and validate visible output instead of treating a successful render call as proof of quality',
     'track identity and scene state across frames',
+    'use Unity-style Transform/Camera scene snapshots when useful for deterministic shot blocking or simulation-to-video continuity',
     'distinguish true generative video from local keyframe motion fallback',
     'use recoverable job stages and quality gates'
   ],
   simulation:[
     'agents act from local perception plus persistent memory, not omniscient state',
     'Game Studio belongs to this surface: coordinate world direction, systems, agent behavior, visual world and playtest/QA inside the simulation rather than in generic Build',
+    'Minecraft-class mode uses deterministic effectively-infinite chunks, delta persistence, mining/placing, inventory/crafting, survival/creative loops, mobs, structures and secondary dungeon progression',
+    'Unity Fabric supplies GameObject/Component/Transform semantics everywhere the simulation needs a shared 3D scene contract and can hand snapshots to a real Unity WebGL host when configured',
     'use adaptive minimal/standard/full rigor for simulation changes and validate a complete perception → decision → action → consequence → memory loop before expanding complex scenarios',
     'use deterministic state transitions for core world rules',
     'allow emergent policies/evolution only as a simulation layer, never as factual prediction',
