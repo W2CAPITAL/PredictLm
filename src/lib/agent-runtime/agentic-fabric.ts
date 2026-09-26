@@ -70,7 +70,7 @@ function surfaceBoost(surface:AgenticSurface,id:string){
       'research-engine':22,'github-knowledge':12,'provider-mesh':10
     },
     simulation:{
-      'predictlm-master':28,'game-studio-fabric':34,'capability-fusion':30,'neurocore':27,
+      'predictlm-master':28,'game-studio-fabric':34,'mirofish-simulation':33,'capability-fusion':30,'neurocore':27,
       'life-simulation':30,'digital-brain':24,'agent-fabric':20,'centum-parallax':10
     }
   };
