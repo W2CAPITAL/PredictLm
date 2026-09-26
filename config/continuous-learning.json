@@ -147,7 +147,11 @@
         "mouse connectome microns neuroscience stars:>10",
         "zebrafish connectome brain atlas stars:>10",
         "comparative connectomics computational neuroscience stars:>10",
-        "brain inspired learning controller simulation stars:>20"
+        "brain inspired learning controller simulation stars:>20",
+        "organoid intelligence simulation stars:>5",
+        "biological neural network MEA closed loop stars:>5",
+        "connectome embodied agent fly stars:>5",
+        "brain digital twin spiking neural network stars:>5"
       ],
       "arxivQuery": "comparative connectomics C elegans mouse zebrafish brain inspired learning computational neuroscience",
       "skills": [
@@ -173,10 +177,13 @@
     {
       "id": "simulation",
       "label": "Simulação, agentes e mundos persistentes",
-      "priority": 4,
+      "priority": 5,
       "githubQueries": [
         "multi agent simulation world stars:>100",
-        "voxel engine browser stars:>100"
+        "voxel engine browser stars:>100",
+        "voxel first person WebGL browser stars:>20",
+        "minecraft AI agent persistent world stars:>20",
+        "multi agent civilization sandbox stars:>20"
       ],
       "arxivQuery": "multi agent simulation persistent world",
       "skills": [
@@ -235,7 +242,9 @@
         "agent state machine durable memory deep research stars:>20",
         "agent deception detection sandbagging evaluation stars:>10",
         "portable identity webfinger service discovery stars:>10",
-        "agent crash recovery checkpoint handoff lease stars:>10"
+        "agent crash recovery checkpoint handoff lease stars:>10",
+        "continuous ai repo understanding autonomous loop stars:>10",
+        "self improving code agent regression repair stars:>20"
       ],
       "arxivQuery": "recursive self improvement deception detection sandbagging corrigibility checkpoint handoff agent continuity",
       "skills": [
