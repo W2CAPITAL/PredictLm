@@ -111,15 +111,17 @@ Uma referência só é considerada incorporada quando existe pelo menos uma dest
 Não usar nomes de repositórios como decoração de resposta pública; eles existem para melhorar o produto.
 
 
-## Game Studio / jogos
+## Game Studio / Simulação
 
-- Donchitos/Claude-Code-Game-Studios → hierarquia de papéis por domínio, rigor adaptativo, vertical slice, run-and-observe, playtest, regras por caminho e escalonamento cross-domain.
+- Donchitos/Claude-Code-Game-Studios → padrões MIT de coordenação por papéis, rigor adaptativo, run-and-observe e playtest, aplicados **somente** à Life Simulation Studio.
 
 Implementação:
-- src/lib/game-studio-fabric.ts detecta engine/rigor e produz o contrato de execução.
-- src/lib/agent-runtime/agentic-fabric.ts ativa papéis de producer, design, direção técnica/visual, gameplay e playtest em tarefas de jogos.
-- src/app/api/agent usa esse contexto no explorer/architect/implementer/reviewer/repair.
-- src/lib/build-reference-playbook.ts injeta o playbook somente quando o prompt é de jogo.
-- skills/game-studio-fabric/SKILL.md mantém a skill sincronizada com o runtime.
+- `src/lib/game-studio-fabric.ts` produz contrato de rigor/papéis/gates da simulação.
+- `src/lib/agent-runtime/agentic-fabric.ts` possui superfície `simulation` e seleciona Game Studio somente nela.
+- `src/app/api/chat/route.ts` injeta Game Studio + capability fusion no modo `simulation-plan`.
+- `src/components/GrokSimulationPanel.tsx` usa Game Studio também no cérebro local e mostra o estado do Studio na UI.
+- `skills/game-studio-fabric/SKILL.md` mantém o contrato sincronizado.
+- Build genérico não recebe Game Studio.
 
-Regra principal: build/parse/teste lógico não substitui observação visual. Quando a superfície puder ser executada/renderizada, reter evidência; quando não puder, marcar a lacuna como não verificada em vez de fingir execução.
+Regra principal: narrativa não substitui estado. O ciclo validado é percepção → decisão → ação → consequência → memória. Mudanças visíveis do mundo/POV usam run-and-observe quando possível.
+
