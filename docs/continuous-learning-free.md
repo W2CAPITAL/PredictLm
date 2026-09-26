@@ -42,10 +42,12 @@ workflow publica CSVs na branch `continuous-learning`:
 
 Cada aba do Google Sheets usa `IMPORTDATA` para ler o CSV público correspondente.
 Como o repositório é público, não existe token do Google, service account ou API paga
-no caminho padrão.
+no caminho padrão. O Google verifica `IMPORTDATA` periodicamente enquanto a planilha
+está aberta; o GitHub continua atualizando os CSVs mesmo quando ela está fechada.
 
-O writer direto via Google Sheets API continua opcional para instalações privadas, mas
-não é necessário para a planilha padrão.
+Para manter as células do Sheets gravadas/atualizadas também com a planilha fechada,
+o mesmo runner aceita uma service account gratuita por repository secrets. Isso é
+opcional e não altera o ciclo de aprendizado principal.
 
 ## Motor local
 
