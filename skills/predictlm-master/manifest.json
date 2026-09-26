@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.18.0",
+  "version": "3.19.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -54,7 +54,19 @@
     "firecrawl-research-adapter",
     "simulation-only-game-studio",
     "fusion-source-coverage-audit",
-    "simulation-agent-studio-routing"
+    "simulation-agent-studio-routing",
+    "minecraft-class-voxel-world",
+    "effectively-infinite-chunks",
+    "voxel-delta-persistence",
+    "voxel-survival-creative",
+    "voxel-crafting-smelting-farming",
+    "voxel-mobs-structures-dungeons",
+    "minecraft-reference-audit",
+    "dungeons-secondary-reference",
+    "unity-fabric",
+    "unengine-scene-contract",
+    "unity-webgl-optional-runtime",
+    "unity-scene-snapshots"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
@@ -131,7 +143,9 @@
     "macaque-core",
     "report-architect",
     "capability-fusion",
-    "game-studio-fabric"
+    "game-studio-fabric",
+    "minecraft-sandbox",
+    "unity-fabric"
   ],
   "legacySkillsAreInternal": true,
   "connectomeCores": {
@@ -162,6 +176,8 @@
     "gameStudioVisualProof": "player-visible game changes require run-and-observe evidence when renderable; otherwise explicit NOT VERIFIED gap",
     "verticalSlice": "non-trivial game projects validate a representative end-to-end slice before broad production scaling",
     "gameStudioScope": "Game Studio is activated by Life Simulation Studio, not generic Build",
-    "fusionCoverage": "all user-requested repository sources must remain registered in capability-fabric coverage"
+    "fusionCoverage": "all user-requested repository sources must remain registered in capability-fabric coverage",
+    "minecraftReferenceCoverage": "all 9 primary Minecraft clone references, 2 Dungeons secondary references and UnEngine must remain registered",
+    "unityRuntimeTruth": "real Unity is reported only when a Unity WebGL host is configured; otherwise use native scene fabric"
   }
 }
