@@ -7,7 +7,12 @@ export type RuntimeAdapterId=
   |'comfyui-upscale'
   |'paddleocr'
   |'media-upscaler'
-  |'voice-studio';
+  |'voice-studio'
+  |'animegan-stylizer'
+  |'scrapling'
+  |'changedetection'
+  |'chrome-devtools'
+  |'trackstudio';
 
 export interface RuntimeAdapterState{
   id:RuntimeAdapterId;
@@ -99,6 +104,56 @@ export function runtimeAdapterStates():RuntimeAdapterState[]{
       required:['VOICE_STUDIO_BASE_URL'],
       optional:['VOICE_STUDIO_API_KEY'],
       notes:'Optional transcription/synthesis/dubbing bridge; identity-sensitive voice cloning still requires explicit consent.'
+    },
+    {
+      id:'animegan-stylizer',
+      label:'AnimeGAN Stylizer',
+      surfaces:['media','video'],
+      configured:has('ANIMEGAN_BASE_URL'),
+      mode:'self-hosted',
+      required:['ANIMEGAN_BASE_URL'],
+      optional:['ANIMEGAN_API_KEY','ANIMEGAN_MODEL'],
+      notes:'Optional stylization pass; never replaces identity/reference grounding.'
+    },
+    {
+      id:'scrapling',
+      label:'Scrapling Extractor',
+      surfaces:['research','browser'],
+      configured:has('SCRAPLING_BASE_URL'),
+      mode:'self-hosted',
+      required:['SCRAPLING_BASE_URL'],
+      optional:['SCRAPLING_API_KEY'],
+      notes:'Optional resilient extraction bridge used only when explicitly configured.'
+    },
+    {
+      id:'changedetection',
+      label:'ChangeDetection',
+      surfaces:['research','browser'],
+      configured:has('CHANGEDETECTION_BASE_URL'),
+      mode:'self-hosted',
+      required:['CHANGEDETECTION_BASE_URL'],
+      optional:['CHANGEDETECTION_API_KEY'],
+      notes:'Optional website change watch backend; monitoring is never claimed when this adapter is absent.'
+    },
+    {
+      id:'chrome-devtools',
+      label:'Chrome DevTools MCP',
+      surfaces:['browser','build'],
+      configured:has('CHROME_DEVTOOLS_MCP_URL'),
+      mode:'local-bridge',
+      required:['CHROME_DEVTOOLS_MCP_URL'],
+      optional:[],
+      notes:'Optional browser debugging bridge for DOM/network/console/performance evidence.'
+    },
+    {
+      id:'trackstudio',
+      label:'TrackStudio',
+      surfaces:['media','video'],
+      configured:has('TRACKSTUDIO_BASE_URL'),
+      mode:'self-hosted',
+      required:['TRACKSTUDIO_BASE_URL'],
+      optional:['TRACKSTUDIO_API_KEY'],
+      notes:'Optional temporal/object tracking bridge for identity and scene continuity.'
     }
   ];
 }
