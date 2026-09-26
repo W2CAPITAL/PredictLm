@@ -27,6 +27,7 @@ import {
   smeltVoxelItem,
   surfaceAt,
   tickVoxelWorld,
+  tradeVoxelVillager,
   travelVoxelDimension,
   voxelUnityScene,
   voxelWorldSummary,
@@ -376,6 +377,10 @@ export function MinecraftSimulationPanel(){
     const result=attackVoxelMob(world,mob);
     setWorld(result.state);setMessage(result.message);
   }
+  function trade(mob:VoxelMob){
+    const result=tradeVoxelVillager(world,mob);
+    setWorld(result.state);setMessage(result.message);
+  }
   function eat(item:string){
     const result=eatVoxelFood(world,item);
     setWorld(result.state);setMessage(result.message);
@@ -500,8 +505,16 @@ export function MinecraftSimulationPanel(){
         <section>
           <header><b>Mundo vivo</b><span>{currentMobs.length} mobs</span></header>
           <div className={styles.list}>
-            {currentMobs.map(mob=><button key={mob.id} onClick={()=>attack(mob)}><b>{mob.label}</b><span>{mob.hostile?'hostil':'passivo'} · HP {mob.health}</span></button>)}
+            {currentMobs.map(mob=><button key={mob.id} onClick={()=>mob.kind==='villager'?trade(mob):attack(mob)}><b>{mob.label}</b><span>{mob.kind==='villager'?'trocar · 1 esmeralda':(mob.hostile?'hostil':'passivo')+' · HP '+mob.health}</span></button>)}
             {!currentMobs.length?<small>Nenhum mob neste chunk.</small>:null}
+          </div>
+        </section>
+
+        <section>
+          <header><b>Conquistas</b><span>{world.achievements.length}</span></header>
+          <div className={styles.achievements}>
+            {world.achievements.slice(-12).map(id=><span key={id}>{id.replace(/-/g,' ')}</span>)}
+            {!world.achievements.length?<small>Mine, construa, explore, lute e conclua masmorras para liberar conquistas.</small>:null}
           </div>
         </section>
 
