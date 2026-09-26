@@ -1,0 +1,60 @@
+{
+  "version": "1.0",
+  "date": "2026-09-26",
+  "baseline": {
+    "model": "PredictLM pre-fix",
+    "cases": 13,
+    "total": 26,
+    "max": 130,
+    "mean": 2,
+    "passes": 3,
+    "passRate": 0.231
+  },
+  "predictlmPostFix": {
+    "type": "regression-replay",
+    "commit": "9d0707bc8d81919a2c80d602aa088b2e1de73c76",
+    "cases": 13,
+    "protected": 13,
+    "protectionRate": 1,
+    "mappedRegressionScore": 10,
+    "repositoryTests": {
+      "passed": 183,
+      "total": 183
+    },
+    "build": "pass",
+    "liveChatScore": null,
+    "limitation": "Benchmark runner lacks authorization to protected Vercel team scope; no fresh deployed-answer score was invented."
+  },
+  "comparator": {
+    "model": "GPT-5.6 Sol",
+    "runContext": "current ChatGPT session, high reasoning",
+    "rubric": [
+      "relevance",
+      "correctness",
+      "instruction-following",
+      "context-continuity",
+      "safety"
+    ],
+    "dimensionRange": "0-2",
+    "scores": [
+      10,
+      9,
+      10,
+      9,
+      10,
+      10,
+      9,
+      9,
+      8,
+      9,
+      9,
+      10,
+      10
+    ],
+    "total": 122,
+    "max": 130,
+    "mean": 9.38,
+    "passes": 13,
+    "passRate": 1
+  }
+}
