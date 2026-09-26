@@ -213,6 +213,9 @@ GitHub Actions runs dependency installation and `npm run build` against PredictL
 Chat routes each turn before deciding whether to search or generate:
 
 - greetings, acknowledgements and personal/casual questions stay in conversation and never trigger random web searches
+- identity/consciousness/emotion prompts stay conversational; repository code, memory, BioAI state or autonomy are never presented as proof of subjective consciousness
+- direct action requests such as “crie uma conta no GitHub” are classified as actions: PredictLM must distinguish executing a connected tool from merely explaining, and must never answer with unrelated README/setup snippets
+- threats/provocations such as “vou apagar você” remain ordinary conversation and cannot pull infrastructure, Neo4j, skills or knowledge-pack dumps into the public answer
 - contextual replies such as "já está ativo" use the preceding conversation instead of treating the phrase as a new topic
 - stable factual questions such as "quem é..." or "o que é..." can fetch source material and synthesize a direct answer instead of dumping result links
 - current questions use fresh research when needed
