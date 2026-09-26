@@ -448,7 +448,7 @@ export async function localBrainAdvisory(
         {role:'system',content:system},
         ...recent.map(m=>({role:m.role==='assistant'?'assistant' as const:'user' as const,content:m.content})),
         {role:'user',content:prompt}
-      ],{maxTokens:webllm.tier==='smart'?150:100,temperature:0.2});
+      ],{maxTokens:webllm.tier==='power'?220:webllm.tier==='smart'?170:110,temperature:0.2});
       const gate=publicAnswerGate(cleanUserFacingAnswer(raw),language);
       return gate.ok?{content:gate.content.slice(0,1800),engine:'webllm'}:null;
     }
@@ -714,7 +714,7 @@ export async function answerLocally(prompt:string,messages:{role:string;content:
           : prompt}
       ];
       const content=await webLLMGenerate(webMessages,{
-        maxTokens:deepMode?(webllm.tier==='smart'?1000:700):(webllm.tier==='smart'?760:520),
+        maxTokens:deepMode?(webllm.tier==='power'?1400:webllm.tier==='smart'?1100:720):(webllm.tier==='power'?1050:webllm.tier==='smart'?820:540),
         temperature:deepMode?0.28:0.38
       });
       const cleaned=cleanUserFacingAnswer(content);
