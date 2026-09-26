@@ -83,6 +83,14 @@ function researchQueryPlan(query:string){
     planned.push(query+' Banco Central SGS série oficial modalidade taxa metodologia');
   }else if(/datajud|djen|jurid|processo|tribunal/.test(q)){
     planned.push(query+' CNJ DataJud DJEN fonte oficial');
+  }else if(isSoftwareResearchQuery(query)){
+    if(/\bapi\b/.test(q)){
+      planned.push(query+' official documentation GitHub public API authentication HTTPS rate limits');
+    }else if(/\b(aprender|tutorial|curso|fundamentos|do zero)\b/.test(q)){
+      planned.push(query+' project based learning freeCodeCamp build your own implementation');
+    }else{
+      planned.push(query+' official documentation maintained open source alternatives architecture');
+    }
   }
   return Array.from(new Set(planned)).slice(0,2);
 }
