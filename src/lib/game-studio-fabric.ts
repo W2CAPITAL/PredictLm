@@ -15,9 +15,15 @@ function norm(value:string){
   return String(value||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
 }
 
-export function isGameDevelopmentTask(prompt:string){
+export function isSimulationStudioTask(prompt:string){
   const q=norm(prompt);
-  return /\b(game|jogo|gameplay|godot|unity|unreal|ue5|level design|npc|combat|hud|shader|multiplayer|playtest|vertical.?slice|mecanica de jogo|mecânica de jogo)\b/.test(q);
+  return /\b(simulacao|simulação|simulador|simulation|cenario|cenário|vida|life|mundo|world|npc|agente|agent|autonomia|personagem|character|voxel|sandbox|sociedade|social simulation|contrafactual|counterfactual)\b/.test(q);
+}
+
+// Compatibilidade com chamadas antigas. Game Studio agora pertence à Simulação,
+// não ao Build genérico.
+export function isGameDevelopmentTask(prompt:string){
+  return isSimulationStudioTask(prompt);
 }
 
 export function inferGameEngine(prompt:string):GameEngine{
@@ -25,76 +31,81 @@ export function inferGameEngine(prompt:string):GameEngine{
   if(/\bgodot\b|gdscript|gdextension/.test(q))return 'godot';
   if(/\bunity\b|mono ?behaviour|addressables|dots|ecs/.test(q))return 'unity';
   if(/\bunreal\b|\bue5\b|blueprint|gas|commonui|replication/.test(q))return 'unreal';
-  if(/\b(phaser|pixi|three\.?js|babylon|canvas|webgl|webgpu|browser game|jogo web)\b/.test(q))return 'web';
-  return 'unknown';
+  // Life Simulation Studio do PredictLM roda no navegador.
+  return 'web';
 }
 
 export function inferStudioRigor(prompt:string):StudioRigor{
   const q=norm(prompt);
-  if(/\b(full|completo|commercial|comercial|production|producao|produção|release|multiplayer|live ops|live-ops|console|steam)\b/.test(q))return 'full';
-  if(/\b(standard|vertical.?slice|sprint|milestone|arquitetura|architecture|equipe|team|systems?|sistemas?)\b/.test(q))return 'standard';
+  if(/\b(full|completo|complexo|complexa|massivo|sociedade|cidade|economia|multi.?agent|muitos agentes|longa duracao|longa duração|persistente)\b/.test(q))return 'full';
+  if(/\b(standard|cenario|cenário|sistema|systems?|rotina|relacoes|relações|memoria|memória|autonomia|contrafactual|counterfactual)\b/.test(q))return 'standard';
   return 'minimal';
 }
 
-export function gameStudioPlan(prompt:string):GameStudioPlan{
-  if(!isGameDevelopmentTask(prompt)){
-    return {active:false,engine:'unknown',rigor:'minimal',roles:[],gates:[],evidence:[],verticalSlice:false};
+export function gameStudioPlan(prompt:string,forceSimulation=false):GameStudioPlan{
+  if(!forceSimulation&&!isSimulationStudioTask(prompt)){
+    return {active:false,engine:'web',rigor:'minimal',roles:[],gates:[],evidence:[],verticalSlice:false};
   }
   const engine=inferGameEngine(prompt);
   const rigor=inferStudioRigor(prompt);
   const q=norm(prompt);
-  const visual=/\b(ui|hud|menu|level|mapa|scene|cena|shader|vfx|art|arte|anim|camera|câmera|visual|render)\b/.test(q);
-  const gameplay=/\b(gameplay|combat|npc|ai|ia|movement|movimento|physics|fisica|física|economy|economia|quest|missao|missão)\b/.test(q);
-  const multiplayer=/\b(multiplayer|network|rede|replication|servidor|server|coop|co-op|pvp)\b/.test(q);
-  const verticalSlice=/\b(vertical.?slice|fatia vertical|prototype|prot[oó]tipo|mvp)\b/.test(q)||rigor!=='minimal';
+  const visual=/\b(camera|câmera|visual|voxel|mapa|scene|cena|render|pov|interface|ui|mundo)\b/.test(q);
+  const social=/\b(relacao|relação|social|sociedade|amizade|trabalho|economia|família|familia|grupo)\b/.test(q);
+  const autonomy=/\b(autonomia|decida|aja|npc|agente|agent|multi.?agent|emergente|emergent)\b/.test(q);
+  const verticalSlice=rigor!=='minimal'||/\b(loop|ciclo|rotina completa|cenario completo|cenário completo|vertical.?slice)\b/.test(q);
 
   const roles=[
-    'producer',
-    'creative-director',
-    'technical-director',
-    ...(gameplay?['game-designer','gameplay-programmer']:[]),
-    ...(visual?['art-director','ui/ux-specialist']:[]),
-    ...(multiplayer?['network-specialist']:[]),
-    'qa/playtest'
+    'simulation-producer',
+    'world/systems-director',
+    'behavior-director',
+    ...(visual?['visual-world-director']:[]),
+    ...(social?['social-systems-designer']:[]),
+    ...(autonomy?['agent-behavior-specialist']:[]),
+    'simulation-qa/playtest'
   ];
 
   const gates=[
-    'scope/vision alignment',
-    'architecture feasibility',
-    ...(visual?['run-and-observe visual verification']:[]),
-    'regression/smoke verification',
-    ...(verticalSlice?['vertical-slice end-to-end validation']:[])
+    'world-state consistency',
+    'action feasibility against real simulation rules',
+    'local-perception boundary',
+    'memory/relationship continuity',
+    ...(visual?['run-and-observe visual world verification']:[]),
+    ...(autonomy?['autonomy safety + deterministic repair gate']:[]),
+    ...(verticalSlice?['end-to-end simulated loop validation']:[])
   ];
 
   const evidence=[
-    'changed files + acceptance criteria',
-    'tests or smoke results for changed behavior',
-    ...(visual?['rendered screenshot/video or an explicit NOT VERIFIED gap']:[]),
-    ...(gameplay?['playtest observation for the changed loop when feasible']:[])
+    'state transition before/after',
+    'agent action/history record',
+    'memory/relationship continuity',
+    ...(visual?['rendered world/POV observation or explicit NOT VERIFIED gap']:[]),
+    ...(autonomy?['planner output repaired against allowed actions']:[])
   ];
 
   return {active:true,engine,rigor,roles,gates,evidence,verticalSlice};
 }
 
-export function gameStudioContext(prompt:string){
-  const plan=gameStudioPlan(prompt);
+export function gameStudioContext(prompt:string,forceSimulation=false){
+  const plan=gameStudioPlan(prompt,forceSimulation);
   if(!plan.active)return '';
   return [
-    'GAME STUDIO FABRIC — adapt the MIT-licensed coordination patterns from Claude-Code-Game-Studios without cloning its whole process.',
-    'Engine: '+plan.engine+'. Rigor: '+plan.rigor+'.',
-    'Roles: '+plan.roles.join(' → ')+'.',
-    'Gates: '+plan.gates.join(' · ')+'.',
+    'SIMULATION GAME STUDIO — use the MIT-licensed coordination patterns from Claude-Code-Game-Studios inside the Life Simulation Studio only.',
+    'This is not a generic Build workflow and must not turn ordinary coding tasks into a game studio process.',
+    'Runtime: '+plan.engine+'. Rigor: '+plan.rigor+'.',
+    'Internal roles: '+plan.roles.join(' → ')+'.',
+    'Simulation gates: '+plan.gates.join(' · ')+'.',
     'Evidence: '+plan.evidence.join(' · ')+'.',
     plan.rigor==='minimal'
-      ? 'Keep process light: one brief, direct implementation, smoke/run evidence, then iterate.'
+      ? 'Keep the simulation loop light: understand the instruction → validate actions → mutate real state → observe the result.'
       : plan.rigor==='standard'
-        ? 'Use a scoped design/architecture note, one end-to-end slice, then expand only after the slice works.'
-        : 'Use explicit architecture/design ownership, broader QA/release gates and playtest evidence, but do not create paperwork with no decision value.',
+        ? 'Coordinate world systems, agent behavior, memory and visible state before accepting a plan.'
+        : 'Use explicit multi-agent/world-system ownership, contradiction checks, scenario branches and stronger QA while preserving bounded execution.',
     plan.verticalSlice
-      ? 'Vertical-slice rule: validate one complete start → challenge → resolution loop at representative quality before scaling production.'
+      ? 'Loop rule: validate a complete simulated perception → decision → action → consequence → memory cycle before expanding the scenario.'
       : '',
-    'Visible change rule: a parse/build is not proof the result looks correct. When the host can render, run it and inspect retained evidence; otherwise say visual verification is still pending.',
-    'Cross-domain rule: specialists may advise outside their domain, but design/technical conflicts are resolved by the appropriate director and coordinated by the producer.',
-    'User decisions remain authoritative; agents structure the work rather than replacing product decisions.'
+    'Simulation truth rule: narration never outranks state. If an action cannot be represented by the engine, do not pretend it happened.',
+    'Perception rule: simulated agents act from their own visible/local state and memory, not omniscient world knowledge.',
+    'Visual rule: when the browser renders the world, visible state should be checked from the rendered world/POV instead of inferred only from data.',
+    'Playtest rule: observations describe simulator behavior and UX, never predictions about real human behavior.'
   ].filter(Boolean).join('\n');
 }
