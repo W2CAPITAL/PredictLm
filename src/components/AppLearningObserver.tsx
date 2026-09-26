@@ -48,7 +48,7 @@ export function AppLearningObserver(){
         surface:surface(),
         action:'click '+labelFor(el),
         kind:'interaction',
-        salience:tag==='button'?.56:.42,
+        salience:tag==='button' ? .56 : .42,
         metadata:{tag,type:type||undefined}
       });
     };
@@ -123,8 +123,8 @@ export function AppLearningObserver(){
             url.includes('/api/agent')?'build':'api',
           success:response.ok,
           durationMs,
-          uncertainty:response.ok?.24:.78,
-          salience:response.ok?.45:.9,
+          uncertainty:response.ok ? .24 : .78,
+          salience:response.ok ? .45 : .9,
           metadata:{status:response.status}
         });
         return response;
