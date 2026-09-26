@@ -79,6 +79,12 @@ const BLOCK_COLORS:Record<VoxelBlockId,string>={
 
 type ToolMode='mine'|'place'|'inspect';
 
+interface MinecraftSimulationPanelProps{
+  world?:VoxelWorldState;
+  onWorldChange?:(world:VoxelWorldState)=>void;
+  embedded?:boolean;
+}
+
 function loadWorld(){
   if(typeof window==='undefined')return createVoxelWorld(827361);
   try{
@@ -96,8 +102,17 @@ function shade(hex:string,amount:number){
   return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
 }
 
-export function MinecraftSimulationPanel(){
-  const [world,setWorld]=useState<VoxelWorldState>(()=>createVoxelWorld(827361));
+export function MinecraftSimulationPanel({world:controlledWorld,onWorldChange,embedded=false}:MinecraftSimulationPanelProps={}){
+  const [internalWorld,setInternalWorld]=useState<VoxelWorldState>(()=>createVoxelWorld(827361));
+  const world=controlledWorld??internalWorld;
+  const setWorld=(updater:VoxelWorldState|((prev:VoxelWorldState)=>VoxelWorldState))=>{
+    if(controlledWorld!==undefined){
+      const next=typeof updater==='function'?(updater as (prev:VoxelWorldState)=>VoxelWorldState)(controlledWorld):updater;
+      onWorldChange?.(next);
+    }else{
+      setInternalWorld(updater as any);
+    }
+  };
   const [hydrated,setHydrated]=useState(false);
   const [running,setRunning]=useState(false);
   const [tool,setTool]=useState<ToolMode>('mine');
@@ -115,14 +130,18 @@ export function MinecraftSimulationPanel(){
   const audit=useMemo(()=>minecraftReferenceAudit(),[]);
 
   useEffect(()=>{
-    setWorld(loadWorld());
+    if(controlledWorld!==undefined){
+      setHydrated(true);
+      return;
+    }
+    setInternalWorld(loadWorld());
     setHydrated(true);
-  },[]);
+  },[controlledWorld!==undefined]);
 
   useEffect(()=>{
-    if(!hydrated)return;
+    if(!hydrated||controlledWorld!==undefined)return;
     try{localStorage.setItem(STORAGE,JSON.stringify(world))}catch{}
-  },[world,hydrated]);
+  },[world,hydrated,controlledWorld]);
 
   useEffect(()=>{
     if(!running)return;
