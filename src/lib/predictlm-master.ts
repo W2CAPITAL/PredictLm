@@ -1,11 +1,12 @@
 import { isDecisionRequest } from './decision-centum';
+import { influencerStudioContext, isInfluencerStudioRequest } from './social/influencer-studio';
 
 function normalize(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
 }
 
 export type MasterRoute=
-  |'chat'|'build'|'research'|'legal'|'process'|'media'|'tutor'
+  |'chat'|'build'|'research'|'legal'|'process'|'media'|'social'|'tutor'
   |'simulation-scenarios'|'simulation-world'|'diagnostics';
 
 export function isScenarioSimulationRequest(prompt:string){
@@ -41,6 +42,7 @@ export function scenarioSimulationContext(prompt:string,deep=false){
 export function classifyMasterRoute(prompt:string):MasterRoute{
   const q=normalize(prompt);
   if(isScenarioSimulationRequest(prompt))return 'simulation-scenarios';
+  if(isInfluencerStudioRequest(prompt))return 'social';
   if(/\b(simulacao de vida|simulação de vida|life simulation|mundo vivo|personagem ativa)\b/.test(q)&&/\b(abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|quero ver)\b/.test(q))return 'simulation-world';
   if(/\b(runtime|provider|modelo ativo|skill|router|debug|diagnostico|diagnóstico|log|trace)\b/.test(q))return 'diagnostics';
   if(/\b(build|app|aplicativo|site|sistema|codigo|código|implemente|corrija|exporte|zip)\b/.test(q))return 'build';
@@ -70,6 +72,7 @@ export function predictLMMasterContext(prompt:string,deep=false){
     'Internal reasoning may be deep and multi-pass; public output never exposes private chain-of-thought.',
     'Current master route: '+route+'.',
     decision?'This turn is decision-sensitive: apply Centum/Forge/Aegis/Council/Parallax internally as needed.':'Use the minimum internal machinery that improves the answer.',
-    scenarioSimulationContext(prompt,deep)
+    scenarioSimulationContext(prompt,deep),
+    route==='social'?influencerStudioContext(prompt):''
   ].filter(Boolean).join('\n\n');
 }
