@@ -236,7 +236,6 @@ export async function POST(req:Request){
       'Do not redesign the whole product. Validate findings before reporting them. No chain-of-thought.',
       projectInstructions,
       fusion,
-      unityContext,
       unityContext
     ].filter(Boolean).join('\n\n');
 
@@ -258,6 +257,7 @@ export async function POST(req:Request){
         skillContext,
         projectInstructions,
         fusion,
+        unityContext,
         'You are the repair/finalizer. Fix only validated review findings and missing requirements.',
         'Return the full corrected BuildPayload JSON. Do not explain the review process.'
       ].filter(Boolean).join('\n\n');
