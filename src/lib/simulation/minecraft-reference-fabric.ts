@@ -83,6 +83,11 @@ export const ALL_MINECRAFT_SIM_REFERENCES=[
   UNITY_ENGINE_REFERENCE
 ];
 
+export function isMinecraftSandboxTask(prompt:string){
+  const q=String(prompt||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  return /\b(minecraft|voxel|bloco|block|craft|crafting|minerar|mine|mineracao|survival|sobrevivencia|chunk|bioma|biome|mobs?|dungeon|masmorra)\b/.test(q);
+}
+
 export function minecraftReferenceAudit(){
   const unlicensed=ALL_MINECRAFT_SIM_REFERENCES.filter(x=>x.license==='unverified').map(x=>x.repo);
   return{
