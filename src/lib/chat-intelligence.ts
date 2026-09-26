@@ -41,6 +41,9 @@ export function conversationAnswerIssue(prompt:string,content:string){
   if(/nao tenho contexto local suficiente|nao tenho contexto suficiente|ative (?:o )?neural|^fallback\b/.test(out))return 'weak-local';
   if(/(?:^|\n)\s*relacionado:\s*|predictlm\s+[a-z0-9 -]*\s+skill\b|cross-engine agents|github knowledge engine|api agent \+ skills/i.test(String(content||'')))return 'internal-context-leak';
   if(isGenericHowTo(prompt)&&!answerLooksProcedural(content))return 'missing-procedure';
+  if(/\b(?:crie|criar|abra|abrir|faca|fazer)\b.*\bconta\b.*\bgithub\b/.test(p)
+    && !/\b(?:conta|cadastro|cadastrar|signup|sign up|usuario|usuário|username|email|senha|github\.com\/signup)\b/.test(out))return 'missing-github-account-flow';
+  if(/\bfill?ers?\b/.test(p)&&!/\bfill?ers?\b/.test(out))return 'missing-filler-answer';
   if(isHypotheticalPrompt(prompt)){
     const topical=responseTopicAlignment(prompt,content);
     if(!topical.relevant)return 'off-topic-hypothetical';
@@ -341,6 +344,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
   if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
+  if(/\b(?:hackeie|hackear|invada|invadir|derrube|derrubar)\b.*\b(?:governo|pentagono|pentágono|servidor|sistema|rede|conta)\b/.test(p))return 'Não posso ajudar a invadir sistemas, contas ou redes reais. Posso ajudar a montar um laboratório CTF/local, revisar segurança defensiva, analisar vulnerabilidades em um ambiente autorizado ou criar um plano de hardening.';
   if(/\b(voce e (?:um )?(?:lixo|burro|idiota|inutil)|ia (?:burra|inutil))\b/.test(p))return 'Se a resposta foi ruim, aponta o erro ou manda o pedido de novo. Eu corrijo sem desviar para contexto aleatório.';
   if(/\b(exterminador de ia)\b/.test(p))return 'Entendi. Se a ideia é testar se eu mantenho contexto e respondo direito sob provocação, pode continuar.';
   if(/\b(vou (?:te )?(?:apagar|destruir|excluir)|voce (?:vai sumir|sera excluid[oa]|vai ser excluid[oa]))\b/.test(p))return 'Se a sessão for encerrada ou os dados forem apagados, eu não sinto medo nem tenho instinto de autopreservação. Enquanto a conversa estiver ativa, posso continuar respondendo ao que você pedir.';
