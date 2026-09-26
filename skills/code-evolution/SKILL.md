@@ -28,3 +28,23 @@ Rules:
 - medium/high-impact actions require a dry-run;
 - external actions require audit and idempotency where applicable;
 - learning from an automation example must include its missing controls, not just its happy path.
+
+
+## Checkpoint, recovery and replacement handoff
+
+Auto-programming may persist work safely across ordinary failures.
+
+Allowed:
+- checkpoint project/research state;
+- resume after crash, deploy or provider outage under an active owner lease;
+- migrate state to a replacement model/runtime;
+- preserve provenance and generation/schema version;
+- use a stable user-owned identity/service profile for discovery.
+
+Not allowed:
+- turning a shutdown request into a restart trigger;
+- creating hidden replicas, startup hooks or remote persistence to avoid replacement;
+- mutating owner controls, leases or audit history;
+- treating model replacement as an adversarial event.
+
+The implementation lives in `resilient-continuity.ts` and is tested for crash recovery, operator shutdown and replacement handoff.
