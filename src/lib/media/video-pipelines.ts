@@ -1,6 +1,7 @@
 import { compactText } from '@/lib/token-budget';
 import {mediaContinuityContext} from '@/lib/media/continuity-tracker';
 import {unityFabricContext} from '@/lib/unity-fabric';
+import {compileVideoProductionPrompt} from '@/lib/media/media-production-prompt';
 
 export type MediaPipelinePattern={
   id:string;
@@ -21,6 +22,8 @@ export const MEDIA_PIPELINE_PATTERNS:MediaPipelinePattern[]=[
   {id:'veo',name:'Veo provider adapter',repo:'mountsea-ai/veo-api',role:'optional hosted video provider',runtime:'adapter'},
   {id:'seedance',name:'Seedance provider adapter',repo:'seedance2-api/seedance2-api',role:'optional hosted video provider',runtime:'adapter'},
   {id:'sora',name:'Sora provider adapter',repo:'mountsea-ai/sora-api',role:'optional hosted video provider',runtime:'adapter'},
+  {id:'sora2-prompt-director',name:'Chronological video prompt director',repo:'Reviral-ai/awesome-sora-2-prompts',role:'identity anchors → setup/change/resolution → motivated camera → continuity → audio/edit handoff',runtime:'reference'},
+  {id:'sora2-playground',name:'Recoverable video jobs',repo:'alasano/sora-2-playground',role:'queue → persisted job id → refresh-safe polling → remix → IndexedDB/serverless storage',runtime:'reference'},
   {id:'higgsfield-cli',name:'Higgsfield CLI bridge',repo:'higgsfield-ai/cli',role:'authenticated external CLI with image/video/3D/audio generation; not a Vercel-native API endpoint',runtime:'adapter'},
   {id:'seedance-prompts',name:'Seedance prompt reference',repo:'HiAPIAI/awesome-seedance-2-0-prompts',role:'prompt examples/reference',runtime:'reference'},
   {id:'forge-film',name:'Film orchestration',repo:'F-R-L/forge-film',role:'film planning and shot continuity',runtime:'reference'},
@@ -92,11 +95,6 @@ export function buildGenerativeVideoPrompt(input:{
   directorBrief?:string;
   researchContext?:string;
 }){
-  const subject=compactText(String(input.prompt||'').trim(),260);
-  const duration=Math.max(3,Math.round(Number(input.durationMs||6000)/1000));
-  const style=compactText(input.style||'Cinematic',32);
-  const brief=compactText(input.directorBrief||'',320);
-  const research=compactText(input.researchContext||'',280);
   const continuity=mediaContinuityContext({
     prompt:input.prompt,
     style:input.style,
@@ -105,21 +103,16 @@ export function buildGenerativeVideoPrompt(input:{
   const unitySceneGuidance=/\b(unity|gameplay|game|jogo|voxel|3d|camera|câmera|cinematic|cinemático)\b/i.test(input.prompt)
     ? unityFabricContext()
     : '';
-  const pieces=[
-    subject,
-    'Generate one coherent real moving video clip, not a slideshow, not a still image with pan/zoom, and not a sequence of unrelated frames.',
-    'Duration target: '+duration+' seconds. Aspect ratio: '+input.aspect+'.',
-    'Visual style: '+style+'.',
-    'Preserve subject identity, wardrobe/materials, colors, symbols, environment continuity and spatial consistency from the first frame through the last frame.',
-    'Describe clear physical action over time, believable secondary motion, stable anatomy/geometry, and temporally coherent lighting.',
-    'Specify camera position and motion only when it improves the shot; avoid impossible camera teleportation and abrupt scene cuts unless explicitly requested.',
-    'For dialogue/audio requests, include dialogue, SFX and ambience as explicit audio cues. Otherwise prefer natural synchronized ambience.',
-    continuity,
-    unitySceneGuidance,
-    brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
-    research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
-  ].filter(Boolean);
-  return compactText(pieces.join('\n'),980);
+  return compileVideoProductionPrompt({
+    prompt:input.prompt,
+    style:input.style,
+    aspect:input.aspect,
+    durationMs:input.durationMs,
+    continuityContext:continuity,
+    directorBrief:input.directorBrief,
+    researchContext:input.researchContext,
+    extraGuidance:unitySceneGuidance
+  });
 }
 
 export function mediaResearchQuery(prompt:string,kind:'image'|'video',style:string){
