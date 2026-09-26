@@ -85,13 +85,16 @@ Implementação:
 
 - xcontcom/neuroparticles → percepção local, pequenas políticas neurais, fitness, diversidade e comportamento emergente.
 - mindcraft-bots/mindcraft → agente LLM em mundo persistente com ação aterrada.
-- nikmcfly/MiroFish-Offline → swarm, memória de grafo e comparação de cenários (referência AGPL).
+- 666ghj/MiroFish → referência primária AGPL para seed→graph, memória individual/coletiva, personas, simulação multiagente, memória temporal, ReportAgent e deep interaction.
+- nikmcfly/MiroFish-Offline → referência secundária AGPL para graph-storage abstraction e execução local/offline.
 - ruvnet/RuView → conceitos de sensor fusion sem tratar inferência como observação direta.
 - fasferraz/eNB → disciplina de state machine e eventos (referência GPL).
 
 Implementação:
 - src/lib/simulation/emergent-swarm.ts
-- GrokSimulationPanel exibe geração, diversidade, política dominante e top agentes.
+- src/lib/simulation/mirofish-fabric.ts
+- skills/mirofish-simulation/SKILL.md
+- GrokSimulationPanel exibe swarm emergente e MiroFish Fabric com grafo, rodadas, população ponderada, dissenso e incerteza.
 - o swarm entra como contexto adicional do planner, mas não substitui o estado determinístico.
 - simulação é contrafactual; nunca apresentada como previsão de pessoas reais.
 
