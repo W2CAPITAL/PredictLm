@@ -255,6 +255,26 @@ Each indexed chunk preserves repository, commit/ref, path and license. Runtime r
 
 Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork, Baby Whale and selected Free Programming Books material. Unofficial proprietary-service wrappers, bypass/jailbreak repositories and binary-oriented listings are quarantined even when they claim a permissive license.
 
+## OpenAI / GPT-5.6 Sol engine
+
+PredictLM can use **GPT-5.6 Sol** as an internal reasoning/generation engine of the same BioAI.
+
+```bash
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5.6-sol
+OPENAI_REASONING_EFFORT=high
+```
+
+Implementation:
+- `src/lib/server/openai-responses.ts` calls the OpenAI **Responses API**;
+- `src/lib/server/provider-mesh.ts` exposes OpenAI to Build/agents and other server-side capability paths;
+- `src/app/api/chat/route.ts` exposes the same engine to Chat, simulation planning and media direction;
+- the returned provider/model is runtime metadata only: public identity remains **PredictLM BioAI**;
+- the API key is server-only and must never be stored in browser storage, `NEXT_PUBLIC_*`, source code or BioAI memory;
+- local Neural/WebLLM/knowledge paths still work when no OpenAI key is configured.
+
+This integrates the OpenAI model family into PredictLM; it does **not** import this ChatGPT account, this conversation's private state, or ChatGPT product-only tools automatically.
+
 ## Optional Cloud Cascade
 
 Chat uses **Predict Auto** by default. Provider Mesh is automatic when server-side credentials are configured; there is no separate cloud-model picker.
@@ -270,7 +290,7 @@ CACHE / history / skills / memory
   → Knowledge fallback
 ```
 
-The order is configurable with `PREDICTLM_PROVIDER_ORDER`. OpenAI-compatible providers use the Chat Completions adapter; Anthropic uses the native Messages adapter. Provider failure changes only the runtime path, never the requested deliverable.
+The order is configurable with `PREDICTLM_PROVIDER_ORDER`. Direct OpenAI uses the native Responses API; other OpenAI-compatible providers use the Chat Completions adapter; Anthropic uses the native Messages adapter. Provider failure changes only the runtime path, never the requested deliverable.
 
 All cloud keys are **server-only**. No secret belongs in `NEXT_PUBLIC_*`, GitHub source, browser bundles or Supabase tables. No cloud key is required for local-first mode. See `.env.example` for the complete provider variable list.
 
