@@ -455,7 +455,7 @@ export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
   const y=surfaceAt(state,x,z).y+1;
   const oldChunk=chunkKey(floorDiv(state.player.x,VOXEL_CHUNK_SIZE),floorDiv(state.player.z,VOXEL_CHUNK_SIZE),state.player.dimension);
   const newChunk=chunkKey(floorDiv(x,VOXEL_CHUNK_SIZE),floorDiv(z,VOXEL_CHUNK_SIZE),state.player.dimension);
-  const discoveries={...state.discoveries};
+  const discoveries:Record<string,true>={...state.discoveries};
   let chunksVisited=state.stats.chunksVisited;
   if(!discoveries[newChunk]){
     discoveries[newChunk]=true;
@@ -471,7 +471,7 @@ export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
   for(const structure of structureForChunk(next,floorDiv(x,VOXEL_CHUNK_SIZE),floorDiv(z,VOXEL_CHUNK_SIZE))){
     const dist=Math.hypot(structure.x-x,structure.z-z);
     if(dist<8&&!discoveries[structure.id]){
-      next={...next,discoveries:{...next.discoveries,[structure.id]:true}};
+      next={...next,discoveries:{...next.discoveries,[structure.id]:true as const}};
       next=withEvent(next,'structure','Descoberta: '+structure.label+'.');
     }
   }
@@ -547,7 +547,7 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     next={
       ...next,
       inventory,
-      discoveries:{...next.discoveries,[mob.id+':defeated']:true},
+      discoveries:{...next.discoveries,[mob.id+':defeated']:true as const},
       stats:{...next.stats,mobsDefeated:next.stats.mobsDefeated+1},
       player:{...next.player,experience,level}
     };
