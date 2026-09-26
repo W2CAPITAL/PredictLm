@@ -1,5 +1,5 @@
 import type { WorkspaceFile } from './types';
-import { repairLegacyEscapedNewlines } from './workspace-repair';
+import { repairLegacyEscapedNewlines, repairWorkspaceFiles } from './workspace-repair';
 
 function readSpec(files:WorkspaceFile[]){
   const spec=files.find(f=>f.path==='predict.spec.json');
