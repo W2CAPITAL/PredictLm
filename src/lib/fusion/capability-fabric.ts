@@ -1,6 +1,6 @@
 export type FusionSurface=
   |'chat'|'build'|'research'|'memory'|'documents'
-  |'media'|'video'|'simulation'|'voice'|'browser';
+  |'media'|'video'|'simulation'|'voice'|'browser'|'social';
 
 export type IntegrationMode='adapt'|'reference'|'optional-adapter';
 
@@ -71,7 +71,20 @@ export const REQUESTED_FUSION_REPOS=[
   'JEFFY1234599/block-craft-browser-edition',
   'TheDoctor200/MinecraftDungeonsLauncher',
   'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',
-  'jbruening/UnEngine'
+  'jbruening/UnEngine',
+  'RVC-Boss/GPT-SoVITS',
+  'microsoft/VibeVoice',
+  'JarikDem-Bot/ai-waifu',
+  'snarepigeonrouter/Cap-Cut-Pro',
+  'OpenCut-app/OpenCut',
+  'Hommy-master/capcut-mate',
+  'renezander030/capcut-cli',
+  'Augani/openreel-video',
+  'ArcReel/ArcReel',
+  'blader/humanizer',
+  'gargpratyush/jev-router',
+  'tamaratran/fast-jev-compaction',
+  'dbreunig/building-with-jev-skill'
 ] as const;
 
 export const FUSION_SOURCES:FusionSource[]=[
@@ -133,7 +146,20 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'JEFFY1234599/block-craft-browser-edition',license:'unverified',mode:'reference',areas:['simulation','browser'],ideas:['browser/mobile voxel interaction','customization UX']},
   {repo:'TheDoctor200/MinecraftDungeonsLauncher',license:'MIT',mode:'reference',areas:['simulation'],ideas:['secondary offline profile/save selection concepts','mod/profile boundary','launcher UX only']},
   {repo:'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',license:'Apache-2.0',mode:'reference',areas:['simulation'],ideas:['secondary dungeon loop','chests','economy','bosses','weapons','abilities','save/load','infinite adventure loop']},
-  {repo:'jbruening/UnEngine',license:'MIT',mode:'adapt',areas:['simulation','build','media','video'],ideas:['Unity GameObject/Component/MonoBehaviour semantics','Transform/Vector/Quaternion','Camera/Collider/Rigidbody/Physics','Input/Time/PlayerPrefs','testable Unity-compatible script architecture']}
+  {repo:'jbruening/UnEngine',license:'MIT',mode:'adapt',areas:['simulation','build','media','video'],ideas:['Unity GameObject/Component/MonoBehaviour semantics','Transform/Vector/Quaternion','Camera/Collider/Rigidbody/Physics','Input/Time/PlayerPrefs','testable Unity-compatible script architecture']},
+  {repo:'RVC-Boss/GPT-SoVITS',license:'MIT',mode:'optional-adapter',areas:['voice','media','social'],ideas:['few-shot TTS pipeline','multilingual synthesis','authorized persona voice production']},
+  {repo:'microsoft/VibeVoice',license:'unverified',mode:'optional-adapter',areas:['voice','media','social'],ideas:['original synthetic voice','streaming speech pipeline','long-form speech architecture']},
+  {repo:'JarikDem-Bot/ai-waifu',license:'unverified',mode:'reference',areas:['chat','memory','voice','social'],ideas:['persona file','conversation memory','voice/avatar orchestration','consistent character behavior']},
+  {repo:'OpenCut-app/OpenCut',license:'MIT',mode:'reference',areas:['video','media','social'],ideas:['open-source editing','plugin-first editor','headless/batch editing direction','agent/MCP editing boundary']},
+  {repo:'renezander030/capcut-cli',license:'unverified',mode:'reference',areas:['video','media','social'],ideas:['editable timeline automation','captions','agent-driven draft editing','keep publish authorization separate']},
+  {repo:'Augani/openreel-video',license:'unverified',mode:'reference',areas:['video','social'],ideas:['short-form video production workflow','reel assembly patterns']},
+  {repo:'ArcReel/ArcReel',license:'unverified',mode:'reference',areas:['video','social'],ideas:['reel production pipeline','short-form scene assembly']},
+  {repo:'blader/humanizer',license:'unverified',mode:'adapt',areas:['chat','social'],ideas:['natural caption rewrite','remove generic AI staging','preserve facts and creator voice']},
+  {repo:'gargpratyush/jev-router',license:'unverified',mode:'reference',areas:['chat','social'],ideas:['task-aware route selection','keep simple creator tasks cheap and complex campaigns deep']},
+  {repo:'tamaratran/fast-jev-compaction',license:'unverified',mode:'reference',areas:['memory','social'],ideas:['verbatim-first compaction','preserve identity anchors and active campaign facts']},
+  {repo:'dbreunig/building-with-jev-skill',license:'unverified',mode:'reference',areas:['build','social'],ideas:['JEV skill implementation patterns','bounded context engineering']},
+  {repo:'snarepigeonrouter/Cap-Cut-Pro',license:'unverified',mode:'reference',areas:['video'],ideas:['quarantined provenance; do not use cracked/bypass packages as a production dependency']},
+  {repo:'Hommy-master/capcut-mate',license:'unverified',mode:'reference',areas:['video','social'],ideas:['reference-only editing workflow until provenance/license/runtime contract is verified']}
 ];
 
 const SURFACE_RULES:Record<FusionSurface,string[]>={
@@ -204,6 +230,14 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'inspect console, network and rendered DOM before guessing at UI failures',
     'use bounded reliable automation with waits and screenshots',
     'do not expose unrelated browser data to agents'
+  ],
+  social:[
+    'preserve one persistent fictional adult creator identity across posts and campaigns',
+    'separate content generation, editing, publishing authorization and analytics into auditable stages',
+    'disclose realistic AI-generated media when the destination platform requires it',
+    'use synthetic or explicitly authorized voice references only',
+    'optimize through relevant comments, collaborations, trends, search and cross-posting; never mass-spam comments or fake engagement',
+    'do not claim publication unless an authorized publisher confirms success'
   ]
 };
 
