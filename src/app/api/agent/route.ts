@@ -8,6 +8,8 @@ import {
 } from '@/lib/agent-runtime/agentic-fabric';
 import { callProviderText, parseJsonObject, rankProviders, type ProviderMessage, type ProviderSpec } from '@/lib/server/provider-mesh';
 import { compactText } from '@/lib/token-budget';
+import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
+import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
 
 export const runtime='nodejs';
@@ -145,13 +147,15 @@ export async function POST(req:Request){
     const projectInstructions=projectInstructionContext(files);
     const manifest=compactWorkspaceManifest(files);
     const master=predictLMMasterContext(task,deep);
+    const fusion=capabilityFusionContext(task,'build');
 
     const explorerSystem=[
       'You are a codebase explorer. Inspect before proposing changes.',
       'Return concise JSON only: {"summary":"...","keyFiles":["..."],"patterns":["..."],"constraints":["..."],"risks":["..."],"acceptance":["..."]}.',
       'Do not implement yet. Do not reveal private reasoning.',
       projectInstructions,
-      skillContext
+      skillContext,
+      fusion
     ].filter(Boolean).join('\n\n');
 
     const explorerUser=[
@@ -176,7 +180,8 @@ export async function POST(req:Request){
       'Reconcile explorer reports. Prefer existing project patterns. Keep the plan executable and scoped.',
       'Do not output chain-of-thought.',
       projectInstructions,
-      skillContext
+      skillContext,
+      fusion
     ].filter(Boolean).join('\n\n');
     const architect=await callWithFallback(providers,[
       {role:'system',content:architectSystem},
@@ -200,6 +205,7 @@ export async function POST(req:Request){
       master,
       skillContext,
       projectInstructions,
+      fusion,
       'AGENTIC RUN: '+runPlan.roles.join(' → ')+'.',
       'ARCHITECT PLAN:\n'+compactText(JSON.stringify(architecture),1800)
     ].filter(Boolean).join('\n\n');
@@ -221,7 +227,8 @@ export async function POST(req:Request){
       buildReviewContract('build'),
       'Return JSON only: {"approved":true,"confidence":0,"issues":[{"severity":"blocker|high|medium|low","file":"...","issue":"...","fix":"..."}],"missingRequirements":["..."]}.',
       'Do not redesign the whole product. Validate findings before reporting them. No chain-of-thought.',
-      projectInstructions
+      projectInstructions,
+      fusion
     ].filter(Boolean).join('\n\n');
 
     const reviewCall=await callWithFallback(providers,[
@@ -241,6 +248,7 @@ export async function POST(req:Request){
         master,
         skillContext,
         projectInstructions,
+        fusion,
         'You are the repair/finalizer. Fix only validated review findings and missing requirements.',
         'Return the full corrected BuildPayload JSON. Do not explain the review process.'
       ].filter(Boolean).join('\n\n');
@@ -268,9 +276,26 @@ export async function POST(req:Request){
       ...(review?.missingRequirements?.length?['CHECK · '+review.missingRequirements.slice(0,3).join(' · ')]:[])
     ].slice(0,20);
 
+    const runLedger=buildAgentRunLedger({
+      task,
+      explorations,
+      architecture,
+      files:payload.files,
+      review,
+      repaired:!!repairProvider,
+      providers:[
+        ...explorations.map(x=>x.provider),
+        architect.provider.name,
+        implementation.provider.name,
+        reviewCall.provider.name,
+        ...(repairProvider?[repairProvider]:[])
+      ]
+    });
+
     return Response.json({
       ...payload,
       plan,
+      runLedger,
       agentic:{
         mode:runPlan.staged?'staged':'direct',
         roles:runPlan.roles,
