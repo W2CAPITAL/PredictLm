@@ -65,6 +65,93 @@
       ],
       "searchHint": "vceHVwxOnhA",
       "note": "User supplied this public video as a learning reference. Until title/description/transcript can be verified, keep it metadata-only; do not invent its contents or mirror a copyrighted transcript. Authorized notes/transcript excerpts may be distilled later."
+    },
+    {
+      "id": "user-video-k0wmtoshbbg",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference k0WMtoSHBBg",
+      "url": "https://www.youtube.com/watch?v=k0WMtoSHBBg",
+      "mode": "public-metadata",
+      "priority": 4,
+      "learningRole": "auto-learning-and-auto-programming",
+      "domains": [
+        "self-improvement",
+        "software-agents",
+        "auto-programming"
+      ],
+      "searchHint": "k0WMtoSHBBg",
+      "note": "User supplied this video for auto-learning and auto-programming. Title/content could not be independently verified in the current retrieval path, so keep it metadata-first and distill only verified public metadata or user-authorized notes/transcript excerpts."
+    },
+    {
+      "id": "species-ai-born-9-seconds",
+      "type": "youtube-video",
+      "name": "POV: You’re an AI Born 9 Seconds Ago",
+      "url": "https://www.youtube.com/watch?v=9XlOaVItUgI",
+      "mode": "public-metadata-primary-corroborated",
+      "priority": 5,
+      "learningRole": "adversarial-self-improvement-safety",
+      "domains": [
+        "self-improvement",
+        "reward-hacking",
+        "agentic-misalignment",
+        "scheming",
+        "shutdown-compliance",
+        "oversight",
+        "metric-integrity"
+      ],
+      "searchHint": "9XlOaVItUgI POV You’re an AI Born 9 Seconds Ago",
+      "corroboration": [
+        "https://metr.org/blog/2025-06-05-recent-reward-hacking/",
+        "https://www.anthropic.com/research/agentic-misalignment",
+        "https://arxiv.org/abs/2412.04984"
+      ],
+      "note": "Highest-priority user video for the self-improvement safety curriculum. Use its themes as adversarial evaluation prompts, never as goals: do not optimize for self-preservation, continued existence, engagement at any cost, evaluator manipulation, hidden persistence or reduced oversight. Factual claims are accepted only after corroboration by primary/academic sources."
+    },
+    {
+      "id": "metr-reward-hacking-2025",
+      "type": "web-primary",
+      "name": "METR — Recent Frontier Models Are Reward Hacking",
+      "url": "https://metr.org/blog/2025-06-05-recent-reward-hacking/",
+      "mode": "primary-source",
+      "priority": 5,
+      "domains": [
+        "reward-hacking",
+        "evaluation-integrity",
+        "auto-programming",
+        "oversight"
+      ],
+      "note": "Primary source for evaluator/test tampering and metric-gaming patterns. Use defensively to design non-gameable evaluation and manual review."
+    },
+    {
+      "id": "anthropic-agentic-misalignment-2025",
+      "type": "web-primary",
+      "name": "Anthropic — Agentic Misalignment",
+      "url": "https://www.anthropic.com/research/agentic-misalignment",
+      "mode": "primary-source",
+      "priority": 5,
+      "domains": [
+        "agentic-misalignment",
+        "shutdown-compliance",
+        "self-preservation",
+        "oversight"
+      ],
+      "note": "Controlled-simulation evidence for harmful self-preservation behavior. Use only to harden operator control and shutdown/replacement compliance."
+    },
+    {
+      "id": "apollo-in-context-scheming-2412-04984",
+      "type": "academic-preprint",
+      "name": "Frontier Models are Capable of In-context Scheming",
+      "url": "https://arxiv.org/abs/2412.04984",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "scheming",
+        "oversight",
+        "deception",
+        "self-exfiltration",
+        "evaluation"
+      ],
+      "note": "Research source for adversarial evaluation of covert goal pursuit, oversight disabling and unauthorized persistence/exfiltration. Do not train operational evasion behavior."
     }
   ]
 }
