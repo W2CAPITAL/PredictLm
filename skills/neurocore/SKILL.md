@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v4.0
+# PredictLM Digital Brain / NeuroCore v4.1
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -239,7 +239,7 @@ Isso torna o sistema brain-inspired e data-grounded sem vender simulação como 
 
 ## BioIntelligence Fabric / Cross-Species v4.0
 
-O NeuroCore agora usa um ensemble comparativo de **seis referências biológicas**, mantendo proveniência e escopo separados:
+O NeuroCore agora usa um ensemble comparativo de **oito referências biológicas**, mantendo proveniência e escopo separados:
 
 - **Human H01** — fragmento cortical humano medido em resolução sináptica; não é conectoma humano inteiro.
 - **Macaque** — atlas cortical, spatial transcriptomics, projectomes PFC e priors de claustro; proxy de primata, não medição humana.
@@ -247,6 +247,8 @@ O NeuroCore agora usa um ensemble comparativo de **seis referências biológicas
 - **C. elegans** — conectoma anatômico de animal inteiro para circuitos compactos recorrentes e sensor→interneuron→motor.
 - **Mouse / MICrONS + Allen** — conectômica estrutural+funcional densa em volume do córtex visual, com atlas anatômico como framework; não é cérebro inteiro do camundongo.
 - **Larval zebrafish** — volume EM de cérebro inteiro com sinapses detectáveis e circuitos reconstruídos/validados; isso não implica que todas as células/sinapses estejam completamente proofread ou funcionalmente caracterizadas.
+- **Ciona intestinalis** — conectoma publicado do SNC larval; referência compacta de cordado para assimetria, relay sensorial e cérebro→motor.
+- **Platynereis dumerilii** — conectoma sináptico publicado de corpo inteiro da larva segmentada; referência para coordenação distribuída, segmentos e efetores.
 
 Implementação central: `src/lib/biointelligence-fabric.ts`.
 
@@ -277,3 +279,48 @@ Este módulo é **bio-inspired computation**: modelos de software derivados de d
 A diferença deve permanecer explícita:
 - biocomputação física usa substrato biológico real;
 - BioIntelligence do PredictLM usa software + dados/priors biológicos publicados.
+
+
+## Unified BioAI + synthetic reservoir v4.1
+
+Os núcleos comparativos deixaram de ser ilhas de produto. Eles alimentam uma única entidade persistente: **PredictLM BioAI**.
+
+Arquivos:
+- `src/lib/bioai.ts` — identidade/estado/memória única;
+- `src/lib/bio-reservoir.ts` — reservatório recorrente spiking-inspired local;
+- `src/lib/biointelligence-fabric.ts` — oito controladores comparativos;
+- `src/lib/wetware-adapters.ts` — bridge experimental opcional.
+
+O BioAI context é compartilhado por Chat, Build, Research, Imagine, vídeo, Processos, autoaprendizado, memória e simulação via `capability-fabric` e chamadas especializadas.
+
+### Reservatório local
+
+O reservatório é uma dinâmica computacional sintética de baixo custo:
+- 48 unidades;
+- potenciais/traços persistentes;
+- firing rate;
+- synchrony;
+- prediction error;
+- plasticity.
+
+Ele não pretende reproduzir um organoide real. Seu papel é oferecer estado temporal e erro de previsão local mesmo sem LLM remoto, Supabase, GPU ou banco pago.
+
+### Wetware opcional
+
+Cortical Labs CL1 e FinalSpark podem ser ligados apenas como **I/O experimental autorizado**.
+
+A operação padrão continua local. O produto deve funcionar sem hardware biológico.
+
+Sempre separar:
+- sinal eletrofisiológico medido;
+- feature/decoder derivado;
+- controlador BioAI;
+- mundo/resposta simulada.
+
+Atividade elétrica não é leitura de pensamento ou memória biográfica.
+
+### BioAI no Voxel World
+
+A BioAI possui um corpo/agente persistente no Voxel World. Ela observa estado local, escolhe metas, coleta recursos, crafta, constrói, combate quando adequado, explora chunks e consolida memória.
+
+O viewport nativo principal é WebGL em primeira pessoa. O isométrico permanece como modo secundário de inspeção.
