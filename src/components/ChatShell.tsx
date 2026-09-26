@@ -32,6 +32,8 @@ import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
 import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
 import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
 import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html';
+import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
+import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -499,7 +501,11 @@ export function ChatShell({onOpenLegal}:Props){
     const reportIntent=detectReportIntent(prompt);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
-    const brainContext=advanceBrowserDigitalBrainContext(prompt).context;
+    const brainContext=[
+      advanceBrowserDigitalBrainContext(prompt).context,
+      browserKnowledgeContext(prompt),
+      capabilityFusionContext(prompt,'chat')
+    ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
     const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
