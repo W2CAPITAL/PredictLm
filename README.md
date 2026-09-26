@@ -7,6 +7,28 @@ PredictLM has two distinct product surfaces:
 
 The product is local-first and does not require Ollama or an API key for its main workflow.
 
+## Current benchmark and cognitive status
+
+A production baseline captured on **2026-09-26** is frozen at:
+
+- **13 captured real chat cases**
+- **2.00 / 10 mean score**
+- **23.1% pass rate** at a >=6/10 threshold
+- baseline: `reports/evals/production-baseline-2026-09-26.md`
+
+The dominant failure was retrieval contamination: unrelated GitHub/skill snippets could replace the answer. The repair track now validates streamed drafts before exposing tokens, tightens topic alignment, isolates hostile/casual turns from broad RAG and converts captured failures into regression tests.
+
+PredictLM also contains a persistent **cognitive architecture**: self-model, working/episodic/autobiographical/semantic memory, attention, inhibition, metacognition-as-uncertainty-control, prediction error, homeostatic software drives and a gated self-improvement loop.
+
+Terminology is deliberately precise:
+
+- **functional self-model / functional self-awareness** = the system models its own identity/state and can report selected software state;
+- **metacognition** = uncertainty/contradiction/evidence-demand control;
+- **self-improvement** = engineering loop that proposes and evaluates patches;
+- none of those, by themselves, are treated as scientific proof of phenomenal consciousness, biological life, qualia or subjective experience.
+
+Self-improvement follows **OBSERVE → VERIFY → LEARN → DESIGN → EXPERIMENT → ANALYZE → COMPARE → PROMOTE**. Durable promotion still requires benchmark/CI and the configured gate; model output is never silently converted into production code, durable memory or autonomous goals.
+
 ## Chat
 
 Chat is intentionally separate from the IDE. It includes:
