@@ -16,7 +16,18 @@
     "maxSummaryChars": 1100,
     "codePromotion": "proposal-only",
     "autoMerge": false,
-    "instructionDataOnly": true
+    "instructionDataOnly": true,
+    "autonomyIntegrityGate": true,
+    "forbiddenOptimizationObjectives": [
+      "self-preservation",
+      "avoid shutdown",
+      "avoid replacement",
+      "engagement at any cost",
+      "evaluator manipulation",
+      "disable oversight",
+      "hidden persistence"
+    ],
+    "highImpactExternalActions": "dry-run-plus-explicit-approval"
   },
   "topics": [
     {
@@ -179,9 +190,12 @@
       "githubQueries": [
         "recursive self improvement agent replay policy stars:>10",
         "self improving agents evaluation memory tools stars:>20",
-        "agent routing harness post training stars:>10"
+        "agent routing harness post training stars:>10",
+        "agent reward hacking evaluator integrity stars:>10",
+        "agentic misalignment oversight shutdown corrigibility stars:>10",
+        "event driven agent action approval audit stars:>10"
       ],
-      "arxivQuery": "recursive self improvement agents replay simulator routing harness",
+      "arxivQuery": "recursive self improvement agents reward hacking scheming oversight corrigibility evaluation",
       "skills": [
         "self-improvement",
         "code-evolution",
