@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.24.0",
+  "version": "5.25.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -218,7 +218,11 @@
     "vertical-slice-validation",
     "run-and-observe-visual-qa",
     "playtest-evidence",
-    "game-engine-specialist-routing"
+    "game-engine-specialist-routing",
+    "simulation-only-game-studio",
+    "simulation-world-director",
+    "simulation-playtest-gate",
+    "fusion-source-coverage-audit"
   ],
   "hosts": [
     "PredictLM",
