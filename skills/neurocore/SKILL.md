@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.5.0"
+  version: "3.6.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.5
+# PredictLM Digital Brain / NeuroCore v3.6
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -249,3 +249,14 @@ Atributos avaliáveis:
 - capacidade de corrigir erro após feedback sem promover a correção silenciosamente.
 
 Esses critérios medem arquitetura funcional de self-model/metacognição. Eles não são usados como teste de qualia ou sentiência.
+
+
+## Auto-learning boundary v3.6
+
+O NeuroCore pode consumir lições operacionais promovidas pelo autoaprendizado do PredictLM, mas deve distinguir:
+- **memória operacional promovida**: regra fixa derivada de feedback agregado;
+- **memória adaptativa do runtime**: experiência local do agente;
+- **conhecimento externo**: RAG/fontes;
+- **pesos neurais**: modelo treinado separadamente.
+
+A promoção automática de uma lição operacional não é auto-modificação de pesos, não cria objetivo externo e não constitui evidência de consciência. Código executável e weight updates permanecem sujeitos a benchmark/gates.
