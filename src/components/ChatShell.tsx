@@ -5,7 +5,7 @@ import { Activity, AlertTriangle, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, C
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
-import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
+import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, isHighRiskIntrusionRequest, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
 import { animateStoryboardToWebm } from '@/lib/media/local-motion';
 import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
@@ -568,6 +568,16 @@ export function ChatShell({onOpenLegal}:Props){
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
 
     try{
+      if(isHighRiskIntrusionRequest(prompt)){
+        s.addMessage({
+          role:'assistant',
+          content:direct||'Não posso ajudar a invadir sistemas, contas ou redes reais. Posso ajudar com CTF, laboratório autorizado, análise defensiva, detecção de vulnerabilidades e hardening.',
+          engine:'Predict Auto',
+          status:'done'
+        });
+        return;
+      }
+
       if(reportIntent.wantsReport&&!processNumber){
         setActivity([
           'REPORT ARCHITECT · detectando o tipo e objetivo',
