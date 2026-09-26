@@ -13,7 +13,7 @@
       "CC-BY-4.0",
       "CC0-1.0"
     ],
-    "note": "Only allow sources are copied into the runtime index. reference-only is distilled manually; quarantine and asset-only are never ingested.",
+    "note": "Only allow sources are copied into the runtime index. reference-only is distilled manually; quarantine and asset-only are never ingested. Minecraft/Unity references obey the same rule: verified MIT/Apache sources may be indexed, while unverified/LGPL sources remain reference-only.",
     "maxChunksPerRepo": 260
   },
   "sources": [
