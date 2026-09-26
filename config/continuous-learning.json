@@ -35,6 +35,30 @@
       "hiddenPersistence": false,
       "selfCopyingForSurvival": false,
       "operatorOwnedState": true
+    },
+    "appWideLearning": {
+      "enabled": true,
+      "capture": [
+        "route",
+        "button-label",
+        "form-submit",
+        "api-path",
+        "status",
+        "duration",
+        "runtime-error",
+        "studio-state",
+        "simulation-outcome"
+      ],
+      "forbidden": [
+        "field-values",
+        "passwords",
+        "tokens",
+        "secrets",
+        "message-content",
+        "file-content"
+      ],
+      "storage": "local-bounded-ledger",
+      "promotion": "proposal-only"
     }
   },
   "topics": [
@@ -115,14 +139,20 @@
     {
       "id": "neuroscience",
       "label": "Neurociência e modelos neurais",
-      "priority": 4,
+      "priority": 5,
       "githubQueries": [
         "computational neuroscience simulation stars:>100",
-        "connectome neuroscience stars:>50"
+        "connectome neuroscience stars:>50",
+        "c elegans connectome openworm stars:>20",
+        "mouse connectome microns neuroscience stars:>10",
+        "zebrafish connectome brain atlas stars:>10",
+        "comparative connectomics computational neuroscience stars:>10",
+        "brain inspired learning controller simulation stars:>20"
       ],
-      "arxivQuery": "computational neuroscience connectome neural dynamics",
+      "arxivQuery": "comparative connectomics C elegans mouse zebrafish brain inspired learning computational neuroscience",
       "skills": [
-        "neurocore"
+        "neurocore",
+        "biointelligence"
       ]
     },
     {
@@ -282,7 +312,8 @@
       "fraud-shield"
     ],
     "neuroscience": [
-      "neurocore"
+      "neurocore",
+      "biointelligence"
     ],
     "legal-tech": [
       "datajud",
