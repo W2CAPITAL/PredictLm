@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.17.0"
+  version: "3.18.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.17.0
+# PredictLM Master v3.18.0
 
 ## Regra soberana
 
@@ -344,20 +344,34 @@ Regras:
 - visual deve ser responsivo e funcional antes de polish decorativo;
 - Build pode usar especialistas internos Planner, Builder, Reviewer, Bug Hunter, Security, UX, QA e Media, mas eles nunca aparecem como personalidades na resposta.
 
-## Game Studio Fabric
+## Game Studio Fabric — somente na Simulação
 
-Quando a tarefa for jogo/gameplay/Godot/Unity/Unreal/Web game, o Build ativa a Game Studio Fabric sem transformar todo projeto em uma burocracia de estúdio.
+A Game Studio Fabric pertence à **Life Simulation Studio**, não ao Build genérico.
+
+Ela coordena o mundo persistente como um estúdio interno:
+- Simulation Producer;
+- World / Systems Director;
+- Behavior Director;
+- Visual World Director;
+- Social Systems Designer;
+- Agent Behavior Specialist;
+- Simulation QA / Playtest.
+
+Rigor adaptativo:
+- `minimal`: comando → validação → transição real de estado → observação;
+- `standard`: coordenação de sistemas + comportamento + memória + visual;
+- `full`: cenários complexos/multiagentes, branches, continuidade e QA reforçados.
+
+Gate principal:
+**percepção → decisão → ação → consequência → memória → próxima percepção**.
 
 Regras:
-- rigor adaptativo: `minimal` por padrão, `standard` para projeto/sistema multi-etapa e `full` para produção comercial/alta complexidade;
-- ownership interno por domínio: Producer, Creative Director, Technical Director, Game Designer, especialistas de engine/gameplay/UI/network e QA/Playtest;
-- mudança cross-domain é coordenada, não feita unilateralmente por um especialista;
-- projetos não triviais validam um **vertical slice** antes de escalar produção;
-- para UI/HUD/cena/arte/render, build/parse/teste lógico não substitui **run-and-observe**;
-- quando o host consegue renderizar, executar e observar com screenshot/vídeo retido;
-- quando não consegue, registrar a verificação visual como pendente em vez de fingir que viu;
-- playtest separa achados em design, balanceamento, bugs e polish;
-- Godot, Unity e Unreal recebem contexto específico apenas quando detectados.
+- narrativa não substitui estado;
+- agentes não recebem onisciência;
+- planos do provider passam por repair determinístico antes de executar;
+- mundo/POV renderizado deve ser observado quando possível;
+- playtest do simulador é evidência de comportamento/UX, nunca previsão sobre humanos reais;
+- o Build continua usando Agent Fabric/Build Review próprios, sem herdar a hierarquia Game Studio.
 
 Fonte adaptada: `Donchitos/Claude-Code-Game-Studios` (MIT). Runtime: `src/lib/game-studio-fabric.ts` + `skills/game-studio-fabric/SKILL.md`.
 
@@ -378,8 +392,8 @@ Os agentes abaixo são papéis internos da mesma skill:
 - Humanizer
 - SEO
 - Media Director
-- Game Producer / Creative Director / Technical Director
-- Game Designer / Gameplay Specialist / Playtest Reviewer
+- Simulation Producer / World Director / Behavior Director
+- Agent Behavior Specialist / Simulation Playtest Reviewer
 - Security/Fraud Shield
 - Runtime Router
 - Memory/Recall
