@@ -1,5 +1,6 @@
 import {advanceBioIntelligence,createBioIntelligenceState,fuseBioIntelligence,type BioIntelligenceState,type BioLearningEvent} from './biointelligence-fabric';
 import {advanceBrowserDigitalBrainContext} from './digital-brain';
+import {observeBioAI} from './bioai';
 
 export type AppLearningEvent=BioLearningEvent;
 
@@ -114,6 +115,7 @@ export function recordAppLearningEvent(raw:AppLearningEvent){
     events:duplicate?previous.events:[row,...previous.events].slice(0,MAX_EVENTS)
   };
   save(ledger);
+  try{observeBioAI(event)}catch{}
 
   if(event.kind==='error'||event.success===false||fusion.learningPriority>=.72){
     try{
