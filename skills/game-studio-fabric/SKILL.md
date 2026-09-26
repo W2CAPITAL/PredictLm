@@ -4,7 +4,7 @@ description: >
   Coordenação interna da Life Simulation Studio do PredictLM inspirada no Claude-Code-Game-Studios:
   rigor adaptativo, papéis por domínio do mundo, loop completo, run-and-observe, playtest e gates de QA.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   type: simulation-specialist
   source: "Donchitos/Claude-Code-Game-Studios"
   source_license: "MIT"
@@ -56,7 +56,8 @@ Os papéis nunca aparecem como personalidades públicas. A interface continua se
 ## Fontes absorvidas pela Simulação
 
 A Game Studio coordena outras capacidades já federadas:
-- MiroFish-Offline → multiagentes, knowledge graph e contrafactuais;
+- 666ghj/MiroFish → pipeline seed → knowledge graph → memória individual/coletiva → personas/coortes → rodadas paralelas → memória temporal → ReportAgent/inspeção (AGPL, reference-only);
+- MiroFish-Offline → abstração local de graph storage e execução offline como segunda referência AGPL;
 - mindcraft → agente persistente dentro de um mundo com ações;
 - neuroparticles → percepção local, pequenas políticas e comportamento emergente;
 - RuView → conceitos de sensor fusion e percepção não visual;
@@ -122,6 +123,8 @@ No navegador, a evidência pode vir do próprio canvas/POV e do estado exibido. 
 - `src/lib/game-studio-fabric.ts`
 - `src/lib/agent-runtime/agentic-fabric.ts`
 - `src/lib/simulation/emergent-swarm.ts`
+- `src/lib/simulation/mirofish-fabric.ts`
+- `skills/mirofish-simulation/SKILL.md`
 - `src/components/GrokSimulationPanel.tsx`
 - `src/app/api/chat/route.ts` no modo `simulation-plan`
 - `src/lib/fusion/capability-fabric.ts`
@@ -130,3 +133,18 @@ No navegador, a evidência pode vir do próprio canvas/POV e do estado exibido. 
 - `src/lib/unity-fabric.ts`
 
 A fonte upstream é MIT. O PredictLM adapta padrões de coordenação; não depende de Claude Code nem importa o framework inteiro.
+
+
+## MiroFish Fabric v1.3
+
+O Game Studio trata o MiroFish Fabric como motor de simulação coletiva, não como decoração de prompt.
+
+Pipeline obrigatório:
+**seed/contexto → grafo de entidades/relações → memória → personas/coortes → rodadas → atualização temporal → relatório → inspeção**.
+
+- o MiroFish oficial é a referência arquitetural primária;
+- o fork Offline é referência secundária para storage/local-first;
+- ambos são AGPL-3.0, portanto o core atual usa implementação clean-room própria;
+- hardware fraco usa agentes representativos ponderados em vez de alegar milhares de agentes LLM reais;
+- o relatório deve mostrar dissenso, incerteza, sinais e contrafactuais;
+- resultados são cenários sintéticos do sandbox, nunca previsão factual de pessoas reais.
