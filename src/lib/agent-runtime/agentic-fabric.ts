@@ -2,7 +2,7 @@ import { compactText } from '@/lib/token-budget';
 import { skills } from '@/lib/skills';
 import type { WorkspaceFile } from '@/lib/types';
 
-export type AgenticSurface='chat'|'build'|'media'|'research';
+export type AgenticSurface='chat'|'build'|'media'|'research'|'simulation';
 export type AgenticRole=
   | 'explorer'
   | 'architect'
@@ -58,7 +58,7 @@ function surfaceBoost(surface:AgenticSurface,id:string){
       'research-source-matrix':8,'deep-research':8,'centum-parallax':7
     },
     build:{
-      'predictlm-master':30,'agent-fabric':28,'capability-fusion':27,'game-studio-fabric':25,'saas-builder-fabric':24,'build-review':24,
+      'predictlm-master':30,'agent-fabric':28,'capability-fusion':27,'saas-builder-fabric':24,'build-review':24,
       'testing':22,'vibe-security':20,'design-system':18,'impeccable':16,'node-stack':13,'token-budget':10
     },
     media:{
@@ -68,6 +68,10 @@ function surfaceBoost(surface:AgenticSurface,id:string){
     research:{
       'predictlm-master':24,'research-source-matrix':30,'deep-research':28,'web-reach':26,'capability-fusion':24,
       'research-engine':22,'github-knowledge':12,'provider-mesh':10
+    },
+    simulation:{
+      'predictlm-master':28,'game-studio-fabric':34,'capability-fusion':30,'neurocore':27,
+      'life-simulation':30,'digital-brain':24,'agent-fabric':20,'centum-parallax':10
     }
   };
   return boosts[surface][id]||0;
@@ -112,27 +116,20 @@ function complexitySignals(prompt:string){
 
 export function planAgenticRun(prompt:string,surface:AgenticSurface,deep=false):AgenticPlan{
   const score=complexitySignals(prompt)+(deep?2:0);
-  const staged=surface==='build'||surface==='media'||deep||score>=3;
-  const q=String(prompt||'').toLowerCase();
-  const gameTask=/\b(game|jogo|godot|unity|unreal|gameplay|level|npc|combat|hud|shader|multiplayer|playtest|vertical.?slice)\b/.test(q);
+  const staged=surface==='build'||surface==='media'||surface==='simulation'||deep||score>=3;
   let roles:AgenticRole[];
-  if(surface==='build'&&gameTask){
+  if(surface==='build'){
+    roles=['explorer','architect','implementer','reviewer','test-analyst','security-reviewer','verifier'];
+  }else if(surface==='simulation'){
     roles=[
-      'explorer',
       'game-producer',
       'game-designer',
       'game-technical-director',
       'game-art-director',
       'gameplay-specialist',
-      'implementer',
-      'reviewer',
       'playtest-reviewer',
-      'test-analyst',
-      'security-reviewer',
       'verifier'
     ];
-  }else if(surface==='build'){
-    roles=['explorer','architect','implementer','reviewer','test-analyst','security-reviewer','verifier'];
   }else if(surface==='media'){
     roles=['researcher','visual-director','identity-reviewer','reviewer','verifier'];
   }else if(surface==='research'){
@@ -209,6 +206,12 @@ export function buildReviewContract(surface:AgenticSurface){
     'Check requirement coverage, regressions, type/runtime errors, error states, security boundaries, tests and mobile UX.',
     'For player-visible or highly interactive changes, a successful compile/parse is not visual verification; require run-and-observe evidence when the host can render the surface, otherwise mark that verification gap explicitly.',
     'Prefer a few high-confidence defects over speculative findings.'
+  ].join(' ');
+  if(surface==='simulation')return [
+    'Review world-state consistency, action feasibility, persistent memory, agent autonomy boundaries and whether the requested scenario changed the simulated world rather than only the narration.',
+    'Treat the simulation as a persistent interactive world: local perception and deterministic state transitions outrank free-form storytelling.',
+    'For visible world/UI changes, render/observe when possible; otherwise mark the visual result as not verified.',
+    'Playtest findings are evidence about the simulated experience, not factual predictions about real people.'
   ].join(' ');
   if(surface==='media')return [
     'Review semantic fidelity separately from technical image quality.',
