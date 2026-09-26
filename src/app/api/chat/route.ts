@@ -60,7 +60,7 @@ function providers():Provider[]{
   // Vercel deployments can authenticate AI Gateway with the platform OIDC
   // token, so production chat does not depend on a manually copied API key.
   const gatewayKey=process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN;
-  const gatewayModel=process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning';
+  const gatewayModel=process.env.AI_GATEWAY_MODEL||'google/gemini-3.8-flash';
   if(gatewayKey){
     push({
       name:'vercel-gateway',
@@ -812,7 +812,7 @@ export async function GET(){
     count:configured.length,
     gateway:{
       auth:gatewayAuth,
-      model:process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning',
+      model:process.env.AI_GATEWAY_MODEL||'google/gemini-3.8-flash',
       fallbackModels:['google/gemini-3.8-flash','anthropic/claude-sonnet-5']
     },
     health:providerHealthSnapshot(configured),
