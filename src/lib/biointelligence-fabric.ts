@@ -138,8 +138,8 @@ const num=(v:unknown,fallback=0)=>Number.isFinite(Number(v))?Number(v):fallback;
 function base(event:BioLearningEvent){
   const success=event.success===false?0:event.success===true?1:.55;
   const novelty=clamp(num(event.novelty,.45));
-  const uncertainty=clamp(num(event.uncertainty,event.kind==='error'?.85:.38));
-  const salience=clamp(num(event.salience,event.kind==='error'?.92:event.kind==='simulation'?.68:.52));
+  const uncertainty=clamp(num(event.uncertainty,event.kind==='error' ? .85 : .38));
+  const salience=clamp(num(event.salience,event.kind==='error' ? .92 : event.kind==='simulation' ? .68 : .52));
   const latency=event.durationMs?clamp(event.durationMs/5000):.18;
   return {success,novelty,uncertainty,salience,latency};
 }
@@ -156,10 +156,10 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       species:'human',
       attention:clamp(.48+b.salience*.35+b.uncertainty*.12),
       novelty:clamp(.35+b.novelty*.42),
-      memory:clamp(.5+b.salience*.24+(research?.12:0)),
-      inhibition:clamp(.5+b.uncertainty*.3+(fail?.16:0)),
-      action:clamp(.35+(actionish?.34:.12)),
-      sensory:clamp(.28+(simulation?.18:0)),
+      memory:clamp(.5+b.salience*.24+(research ? .12 : 0)),
+      inhibition:clamp(.5+b.uncertainty*.3+(fail ? .16 : 0)),
+      action:clamp(.35+(actionish ? .34 : .12)),
+      sensory:clamp(.28+(simulation ? .18 : 0)),
       social:.38,
       prediction:clamp(.45+b.uncertainty*.28),
       weight:1,
@@ -171,8 +171,8 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       novelty:clamp(.38+b.novelty*.38),
       memory:clamp(.42+b.salience*.2),
       inhibition:clamp(.48+b.uncertainty*.22),
-      action:clamp(.38+(actionish?.28:.12)),
-      sensory:clamp(.42+(simulation?.18:0)),
+      action:clamp(.38+(actionish ? .28 : .12)),
+      sensory:clamp(.42+(simulation ? .18 : 0)),
       social:.44,
       prediction:clamp(.42+b.uncertainty*.2),
       weight:.82,
@@ -183,9 +183,9 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       attention:clamp(.42+b.salience*.42),
       novelty:clamp(.5+b.novelty*.35),
       memory:clamp(.34+b.salience*.22),
-      inhibition:clamp(.38+(fail?.28:.08)),
-      action:clamp(.5+(actionish?.32:.08)),
-      sensory:clamp(.56+(simulation?.24:0)),
+      inhibition:clamp(.38+(fail ? .28 : .08)),
+      action:clamp(.5+(actionish ? .32 : .08)),
+      sensory:clamp(.56+(simulation ? .24 : 0)),
       social:.2,
       prediction:clamp(.3+b.uncertainty*.16),
       weight:.72,
@@ -196,9 +196,9 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       attention:clamp(.3+b.salience*.34),
       novelty:clamp(.26+b.novelty*.24),
       memory:clamp(.28+b.salience*.18),
-      inhibition:clamp(.34+(fail?.2:.06)),
-      action:clamp(.58+(actionish?.24:.08)),
-      sensory:clamp(.62+(simulation?.2:0)),
+      inhibition:clamp(.34+(fail ? .2 : .06)),
+      action:clamp(.58+(actionish ? .24 : .08)),
+      sensory:clamp(.62+(simulation ? .2 : 0)),
       social:.1,
       prediction:clamp(.24+b.uncertainty*.14),
       weight:.62,
@@ -210,8 +210,8 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       novelty:clamp(.38+b.novelty*.32),
       memory:clamp(.38+b.salience*.2),
       inhibition:clamp(.42+b.uncertainty*.18),
-      action:clamp(.28+(actionish?.18:.08)),
-      sensory:clamp(.72+(simulation?.12:0)),
+      action:clamp(.28+(actionish ? .18 : .08)),
+      sensory:clamp(.72+(simulation ? .12 : 0)),
       social:.2,
       prediction:clamp(.58+b.uncertainty*.24),
       weight:.76,
@@ -223,8 +223,8 @@ export function speciesSignals(event:BioLearningEvent):SpeciesSignal[]{
       novelty:clamp(.46+b.novelty*.3),
       memory:clamp(.34+b.salience*.2),
       inhibition:clamp(.38+b.uncertainty*.18),
-      action:clamp(.5+(actionish?.2:.1)),
-      sensory:clamp(.66+(simulation?.18:0)),
+      action:clamp(.5+(actionish ? .2 : .1)),
+      sensory:clamp(.66+(simulation ? .18 : 0)),
       social:.18,
       prediction:clamp(.46+b.uncertainty*.2),
       weight:.68,
@@ -252,7 +252,7 @@ export function fuseBioIntelligence(event:BioLearningEvent):BioIntelligenceFusio
     consensus.prediction*.18+
     consensus.novelty*.16+
     disagreement*.12+
-    (failure?.16:0)
+    (failure ? .16 : 0)
   );
 
   return {
