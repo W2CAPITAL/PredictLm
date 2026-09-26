@@ -13,6 +13,7 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
   ],
   research:[
     'src/app/api/research/route.ts',
+    'src/app/api/research/watch/route.ts',
     'src/lib/research-policy.ts',
     'src/lib/web-intelligence.ts'
   ],
@@ -27,6 +28,7 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
   ],
   media:[
     'src/app/api/media/generate/route.ts',
+    'src/app/api/media/stylize/route.ts',
     'src/app/api/media/upscale/route.ts',
     'src/lib/media/postprocess-pipeline.ts'
   ],
@@ -43,6 +45,7 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
     'src/lib/life-simulation-agent.ts'
   ],
   voice:[
+    'src/app/api/voice/route.ts',
     'src/lib/voice/browser-voice.ts',
     'src/lib/fusion/runtime-adapters.ts'
   ],
