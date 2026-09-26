@@ -13,6 +13,15 @@
 .badges{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
 .badges>*{padding:5px 7px;border:1px solid rgba(79,174,163,.18);border-radius:999px;background:#0b2025;color:#86a4a5!important;font-size:7px!important;letter-spacing:0!important}
 .badges b{color:#51d9c1!important}
+.commandBar{display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid rgba(71,219,195,.22);border-radius:11px;background:linear-gradient(180deg,rgba(11,34,39,.95),rgba(7,24,29,.96))}
+.commandBar>div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.commandBar>div>svg{color:#55dfc6}
+.commandBar input{height:34px;min-width:0;border:1px solid rgba(78,168,160,.18);border-radius:8px;background:#081b20;color:#dceceb;padding:0 10px;outline:0;font-size:8px}
+.commandBar input:focus{border-color:rgba(71,223,197,.46);box-shadow:0 0 0 2px rgba(69,213,190,.06)}
+.commandBar input::placeholder{color:#5f7b7f}
+.commandBar button{height:34px;border:1px solid rgba(75,223,198,.42);border-radius:8px;background:linear-gradient(135deg,#1f8f84,#176d6c);color:#ecfffc;padding:0 12px;font-size:7px;font-weight:800}
+.commandBar button:disabled{opacity:.46;cursor:not-allowed}
+.commandBar pre{margin:0;padding:7px 9px;border:1px solid rgba(75,153,151,.13);border-radius:8px;background:#07171b;color:#7f999b;white-space:pre-wrap;font:6.5px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:104px;overflow:auto}
 .toolbar{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:8px;border:1px solid var(--v-line);border-radius:10px;background:#081a1f}
 .toolbar button,.toolbar select,.movePad button,.dimensionButtons button{
   min-height:29px;border:1px solid rgba(79,161,156,.18);border-radius:7px;background:#0d252a;color:#a9bdbe;padding:0 9px;font-size:7px;outline:0
@@ -58,4 +67,4 @@
 .details pre{margin:0;padding:9px 10px;border-top:1px solid var(--v-line);white-space:pre-wrap;color:#7f999a;font:6.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
 .details p{margin:0;padding:0 10px 8px;line-height:1.5}
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;max-height:none}.canvas,.unityFrame{height:480px}}
-@media(max-width:680px){.shell{padding:7px}.header{flex-direction:column}.badges{justify-content:flex-start}.canvas,.unityFrame{height:400px}.side{grid-template-columns:1fr}.toolbar select{max-width:130px}.worldFoot{gap:7px}.worldFoot b{width:100%;margin-left:0}.movePad{bottom:74px}.inventory{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.shell{padding:7px}.commandBar>div{grid-template-columns:auto 1fr}.commandBar button{grid-column:1/-1}.header{flex-direction:column}.badges{justify-content:flex-start}.canvas,.unityFrame{height:400px}.side{grid-template-columns:1fr}.toolbar select{max-width:130px}.worldFoot{gap:7px}.worldFoot b{width:100%;margin-left:0}.movePad{bottom:74px}.inventory{grid-template-columns:repeat(3,1fr)}}
