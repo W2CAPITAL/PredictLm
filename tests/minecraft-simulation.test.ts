@@ -42,7 +42,16 @@ test('voxel world is deterministic and effectively unbounded in X/Z chunks',()=>
 
 test('mining and placing persist as deltas over generated terrain',()=>{
   let world=createVoxelWorld(777);
-  const cell=surfaceAt(world,world.player.x,world.player.z);
+  let cell=surfaceAt(world,world.player.x,world.player.z);
+  for(let dx=-8;dx<=8&&(cell.block==='water'||cell.block==='lava');dx++){
+    for(let dz=-8;dz<=8&&(cell.block==='water'||cell.block==='lava');dz++){
+      const candidate=surfaceAt(world,world.player.x+dx,world.player.z+dz);
+      if(candidate.block!=='water'&&candidate.block!=='lava')cell=candidate;
+    }
+  }
+  assert.notEqual(cell.block,'water');
+  assert.notEqual(cell.block,'lava');
+
   const mined=mineVoxelBlock(world,cell.x,cell.y,cell.z);
   assert.equal(mined.ok,true);
   world=mined.state;
