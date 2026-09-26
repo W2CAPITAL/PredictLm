@@ -1,12 +1,12 @@
 ---
 name: lexis-twincore-x10
 description: >
-  Meta-skill LEXIS TwinCore X10 v5.22.0. Atua como uma IA operacional dentro de outra IA:
+  Meta-skill LEXIS TwinCore X10 v5.23.0. Atua como uma IA operacional dentro de outra IA:
   dois núcleos com objetivos diferentes (FORGE constrói e AEGIS desafia), Council X10,
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.22.0"
+  version: "5.23.0"
   type: meta-orchestrator
   cores: 2
   council: 10
@@ -658,3 +658,27 @@ Autonomia só existe após opt-in explícito dentro da simulação e pode ser in
 ## Visual fidelity / reference grounding
 
 Em mídia com personagem ou entidade específica, MEDIA deve preservar identidade antes de estilo: identity lock → referência visual → geração → review. Google Images/Pinterest podem alimentar referências quando configurados; fontes sem licença clara permanecem reference-only. Autoimagem explícita da entidade usa a referência persistente exata do Entity Self Model.
+
+
+## Capability Fusion v5.23
+
+TwinCore consome o contrato soberano de Capability Fusion da PredictLM Master.
+
+FORGE pode usar padrões de:
+- memória persistente e compressão contextual;
+- agent checkpoints e run lineage;
+- research com evidence graph;
+- debugging apoiado por DOM/rede/console;
+- documentos estruturados/OCR por adapter;
+- media multi-pass e continuidade;
+- simulação emergente com percepção local.
+
+AEGIS valida:
+1. licença/proveniência da referência;
+2. se a capacidade realmente está configurada;
+3. risco de copiar dependência incompatível;
+4. regressão/performance;
+5. se um adapter pesado deve ficar opcional;
+6. se resultado de simulação está sendo confundido com fato.
+
+PARALLAX procura uma implementação mais leve quando uma referência externa exige serviço, GPU ou runtime incompatível com browser/Vercel.
