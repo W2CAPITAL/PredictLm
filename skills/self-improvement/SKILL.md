@@ -71,3 +71,18 @@ This separates **availability** from **self-preservation**. Availability is opti
 Apollo deep-research patterns are used for a bounded state machine: plan → gather → analyze gaps → synthesize, with a maximum number of gap rounds so background research cannot loop forever.
 
 ApolloResearch repositories are evaluation references for deception/sandbagging. Benchmark/canary data marked as non-training material must never enter RAG, fine-tuning or self-improvement datasets.
+
+
+## App-wide learning evidence
+
+PredictLM treats the entire application as an observable learning environment.
+
+A single root observer captures sanitized outcomes from tabs/routes, controls, API requests, runtime errors and Studio state changes. Simulation modules emit richer semantic outcomes into the same ledger.
+
+Privacy boundary:
+- store labels, paths without query strings, coarse state transitions, status/latency and success/failure;
+- never store form values, passwords, tokens, cookies, authorization headers, message bodies or source-file contents in the transversal ledger.
+
+The learning ledger is bounded and local-first. High-priority failures and cross-species disagreement may update the Digital Brain, open a research gap or produce a code/skill proposal. They never authorize automatic promotion to production.
+
+BioIntelligence is a controller/evidence layer, not a replacement for tests. A biologically inspired signal cannot override test/build/security/review gates.
