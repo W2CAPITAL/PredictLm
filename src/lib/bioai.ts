@@ -191,7 +191,7 @@ function remember(state:BioAIState,event:BioLearningEvent,priority:number,disagr
     current.occurrences+=1;
     current.updatedAt=Date.now();
     current.salience=clamp(current.salience*.72+priority*.28);
-    current.confidence=clamp(current.confidence*.8+(event.success===false?.55:.75)*.2);
+    current.confidence=clamp(current.confidence*.8+(event.success===false ? .55 : .75)*.2);
   }else{
     rows.unshift({
       id,
@@ -200,7 +200,7 @@ function remember(state:BioAIState,event:BioLearningEvent,priority:number,disagr
       summary,
       tags:tagList,
       salience:priority,
-      confidence:event.success===false?.58:.72,
+      confidence:event.success===false ? .58 : .72,
       occurrences:1,
       createdAt:Date.now(),
       updatedAt:Date.now()
