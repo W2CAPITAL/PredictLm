@@ -45,6 +45,7 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
     'src/components/MinecraftSimulationPanel.tsx',
     'src/lib/game-studio-fabric.ts',
     'src/lib/simulation/emergent-swarm.ts',
+    'src/lib/simulation/mirofish-fabric.ts',
     'src/lib/simulation/minecraft-sandbox.ts',
     'src/lib/simulation/minecraft-reference-fabric.ts',
     'src/lib/life-simulation-engine.ts',
