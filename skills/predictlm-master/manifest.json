@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.17.0",
+  "version": "3.18.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -51,7 +51,10 @@
     "godot-unity-unreal-specialists",
     "comfyui-image-workflow",
     "comfyui-video-workflow",
-    "firecrawl-research-adapter"
+    "firecrawl-research-adapter",
+    "simulation-only-game-studio",
+    "fusion-source-coverage-audit",
+    "simulation-agent-studio-routing"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
@@ -157,6 +160,8 @@
     "observableVisualGrounding": "multi-query character search, bounded recovery, real reference download, optional VLM screening, generation/reviewer telemetry, rejected candidates remain inspectable but unsaved",
     "animeCharacterCatalogGrounding": "AniList character identity resolution precedes web-image search; franchise-aware disambiguation; no streaming/torrent integration",
     "gameStudioVisualProof": "player-visible game changes require run-and-observe evidence when renderable; otherwise explicit NOT VERIFIED gap",
-    "verticalSlice": "non-trivial game projects validate a representative end-to-end slice before broad production scaling"
+    "verticalSlice": "non-trivial game projects validate a representative end-to-end slice before broad production scaling",
+    "gameStudioScope": "Game Studio is activated by Life Simulation Studio, not generic Build",
+    "fusionCoverage": "all user-requested repository sources must remain registered in capability-fabric coverage"
   }
 }
