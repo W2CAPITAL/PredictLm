@@ -19,6 +19,7 @@ import { parseJsonObject } from '@/lib/server/provider-mesh';
 import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { gameStudioContext } from '@/lib/game-studio-fabric';
+import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -285,6 +286,90 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
     }catch(error:any){errors.push(String(error?.message||error).slice(0,180))}
   }
   return Response.json({error:'Nenhum provider produziu um plano executável.',code:'NO_SIMULATION_PLAN',errors:errors.slice(0,3)},{status:502,headers:{'Cache-Control':'no-store'}});
+}
+
+function voxelPlanGate(raw:string){
+  const fenced=String(raw||'').match(/\`\`\`(?:json)?\s*([\s\S]*?)\`\`\`/i)?.[1];
+  const candidate=fenced||String(raw||'').match(/\{[\s\S]*\}/)?.[0]||'';
+  if(!candidate)return null;
+  try{
+    const data=JSON.parse(candidate);
+    const allowed=new Set(['move','mine','place','craft','smelt','attack','raid','eat','farm','dimension','wait','set_mode']);
+    const blocks=new Set(['dirt','cobblestone','stone','grass','sand','wood','planks','glass','torch','crafting_table','furnace','chest','farmland','wheat','bricks','obsidian']);
+    const dimensions=new Set(['overworld','infernal','void']);
+    const modes=new Set(['survival','creative']);
+    const actions=(Array.isArray(data?.actions)?data.actions:[])
+      .filter((x:any)=>x&&allowed.has(String(x.type||'')))
+      .slice(0,12)
+      .map((x:any,index:number)=>({
+        id:String(x.id||'voxel-'+index).slice(0,80),
+        type:String(x.type),
+        ...(Number.isFinite(Number(x.dx))?{dx:Math.max(-1,Math.min(1,Number(x.dx)))}:{}),
+        ...(Number.isFinite(Number(x.dz))?{dz:Math.max(-1,Math.min(1,Number(x.dz)))}:{}),
+        ...(Number.isFinite(Number(x.steps))?{steps:Math.max(1,Math.min(24,Math.floor(Number(x.steps))))}:{}),
+        ...(Number.isFinite(Number(x.x))?{x:Math.floor(Number(x.x))}:{}),
+        ...(Number.isFinite(Number(x.y))?{y:Math.floor(Number(x.y))}:{}),
+        ...(Number.isFinite(Number(x.z))?{z:Math.floor(Number(x.z))}:{}),
+        ...(x.block&&blocks.has(String(x.block))?{block:String(x.block)}:{}),
+        ...(x.recipe?{recipe:String(x.recipe).slice(0,80)}:{}),
+        ...(x.item?{item:String(x.item).slice(0,80)}:{}),
+        ...(x.dimension&&dimensions.has(String(x.dimension))?{dimension:String(x.dimension)}:{}),
+        ...(x.mode&&modes.has(String(x.mode))?{mode:String(x.mode)}:{}),
+        ...(x.plant!==undefined?{plant:Boolean(x.plant)}:{}),
+        ...(x.reason?{reason:String(x.reason).slice(0,180)}:{})
+      }));
+    if(!actions.length)return null;
+    return JSON.stringify({
+      objective:String(data?.objective||'Executar objetivo no Voxel World').slice(0,240),
+      summary:String(data?.summary||'Plano voxel executável.').slice(0,320),
+      actions
+    });
+  }catch{return null}
+}
+
+async function voxelPlanResponse(configured:Provider[],body:any,prompt:string){
+  const worldState=String(body?.worldState||'').slice(0,9000);
+  const localAdvisory=String(body?.localAdvisory||'').slice(0,1800);
+  const studio=gameStudioContext('minecraft voxel simulation '+prompt,true);
+  const minecraft=minecraftSimulationContext();
+  const fusion=capabilityFusionContext('minecraft voxel simulation '+prompt,'simulation');
+  const skillsContext=skillContractContext('minecraft voxel simulation '+prompt,'simulation',12);
+  const agentPlan=planAgenticRun('minecraft voxel simulation '+prompt,'simulation',true);
+  const system=[
+    'Você é o planejador executável do Voxel World dentro da Life Simulation Studio do PredictLM.',
+    'O mundo é um sandbox Minecraft-class persistente, procedural e efetivamente sem fronteira de gameplay em X/Z. Não escreva narrativa que o motor não consiga executar.',
+    'Retorne SOMENTE JSON válido; nunca escreva prosa fora do JSON e nunca exponha chain-of-thought.',
+    'Formato: {"objective":"...","summary":"...","actions":[{"type":"move","dx":1,"dz":0,"steps":6,"reason":"explorar"},{"type":"mine"},{"type":"craft","recipe":"planks"}]}',
+    'Ações permitidas: move, mine, place, craft, smelt, attack, raid, eat, farm, dimension, wait, set_mode.',
+    'Blocos colocáveis: dirt, cobblestone, stone, grass, sand, wood, planks, glass, torch, crafting_table, furnace, chest, farmland, wheat, bricks, obsidian.',
+    'Dimensões: overworld, infernal, void. Modos: survival, creative.',
+    'Regras: no survival respeite inventário e materiais; craft/smelt devem usar itens existentes; raid só faz sentido em dungeon do chunk; attack mira mob próximo; mine/place podem usar coordenadas ou operar perto do jogador.',
+    'Para construir estruturas, decomponha em poucas ações realmente executáveis; não prometa castelos inteiros em um único place. Para exploração, use move com steps <= 24.',
+    'Priorize progresso real: obter recursos → fabricar ferramentas → explorar → construir → lutar → encontrar estruturas/dungeons → sobreviver.',
+    'Papéis internos: '+agentPlan.roles.join(' → ')+'.',
+    studio,
+    minecraft,
+    fusion,
+    skillsContext,
+    worldState?'ESTADO VOXEL ATUAL:\n'+worldState:'',
+    localAdvisory?'SEGUNDA OPINIÃO LOCAL:\n'+localAdvisory:''
+  ].filter(Boolean).join('\n\n');
+
+  const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1400)}];
+  const candidates=taskAwareProviders(configured,'planejar ações Minecraft voxel '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const errors:string[]=[];
+  const startedAt=Date.now();
+  for(const provider of candidates){
+    const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
+    if(remaining<1200)break;
+    try{
+      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+      const clean=voxelPlanGate(raw);
+      if(!clean){errors.push(provider.name+' invalid-voxel-plan');continue}
+      return Response.json({content:clean,provider:provider.name,model:provider.model,mode:'voxel-plan'},{headers:{'Cache-Control':'no-store'}});
+    }catch(error:any){errors.push(String(error?.message||error).slice(0,180))}
+  }
+  return Response.json({error:'Nenhum provider produziu um plano voxel executável.',code:'NO_VOXEL_PLAN',errors:errors.slice(0,3)},{status:502,headers:{'Cache-Control':'no-store'}});
 }
 
 function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
@@ -750,7 +835,7 @@ export async function POST(req:Request){
       return Response.json({
         available:false,
         content:null,
-        code:body?.mode==='simulation-plan'||body?.mode==='media-director'
+        code:body?.mode==='simulation-plan'||body?.mode==='voxel-plan'||body?.mode==='media-director'
           ? 'NO_CONFIGURED_GENERATOR'
           : 'NO_REMOTE_PROVIDER',
         message:'Nenhum provider server-side está configurado. O cliente deve continuar para Neural Local/WebLLM/knowledge fallback.'
@@ -758,6 +843,7 @@ export async function POST(req:Request){
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
+    if(body?.mode==='voxel-plan')return voxelPlanResponse(configured,body,prompt);
     if(body?.mode==='media-director')return mediaDirectorResponse(configured,prompt);
     if(body?.mode==='clean-chat')return cleanChatResponse(configured,body,prompt);
 
