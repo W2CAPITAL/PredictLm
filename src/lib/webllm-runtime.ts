@@ -1,6 +1,6 @@
 'use client';
 
-export type WebLLMTier='lite'|'smart';
+export type WebLLMTier='lite'|'smart'|'power';
 
 type WebLLMProgress={progress:number|null;status:string};
 
@@ -9,9 +9,28 @@ const MODULE_URL='https://esm.run/@mlc-ai/web-llm@'+MODULE_VERSION;
 const PREF_KEY='predictlm-webllm-preference-v1';
 
 export const WEBLLM_MODELS:Record<WebLLMTier,string>={
-  lite:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
-  smart:'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
+  // Compatibility tier for weak WebGPU devices. It is no longer the default brain.
+  lite:'Qwen3-1.7B-q4f16_1-MLC',
+  // Default browser brain on ordinary modern PCs.
+  smart:'Qwen3.5-4B-q4f16_1-MLC',
+  // Highest local-browser tier currently enabled by PredictLM.
+  power:'Qwen3-8B-q4f16_1-MLC'
 };
+
+export const WEBLLM_VRAM_MB:Record<WebLLMTier,number>={
+  lite:2037,
+  smart:3868,
+  power:5696
+};
+
+export interface WebLLMHardwareProfile{
+  webgpu:boolean;
+  memoryGB:number;
+  cores:number;
+  recommended:WebLLMTier|null;
+  candidates:WebLLMTier[];
+  reason:string;
+}
 
 declare global{
   interface Window{
@@ -31,7 +50,7 @@ function readPreference():WebLLMTier|null{
   if(typeof window==='undefined')return null;
   try{
     const value=localStorage.getItem(PREF_KEY);
-    return value==='lite'||value==='smart'?value:null;
+    return value==='lite'||value==='smart'||value==='power'?value:null;
   }catch{return null}
 }
 
@@ -87,6 +106,40 @@ async function assertWebGPU(){
   if(typeof navigator==='undefined'||!(navigator as any).gpu)throw new Error('WebGPU não está disponível neste navegador.');
   const adapter=await (navigator as any).gpu.requestAdapter();
   if(!adapter)throw new Error('WebGPU existe, mas nenhum adaptador de GPU foi disponibilizado.');
+  return adapter;
+}
+
+export async function detectWebLLMHardware():Promise<WebLLMHardwareProfile>{
+  if(typeof navigator==='undefined'||!(navigator as any).gpu){
+    return {webgpu:false,memoryGB:0,cores:0,recommended:null,candidates:[],reason:'WebGPU indisponível; use a rota web/cloud do Predict Auto.'};
+  }
+  let adapter:any=null;
+  try{adapter=await (navigator as any).gpu.requestAdapter()}catch{}
+  if(!adapter){
+    return {webgpu:false,memoryGB:0,cores:Number((navigator as any).hardwareConcurrency||0),recommended:null,candidates:[],reason:'Nenhum adaptador WebGPU disponível; use a rota web/cloud.'};
+  }
+  const memoryGB=Math.max(0,Number((navigator as any).deviceMemory||0));
+  const cores=Math.max(0,Number((navigator as any).hardwareConcurrency||0));
+  // deviceMemory is intentionally treated as a conservative hint, not as VRAM.
+  // The loader still performs the real allocation/self-test and falls back.
+  const recommended:WebLLMTier=memoryGB>=16&&cores>=8?'power':memoryGB>=8&&cores>=4?'smart':'lite';
+  const candidates:WebLLMTier[]=recommended==='power'
+    ? ['power','smart','lite']
+    : recommended==='smart'
+      ? ['smart','lite']
+      : ['lite'];
+  return {
+    webgpu:true,
+    memoryGB,
+    cores,
+    recommended,
+    candidates,
+    reason:recommended==='power'
+      ? 'hardware forte: tentar 8B, depois 4B/1.7B'
+      : recommended==='smart'
+        ? 'hardware médio: tentar 4B, depois 1.7B'
+        : 'hardware limitado: usar 1.7B local; tarefas difíceis permanecem na rota web/cloud'
+  };
 }
 
 export async function loadWebLLMModel(
@@ -139,6 +192,27 @@ export async function loadWebLLMModel(
   }finally{
     if(epoch===loadEpoch)loadingTier=null;
   }
+}
+
+export async function loadBestWebLLMModel(
+  onProgress?:(p:WebLLMProgress)=>void,
+  options?:{persistPreference?:boolean}
+){
+  const profile=await detectWebLLMHardware();
+  if(!profile.webgpu||!profile.candidates.length)throw new Error(profile.reason);
+  let last:unknown=null;
+  for(const tier of profile.candidates){
+    try{
+      onProgress?.({progress:null,status:'Auto · '+profile.reason+' · tentando '+WEBLLM_MODELS[tier]});
+      await loadWebLLMModel(tier,onProgress,options);
+      return {tier,modelId:WEBLLM_MODELS[tier],profile};
+    }catch(error){
+      last=error;
+      try{await unloadWebLLMModel({keepPreference:true})}catch{}
+      onProgress?.({progress:null,status:'Tier '+tier+' não coube/funcionou; tentando fallback local menor'});
+    }
+  }
+  throw last instanceof Error?last:new Error('Nenhum tier WebLLM coube neste dispositivo.');
 }
 
 export async function restorePreferredWebLLMModel(onProgress?:(p:WebLLMProgress)=>void){
