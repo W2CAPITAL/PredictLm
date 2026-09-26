@@ -336,7 +336,7 @@ export function stepLifeSimulation(input:LifeSimulationState,minutes=10,forcedDe
     action:'step '+state.person.currentAction,
     kind:'simulation',
     success:true,
-    novelty:state.lastEvent===state.person.currentAction+' · '+formatTime(state.minute)?.36:.7,
+    novelty:state.lastEvent===state.person.currentAction+' · '+formatTime(state.minute) ? .36 : .7,
     uncertainty:state.neuro.uncertainty,
     salience:Math.min(1,.42+state.needs.stress/180+(evt?.salience||0)*.32),
     metadata:{tick:state.tick,day:state.day,minute:state.minute,location:state.person.location,mood:state.person.mood}
