@@ -1125,3 +1125,4 @@ Gate de licença:
 - licença customizada/ausente fica reference-only até revisão;
 - nunca declarar uma integração externa “ativa” sem configuração e teste real.
 
+\n\n## Continuous Learning Fabric\n\nPesquisa contínua e autoaperfeiçoamento seguem o contrato em `references/CONTINUOUS-LEARNING.md`. O coletor 24/7 pode pesquisar, verificar, versionar evidência e criar filas de código/skills sem API paga obrigatória; o motor local absorve o índice quando estiver ativo. Nunca alegar inferência local com o dispositivo desligado e nunca promover código externo diretamente para produção sem branch, testes, build, review e PR.\n
