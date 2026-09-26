@@ -41,7 +41,7 @@ function request(messages:any[]){
   }) as any;
 }
 
-test('stream chat sends history to Groq and emits tokens incrementally',async()=>{
+test('stream chat sends history to Groq and emits only a semantically validated draft',async()=>{
   clearProviders();
   process.env.GROQ_API_KEY='groq-test';
   process.env.GROQ_MODEL='openai/gpt-oss-120b';
@@ -64,9 +64,8 @@ test('stream chat sends history to Groq and emits tokens incrementally',async()=
     assert.match(String(response.headers.get('content-type')),/text\/event-stream/);
     const text=await response.text();
     assert.match(text,/"provider":"groq"/);
-    assert.match(text,/"content":"Batata "/);
-    assert.match(text,/"content":"é boa "/);
-    assert.match(text,/"content":"demais\."/);
+    assert.match(text,/"validated":true/);
+    assert.match(text,/"content":"Batata é boa demais\."/);
     assert.ok(seenBody.messages.some((x:any)=>x.role==='assistant'&&x.content==='Boa escolha.'));
     assert.equal(seenBody.messages.at(-1).content,'Qual sua forma favorita?');
   }finally{
@@ -93,7 +92,7 @@ test('stream chat falls through from failed Groq to Vercel AI Gateway',async()=>
     const body=JSON.parse(String(init?.body||'{}'));
     assert.equal(body.model,'nvidia/nemotron-3.5-lightning');
     assert.deepEqual(body.models,['google/gemini-3.8-flash','anthropic/claude-sonnet-5']);
-    return upstream(['Funcionou ','pelo Gateway.']);
+    return upstream(['Oi! ','Funcionou pelo Gateway.']);
   };
   try{
     const response=await POST(request([{role:'user',content:'Diga oi'}]));
@@ -125,7 +124,7 @@ test('stream chat uses current Gemini and DeepSeek defaults',async()=>{
       return new Response('temporary',{status:503});
     }
     assert.equal(String(input),'https://api.deepseek.com/chat/completions');
-    return upstream(['DeepSeek respondeu.']);
+    return upstream(['A Lua tem fases porque vemos porções diferentes da metade iluminada pelo Sol.']);
   };
   try{
     const response=await POST(request([{role:'user',content:'Explique a lua'}]));
