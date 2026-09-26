@@ -29,25 +29,23 @@ podem mudar; o workflow deve parar/degradar antes de exigir uma API paga.
 
 ## Planilha online
 
-Crie/use uma planilha com estas abas:
-- APRENDIZADO
-- FONTES
-- GITHUB
-- SKILLS
-- CODIGO
-- PENDENCIAS
-- AUDITORIA
+A planilha criada para o PredictLM usa um espelho **zero-secret**. A cada rodada, o
+workflow publica CSVs na branch `continuous-learning`:
 
-No GitHub, configure apenas como **repository secrets**:
+- `learning-data/APRENDIZADO.csv`
+- `learning-data/FONTES.csv`
+- `learning-data/GITHUB.csv`
+- `learning-data/SKILLS.csv`
+- `learning-data/CODIGO.csv`
+- `learning-data/PENDENCIAS.csv`
+- `learning-data/AUDITORIA.csv`
 
-- `PREDICTLM_LEARNING_SPREADSHEET_ID`
-- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+Cada aba do Google Sheets usa `IMPORTDATA` para ler o CSV público correspondente.
+Como o repositório é público, não existe token do Google, service account ou API paga
+no caminho padrão.
 
-Compartilhe a planilha com o e-mail da conta de serviço como Editor.
-
-A chave privada nunca deve ir para código, commit, issue, log ou variável
-`NEXT_PUBLIC_*`.
+O writer direto via Google Sheets API continua opcional para instalações privadas, mas
+não é necessário para a planilha padrão.
 
 ## Motor local
 
