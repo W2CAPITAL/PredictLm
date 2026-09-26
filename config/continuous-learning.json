@@ -144,7 +144,9 @@
         "image generation workflow stars:>500",
         "video generation workflow stars:>300",
         "open source video editor web stars:>100",
-        "video timeline editor typescript stars:>50"
+        "video timeline editor typescript stars:>50",
+        "video prompt continuity storyboard stars:>20",
+        "image video semantic fidelity evaluation stars:>20"
       ],
       "arxivQuery": "controllable image video generation identity consistency",
       "skills": [
@@ -168,6 +170,24 @@
         "agent-browser",
         "capability-fusion",
         "agent-powerups"
+      ]
+    },
+    {
+      "id": "self-improvement",
+      "label": "Autoaprendizado, avaliação e melhoria recursiva governada",
+      "priority": 5,
+      "githubQueries": [
+        "recursive self improvement agent replay policy stars:>10",
+        "self improving agents evaluation memory tools stars:>20",
+        "agent routing harness post training stars:>10"
+      ],
+      "arxivQuery": "recursive self improvement agents replay simulator routing harness",
+      "skills": [
+        "self-improvement",
+        "code-evolution",
+        "research-gap",
+        "knowledge-distillation",
+        "autonomous-research"
       ]
     }
   ],
@@ -258,6 +278,13 @@
       "agent-browser",
       "agent-powerups",
       "capability-fusion"
+    ],
+    "self-improvement": [
+      "self-improvement",
+      "code-evolution",
+      "research-gap",
+      "knowledge-distillation",
+      "autonomous-research"
     ]
   },
   "spreadsheet": {
