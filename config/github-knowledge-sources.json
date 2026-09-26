@@ -3212,8 +3212,8 @@
       "license": "MIT",
       "mode": "allow",
       "include": [
-        "README.md",
-        "docs/"
+        "README.MD",
+        "README.NPM.MD"
       ],
       "domains": [
         "simulation",
