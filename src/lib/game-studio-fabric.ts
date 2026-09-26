@@ -1,3 +1,5 @@
+import {isMinecraftSandboxTask,minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
+
 export type GameEngine='godot'|'unity'|'unreal'|'web'|'unknown';
 export type StudioRigor='minimal'|'standard'|'full';
 
@@ -88,6 +90,7 @@ export function gameStudioPlan(prompt:string,forceSimulation=false):GameStudioPl
 export function gameStudioContext(prompt:string,forceSimulation=false){
   const plan=gameStudioPlan(prompt,forceSimulation);
   if(!plan.active)return '';
+  const minecraft=isMinecraftSandboxTask(prompt);
   return [
     'SIMULATION GAME STUDIO — use the MIT-licensed coordination patterns from Claude-Code-Game-Studios inside the Life Simulation Studio only.',
     'This is not a generic Build workflow and must not turn ordinary coding tasks into a game studio process.',
@@ -106,6 +109,7 @@ export function gameStudioContext(prompt:string,forceSimulation=false){
     'Simulation truth rule: narration never outranks state. If an action cannot be represented by the engine, do not pretend it happened.',
     'Perception rule: simulated agents act from their own visible/local state and memory, not omniscient world knowledge.',
     'Visual rule: when the browser renders the world, visible state should be checked from the rendered world/POV instead of inferred only from data.',
+    minecraft?minecraftSimulationContext():'',
     'Playtest rule: observations describe simulator behavior and UX, never predictions about real human behavior.'
   ].filter(Boolean).join('\n');
 }
