@@ -1,0 +1,41 @@
+name: Autonomous Learning Snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"
+
+concurrency:
+  group: autonomous-learning-snapshot
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run selfimprove:snapshot
+      - run: npm test
+      - run: npm run build
+      - name: Commit autonomous-learning snapshot
+        run: |
+          if git diff --quiet -- reports/selfimprove/auto-learning.json; then
+            echo "No autonomous-learning changes"
+            exit 0
+          fi
+          git config user.name "predictlm-learning-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add reports/selfimprove/auto-learning.json
+          git commit -m "chore(learning): refresh autonomous-learning snapshot"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
