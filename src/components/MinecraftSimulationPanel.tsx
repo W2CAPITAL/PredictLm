@@ -453,7 +453,7 @@ export function MinecraftSimulationPanel(){
 
     <div className={styles.toolbar}>
       <button className={running?styles.active:''} onClick={()=>setRunning(v=>!v)}>{running?<><Pause size={13}/>Pausar</>:<><Play size={13}/>Rodar mundo</>}</button>
-      <button onClick={()=>setWorld(prev=>tickVoxelWorld(prev,1))}><StepForward size={13}/>Tick</button>
+      <button onClick={()=>setWorld(prev=>stepVoxelBioAI(tickVoxelWorld(prev,1)))}><StepForward size={13}/>Tick</button>
       <button className={tool==='mine'?styles.active:''} onClick={()=>setTool('mine')}>Minerar</button>
       <button className={tool==='place'?styles.active:''} onClick={()=>setTool('place')}>Colocar</button>
       <button className={tool==='inspect'?styles.active:''} onClick={()=>setTool('inspect')}>Inspecionar</button>
