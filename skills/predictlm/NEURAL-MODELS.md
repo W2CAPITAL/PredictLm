@@ -2,89 +2,84 @@
 
 ## Principle
 
-PredictLM uses a real pretrained open-weight model as its neural base. Runtime, skills, retrieval and memory are separate layers.
+PredictLM is a system, not a single tiny local model.
 
 ```text
-pretrained weights
-  -> inference runtime
-  -> PredictLM prompt/skills/knowledge/memory
-  -> Chat / Build / Processos
+web/cloud model mesh
+  + browser WebLLM
+  + compatibility CPU/WASM model
+  + PredictLM prompt/skills/knowledge/memory
+  + Chat / Build / Processos / Imagine
 ```
 
-Cloning a GitHub repository or indexing documents does not alter foundation-model weights.
+Repository ingestion, RAG and memory do not alter foundation-model weights. Auto-learning is tracked separately from weight tuning.
 
-## Current browser path
+## Current browser strategy
 
-| Tier | Weight source | Format | Runtime | Plug point |
-| --- | --- | --- | --- | --- |
-| Lite | onnx-community/Qwen2.5-0.5B-Instruct | ONNX q4/q8 | @huggingface/transformers | src/lib/neural-model-catalog.ts -> browser-brain.ts -> neural.worker.ts |
-| Smart | onnx-community/Qwen2.5-1.5B-Instruct | ONNX q4/q8 | @huggingface/transformers | src/lib/neural-model-catalog.ts -> browser-brain.ts -> neural.worker.ts |
+The 0.5B/1.5B class is no longer treated as PredictLM's primary intelligence.
 
-`browser-brain.ts` owns selection, persistence and capability checks.
-`neural.worker.ts` owns model loading, backend fallback, self-test and inference.
-The browser cache stores downloaded artifacts when the browser permits it.
+### WebLLM / WebGPU — preferred local browser path
 
-## Custom browser model
+| Tier | Model | Approx WebLLM VRAM | Role |
+| --- | --- | ---: | --- |
+| Lite compatibility | Qwen3-1.7B-q4f16_1-MLC | ~2.0 GB | weak WebGPU / fallback |
+| Smart default | Qwen3.5-4B-q4f16_1-MLC | ~3.9 GB | normal modern PC |
+| Power | Qwen3-8B-q4f16_1-MLC | ~5.7 GB | stronger GPU |
 
-Set:
-
-```env
-NEXT_PUBLIC_PREDICT_NEURAL_LITE_MODEL=
-NEXT_PUBLIC_PREDICT_NEURAL_SMART_MODEL=
-```
-
-The target must be compatible with Transformers.js text-generation. A raw GGUF path is not valid for this worker.
-
-## Desktop quality path
-
-A future desktop edition should use:
+`src/lib/webllm-runtime.ts` performs hardware-aware selection:
 
 ```text
-verified model source
-  -> licensed GGUF artifact (or controlled conversion)
-  -> embedded llama.cpp
-  -> PredictLM desktop adapter
-  -> existing skills / memory / Build runtime
+8B -> 4B -> 1.7B
 ```
 
-Recommended candidates:
-- Qwen2.5-7B-Instruct — Apache-2.0.
-- Phi-4-mini-instruct — MIT.
-- Mistral-7B-Instruct-v0.3 — Apache-2.0.
+The loader performs the real allocation/self-test. `navigator.deviceMemory` and CPU core count are only conservative hints.
 
-Qwen2.5-3B-Instruct is not a default candidate because its current model card uses the Qwen Research license. Review the intended distribution before using it.
+If WebGPU is unavailable, the web app does not pretend that a large model can run locally on every PC. Predict Auto keeps the product usable through the configured server/provider mesh. That is how the same web application can run on weak PCs without forcing multi-GB local weights into RAM.
+
+## CPU/WASM compatibility path
+
+The older Transformers.js Qwen path remains available only for offline/compatibility use:
+
+| Tier | Weight source | Runtime |
+| --- | --- | --- |
+| Lite | onnx-community/Qwen2.5-0.5B-Instruct | @huggingface/transformers CPU/WASM |
+| Smart | onnx-community/Qwen2.5-1.5B-Instruct | @huggingface/transformers WebGPU/CPU |
+
+It is not the target quality ceiling and should not be described as the main PredictLM brain.
+
+## Server/web quality path
+
+When the local browser model is unavailable, too small, or unsuitable, Predict Auto may use configured remote/server routes such as the Vercel AI Gateway, Groq, OpenRouter, Gemini, DeepSeek, NVIDIA or other explicitly configured providers.
+
+The user-facing identity remains PredictLM; provider outputs pass through PredictLM routing, prompt contracts, memory, knowledge and semantic/public gates.
+
+## Auto-learning interaction
+
+Promoted autonomous lessons are injected into both:
+
+- server/provider chat;
+- streaming chat;
+- browser-local brain.
+
+This means learned operational behavior is shared across local and remote generation paths.
+
+## Weight tuning
+
+Actual model-weight modification remains a distinct process.
+
+The repository contains optional LoRA/SFT tooling, but a repository/RAG update must never be described as a weight update.
+
+A weight candidate must pass:
+
+```text
+dataset -> training run -> frozen eval -> compare -> promote/rollback
+```
 
 ## Non-goals
 
-- Do not bundle multi-GB 7B weights in the Vercel web deployment.
+- Do not force an 8B model onto a weak PC.
+- Do not call a 0.5B/1.5B compatibility model the full PredictLM intelligence.
 - Do not require Ollama.
-- Do not call RAG, repository ingestion or adaptive memory a weight fine-tune.
-- Do not silently substitute an unverified model/license.
-- Do not report a model as active until inference self-test succeeds.
-
-
-## Optional local runtime adapters
-
-The browser Qwen path remains independent and mandatory as the local-first baseline.
-
-Optional adapters, activated only by the user:
-
-| Adapter | Endpoint | Role |
-|---|---|---|
-| Ollama | 127.0.0.1:11434 | local model manager/runtime |
-| OpenAI local 4891 | 127.0.0.1:4891/v1 | mobile/desktop local API compatibility |
-| llamafile / NanoMind | 127.0.0.1:8080/v1 | CPU/GGUF local server |
-| Qualcomm GenieX | 127.0.0.1:18181/v1 | supported Snapdragon on-device inference |
-| LowRAM | 127.0.0.1:8766 | constrained custom generation API |
-
-The Local Runtime Router runs on the client because a hosted Vercel process cannot reach the user's localhost. The runtime must expose browser-accessible CORS/local-network access.
-
-Every local runtime receives Token-Budgeted context before generation. Model selection/quantization remains the responsibility of the chosen runtime; PredictLM does not silently download a large GGUF through the web app.
-
-### Low-RAM policy
-
-- shorten context before forcing a smaller quantization;
-- cap generation length;
-- prefer an already-running local runtime over loading a second browser model;
-- if no runtime is available, fall back to Browser Qwen Lite;
-- do not claim a repository's published RAM number is guaranteed on the user's hardware.
+- Do not claim that RAG or feedback memory changes neural weights.
+- Do not silently load a model that has not passed a real inference self-test.
+- Do not make browser hardware claims from RAM hints alone.
