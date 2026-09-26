@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createAppLearningLedger,normalizeAppLearningEvent} from '../src/lib/app-learning';
+import {createAppLearningLedger,deriveAppImprovementCandidates,normalizeAppLearningEvent} from '../src/lib/app-learning';
 
 test('app learning strips sensitive metadata and query strings from supplied labels can be avoided by caller',()=>{
   const event=normalizeAppLearningEvent({
@@ -31,4 +31,21 @@ test('app learning ledger starts bounded and empty',()=>{
   assert.equal(ledger.total,0);
   assert.equal(ledger.bio.experiences,0);
   assert.equal(ledger.events.length,0);
+});
+
+
+test('repeated app failures become proposal-only improvement candidates',()=>{
+  const ledger=createAppLearningLedger();
+  ledger.events=[
+    {at:3,surface:'/build',action:'POST /api/agent',kind:'build',success:false,priority:.91,disagreement:.24,metadata:{status:500}},
+    {at:2,surface:'/build',action:'POST /api/agent',kind:'build',success:false,priority:.88,disagreement:.2,metadata:{status:500}},
+    {at:1,surface:'/research',action:'open panel',kind:'navigation',success:true,priority:.2,disagreement:.05}
+  ];
+  ledger.total=3;
+  ledger.failures=2;
+  ledger.successes=1;
+  const candidates=deriveAppImprovementCandidates(ledger);
+  assert.equal(candidates[0]?.surface,'/build');
+  assert.equal(candidates[0]?.failures,2);
+  assert.equal(candidates[0]?.promotion,'proposal-only');
 });
