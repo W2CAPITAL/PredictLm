@@ -155,3 +155,36 @@ test('stream chat returns 503 when no remote API exists',async()=>{
   const data=await response.json();
   assert.equal(data.code,'NO_STREAM_PROVIDER');
 });
+
+
+test('stream chat receives unified cognitive mesh in the system context',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  process.env.GROQ_MODEL='openai/gpt-oss-120b';
+  const original=globalThis.fetch;
+  let seenBody:any=null;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
+    seenBody=JSON.parse(String(init?.body||'{}'));
+    return upstream(['Oi, contexto integrado.']);
+  };
+  try{
+    const req=new Request('http://predictlm.test/api/chat/stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        messages:[{role:'user',content:'Diga oi'}],
+        language:'pt-BR',
+        brainContext:'MOUSE CORE ativo; Fly Human Macaque integrados.'
+      })
+    }) as any;
+    const response=await POST(req);
+    await response.text();
+    assert.ok(seenBody);
+    assert.match(String(seenBody.messages?.[0]?.content||''),/COGNITIVE MESH/);
+    assert.match(String(seenBody.messages?.[0]?.content||''),/MOUSE CORE ativo/);
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
