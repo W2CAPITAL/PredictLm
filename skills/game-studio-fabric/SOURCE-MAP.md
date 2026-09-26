@@ -4,20 +4,22 @@
 - Donchitos/Claude-Code-Game-Studios — MIT
   - studio hierarchy / domain ownership
   - rigor modes
-  - vertical-slice workflow
+  - vertical-slice / end-to-end loop validation
   - run-and-observe visual QA
   - playtest evidence
-  - path-scoped rules and cross-domain escalation
-  - engine specialist pattern for Godot / Unity / Unreal
+  - path/domain scoped responsibility
+  - coordination and escalation patterns
 
-## PredictLM implementation
+## PredictLM implementation — Simulation only
 - src/lib/game-studio-fabric.ts
-- src/lib/agent-runtime/agentic-fabric.ts
-- src/lib/agent-runtime/catalog.ts
-- src/lib/build-reference-playbook.ts
+- src/lib/agent-runtime/agentic-fabric.ts (simulation surface)
+- src/lib/simulation/emergent-swarm.ts
+- src/components/GrokSimulationPanel.tsx
+- src/app/api/chat/route.ts (simulation-plan)
 - src/lib/fusion/capability-fabric.ts
-- src/app/api/agent/route.ts
 
 ## Boundary
-The upstream repository is a Claude Code workflow/template. PredictLM adapts the operational patterns;
-it does not require Claude Code, does not claim the upstream hooks ran, and does not clone the entire framework.
+Game Studio is scoped to the Life Simulation Studio. It is not injected into generic Build.
+The upstream repository is a Claude Code workflow/template. PredictLM adapts coordination and QA
+patterns; it does not require Claude Code, does not claim upstream hooks ran, and does not clone
+the entire framework.
