@@ -86,3 +86,25 @@ Privacy boundary:
 The learning ledger is bounded and local-first. High-priority failures and cross-species disagreement may update the Digital Brain, open a research gap or produce a code/skill proposal. They never authorize automatic promotion to production.
 
 BioIntelligence is a controller/evidence layer, not a replacement for tests. A biologically inspired signal cannot override test/build/security/review gates.
+
+
+## Unified BioAI improvement loop
+
+Self-improvement now consumes one persistent BioAI state instead of separate per-tab heuristics.
+
+Signals:
+- app-wide sanitized success/failure/latency;
+- eight-species controller disagreement;
+- local synthetic reservoir prediction error/plasticity;
+- simulation outcomes, including the BioAI voxel agent;
+- research gaps;
+- repeated improvement candidates.
+
+Flow:
+`experience → reservoir surprise → cross-species fusion → BioAI memory → gap/candidate → replay → patch proposal → tests/build/security → review`.
+
+The BioAI may use persistent local memory to avoid repeating failed approaches even with no Supabase or remote database.
+
+Wetware data, when explicitly enabled, is another evidence stream only. It cannot bypass evaluation or automatically promote code.
+
+A self-improvement candidate still has `promotion: proposal-only`. Hardware activity, high model confidence or repeated success never grants permission to merge directly to production.
