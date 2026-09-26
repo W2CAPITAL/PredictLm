@@ -41,6 +41,14 @@ function request(messages:any[]){
   }) as any;
 }
 
+function isAutoLearningFetch(input:any){
+  return String(input).includes('/rest/v1/predict_auto_lessons');
+}
+
+function autoLearningResponse(){
+  return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
+}
+
 test('stream chat sends history to Groq and emits only a semantically validated draft',async()=>{
   clearProviders();
   process.env.GROQ_API_KEY='groq-test';
@@ -48,6 +56,7 @@ test('stream chat sends history to Groq and emits only a semantically validated 
   const original=globalThis.fetch;
   let seenBody:any=null;
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
     assert.equal(String(input),'https://api.groq.com/openai/v1/chat/completions');
     assert.equal(String((init?.headers as any)?.Authorization||''),'Bearer groq-test');
     seenBody=JSON.parse(String(init?.body||'{}'));
@@ -83,6 +92,7 @@ test('stream chat falls through from failed Groq to Vercel AI Gateway',async()=>
   const calls:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
     const url=String(input);
+    if(isAutoLearningFetch(input))return autoLearningResponse();
     calls.push(url);
     if(url.includes('api.groq.com')){
       return new Response(JSON.stringify({error:'rate limited'}),{status:429,headers:{'Content-Type':'application/json'}});
@@ -118,6 +128,7 @@ test('stream chat uses current Gemini and DeepSeek defaults',async()=>{
   const original=globalThis.fetch;
   const models:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
     const body=JSON.parse(String(init?.body||'{}'));
     models.push(body.model);
     if(String(input).includes('generativelanguage')){
