@@ -3085,6 +3085,244 @@
       ],
       "weight": 1.26,
       "reason": "MIT-licensed game-development agent framework. Ingest coordination, rigor, vertical-slice, visual run-and-observe, playtest, QA and engine-specialist patterns. Do not force its full documentation workflow onto small projects; PredictLM keeps adaptive minimal/standard/full rigor."
+    },
+    {
+      "repo": "fogleman/Craft",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/chunk.c",
+        "src/chunk.h",
+        "src/cube.c",
+        "src/cube.h",
+        "src/map.c",
+        "src/map.h",
+        "src/world.c",
+        "src/world.h"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "voxel",
+        "chunks",
+        "procedural-generation",
+        "persistence",
+        "rendering"
+      ],
+      "weight": 1.18,
+      "reason": "MIT Minecraft clone. Ingest deterministic chunk, voxel world, sparse-delta persistence and rendering architecture; do not copy Minecraft assets or branding."
+    },
+    {
+      "repo": "dgreenheck/minecraft-threejs-clone",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "threejs",
+        "biomes",
+        "chunks",
+        "terraforming",
+        "save-load"
+      ],
+      "reason": "No verified repository license. Use only high-level browser voxel architecture ideas; never copy source/assets."
+    },
+    {
+      "repo": "0xfabian/mc",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "cpp",
+        "opengl",
+        "voxel-rendering"
+      ],
+      "reason": "No verified repository license. Low-level C++/OpenGL voxel architecture reference only."
+    },
+    {
+      "repo": "pquiring/jfcraft",
+      "branch": "master",
+      "license": "LGPL-2.1",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "blocks",
+        "items",
+        "crafting",
+        "world-systems"
+      ],
+      "reason": "LGPL project remains architecture/content-breadth reference only in PredictLM; do not copy implementation into the proprietary/runtime bundle."
+    },
+    {
+      "repo": "obiwac/python-minecraft-clone",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "episode-*.py"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "voxel",
+        "chunks",
+        "collision",
+        "gravity",
+        "save-load",
+        "hotbar"
+      ],
+      "weight": 1.12,
+      "reason": "MIT tutorial clone. Ingest progressive voxel-engine patterns: chunk mesh, break/place, collision, gravity, persistence and UI; no Minecraft assets."
+    },
+    {
+      "repo": "Aidanhouk/Minecraft-Clone",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "survival",
+        "feature-breadth"
+      ],
+      "reason": "No verified repository license. Use only feature-breadth and system-decomposition concepts."
+    },
+    {
+      "repo": "zardoy/minecraft-web-client",
+      "branch": "next",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "weight": 1.16,
+      "reason": "MIT browser-first Minecraft-compatible client/server project. Ingest browser input, mobile UX, state synchronization and offline/online boundary patterns; do not inherit copyrighted Minecraft assets/protocol claims without separate review."
+    },
+    {
+      "repo": "zardoy/mcraft-arwes",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "hud",
+        "inventory",
+        "browser-ui"
+      ],
+      "reason": "No verified license. Use only generic futuristic voxel HUD/menu/inventory presentation concepts."
+    },
+    {
+      "repo": "JEFFY1234599/block-craft-browser-edition",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "skins",
+        "controls"
+      ],
+      "reason": "No verified license. Reference browser/mobile interaction and customization UX only; do not copy assets or unofficial service logic."
+    },
+    {
+      "repo": "TheDoctor200/MinecraftDungeonsLauncher",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft-dungeons",
+        "offline-profile",
+        "launcher",
+        "save-profile"
+      ],
+      "reason": "Secondary reference only. Use offline/profile/save-selection and launcher separation concepts; it must not become the primary voxel-world architecture."
+    },
+    {
+      "repo": "GuyRoosevelt/Minecraft-Dungeons-The-Awakening",
+      "branch": "master",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "simulation",
+        "minecraft-dungeons",
+        "dungeons",
+        "loot",
+        "bosses",
+        "combat",
+        "economy",
+        "save-load"
+      ],
+      "weight": 0.86,
+      "reason": "Secondary Apache-2.0 text-adventure reference for dungeon/loot/boss/economy progression. Voxel sandbox remains primary."
+    },
+    {
+      "repo": "jbruening/UnEngine",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "UnityEngine/"
+      ],
+      "domains": [
+        "unity",
+        "gameobject",
+        "component",
+        "transform",
+        "physics",
+        "camera",
+        "input",
+        "time",
+        "simulation",
+        "build"
+      ],
+      "weight": 1.2,
+      "reason": "MIT UnityEngine-compatible test double. Ingest GameObject/Component/Transform/Vector/Camera/Collider/Rigidbody/Input/Time separation patterns; actual Unity runtime is only claimed when a real Unity WebGL host is configured."
     }
   ]
 }
