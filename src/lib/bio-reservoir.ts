@@ -48,10 +48,10 @@ function eventFeatures(event:BioLearningEvent){
     clamp(Number(event.uncertainty??.35)),
     clamp(Number(event.salience??.5)),
     event.success===false?1:event.success===true?0:.4,
-    event.kind==='simulation'||event.kind==='cognitive'?.8:.2,
-    event.kind==='media'?.75:.15,
-    event.kind==='build'?.75:.15,
-    event.kind==='research'?.72:.12,
+    event.kind==='simulation'||event.kind==='cognitive' ? .8 : .2,
+    event.kind==='media' ? .75 : .15,
+    event.kind==='build' ? .75 : .15,
+    event.kind==='research' ? .72 : .12,
     ((h>>>0)&255)/255,
     ((h>>>8)&255)/255,
     ((h>>>16)&255)/255,
@@ -129,7 +129,7 @@ export function advanceBioReservoir(previous:BioReservoirState|undefined,event:B
   const variance=nextTraces.reduce((s,x)=>s+(x-meanTrace)**2,0)/UNITS;
   const synchrony=clamp(1-Math.sqrt(variance)*2.2);
   const expected=clamp(prev.firingRate*.7+prev.traces.reduce((s,x)=>s+x,0)/UNITS*.3);
-  const predictionError=clamp(Math.abs(firingRate-expected)*2+Number(event.uncertainty??.25)*.28+(event.success===false?.18:0));
+  const predictionError=clamp(Math.abs(firingRate-expected)*2+Number(event.uncertainty??.25)*.28+(event.success===false ? .18 : 0));
   const plasticity=clamp(prev.plasticity*.84+predictionError*.1+Number(event.novelty??.35)*.06);
   const noveltyBoost=clamp(predictionError*.58+(1-synchrony)*.22+plasticity*.2);
 
