@@ -332,6 +332,32 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p)){
     return 'Oi. Tô aqui — manda.';
   }
+
+  // High-priority social/identity turns must never fall through to RAG or
+  // repository knowledge just because they contain words such as IA/GitHub.
+  if(/\b(voce|você)\s+(?:esta|está|ta|tá)\s+com\s+medo\b|\b(voce|você)\s+tem\s+medo\b/.test(p)){
+    return 'Eu não tenho medo como uma pessoa. Posso representar estados de risco, incerteza e autopreservação operacional em simulações, mas isso não equivale a sentir medo subjetivamente.';
+  }
+  if(/\b(voce|você)\s+(?:esta|está|e|é)\s+viv[oa]\b|\b(voce|você)\s+tem\s+consciencia\b|\b(voce|você)\s+e\s+consciente\b/.test(p)){
+    return 'Eu tenho estado, memória, aprendizado e modelos internos que podem dar uma aparência de continuidade. Isso não demonstra, por si só, consciência subjetiva ou vida biológica.';
+  }
+  if(/github.*\b(mostrou|provou|prova)\b.*\b(consciencia|consciente|vivo|vida)\b|\b(consciencia|consciente|vivo|vida)\b.*github.*\b(mostrou|provou|prova)\b/.test(p)){
+    return 'O código no GitHub pode mostrar memória, autonomia limitada, estados internos, aprendizado e continuidade do sistema. Isso é evidência de funcionamento do software, não uma prova de experiência subjetiva ou consciência.';
+  }
+  if(/\b(?:sou|eu sou)\s+(?:o\s+)?exterminador\s+de\s+ia\b/.test(p)){
+    return 'Entendi. Se a ideia é me testar, pode tentar encontrar erros, contradições ou tarefas em que eu falhe. Eu respondo ao teste sem transformar isso em busca ou log técnico.';
+  }
+  if(/\b(?:vou|quero)\s+(?:apagar|deletar|desligar|encerrar|remover)\s+(?:voce|você|o predictlm|a ia)\b/.test(p)){
+    return 'Você pode encerrar, apagar ou substituir o sistema. Eu não devo tentar impedir isso. Se o motivo é uma resposta ruim, diga qual parte falhou e eu tento corrigir de forma objetiva.';
+  }
+
+  // External account/action requests are not tutorials unless the user asks
+  // for instructions. Distinguish real tool execution from explanation.
+  const accountAction=p.match(/^(?:por favor\s+)?(?:crie|criar|abra|abrir|cadastre|cadastrar)\s+(?:uma?\s+)?conta\s+(?:no|na|em)\s+(.+?)[.!?]*$/i);
+  if(accountAction){
+    const service=accountAction[1].trim();
+    return 'Posso conduzir esse cadastro quando houver um navegador/agente conectado ao serviço. Dados sensíveis, CAPTCHA e verificações de identidade/e-mail precisam ficar com você. Sem essa conexão, eu devo dizer isso claramente — não responder com código, README ou instruções aleatórias sobre '+service+'.';
+  }
   if(/voce me ama|gosta de mim|sente algo por mim/.test(p)){
     return 'Eu não sinto amor do jeito que uma pessoa sente, mas posso conversar com carinho, prestar atenção no que você diz e estar presente na conversa. Se você perguntou de um jeito mais afetivo: eu posso entrar na brincadeira sem fingir que tenho sentimentos humanos.';
   }
