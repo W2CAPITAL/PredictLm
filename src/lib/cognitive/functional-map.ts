@@ -1,4 +1,4 @@
-export type CognitiveEvidenceSource='H01-human-cortex'|'Macaque-cortex-atlas'|'human-macaque-proxy'|'FlyWire-whole-fly'|'dual-connectome'|'multi-species'|'software-memory';
+export type CognitiveEvidenceSource='H01-human-cortex'|'Macaque-cortex-atlas'|'human-macaque-proxy'|'FlyWire-whole-fly'|'MICrONS-mouse-visual'|'Allen-mouse-mesoscale'|'dual-connectome'|'multi-species'|'software-memory';
 
 export interface CognitiveFunctionNode{
   id:string;
@@ -89,6 +89,16 @@ export const COGNITIVE_FUNCTIONAL_MAP:CognitiveFunctionNode[]=[
     id:'visual-fly',label:'Visão da mosca',domain:'perception',source:'FlyWire-whole-fly',
     role:'Percepção panorâmica rápida de estímulos próximos.',
     implementation:'320° field with attraction/salience weighting.'
+  },
+  {
+    id:'mouse-visual-microcircuit',label:'Microcircuito visual de camundongo',domain:'perception',source:'MICrONS-mouse-visual',
+    role:'Adiciona um prior mamífero não-primata de conectividade sináptica local + resposta funcional visual.',
+    implementation:'MICrONS cortical mm³: seis camadas, múltiplas áreas visuais, ~120k neurônios reconstruídos, ~75k com fisiologia e >523M sinapses detectadas.'
+  },
+  {
+    id:'mouse-mesoscale-routing',label:'Roteamento mesoscale de camundongo',domain:'agency',source:'Allen-mouse-mesoscale',
+    role:'Adiciona cobertura de projeções entre regiões do cérebro inteiro em escala mesoscale.',
+    implementation:'Allen Mouse Brain Connectivity Atlas; tracer-derived axonal projections, never treated as synapse-level whole-brain connectivity.'
   },
   {
     id:'macaque-cell-priors',label:'Priors celulares de primata',domain:'perception',source:'Macaque-cortex-atlas',
