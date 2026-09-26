@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { hasInternalReasoningLeak, sanitizePublicAnswer } from './public-answer-gate';
 import { looksLikeOperationalMonologue } from './human-presence';
+import { recordBrowserKnowledgeTurn } from './fusion/knowledge-fabric';
 
 export interface AssistantMessage {
   id:string;
@@ -67,6 +68,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
       }
     }
     const next={...safeMessage,id:id(),createdAt:Date.now()} as AssistantMessage;
+    try{recordBrowserKnowledgeTurn(next.role,next.content)}catch{}
     return {sessions:s.sessions.map(chat=>{
       if(chat.id!==s.activeId)return chat;
       const messages=[...chat.messages,next];
@@ -92,6 +94,7 @@ export const useAssistantStore=create<AssistantState>()(persist((set)=>({
         }
       }
       messages[index]={...messages[index],content:nextContent,status};
+      if(status==='done')try{recordBrowserKnowledgeTurn('assistant',nextContent)}catch{}
       return {...chat,messages,updatedAt:Date.now()};
     })
   })),
