@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.22.0",
+  "version": "5.24.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -50,7 +50,8 @@
     "digital-brain",
     "entity-self-model",
     "human-presence",
-    "predictlm-master"
+    "predictlm-master",
+    "game-studio-fabric"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -211,7 +212,13 @@
     "operational-monologue-gate",
     "contextual-followup",
     "diagnostics-only-internals",
-    "collapsed-reasoning-summary"
+    "collapsed-reasoning-summary",
+    "game-studio-fabric",
+    "adaptive-game-rigor",
+    "vertical-slice-validation",
+    "run-and-observe-visual-qa",
+    "playtest-evidence",
+    "game-engine-specialist-routing"
   ],
   "hosts": [
     "PredictLM",
