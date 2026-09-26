@@ -20,6 +20,7 @@ import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, re
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { gameStudioContext } from '@/lib/game-studio-fabric';
 import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
+import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -864,6 +865,7 @@ export async function POST(req:Request){
     const centum=centumDecisionContext(prompt);
     const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
+    const autoLessons=await runtimeAutoLearningContext(prompt,deep?5:3,'chat');
     const humanLens=humanAdversarialContext(prompt);
     const humanPresence=humanPresenceContext(prompt);
     const masterContext=predictLMMasterContext(prompt,deep);
@@ -878,6 +880,7 @@ export async function POST(req:Request){
       sections:[
         {label:'Instruções persistentes do usuário',text:localInstructions,priority:8},
         {label:'Lições globais aprovadas',text:simpleTurn?'':globalLessons,priority:7},
+        {label:'Autoaprendizado promovido',text:autoLessons,priority:9},
         {label:'Centum Decision Gate',text:simpleTurn?'':centum,priority:10},
         {label:'Third Brain PARALLAX',text:simpleTurn?'':parallax,priority:10},
         {label:'PredictLM Master',text:simpleTurn?'':masterContext,priority:10},
