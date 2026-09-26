@@ -44,9 +44,11 @@ Runtime and skill changes must be synchronized in the same reviewed change.
 
 ## Online spreadsheet
 
-When the three Google service-account secrets and spreadsheet ID are configured, each
-cycle appends normalized data to APRENDIZADO, FONTES, GITHUB, SKILLS, CODIGO,
-PENDENCIAS and AUDITORIA.
+The default public-repository path is zero-secret. Each scheduled cycle publishes
+seven CSV mirrors to the `continuous-learning` branch, and the Google Sheet consumes
+them with `IMPORTDATA`.
 
-The continuous-learning cycle must continue even when Sheets is not configured or is
-temporarily unavailable.
+No Google credential or service account is required for this default mirror.
+
+Direct Google Sheets API writing remains optional for private installations and must
+never be required for the core learning cycle.
