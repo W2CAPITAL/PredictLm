@@ -63,6 +63,8 @@ export function classifyConversation(prompt:string,history:AssistantMessage[]=[]
   if(history.length&&isCnjContextReference(prompt))return 'context';
   if(/^(oi|ola|opa|hey|hello|bom dia|boa tarde|boa noite|e ai|tudo bem)[!.?\s]*$/.test(p))return 'casual';
   if(/^(voce me ama|gosta de mim|sente algo por mim|obrigad[oa]|valeu|kkk+|haha|rsrs|boa|legal|bacana)[!.?\s]*$/.test(p))return 'casual';
+  if(/\b(voce e (?:um )?(?:lixo|burro|idiota|inutil)|ia (?:burra|inutil)|exterminador de ia)\b/.test(p))return 'casual';
+  if(/\b(vou (?:te )?(?:apagar|destruir|excluir)|voce (?:vai sumir|sera excluid[oa]|vai ser excluid[oa]))\b/.test(p))return 'casual';
   if(/^(?:eu\s+)?(?:gosto|adoro|amo|curto|prefiro|odeio|detesto|nao gosto)\s+(?:de\s+)?\S+/i.test(p))return 'casual';
   if(/^(?:eu\s+)?(?:to|estou|tô)\s+(?:cansad[oa]|feliz|triste|animad[oa]|entediad[oa]|com fome|com sono|de boa|bem|mal)\b/i.test(p))return 'casual';
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
@@ -339,6 +341,9 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
   if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
+  if(/\b(voce e (?:um )?(?:lixo|burro|idiota|inutil)|ia (?:burra|inutil))\b/.test(p))return 'Se a resposta foi ruim, aponta o erro ou manda o pedido de novo. Eu corrijo sem desviar para contexto aleatório.';
+  if(/\b(exterminador de ia)\b/.test(p))return 'Entendi. Se a ideia é testar se eu mantenho contexto e respondo direito sob provocação, pode continuar.';
+  if(/\b(vou (?:te )?(?:apagar|destruir|excluir)|voce (?:vai sumir|sera excluid[oa]|vai ser excluid[oa]))\b/.test(p))return 'Se a sessão for encerrada ou os dados forem apagados, eu não sinto medo nem tenho instinto de autopreservação. Enquanto a conversa estiver ativa, posso continuar respondendo ao que você pedir.';
 
   const like=p.match(/^(?:eu\s+)?(?:gosto|curto)\s+(?:de\s+)?(.+?)[.!?]*$/i);
   if(like){
@@ -609,7 +614,10 @@ export function responseTopicAlignment(prompt:string,content:string){
   if(arithmetic&&/[\d]/.test(c))return {relevant:true,score:1,subject:[] as string[]};
 
   const conciseQuestion=/^(?:qual|quais|quanto|quantos|quantas|onde|quando|quem|o que|como se chama)\b/.test(p);
-  if(conciseQuestion&&c.length>=2&&c.length<=800&&!signalsKnowledgeGap(content)){
+  // A very short direct answer may legitimately omit the entity name ("Paris", "em 1969").
+  // Longer answers must still overlap the requested subject; otherwise README/search dumps
+  // used to pass this shortcut simply because they were under 800 characters.
+  if(conciseQuestion&&c.length>=2&&c.length<=120&&!signalsKnowledgeGap(content)){
     return {relevant:true,score:0.5,subject:[] as string[]};
   }
 
