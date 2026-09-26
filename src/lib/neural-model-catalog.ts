@@ -126,7 +126,7 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     transport:'browser-worker',
     optional:false,
     hardware:'generic browser · CPU/WASM or WebGPU',
-    note:'Zero-server default. Lite 0.5B and Smart 1.5B remain the guaranteed local-first path.'
+    note:'Compatibility-only CPU/WASM path. It is not the primary intelligence path; Predict Auto prefers larger WebLLM tiers or the web/cloud mesh for difficult tasks.'
   },
   {
     id:'browser-webllm',
@@ -134,7 +134,7 @@ export const LOCAL_NEURAL_RUNTIMES:LocalNeuralRuntime[]=[
     transport:'webllm',
     optional:true,
     hardware:'WebGPU browser · GPU accelerated',
-    note:'Optional accelerator using MLC WebLLM. Loaded only on explicit opt-in and kept separate from the CPU/WASM-safe ONNX path.'
+    note:'Primary browser-local accelerator. Predict Auto auto-selects Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B according to hardware and falls back cleanly if the model does not fit.'
   },
   {
     id:'freellmapi',
