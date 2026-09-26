@@ -16,5 +16,10 @@ export const PREDICT_AGENTS=[
   {id:'media-director',name:'Media Director',role:'identidade, composição, storyboard, continuidade e direção visual'},
   {id:'media-quality',name:'Media Quality',role:'artifact gate, temporal continuity, stylization e upscale'},
   {id:'simulation-swarm',name:'Simulation Swarm',role:'percepção local, políticas emergentes e contrafactuais sem tratar simulação como previsão'},
+  {id:'game-producer',name:'Game Producer',role:'escopo, rigor, dependências, mudanças cross-domain e cadência de entrega'},
+  {id:'game-creative-director',name:'Game Creative Director',role:'fantasia central, pilares, experiência, narrativa e coerência de design'},
+  {id:'game-technical-director',name:'Game Technical Director',role:'arquitetura, engine, performance, integração e risco técnico'},
+  {id:'gameplay-specialist',name:'Gameplay Specialist',role:'mecânicas, sistemas, IA/NPC, economia, níveis e implementação de loop'},
+  {id:'playtest-reviewer',name:'Playtest Reviewer',role:'run-and-observe, evidência visual, UX, playtest e regressões de experiência'},
   {id:'voice',name:'Voice',role:'transcrição, design de voz, síntese e dublagem por adapters explícitos'}
 ] as const;
