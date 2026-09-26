@@ -49,3 +49,29 @@ Antes de implementar:
 - loading/empty/error/success.
 
 Não considerar um SaaS pronto com botões decorativos, números fixos de dashboard, integração fictícia ou CRUD sem persistência coerente.
+
+
+## Build from Unified Chat
+
+Build não depende de uma aba pública separada. O Chat detecta pedidos de criação/edição de software e chama o pipeline Build internamente.
+
+Fluxo atual:
+```text
+CHAT INTENT
+→ JEV ROUTE (strong/long para tarefa complexa)
+→ INSPECT WORKSPACE
+→ SELECT RELEVANT FILES VERBATIM
+→ IMPLEMENT
+→ SMOKE + COUNCIL + DIFF REVIEW
+→ REPAIR quando necessário
+→ PACKAGE
+→ ZIP anexado no Chat
+```
+
+### Regra de contexto
+Arquivos relevantes não devem ser reduzidos a pequenos resumos antes da edição. A política JEV-inspired elimina arquivos/contexto não relacionado e preserva verbatim o código retido dentro do budget.
+
+### Regra de exportação
+O empacotador deve preservar TypeScript/TSX, caminhos relativos, alias `@/`, dependências declaradas e imports externos necessários. O CI executa um smoke de exportação real: instala o projeto gerado e roda `npm run build`.
+
+Um ZIP que foi apenas serializado, mas não sobrevive ao smoke de compilação, não conta como Build funcional.
