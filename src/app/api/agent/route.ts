@@ -9,7 +9,6 @@ import {
 import { callProviderText, parseJsonObject, rankProviders, type ProviderMessage, type ProviderSpec } from '@/lib/server/provider-mesh';
 import { compactText } from '@/lib/token-budget';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
-import { gameStudioContext } from '@/lib/game-studio-fabric';
 import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
 
@@ -149,7 +148,6 @@ export async function POST(req:Request){
     const manifest=compactWorkspaceManifest(files);
     const master=predictLMMasterContext(task,deep);
     const fusion=capabilityFusionContext(task,'build');
-    const gameStudio=gameStudioContext(task);
 
     const explorerSystem=[
       'You are a codebase explorer. Inspect before proposing changes.',
@@ -157,8 +155,7 @@ export async function POST(req:Request){
       'Do not implement yet. Do not reveal private reasoning.',
       projectInstructions,
       skillContext,
-      fusion,
-      gameStudio
+      fusion
     ].filter(Boolean).join('\n\n');
 
     const explorerUser=[
@@ -184,8 +181,7 @@ export async function POST(req:Request){
       'Do not output chain-of-thought.',
       projectInstructions,
       skillContext,
-      fusion,
-      gameStudio
+      fusion
     ].filter(Boolean).join('\n\n');
     const architect=await callWithFallback(providers,[
       {role:'system',content:architectSystem},
@@ -210,7 +206,6 @@ export async function POST(req:Request){
       skillContext,
       projectInstructions,
       fusion,
-      gameStudio,
       'AGENTIC RUN: '+runPlan.roles.join(' → ')+'.',
       'ARCHITECT PLAN:\n'+compactText(JSON.stringify(architecture),1800)
     ].filter(Boolean).join('\n\n');
@@ -233,8 +228,7 @@ export async function POST(req:Request){
       'Return JSON only: {"approved":true,"confidence":0,"issues":[{"severity":"blocker|high|medium|low","file":"...","issue":"...","fix":"..."}],"missingRequirements":["..."]}.',
       'Do not redesign the whole product. Validate findings before reporting them. No chain-of-thought.',
       projectInstructions,
-      fusion,
-      gameStudio
+      fusion
     ].filter(Boolean).join('\n\n');
 
     const reviewCall=await callWithFallback(providers,[
@@ -255,7 +249,6 @@ export async function POST(req:Request){
         skillContext,
         projectInstructions,
         fusion,
-        gameStudio,
         'You are the repair/finalizer. Fix only validated review findings and missing requirements.',
         'Return the full corrected BuildPayload JSON. Do not explain the review process.'
       ].filter(Boolean).join('\n\n');
