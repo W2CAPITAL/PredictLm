@@ -113,6 +113,7 @@ export async function runComfyImageWorkflow(input:{
   timeoutMs?:number;
   baseOverride?:string;
   workflowOverride?:string;
+  extraTokens?:Record<string,string|number>;
 }):Promise<ComfyImageResult>{
   const defaultCfg=comfyImageConfig();
   const base=String(input.baseOverride||defaultCfg.base||'').trim().replace(/\/$/,'');
@@ -136,7 +137,8 @@ export async function runComfyImageWorkflow(input:{
     '{{REFERENCE_1_FILENAME}}':filenames[0]||'',
     '{{REFERENCE_2_FILENAME}}':filenames[1]||'',
     '{{REFERENCE_3_FILENAME}}':filenames[2]||'',
-    '{{IMAGE_FILENAME}}':filenames[0]||''
+    '{{IMAGE_FILENAME}}':filenames[0]||'',
+    ...(input.extraTokens||{})
   };
   const workflow=replaceTokens(parsed,tokens);
   const queued=await fetch(base+'/prompt',{
