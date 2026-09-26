@@ -333,6 +333,38 @@
         "github-discovery"
       ],
       "note": "Broad topic feed only. Never ingest repositories from this page automatically; each candidate requires relevance, license and provenance verification first."
+    },
+    {
+      "id": "ciona-connectome-2016",
+      "type": "academic-paper",
+      "name": "The CNS connectome of a tadpole larva of Ciona intestinalis",
+      "url": "https://elifesciences.org/articles/16962",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "ciona",
+        "connectome",
+        "chordate",
+        "biointelligence"
+      ],
+      "note": "Published larval CNS connectome. Preserve the single-specimen/larval-stage scope; use for compact chordate sensorimotor motifs, not as a universal digital Ciona mind."
+    },
+    {
+      "id": "platynereis-whole-body-connectome-2025",
+      "type": "academic-paper",
+      "name": "Whole-body connectome of a segmented annelid larva",
+      "url": "https://elifesciences.org/articles/97964",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "platynereis",
+        "whole-body-connectome",
+        "segmental-control",
+        "biointelligence"
+      ],
+      "note": "Published whole-body larval synaptic connectome. Use for distributed segmental/effector organization; runtime state remains synthetic."
     }
   ]
 }
