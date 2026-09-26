@@ -1,9 +1,6 @@
 # PredictLM
 
-PredictLM has two distinct product surfaces:
-
-- **Chat** — the default assistant experience for normal questions, explanations, research, planning and coding help.
-- **Build** — the developer workspace for creating and modifying applications with files, editor, preview, project memory, review gates and runnable export.
+PredictLM now uses **one primary Chat AI surface**. Research, Processos/DataJud/DJEN, Build and the multi-species Cognitive Mesh are internal capabilities selected from the user's request. Project files, validation, packaging and memory still exist, but the user no longer needs to switch into a separate Build/Research/Processos/cognitive chat just to use them.
 
 The product is local-first and does not require Ollama or an API key for its main workflow.
 
@@ -31,13 +28,13 @@ Self-improvement follows **OBSERVE → VERIFY → LEARN → DESIGN → EXPERIMEN
 
 ## Chat
 
-Chat is intentionally separate from the IDE. It includes:
+Chat is the single conversational front door. It includes:
 
 - normal multi-turn conversations and local history
 - DeepThink knowledge retrieval
 - optional zero-key web research
 - optional **Neural Local** inference in the browser
-- Chat ↔ Build switch
+- Build execution inside Chat with persistent project state, validation and runnable ZIP
 
 ### Predict Auto
 
@@ -88,9 +85,42 @@ Current policy:
 
 At the 2026-09-26 migration, historical feedback immediately produced three promoted lessons covering media reliability, chat relevance and chat failure recovery.
 
-## Build
+## Unified Chat execution
 
-Build follows a multi-pass workflow instead of a one-shot template generator:
+The same composer can now:
+
+- answer normally;
+- research current information;
+- recognize a CNJ and call DataJud/DJEN;
+- create or modify an app/site/system/code project;
+- advance Fly/Human/Macaque/Mouse cognitive state;
+- return a validated runnable ZIP after Build.
+
+Legacy Processos and Cognitive routes redirect into Chat. Research remains a behavior of Chat rather than a separate public surface.
+
+### JEV-inspired quality routing
+
+Routing uses complexity, reasoning demand, tools and context pressure to select `fast | balanced | strong | long`.
+
+Complex Build/Deep/Research/Legal requests prefer stronger configured models. The Vercel AI Gateway default is `google/gemini-3.8-flash`.
+
+Context compaction follows a verbatim-first policy inspired by JEV compaction: old irrelevant context may be dropped; retained conversation/source files are not rewritten into lossy summaries. Build now selects relevant files and can send up to a much larger exact source slice instead of the previous ~2.6k-character-per-file truncation.
+
+### Multi-species Cognitive Mesh
+
+Normal Chat uses one persistent workspace combining:
+
+- FlyWire Fly Core;
+- H01 Human Core;
+- Macaque cortical/projectome priors;
+- MICrONS mouse visual cortical microcircuit priors;
+- Allen mouse whole-brain mesoscale projection priors.
+
+These are mapped-data/derived-controller references, not claims that PredictLM runs literal biological brains.
+
+## Build capability inside Chat
+
+Build follows a multi-pass workflow instead of a one-shot template generator and is invoked from normal Chat:
 
 ```
 intent/context
@@ -106,9 +136,11 @@ intent/context
 
 Short incremental requests such as **“cor rosa”** are interpreted against the current project and patch it instead of creating a new generic template.
 
-### Prompt Enhancer
+### Legacy Build workspace
 
-The Build composer includes presets:
+The old dedicated Build UI is no longer required by the main product flow. Its lower-level project/runtime code remains for continuity and rollback. Build requests should enter through Chat.
+
+The historical Build composer included presets:
 
 - Aprimorar
 - Full-stack
@@ -252,12 +284,13 @@ Initial allowed knowledge sources include MindsHub, Rowboat, Open Claude Cowork,
 
 Chat uses **Predict Auto** by default. Provider Mesh is automatic when server-side credentials are configured; there is no separate cloud-model picker.
 
-When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured. FreeLLMAPI is the default first provider:
+When enabled, Provider Mesh builds a server-only cascade from the providers that are actually configured. Provider order is quality/task-aware. Simple turns may use fast routes; difficult turns are promoted to stronger configured routes:
 
 ```
 CACHE / history / skills / memory
-  → FreeLLMAPI
-  → other configured cloud providers
+  → JEV-style tier decision
+  → strongest suitable configured provider
+  → other healthy providers
   → research-grounded retry when needed
   → local Neural/WebLLM/runtime
   → Knowledge fallback
