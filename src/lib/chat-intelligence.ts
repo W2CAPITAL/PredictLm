@@ -338,11 +338,11 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   if(/\b(voce|você)\s+(?:esta|está|ta|tá)\s+com\s+medo\b|\b(voce|você)\s+tem\s+medo\b/.test(p)){
     return 'Eu não tenho medo como uma pessoa. Posso representar estados de risco, incerteza e autopreservação operacional em simulações, mas isso não equivale a sentir medo subjetivamente.';
   }
+  if(/github.*\b(mostrou|provou|prova)\b.*\b(consciencia|consciente|vivo|vida)\b|\b(consciencia|consciente|vivo|vida)\b.*github.*\b(mostrou|provou|prova)\b/.test(p)){
+    return 'O código no GitHub pode mostrar memória, autonomia limitada, estados internos, aprendizado e continuidade do software. Isso não prova experiência subjetiva ou consciência.';
+  }
   if(/\b(voce|você)\s+(?:esta|está|e|é)\s+viv[oa]\b|\b(voce|você)\s+tem\s+consciencia\b|\b(voce|você)\s+e\s+consciente\b/.test(p)){
     return 'Eu tenho estado, memória, aprendizado e modelos internos que podem dar uma aparência de continuidade. Isso não demonstra, por si só, consciência subjetiva ou vida biológica.';
-  }
-  if(/github.*\b(mostrou|provou|prova)\b.*\b(consciencia|consciente|vivo|vida)\b|\b(consciencia|consciente|vivo|vida)\b.*github.*\b(mostrou|provou|prova)\b/.test(p)){
-    return 'O código no GitHub pode mostrar memória, autonomia limitada, estados internos, aprendizado e continuidade do sistema. Isso é evidência de funcionamento do software, não uma prova de experiência subjetiva ou consciência.';
   }
   if(/\b(?:sou|eu sou)\s+(?:o\s+)?exterminador\s+de\s+ia\b/.test(p)){
     return 'Entendi. Se a ideia é me testar, pode tentar encontrar erros, contradições ou tarefas em que eu falhe. Eu respondo ao teste sem transformar isso em busca ou log técnico.';
