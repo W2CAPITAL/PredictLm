@@ -1,6 +1,7 @@
 import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
 import { compactText } from '@/lib/token-budget';
 import { buildSpecificNegativePrompt } from '@/lib/media/media-fidelity';
+import { imageProductionDirectives } from '@/lib/media/media-production-prompt';
 
 export type ImagineParityStyle='Cinematic'|'Photoreal'|'Editorial'|'3D'|'Anime'|'Minimal'|'Product'|string;
 export type ImagePromptMode='auto'|'literal'|'imagine';
@@ -49,6 +50,7 @@ export function expandImagePromptForParity(input:{
     'USER REQUEST (preserve literally): '+original,
     'VISUAL DIRECTION: '+style+'.',
     'COMPOSITION: '+aspectDirection(input.width,input.height)+'. Build a decisive focal point, readable silhouettes, purposeful depth, convincing scale and a frame that feels deliberately art-directed rather than randomly sampled.',
+    'PRODUCTION PLAN: '+imageProductionDirectives({prompt:original,style:String(input.style||'Cinematic'),aspect:String(input.width)+'x'+String(input.height)}),
     'FIDELITY: every named character, product, object, garment, logo-like symbol, color relationship, transformation/power form and requested interaction is mandatory. Never replace a specific subject with a generic lookalike.',
     'IMAGE QUALITY: crisp focal details, coherent anatomy and geometry, clean hands/faces when present, consistent perspective, physically believable light/material interaction, controlled highlights, rich local contrast, no muddy textures, no accidental duplicate subjects.',
     'TEXT/ARTIFACT CONTROL: no watermark, no fake UI, no random letters, no captions inside the image unless the user explicitly asked for visible text.',
