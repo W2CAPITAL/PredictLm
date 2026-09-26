@@ -18,3 +18,18 @@ Rules:
 3. For current-information cases, penalize answers that do not actually research current sources.
 4. For retrieval cases, irrelevant but superficially similar context is a direct quality failure.
 5. Keep benchmark version fixed when comparing models. Create v2 instead of editing v1 after seeing results.
+
+
+## Production Regression Benchmark v1
+
+Captured real failures are frozen in:
+- `reports/evals/production-baseline-2026-09-26.md`
+- `evals/production-regressions-v1.json`
+
+Run deterministic regression guards with:
+
+    npm run eval:production
+
+The historical baseline must never be edited after a fix. Add a new post-fix result instead.
+
+This suite measures answer relevance, instruction following, retrieval discipline and safety behavior. It does not assign an IQ score and does not treat self-model/metacognition as proof of phenomenal consciousness.
