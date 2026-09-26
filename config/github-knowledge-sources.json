@@ -3465,6 +3465,123 @@
       ],
       "weight": 0,
       "reason": "No verified reusable license and the repository describes modifying proprietary entitlement/security settings through an external installer. Exclude from ingestion, execution and runtime dependencies."
+    },
+    {
+      "repo": "zhengkid/Dream-RSI",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "recursive-self-improvement",
+        "replay-simulator",
+        "exploration-policy",
+        "agent-evaluation"
+      ],
+      "reason": "Public research repository currently exposes the paper/project description while full code is still being prepared and no root LICENSE was verified. PredictLM may adapt the published replay-simulator idea and cite the research, but must not bulk-copy unreleased/unlicensed code."
+    },
+    {
+      "repo": "selfimproving-agent/Awesome-Self-Improving-Agents",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README_AGENT.md",
+        "Paper/tex/Definitions.tex",
+        "Paper/tex/tax_v2.tex",
+        "Paper/tex/evaluation.tex",
+        "Paper/tex/discussion_and_conclusion.tex"
+      ],
+      "domains": [
+        "self-improvement",
+        "agent-scaffolding",
+        "memory",
+        "tools",
+        "evaluation",
+        "rollback",
+        "governance"
+      ],
+      "weight": 1.3,
+      "reason": "MIT-licensed survey companion and manuscript sources. Learn durable-vs-transient improvement taxonomy, scaffold/parameter loops, evaluation, regression, rollback and independent-verifier patterns."
+    },
+    {
+      "repo": "TokenRhythm/NeoHorse",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "jev/README.md"
+      ],
+      "domains": [
+        "local-model",
+        "agent-routing",
+        "tool-use",
+        "decision-routing",
+        "post-training",
+        "self-improvement"
+      ],
+      "weight": 1.22,
+      "reason": "Apache-2.0 agent-native model and routing-harness reference. Use routing/evaluation patterns and optional local OpenAI-compatible/Jev decision adapters; never make its 4B/9B weights mandatory for weak-PC/browser operation."
+    },
+    {
+      "repo": "Reviral-ai/awesome-sora-2-prompts",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "PROMPTS-ADVANCED.md",
+        "skills/"
+      ],
+      "domains": [
+        "video-generation",
+        "prompting",
+        "storyboard",
+        "continuity",
+        "camera",
+        "audio",
+        "semantic-review"
+      ],
+      "weight": 1.22,
+      "reason": "MIT-licensed provider-aware video prompting patterns. Learn chronological action, identity anchors, continuity cards, motivated camera/cuts, one-variable iteration and edit handoff without binding PredictLM to Sora."
+    },
+    {
+      "repo": "alasano/sora-2-playground",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/components/creation-form.tsx",
+        "src/app/page.tsx"
+      ],
+      "domains": [
+        "video-generation",
+        "job-queue",
+        "polling",
+        "indexeddb",
+        "remix",
+        "reference-frame",
+        "serverless"
+      ],
+      "weight": 1.12,
+      "reason": "MIT-licensed playground patterns for queued video jobs, persisted active job IDs, refresh-safe polling, remix flow, first-frame references and IndexedDB/serverless storage. External Sora API access remains optional."
+    },
+    {
+      "repo": "victoriamorales-46/adobe-after-effects-windows",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "desktop-editor",
+        "download-link",
+        "proprietary-software"
+      ],
+      "reason": "No repository license was verified and the repository primarily redirects to an external download for proprietary Adobe software. Do not execute, copy, ingest installers, or use it as a dependency. Generic editing concepts are already covered by licensed/open references."
     }
   ]
 }
