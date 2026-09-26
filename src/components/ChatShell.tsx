@@ -509,7 +509,7 @@ export function ChatShell({onOpenLegal}:Props){
       browserKnowledgeContext(prompt),
       capabilityFusionContext(prompt,'chat'),
       appLearningContext(undefined,5),
-      bioIntelligenceContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current'||needsWeb?.62:.34,salience:s.deepThink?.76:.52})
+      bioIntelligenceContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current' ? .62 : .34,salience:s.deepThink ? .76 : .52})
     ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
