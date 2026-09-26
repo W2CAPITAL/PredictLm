@@ -1479,7 +1479,7 @@ function Composer(props:any){
               <span><i className={localReady?'online':''}/> {localReady?'Neural Local pronto':'Neural Local sob demanda'}</span>
               <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · autoaprendizado {autoLearningStats?.promoted||0} lições/{autoLearningStats?.evidence||0} evidências · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
-            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Escolhe automaticamente 8B → 4B → 1.7B via WebGPU. Em PC sem WebGPU, mantém compatibilidade local e o Predict Auto usa a rota web para tarefas difíceis.</span></button>}
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Escolhe automaticamente 9B → 4B → 1.7B via WebGPU. Em PC sem WebGPU, mantém compatibilidade local e o Predict Auto usa a rota web para tarefas difíceis.</span></button>}
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua por knowledge, pesquisa e providers configurados.</span></button>}
           </div>}
         </div>
