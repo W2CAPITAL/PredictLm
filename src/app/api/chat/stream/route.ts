@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { conversationAnswerIssue, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -123,7 +124,7 @@ function providerList():Provider[]{
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
 }
 
-function systemPrompt(language:string){
+function systemPrompt(language:string,autoLearning=''){
   return [
     'Você é o PredictLM, uma IA geral de conversa.',
     language==='en'
@@ -133,11 +134,12 @@ function systemPrompt(language:string){
     'Não mencione provider, API, roteamento, runtime, RAG, skill, knowledge pack ou implementação interna.',
     'Não despeje README, repositórios, notas internas, seções "Relacionado:" ou contexto técnico que o usuário não pediu.',
     'Se a mensagem for casual, converse naturalmente. Se for uma pergunta, responda. Se for um pedido, execute o pedido em texto.',
-    'Não invente fatos atuais. Quando o usuário pedir informação atual e nenhuma ferramenta atual tiver sido usada, deixe claro o limite em vez de fabricar.'
+    'Não invente fatos atuais. Quando o usuário pedir informação atual e nenhuma ferramenta atual tiver sido usada, deixe claro o limite em vez de fabricar.',
+    autoLearning?'Lições operacionais autoaprendidas e promovidas:\n'+autoLearning:''
   ].join(' ');
 }
 
-function safeMessages(input:any,language:string):Msg[]{
+function safeMessages(input:any,language:string,autoLearning=''):Msg[]{
   const rows=(Array.isArray(input)?input:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-12)
@@ -145,7 +147,7 @@ function safeMessages(input:any,language:string):Msg[]{
       role:x.role as 'user'|'assistant',
       content:String(x.content).replace(/\u0000/g,'').slice(0,5000)
     }));
-  return [{role:'system',content:systemPrompt(language)},...rows];
+  return [{role:'system',content:systemPrompt(language,autoLearning)},...rows];
 }
 
 function sse(data:any){
@@ -230,7 +232,10 @@ function emitValidatedAnswer(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const messages=safeMessages(body?.messages,language);
+  const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
+  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
+  const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
+  const messages=safeMessages(body?.messages,language,autoLearning);
   const candidates=providerList().slice(0,8);
 
   if(!candidates.length){
