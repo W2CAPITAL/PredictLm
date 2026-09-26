@@ -11,6 +11,7 @@ import { compactText } from '@/lib/token-budget';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
+import {bioAIOrchestrationContext} from '@/lib/bioai-orchestrator';
 import type { WorkspaceFile } from '@/lib/types';
 
 export const runtime='nodejs';
@@ -144,6 +145,7 @@ export async function POST(req:Request){
     }
 
     const runPlan=planAgenticRun(task,'build',deep);
+    const orchestrationContext=bioAIOrchestrationContext({prompt:task,surface:'build',roles:runPlan.roles,maxPasses:runPlan.maxPasses});
     const skillContext=skillContractContext(task,'build',10);
     const projectInstructions=projectInstructionContext(files);
     const manifest=compactWorkspaceManifest(files);
@@ -160,6 +162,7 @@ export async function POST(req:Request){
       projectInstructions,
       skillContext,
       fusion,
+      orchestrationContext,
       unityContext
     ].filter(Boolean).join('\n\n');
 
@@ -306,6 +309,9 @@ export async function POST(req:Request){
       plan,
       runLedger,
       agentic:{
+        identity:'PredictLM BioAI',
+        sharedIdentity:true,
+        sharedMemory:true,
         mode:runPlan.staged?'staged':'direct',
         roles:runPlan.roles,
         skills:skillContractContext(task,'build',10).split('\n').slice(1).map(x=>x.split(' — ')[0].replace('SKILL ','')),

@@ -2,7 +2,7 @@ name: PredictLM CI
 
 on:
   push:
-    branches: ["**"]
+    branches-ignore: [continuous-learning]
   pull_request:
     branches: [main]
 
@@ -17,5 +17,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - run: node --check scripts/continuous-learning/run.mjs
       - run: npm test
       - run: npm run build

@@ -1,0 +1,2 @@
+export function arxivQueryUrl(query:string,maxResults=8){const q=encodeURIComponent('all:'+String(query||'').trim());const n=Math.max(1,Math.min(20,Math.round(maxResults)));return'https://export.arxiv.org/api/query?search_query='+q+'&start=0&max_results='+n+'&sortBy=submittedDate&sortOrder=descending'}
+export function paperEvidenceLevel(peerReviewed=false){return peerReviewed?'peer-reviewed-paper':'academic-preprint'}

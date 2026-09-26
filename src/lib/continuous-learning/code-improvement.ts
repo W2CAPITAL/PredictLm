@@ -1,0 +1,4 @@
+import type {LearningProposal,LearningRecord} from './types';
+import {promotableEvidence} from './source-trust';
+export function proposeCodeImprovements(records:LearningRecord[]):LearningProposal[]{return records.filter(x=>promotableEvidence(x)&&x.kind==='github-allowlist').slice(0,24).map(record=>({id:'code:'+record.id,kind:'code' as const,topic:record.topic,title:'Avaliar melhoria inspirada em '+record.source,rationale:'Extrair padrão arquitetural verificável; nunca copiar sem compatibilidade de licença e nunca escrever em main automaticamente.',evidenceIds:[record.id],risk:'medium' as const,status:'queued' as const}))}
+export function codePromotionAllowed(input:{tests:boolean;build:boolean;reviewed:boolean;security:boolean}){return input.tests&&input.build&&input.reviewed&&input.security}

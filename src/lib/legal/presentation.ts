@@ -1,6 +1,7 @@
 import type { LegalProcessBundle, LegalTimelineItem } from './types';
 import { legalAttackFramework, tjspFilingChecklist } from './filing';
 import { isAggressiveLegalRequest } from './mode';
+import {fuseBioIntelligence} from '@/lib/biointelligence-fabric';
 
 function dateBR(value?:string){
   if(!value)return '';
@@ -81,7 +82,7 @@ function eventMeaning(item:LegalTimelineItem){
   return compact(item.body||item.title,320);
 }
 
-function keyTimeline(bundle:LegalProcessBundle){
+function keyTimeline(bundle:LegalProcessBundle,limit=6){
   const scored=bundle.timeline.map(item=>{
     const t=((item.title||'')+' '+(item.body||'')).toLowerCase();
     let score=0;
@@ -99,7 +100,7 @@ function keyTimeline(bundle:LegalProcessBundle){
     const meaning=eventMeaning(row.item);
     if(selected.some(x=>eventMeaning(x)===meaning))continue;
     selected.push(row.item);
-    if(selected.length>=6)break;
+    if(selected.length>=Math.max(4,Math.min(10,limit)))break;
   }
   return selected.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 }
@@ -133,6 +134,16 @@ function sourceHealth(bundle:LegalProcessBundle){
 }
 
 export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{count:number;titles?:string[]}){
+  const sourceFailures=[!bundle.datajud.ok,!bundle.djen.ok,...bundle.officialPortals.map(x=>!x.ok)].filter(Boolean).length;
+  const bioLegal=fuseBioIntelligence({
+    surface:'processes',
+    action:'synthesize process '+bundle.processNumber,
+    kind:'legal',
+    success:bundle.timeline.length>0,
+    uncertainty:sourceFailures?Math.min(.92,.48+sourceFailures*.12):.24,
+    salience:.78,
+    novelty:bundle.timeline.length?Math.min(1,.35+bundle.timeline.length/40):.7
+  });
   const d=bundle.datajud;
   const interpretation=bundle.interpretation;
   const parts:string[]=[];
@@ -164,7 +175,7 @@ export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{cou
       parts.push('### O que eu faria agora\n'+interpretation.nextActions.map((x,i)=>(i+1)+'. '+x).join('\n'));
     }
 
-    const essential=keyTimeline(bundle);
+    const essential=keyTimeline(bundle,bioLegal.consensus.inhibition>.62||bioLegal.researchGap?8:6);
     if(essential.length){
       parts.push('### Linha do tempo essencial\n'+essential.map(item=>
         '- **'+dateBR(item.date)+' — '+item.title+'** · '+eventMeaning(item)+' · '+item.source

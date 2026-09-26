@@ -1,0 +1,3 @@
+export type TrustedWebSource={id:string;url:string;topic:string;kind:'official-feed'|'official-docs'|'rss';official?:boolean};
+export function trustedWebSource(source:TrustedWebSource){const url=new URL(source.url);if(url.protocol!=='https:')throw new Error('Fonte web contínua precisa usar HTTPS.');return{...source,url:url.toString()}}
+export function rotateSources<T>(sources:T[],run:number,count:number){if(!sources.length)return[];const size=Math.min(sources.length,Math.max(1,count));const start=Math.abs(run||0)%sources.length;return Array.from({length:size},(_,i)=>sources[(start+i)%sources.length])}

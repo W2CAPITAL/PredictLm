@@ -1,8 +1,8 @@
 ---
 name: life-simulation
-description: Cria, executa e exporta simulações 2.5D isométricas ativas no PredictLM com personagem, mundo, necessidades, relações, memória, economia, eventos e Digital Brain persistente.
+description: Executa simulação persistente multimodo no PredictLM: Life World 2.5D para vida social e Voxel World 3D em primeira pessoa para exploração Minecraft-class, ambos ligados à BioAI e memória local.
 metadata:
-  version: "3.2.0"
+  version: "3.3.0"
   surface: "Life Simulation Studio + Build"
 ---
 
@@ -332,3 +332,31 @@ The visible world and the action world must be the same world.
    - flower: stem/bloom.
 
 A text log saying an action happened does not satisfy the simulation contract when the action should be physically observable.
+
+
+## Dual-world simulation v3.3
+
+A skill possui dois ambientes complementares; “simulação” não significa mais apenas o mapa 2.5D.
+
+### Life World
+Mantém o ambiente social/rotina 2.5D para necessidades, relações, trabalho, casa, objetos, humano/macaque/mosca e cenários analíticos.
+
+### Voxel World
+O modo Minecraft-class é um mundo aberto procedural separado, mas ligado à mesma BioAI:
+- WebGL em primeira pessoa como modo nativo principal;
+- chunks efetivamente sem borda de gameplay em X/Z;
+- seed + deltas persistentes;
+- mineração/construção/crafting/fundição/farming;
+- mobs, vilas, estruturas, cavernas/masmorras, clima, dia/noite e dimensões;
+- BioAI autônoma jogando no mundo;
+- isométrico somente como vista secundária;
+- Unity WebGL opcional.
+
+O Voxel World não deve ser descrito como “2D numa caixa”. O renderer só mantém próximos chunks em memória para continuar leve.
+
+### BioAI comum
+
+A Life World e o Voxel World alimentam o mesmo `src/lib/bioai.ts`.
+Memórias e aprendizados relevantes podem atravessar superfícies como experiência da BioAI, mas world-state físico continua separado por save para evitar misturar posições/inventários incompatíveis.
+
+A BioAI local permanece funcional sem Supabase, banco remoto, API paga ou hardware de biocomputação.

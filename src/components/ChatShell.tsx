@@ -35,6 +35,8 @@ import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html
 import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserText } from '@/lib/voice/browser-voice';
+import { appLearningContext } from '@/lib/app-learning';
+import { bioAiKernelContext } from '@/lib/bioai';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -505,7 +507,9 @@ export function ChatShell({onOpenLegal}:Props){
     const brainContext=[
       advanceBrowserDigitalBrainContext(prompt).context,
       browserKnowledgeContext(prompt),
-      capabilityFusionContext(prompt,'chat')
+      capabilityFusionContext(prompt,'chat'),
+      appLearningContext(undefined,5),
+      bioAiKernelContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current' ? .62 : .34,salience:s.deepThink ? .76 : .52},prompt)
     ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
@@ -818,6 +822,19 @@ export function ChatShell({onOpenLegal}:Props){
       }
 
       const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
+
+      // Deterministic conversational guards win before any provider stream.
+      // This prevents social/identity/action turns from being replaced by
+      // unrelated repository, README or learned-context fragments.
+      if(direct&&!s.deepThink&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport){
+        s.addMessage({
+          role:'assistant',
+          content:direct,
+          engine:'Predict Auto',
+          status:'done'
+        });
+        return;
+      }
 
       // Normal Chat follows the proven direct streaming architecture:
       // history -> API -> SSE tokens. No RAG/skills/gates are inserted before

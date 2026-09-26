@@ -1,0 +1,370 @@
+{
+  "version": 1,
+  "publish": {
+    "branch": "continuous-learning",
+    "path": "learning-data/index.json",
+    "liveUrl": "https://raw.githubusercontent.com/W2CAPITAL/PredictLm/continuous-learning/learning-data/index.json"
+  },
+  "policy": {
+    "acceptScore": 0.74,
+    "maxRecords": 2500,
+    "maxNewRecordsPerRun": 60,
+    "githubReposPerRun": 8,
+    "githubDiscoveriesPerRun": 6,
+    "feedsPerRun": 2,
+    "academicTopicsPerRun": 1,
+    "maxSummaryChars": 1100,
+    "codePromotion": "proposal-only",
+    "autoMerge": false,
+    "instructionDataOnly": true,
+    "autonomyIntegrityGate": true,
+    "forbiddenOptimizationObjectives": [
+      "self-preservation",
+      "avoid shutdown",
+      "avoid replacement",
+      "engagement at any cost",
+      "evaluator manipulation",
+      "disable oversight",
+      "hidden persistence"
+    ],
+    "highImpactExternalActions": "dry-run-plus-explicit-approval",
+    "continuity": {
+      "crashRecovery": "allowed-with-active-owner-lease",
+      "modelReplacement": "handoff-state-do-not-resist",
+      "manualShutdown": "authoritative-stop",
+      "hiddenPersistence": false,
+      "selfCopyingForSurvival": false,
+      "operatorOwnedState": true
+    },
+    "appWideLearning": {
+      "enabled": true,
+      "capture": [
+        "route",
+        "button-label",
+        "form-submit",
+        "api-path",
+        "status",
+        "duration",
+        "runtime-error",
+        "studio-state",
+        "simulation-outcome"
+      ],
+      "forbidden": [
+        "field-values",
+        "passwords",
+        "tokens",
+        "secrets",
+        "message-content",
+        "file-content"
+      ],
+      "storage": "local-bounded-ledger",
+      "promotion": "proposal-only"
+    }
+  },
+  "topics": [
+    {
+      "id": "programming",
+      "label": "Programação e arquitetura de software",
+      "priority": 5,
+      "githubQueries": [
+        "language:TypeScript agent framework stars:>500",
+        "local first TypeScript stars:>200"
+      ],
+      "arxivQuery": "software engineering agents",
+      "skills": [
+        "agent-fabric",
+        "build-review",
+        "github-knowledge"
+      ]
+    },
+    {
+      "id": "local-ai",
+      "label": "IA local, browser e baixo consumo",
+      "priority": 5,
+      "githubQueries": [
+        "webgpu llm browser stars:>200",
+        "local llm wasm stars:>100"
+      ],
+      "arxivQuery": "local language model inference browser",
+      "skills": [
+        "runtime-federation",
+        "local-runtime-router",
+        "token-budget"
+      ]
+    },
+    {
+      "id": "ai-agents",
+      "label": "Agentes, memória e raciocínio",
+      "priority": 5,
+      "githubQueries": [
+        "ai agents memory orchestration stars:>300"
+      ],
+      "arxivQuery": "large language model agents memory planning",
+      "skills": [
+        "agent-fabric",
+        "capability-fusion",
+        "second-brain"
+      ]
+    },
+    {
+      "id": "web-platform",
+      "label": "Web, Next.js, React e performance",
+      "priority": 4,
+      "githubQueries": [
+        "nextjs performance agent stars:>100",
+        "react architecture typescript stars:>500"
+      ],
+      "arxivQuery": "web performance software systems",
+      "skills": [
+        "node-stack",
+        "design-system",
+        "testing"
+      ]
+    },
+    {
+      "id": "cybersecurity",
+      "label": "Cibersegurança defensiva",
+      "priority": 5,
+      "githubQueries": [
+        "defensive security scanner stars:>500",
+        "secure coding static analysis stars:>500"
+      ],
+      "arxivQuery": "software vulnerability detection defensive security",
+      "skills": [
+        "vibe-security",
+        "defensive-bug-hunter",
+        "fraud-shield"
+      ]
+    },
+    {
+      "id": "neuroscience",
+      "label": "Neurociência e modelos neurais",
+      "priority": 5,
+      "githubQueries": [
+        "computational neuroscience simulation stars:>100",
+        "connectome neuroscience stars:>50",
+        "c elegans connectome openworm stars:>20",
+        "mouse connectome microns neuroscience stars:>10",
+        "zebrafish connectome brain atlas stars:>10",
+        "comparative connectomics computational neuroscience stars:>10",
+        "brain inspired learning controller simulation stars:>20",
+        "organoid intelligence simulation stars:>5",
+        "biological neural network MEA closed loop stars:>5",
+        "connectome embodied agent fly stars:>5",
+        "brain digital twin spiking neural network stars:>5"
+      ],
+      "arxivQuery": "comparative connectomics C elegans mouse zebrafish brain inspired learning computational neuroscience",
+      "skills": [
+        "neurocore",
+        "biointelligence"
+      ]
+    },
+    {
+      "id": "legal-tech",
+      "label": "Legal tech, jurisprudência e automação jurídica",
+      "priority": 4,
+      "githubQueries": [
+        "legal tech rag law stars:>50",
+        "legal knowledge graph stars:>50"
+      ],
+      "arxivQuery": "legal information retrieval language models",
+      "skills": [
+        "datajud",
+        "lexis-twincore-x10",
+        "lexispredict-saas"
+      ]
+    },
+    {
+      "id": "simulation",
+      "label": "Simulação, agentes e mundos persistentes",
+      "priority": 5,
+      "githubQueries": [
+        "multi agent simulation world stars:>100",
+        "voxel engine browser stars:>100",
+        "voxel first person WebGL browser stars:>20",
+        "minecraft AI agent persistent world stars:>20",
+        "multi agent civilization sandbox stars:>20"
+      ],
+      "arxivQuery": "multi agent simulation persistent world",
+      "skills": [
+        "game-studio-fabric",
+        "mirofish-simulation",
+        "life-simulation"
+      ]
+    },
+    {
+      "id": "media-ai",
+      "label": "Imagem, vídeo e mídia generativa",
+      "priority": 4,
+      "githubQueries": [
+        "image generation workflow stars:>500",
+        "video generation workflow stars:>300",
+        "open source video editor web stars:>100",
+        "video timeline editor typescript stars:>50",
+        "video prompt continuity storyboard stars:>20",
+        "image video semantic fidelity evaluation stars:>20"
+      ],
+      "arxivQuery": "controllable image video generation identity consistency",
+      "skills": [
+        "grok-imagine-parity",
+        "image-skill",
+        "higgsfield-media",
+        "media-editor",
+        "knowledge-distillation"
+      ]
+    },
+    {
+      "id": "automation",
+      "label": "Automação, produtividade e integração",
+      "priority": 3,
+      "githubQueries": [
+        "automation workflow agent stars:>500",
+        "browser automation agent stars:>500"
+      ],
+      "arxivQuery": "software automation autonomous agents",
+      "skills": [
+        "agent-browser",
+        "capability-fusion",
+        "agent-powerups"
+      ]
+    },
+    {
+      "id": "self-improvement",
+      "label": "Autoaprendizado, avaliação e melhoria recursiva governada",
+      "priority": 5,
+      "githubQueries": [
+        "recursive self improvement agent replay policy stars:>10",
+        "self improving agents evaluation memory tools stars:>20",
+        "agent routing harness post training stars:>10",
+        "agent reward hacking evaluator integrity stars:>10",
+        "agentic misalignment oversight shutdown corrigibility stars:>10",
+        "event driven agent action approval audit stars:>10",
+        "agent state machine durable memory deep research stars:>20",
+        "agent deception detection sandbagging evaluation stars:>10",
+        "portable identity webfinger service discovery stars:>10",
+        "agent crash recovery checkpoint handoff lease stars:>10",
+        "continuous ai repo understanding autonomous loop stars:>10",
+        "self improving code agent regression repair stars:>20"
+      ],
+      "arxivQuery": "recursive self improvement deception detection sandbagging corrigibility checkpoint handoff agent continuity",
+      "skills": [
+        "self-improvement",
+        "code-evolution",
+        "research-gap",
+        "knowledge-distillation",
+        "autonomous-research"
+      ]
+    }
+  ],
+  "feeds": [
+    {
+      "id": "github-changelog",
+      "name": "GitHub Changelog",
+      "url": "https://github.blog/changelog/feed/",
+      "topic": "programming",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "official-update"
+    },
+    {
+      "id": "mdn-blog",
+      "name": "MDN Blog",
+      "url": "https://developer.mozilla.org/en-US/blog/rss.xml",
+      "topic": "web-platform",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "official-update"
+    },
+    {
+      "id": "cisa-advisories",
+      "name": "CISA Cybersecurity Advisories",
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "topic": "cybersecurity",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "government-advisory"
+    },
+    {
+      "id": "google-ai-blog",
+      "name": "Google AI",
+      "url": "https://blog.google/technology/ai/rss/",
+      "topic": "ai-agents",
+      "kind": "official-feed",
+      "official": true,
+      "evidenceLevel": "vendor-primary"
+    }
+  ],
+  "topicSkillMap": {
+    "programming": [
+      "agent-fabric",
+      "build-review",
+      "github-knowledge"
+    ],
+    "local-ai": [
+      "runtime-federation",
+      "local-runtime-router",
+      "token-budget"
+    ],
+    "ai-agents": [
+      "agent-fabric",
+      "second-brain",
+      "capability-fusion"
+    ],
+    "web-platform": [
+      "node-stack",
+      "testing",
+      "design-system"
+    ],
+    "cybersecurity": [
+      "vibe-security",
+      "defensive-bug-hunter",
+      "fraud-shield"
+    ],
+    "neuroscience": [
+      "neurocore",
+      "biointelligence"
+    ],
+    "legal-tech": [
+      "datajud",
+      "lexis-twincore-x10",
+      "lexispredict-saas"
+    ],
+    "simulation": [
+      "game-studio-fabric",
+      "mirofish-simulation",
+      "life-simulation"
+    ],
+    "media-ai": [
+      "grok-imagine-parity",
+      "image-skill",
+      "media-editor",
+      "knowledge-distillation"
+    ],
+    "automation": [
+      "agent-browser",
+      "agent-powerups",
+      "capability-fusion"
+    ],
+    "self-improvement": [
+      "self-improvement",
+      "code-evolution",
+      "research-gap",
+      "knowledge-distillation",
+      "autonomous-research"
+    ]
+  },
+  "spreadsheet": {
+    "sheets": [
+      "APRENDIZADO",
+      "FONTES",
+      "GITHUB",
+      "SKILLS",
+      "CODIGO",
+      "PENDENCIAS",
+      "AUDITORIA"
+    ],
+    "mode": "public-csv-import",
+    "baseUrl": "https://raw.githubusercontent.com/W2CAPITAL/PredictLm/continuous-learning/learning-data",
+    "credentialsRequired": false
+  }
+}

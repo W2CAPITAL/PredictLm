@@ -13,6 +13,7 @@ import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommend
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
 import { loadCognitiveState } from '@/lib/cognitive/cognitive-memory';
 import { buildCreativeMediaControl } from '@/lib/cognitive/creative-media';
+import { ImagineMediaEditor } from '@/components/ImagineMediaEditor';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -1331,6 +1332,7 @@ export function GrokImaginePanel(){
 
         {videoProviderWarning?<div className="gmedia-provider-warning"><b>Compatibilidade do vídeo</b><span>{videoProviderWarning}</span></div>:null}
         {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
+        {generated||motionUrl||remoteVideoUrl?<ImagineMediaEditor sourceUrl={remoteVideoUrl||motionUrl||generated} sourceKind={remoteVideoUrl||motionUrl?'video':'image'} width={ratio.w} height={ratio.h} caption={generatedCaption||prompt}/>:null}
       </div>
     </div>
 

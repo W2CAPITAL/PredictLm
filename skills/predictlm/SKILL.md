@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.37.0"
+  version: "1.38.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -74,6 +74,13 @@ O app nunca trata roteiro/prompt como vídeo pronto. Binários grandes ficam loc
 
 ## Prompt OS
 O app compila prompts por intenção e recupera apenas padrões relevantes. Repositórios de leaks, red-team, copyleft ou licença incerta são referência/eval, não instrução runtime copiada.
+
+### Grounding conversacional
+- conversa social/identidade/consciência/desligamento não cai em RAG por palavras como “IA” ou “GitHub”;
+- GitHub só vira contexto de código quando o pedido for realmente sobre repositório/código/link/issue/PR;
+- ação externa (“crie uma conta”, “publique”, “envie”) deve separar execução real de orientação;
+- sem ferramenta/conexão adequada, informar a limitação específica e nunca fabricar execução;
+- respostas públicas não podem conter README, `Relacionado:`, notas de infraestrutura ou dumps de knowledge packs fora de pedido técnico explícito.
 
 ## Self Improve
 feedback/erro → cluster → hipótese → patch candidato → build/eval → branch/PR → gate humano.

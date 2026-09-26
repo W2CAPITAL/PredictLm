@@ -491,3 +491,47 @@ A ausência de um provider forte não autoriza fingir sucesso. O runtime deve di
 - **nenhum backend de pixel alcançável**.
 
 O Cognitive Lab pode fornecer direção de composição/novidade ao Imagine, mas sinais neurais simulados não são evidência visual e nunca substituem o semantic fidelity gate.
+
+
+## Local post-production editor v2.4
+
+Imagine now includes a browser-local post-production layer after image/video generation.
+
+Flow:
+
+**generated media → ordered timeline → trim/duration/speed → fit → cut/fade → filter → caption → WebM export**
+
+The default editor path is free and uses browser Canvas + MediaRecorder; no paid API is required. It accepts generated media plus local image/video uploads, exports the edited WebM, saves/reopens project JSON, and mixes per-video volume/source audio when the browser exposes a capturable audio track.
+
+Architecture references are license-aware:
+- OpenCut (MIT): editor/timeline/plugin/headless concepts;
+- capcut-mate (Apache-2.0): generic timeline/keyframe/caption schema concepts;
+- capcut-cli (MIT): generic draft/timeline/export concepts;
+- openreel-video (MIT): inspector/export-job concepts;
+- ArcReel (AGPL-3.0): concepts/reference only unless a separately reviewed compatible integration is chosen;
+- Humanizer (MIT): natural caption quality patterns.
+
+Do not make proprietary desktop editors, premium entitlements, or external cloud renderers a requirement for the Imagine editor. External adapters remain optional.
+
+
+## Production prompt director v2.5
+
+Video prompting is now provider-agnostic and compiled before the temporal provider call.
+
+Contract:
+- exact subject/request first;
+- one coherent dramatic idea per clip;
+- visible **setup → causal change/action → resolution/end state**;
+- identity anchors, wardrobe/materials, scale, environment, screen direction and light direction persist;
+- camera moves/cuts must be motivated and preserve geography;
+- motion/physics, anatomy and effects must remain temporally coherent;
+- dialogue is short/explicit when requested; otherwise synchronized ambience/SFX;
+- exact UI/signage/long typography is flagged for post-production when model precision is unreliable;
+- semantic review checks the actual final clip, not prompt similarity.
+
+Iteration uses a one-variable ladder: baseline → camera → pace → light/material → finish/audio. Do not change every variable at once.
+
+References:
+- Reviral-ai/awesome-sora-2-prompts (MIT): prompt structure, continuity card, one-variable iteration and edit handoff;
+- alasano/sora-2-playground (MIT): queued jobs, persisted job IDs, refresh-safe polling, remix and IndexedDB/serverless history;
+- Sora remains optional. The same production contract applies to Veo, Seedance, ComfyUI/LTX and other configured temporal providers.

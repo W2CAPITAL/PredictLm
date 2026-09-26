@@ -4,7 +4,7 @@ description: >
   Coordenação interna da Life Simulation Studio do PredictLM inspirada no Claude-Code-Game-Studios:
   rigor adaptativo, papéis por domínio do mundo, loop completo, run-and-observe, playtest e gates de QA.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   type: simulation-specialist
   source: "Donchitos/Claude-Code-Game-Studios"
   source_license: "MIT"
@@ -148,3 +148,50 @@ Pipeline obrigatório:
 - hardware fraco usa agentes representativos ponderados em vez de alegar milhares de agentes LLM reais;
 - o relatório deve mostrar dissenso, incerteza, sinais e contrafactuais;
 - resultados são cenários sintéticos do sandbox, nunca previsão factual de pessoas reais.
+
+
+## First-person Voxel + BioAI player v1.4
+
+O Voxel World não deve mais ser apresentado como uma caixa 2D/isométrica.
+
+### Runtime principal
+- viewport nativo WebGL em primeira pessoa;
+- pointer-lock + mouse-look;
+- WASD;
+- clique esquerdo minera;
+- clique direito coloca o bloco selecionado;
+- chunks procedurais carregados somente ao redor do jogador;
+- save continua seed + deltas, sem materializar o mundo inteiro;
+- isométrico permanece como modo de inspeção secundário;
+- Unity WebGL continua adapter opcional.
+
+Arquivos:
+- `src/components/VoxelFirstPersonViewport.tsx`
+- `src/components/MinecraftSimulationPanel.tsx`
+- `src/lib/simulation/minecraft-sandbox.ts`
+
+### BioAI jogadora
+
+A mesma **PredictLM BioAI** usada no restante do app possui corpo/agente persistente no mundo.
+
+`src/lib/simulation/bioai-voxel-agent.ts` implementa:
+- percepção local do chunk;
+- meta dinâmica;
+- fome/vida/inventário próprios;
+- coleta de madeira/pedra/ferro;
+- crafting básico;
+- abrigo;
+- exploração de chunks;
+- combate condicionado a saúde/equipamento;
+- memória de descobertas e ações.
+
+Rodar o mundo faz `tickVoxelWorld → stepVoxelBioAI`. O usuário pode pausar apenas a autonomia da BioAI sem apagar memória/world state.
+
+A BioAI não recebe o mapa inteiro como onisciência. Ela usa o snapshot/chunk local e memória.
+
+### Aprendizado
+
+A cada ciclo relevante do agente, o mundo emite experiência sanitizada para:
+`App Learning → BioAI reservoir → eight-species controller → memory/research-gap/self-improvement`.
+
+O mundo pode ensinar políticas, mas resultado de sandbox continua evidência sintética, não prova de comportamento real no mundo externo.
