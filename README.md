@@ -407,3 +407,34 @@ The Dossier Second Brain does not replace the normal Chat answer. It assembles e
 Open **Visão** in the sidebar (or **+ → Identificar animal** in Chat). The browser runs a small quantized image classifier on demand without a paid API. Five model scores, uncertain/non-animal outcomes, upload validation and cancellation are supported. The three optional upstream-compatible adapters and their real weight requirements are documented in `services/animal-vision/README.md`. Image classification does not increase the text model’s weights or validate fictional characters.
 
 `npm test` exercises the uploaded Chat/Imagine acceptance cases and vision contracts. `npm run build` validates production compilation.
+
+
+## AI Influencer Studio
+
+PredictLM now treats a virtual influencer campaign as one coordinated capability inside Chat rather than a separate toy: identity continuity, image/video briefs, voice, editorial calendar, captions, analytics-ready publishing manifests and safe audience engagement are planned by the same Predict Auto agent.
+
+The first built-in campaign profile is a **fictional adult luxury-goth creator**. Its visual lock is intentionally aesthetic rather than identity-copying: long black hair with blunt bangs, porcelain/cool makeup, black couture layers, silver hardware, chokers, striped accents and premium editorial lighting. User-supplied reference images guide styling and composition, while the generated persona remains a distinct fictional person.
+
+Production flow:
+
+```
+reference/style request
+  → persona + brand lock
+  → content pillar + hook
+  → image/video prompt with continuity anchors
+  → quality/identity review
+  → optional voice + captions/editing
+  → publish manifest
+  → analytics feedback
+  → next-content adaptation
+```
+
+Key rules:
+- disclose realistic AI-generated media where the target platform requires it;
+- use a synthetic/authorized voice only; never clone a real person's voice without permission;
+- preserve one stable persona across posts through a reusable identity lock and continuity ledger;
+- use OpenCut/capcut-cli/compatible editors as automation references; unofficial/bypass-oriented CapCut packages are not trusted runtime dependencies;
+- growth is organic: relevant comments, collaborations, trend participation, SEO/hashtags and cross-posting are allowed; mass comment spam, fake engagement and deceptive impersonation are not;
+- publishing is adapter-based. A connected social publisher (for example Metricool/Instagram) may auto-publish; when no publisher is connected, PredictLM produces a complete review-ready publishing queue instead of pretending the post was sent.
+
+The skill contract lives in `skills/ai-influencer-studio/SKILL.md` and the deterministic campaign planner in `src/lib/social/influencer-studio.ts`.
