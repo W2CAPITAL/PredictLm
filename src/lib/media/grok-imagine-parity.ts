@@ -93,6 +93,7 @@ export function buildLiteralImagePrompt(input:{
     input.identityLock||'',
     input.referenceEvidence||'',
     negative?('NEGATIVE CONSTRAINTS: '+negative+'.'):'',
+    'LITERAL PRODUCTION PLAN: '+imageProductionDirectives({prompt:original,style:style||'Cinematic',aspect:'preserve the requested output framing'}),
     'STRICT LITERAL MODE: do not invent AI/binary/circuit/data motifs, extra props, new costumes, new powers, new characters or a different setting unless the user explicitly requested them. Do not reinterpret named subjects into generic archetypes.'
   ].filter(Boolean).join('\n\n'),4500);
 }
