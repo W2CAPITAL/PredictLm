@@ -13,6 +13,12 @@ export type AgenticRole=
   | 'security-reviewer'
   | 'visual-director'
   | 'identity-reviewer'
+  | 'game-producer'
+  | 'game-designer'
+  | 'game-technical-director'
+  | 'game-art-director'
+  | 'gameplay-specialist'
+  | 'playtest-reviewer'
   | 'verifier';
 
 export interface AgenticPlan{
@@ -107,8 +113,25 @@ function complexitySignals(prompt:string){
 export function planAgenticRun(prompt:string,surface:AgenticSurface,deep=false):AgenticPlan{
   const score=complexitySignals(prompt)+(deep?2:0);
   const staged=surface==='build'||surface==='media'||deep||score>=3;
+  const q=String(prompt||'').toLowerCase();
+  const gameTask=/\b(game|jogo|godot|unity|unreal|gameplay|level|npc|combat|hud|shader|multiplayer|playtest|vertical.?slice)\b/.test(q);
   let roles:AgenticRole[];
-  if(surface==='build'){
+  if(surface==='build'&&gameTask){
+    roles=[
+      'explorer',
+      'game-producer',
+      'game-designer',
+      'game-technical-director',
+      'game-art-director',
+      'gameplay-specialist',
+      'implementer',
+      'reviewer',
+      'playtest-reviewer',
+      'test-analyst',
+      'security-reviewer',
+      'verifier'
+    ];
+  }else if(surface==='build'){
     roles=['explorer','architect','implementer','reviewer','test-analyst','security-reviewer','verifier'];
   }else if(surface==='media'){
     roles=['researcher','visual-director','identity-reviewer','reviewer','verifier'];
@@ -184,6 +207,7 @@ export function buildReviewContract(surface:AgenticSurface){
     'Review only the proposed changes, not unrelated pre-existing code.',
     'Validate each reported defect before treating it as blocking.',
     'Check requirement coverage, regressions, type/runtime errors, error states, security boundaries, tests and mobile UX.',
+    'For player-visible or highly interactive changes, a successful compile/parse is not visual verification; require run-and-observe evidence when the host can render the surface, otherwise mark that verification gap explicitly.',
     'Prefer a few high-confidence defects over speculative findings.'
   ].join(' ');
   if(surface==='media')return [
