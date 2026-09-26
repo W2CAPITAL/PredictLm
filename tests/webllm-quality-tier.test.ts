@@ -5,7 +5,7 @@ import { WEBLLM_MODELS, WEBLLM_VRAM_MB, detectWebLLMHardware } from '../src/lib/
 test('WebLLM quality tiers no longer use 0.5B/1.5B as primary browser models',()=>{
   assert.match(WEBLLM_MODELS.lite,/Qwen3-1\.7B/);
   assert.match(WEBLLM_MODELS.smart,/Qwen3\.5-4B/);
-  assert.match(WEBLLM_MODELS.power,/Qwen3-8B/);
+  assert.match(WEBLLM_MODELS.power,/Qwen3\.5-9B/);
   assert.ok(WEBLLM_VRAM_MB.lite<WEBLLM_VRAM_MB.smart);
   assert.ok(WEBLLM_VRAM_MB.smart<WEBLLM_VRAM_MB.power);
 });
