@@ -95,6 +95,37 @@ Implementação:
 - o swarm entra como contexto adicional do planner, mas não substitui o estado determinístico.
 - simulação é contrafactual; nunca apresentada como previsão de pessoas reais.
 
+### Voxel World / Minecraft-class
+
+Referências primárias:
+- fogleman/Craft — MIT: chunks determinísticos, delta persistence, mining/placing, day/night e sync.
+- dgreenheck/minecraft-threejs-clone — reference-only: browser voxel, biomas, recursos, chunking, terraforming, save/load.
+- 0xfabian/mc — reference-only: C++/OpenGL voxel architecture.
+- pquiring/jfcraft — LGPL reference-only: amplitude de blocos/itens/sistemas.
+- obiwac/python-minecraft-clone — MIT: chunk mesh, mining/placing, save/load, collision, gravity e UI.
+- Aidanhouk/Minecraft-Clone — reference-only: amplitude de survival sandbox.
+- zardoy/minecraft-web-client — MIT: browser-first client, mobile, online/offline e state sync.
+- zardoy/mcraft-arwes — reference-only: HUD/menu/inventory.
+- JEFFY1234599/block-craft-browser-edition — reference-only: browser/mobile voxel UX.
+
+Segunda referência, sem substituir o sandbox principal:
+- TheDoctor200/MinecraftDungeonsLauncher — MIT: perfil/offline/launcher UX.
+- GuyRoosevelt/Minecraft-Dungeons-The-Awakening — Apache-2.0: chests, bosses, economy, abilities, loot e dungeon loop.
+
+Implementação:
+- `src/lib/simulation/minecraft-sandbox.ts`
+- `src/lib/simulation/minecraft-reference-fabric.ts`
+- `src/components/MinecraftSimulationPanel.tsx`
+
+O mundo usa seed + chunks gerados sob demanda e persiste apenas deltas; X/Z não têm borda de gameplay codificada.
+
+### Unity / UnEngine
+
+- jbruening/UnEngine — MIT: GameObject, Component, MonoBehaviour, Transform, Vector, Quaternion, Camera, Collider, Rigidbody, Physics, Input, Time, PlayerPrefs.
+- `src/lib/unity-fabric.ts` compartilha scene snapshots entre simulação, Build Unity-targeted e media/video 3D.
+- `unity/PredictLMSimulation` contém bridge C#/WebGL.
+- `NEXT_PUBLIC_UNITY_SIMULATION_URL` ativa Unity WebGL real; sem URL, o app usa renderer nativo e não afirma execução Unity.
+
 ## Voice
 
 - debpalash/VoiceStudio → pipeline local: transcrição → design de voz → síntese → dublagem (referência AGPL).
