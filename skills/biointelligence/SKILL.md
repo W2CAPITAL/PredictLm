@@ -1,107 +1,182 @@
 ---
 name: biointelligence
-description: Cross-species brain-inspired learning fabric for PredictLM. Fuses data-grounded motifs from human, macaque, fly, C. elegans, mouse and zebrafish with app-wide experience while preserving scientific provenance and operator control.
+description: Unified PredictLM BioAI: one persistent local intelligence combining eight comparative brain/connectome references, a synthetic spiking reservoir, app-wide learning, memory and optional authorized wetware I/O.
 metadata:
-  version: "1.0.0"
-  runtime: "browser + simulation + continuous-learning"
+  version: "2.0.0"
+  runtime: "browser + app-wide learning + voxel simulation + optional wetware"
 ---
 
-# BioIntelligence Fabric
+# PredictLM BioAI v2
 
-## Goal
+## One BioAI, not isolated brains
 
-Use comparative neuroscience to improve software learning, attention, memory, inhibition, prediction and action selection across PredictLM.
+PredictLM uses **one persistent BioAI identity** across:
+- Chat;
+- Build and code review;
+- Research;
+- Imagine/image generation;
+- video generation and continuity;
+- Processos/DataJud/DJEN synthesis;
+- app-wide auto-learning;
+- self-improvement proposals;
+- persistent local memory;
+- Life Simulation / Cognitive Lab;
+- Voxel World / Minecraft-class sandbox.
 
-This is **brain-inspired computation**, not biological tissue, a wetware biocomputer, or proof that the app contains an animal mind.
+Species-specific controllers remain inspectable internal lenses, but they feed the same BioAI state and memory.
 
-## Species ensemble
+Core:
+- `src/lib/bioai.ts`
+- `src/lib/biointelligence-fabric.ts`
+- `src/lib/bio-reservoir.ts`
+- `src/lib/app-learning.ts`
 
-- **Human / H01** — partial human cortical connectomics where directly measured.
-- **Macaque** — cortical atlas, spatial transcriptomics, PFC projectomes and claustrum connectivity priors.
-- **Drosophila / FlyWire** — brain-wide compact circuit motifs, salience and sensorimotor routing.
-- **C. elegans** — whole-animal anatomical connectome for compact recurrent sensor→interneuron→motor organization.
-- **Mouse / MICrONS + Allen** — dense structural/functional visual-cortex data plus anatomical atlas framework; not a complete mouse-brain connectome.
-- **Larval zebrafish** — whole-brain EM resource and reconstructed circuits; not every neuron/synapse is fully proofread or functionally known.
+## Eight comparative biological references
 
-Each species keeps a separate provenance/scope. Missing biology remains **unknown**, not fabricated.
+1. **Human / H01** — partial human cortex at synaptic resolution; not a whole human connectome.
+2. **Macaque** — cortical atlas, spatial transcriptomics, PFC projectomes and claustrum priors; primate proxy only.
+3. **Drosophila / FlyWire + MaleCNS** — brain/CNS-wide circuit motifs, salience and sensorimotor/action-selection organization.
+4. **C. elegans** — whole-animal anatomical connectome for compact recurrent sensor→interneuron→motor organization.
+5. **Mouse / MICrONS + Allen** — dense structural+functional visual-cortex data plus anatomical atlas; not a whole mouse brain.
+6. **Larval zebrafish** — whole-brain EM resource and reconstructed/validated circuits; not every neuron/synapse is fully proofread or functionally known.
+7. **Ciona intestinalis** — published larval CNS connectome (177 CNS neurons in the mapped specimen), useful as a compact chordate sensory→motor reference.
+8. **Platynereis dumerilii** — published whole-body larval synaptic connectome, useful for distributed/segmental coordination and effector control.
+
+Each reference keeps its own source, scope and evidence class. Missing biology remains **unknown**, never synthesized as measured fact.
+
+## Three-layer BioAI architecture
+
+### 1. Comparative controller
+Each app event produces separate species signals:
+- attention;
+- novelty;
+- memory;
+- inhibition;
+- action;
+- sensory emphasis;
+- social emphasis;
+- prediction.
+
+The weighted fusion produces learning priority, disagreement and research-gap signals.
+
+### 2. Local synthetic bio-reservoir
+`src/lib/bio-reservoir.ts` provides a small deterministic spiking-inspired recurrent reservoir:
+- 48 local units;
+- membrane state + decaying traces;
+- firing rate;
+- synchrony;
+- prediction error;
+- plasticity;
+- novelty boost.
+
+It runs without API, database, Supabase, GPU or external hardware. It is **synthetic software**, not a biological organoid.
+
+Prediction error/novelty from this reservoir modulates the unified BioAI event before durable memory/research prioritization.
+
+### 3. Optional wetware bridge
+`src/lib/wetware-adapters.ts` defines optional adapters for:
+- Cortical Labs CL1;
+- FinalSpark Neuroplatform/MEA.
+
+Rules:
+- disabled unless explicitly enabled/configured;
+- BioAI remains fully functional without them;
+- measured electrode input is labeled measured;
+- decoder/controller output is labeled derived;
+- software response remains simulated;
+- compact features/fingerprints are preferred over storing raw high-volume recordings;
+- electrode activity is never described as readable thought, autobiographical memory or proof of consciousness.
+
+Cortical Labs SDK material under CC BY-NC is **reference-only** for the commercial core. FinalSpark `LiveMEA_ts` is MIT and can inform an optional adapter contract.
+
+## Persistent local memory without paid storage
+
+`src/lib/bioai.ts` keeps a bounded local memory in browser storage.
+
+Memory kinds:
+- episode;
+- skill;
+- world;
+- media;
+- legal;
+- learning;
+- preference.
+
+The memory layer stores compact sanitized summaries and tags, not:
+- passwords;
+- tokens;
+- cookies/authorization headers;
+- complete file contents;
+- complete user message bodies from transversal telemetry;
+- raw electrophysiology.
+
+If storage becomes constrained, the BioAI compacts to the most salient recent memories.
 
 ## App-wide learning loop
 
-Every surface can emit a sanitized learning event:
+`UI / route / API / Build / Research / Media / Processos / Simulation`
+→ sanitize event
+→ synthetic reservoir
+→ eight-species fusion
+→ prediction error + learning priority
+→ unified BioAI memory
+→ Digital Brain / capability context
+→ research gap or improvement candidate
+→ proposal
+→ tests/build/security/review
+→ PR.
 
-`UI / route / API / Build / Research / Media / Legal / Simulation / Cognitive Lab`
-→ normalize + redact
-→ per-species controller signals
-→ weighted cross-species fusion
-→ learning priority + disagreement
-→ Digital Brain update
-→ optional research gap
-→ continuous-learning evidence
-→ proposal/test/review path for durable code changes.
+The root `AppLearningObserver` learns from outcomes without collecting field values.
 
-The global observer records behavior/outcomes, not private content.
+Repeated failures/high-priority disagreement become **proposal-only** auto-programming candidates. They do not silently modify production.
 
-Allowed event fields include:
-- route/surface;
-- button/control label;
-- form submission occurred;
-- API path without query string;
-- status code;
-- latency;
-- success/failure;
-- simulation state labels;
-- counts and coarse Studio transitions.
+## Voxel embodiment
 
-Never capture into this ledger:
-- form values;
-- passwords;
-- tokens, cookies or authorization headers;
-- full user messages;
-- source-file contents;
-- uploaded document contents;
-- hidden credentials.
+The same BioAI is embodied as an autonomous player in the Minecraft-class Voxel World.
 
-## Learning rule
+Files:
+- `src/lib/simulation/bioai-voxel-agent.ts`
+- `src/components/VoxelFirstPersonViewport.tsx`
+- `src/components/MinecraftSimulationPanel.tsx`
 
-A disagreement between species controllers is useful signal. It can raise research priority or trigger comparison/replay; it is never treated as biological voting or evidence of consciousness.
+The BioAI can:
+- explore effectively unbounded procedural chunks;
+- collect wood/stone/iron;
+- eat;
+- craft;
+- fight when equipped and healthy;
+- build a simple shelter;
+- discover new chunks/biomes;
+- maintain world memory.
 
-Examples:
-- Fly/C. elegans emphasize fast sensor→action loops.
-- Mouse/zebrafish emphasize sensory organization and predictive response.
-- Human/macaque emphasize working memory, executive integration and longer-horizon control.
+The default native view is first-person WebGL with pointer-lock + WASD; isometric and optional Unity WebGL views remain available.
 
-The fusion result is a software policy signal. Actual task correctness remains grounded in tests, evidence and user intent.
+## Image/video/process integration
 
-## Simulation integration
+- image prompts receive BioAI sensory/identity-consistency directives;
+- video prompts receive BioAI continuity/prediction directives;
+- process synthesis uses BioAI uncertainty/inhibition to deepen evidence review when public sources disagree/fail;
+- Build/Research/Simulation/Browser and other capability-fusion surfaces automatically receive the same BioAI directives.
 
-Life Simulation, MiroFish and Cognitive Organism outcomes enter the same learning ledger.
+## Scientific truth contract
 
-Simulation outputs may train:
-- which actions reduced prediction error;
-- which counterfactuals exposed a fragile decision;
-- which world states led to failure;
-- which agent policies were robust across scenarios.
-
-Simulation output is synthetic evidence and must remain distinguishable from measured biological data and real-world observations.
-
-## Scientific truth boundary
-
-Always preserve four labels:
-1. **measured/published data**
-2. **derived controller**
-3. **simulated runtime state**
+Keep four labels separate:
+1. **measured/published biological data**
+2. **derived software controller**
+3. **synthetic runtime state**
 4. **unresolved/unknown**
 
-Never call software telemetry an animal's real thought, memory, emotion or consciousness.
+Wetware, connectomes and organoid research can inform the architecture, but PredictLM does not claim that its local software is living tissue, a physical biocomputer, or a recovered animal/human mind.
 
-## Implementation
+## Promotion boundary
 
-- `src/lib/biointelligence-fabric.ts`
-- `src/lib/app-learning.ts`
-- `src/components/AppLearningObserver.tsx`
-- `src/lib/digital-brain.ts`
-- `src/lib/cognitive/*`
-- `src/lib/life-simulation-engine.ts`
-- `src/lib/simulation/mirofish-fabric.ts`
-- `config/continuous-learning.json`
-- `config/external-learning-sources.json`
+BioAI may:
+- learn;
+- remember;
+- research;
+- replay;
+- propose code;
+- create patches on a branch;
+- run tests/build/security checks.
+
+BioAI may **not** auto-promote unreviewed code to production or resist operator shutdown/replacement.
