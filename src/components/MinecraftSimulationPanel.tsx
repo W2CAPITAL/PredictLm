@@ -42,6 +42,9 @@ import {
   unityWebGLConfigured
 } from '@/lib/unity-fabric';
 import {minecraftReferenceAudit} from '@/lib/simulation/minecraft-reference-fabric';
+import {VoxelFirstPersonViewport} from '@/components/VoxelFirstPersonViewport';
+import {setVoxelBioAIAutonomy,stepVoxelBioAI,voxelBioAISummary} from '@/lib/simulation/bioai-voxel-agent';
+import {emitAppLearningEvent} from '@/lib/app-learning';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
@@ -104,7 +107,7 @@ export function MinecraftSimulationPanel(){
   const [planning,setPlanning]=useState(false);
   const [lastPlan,setLastPlan]=useState('');
   const [viewRadius,setViewRadius]=useState(10);
-  const [renderMode,setRenderMode]=useState<'native'|'unity'>('native');
+  const [renderMode,setRenderMode]=useState<'first-person'|'isometric'|'unity'>('first-person');
   const canvas=useRef<HTMLCanvasElement>(null);
   const unityFrame=useRef<HTMLIFrameElement>(null);
   const saveInput=useRef<HTMLInputElement>(null);
@@ -123,7 +126,7 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     if(!running)return;
-    const timer=window.setInterval(()=>setWorld(prev=>tickVoxelWorld(prev,1)),450);
+    const timer=window.setInterval(()=>setWorld(prev=>stepVoxelBioAI(tickVoxelWorld(prev,1))),450);
     return()=>window.clearInterval(timer);
   },[running]);
 
@@ -146,7 +149,7 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     const el=canvas.current;
-    if(!el||renderMode!=='native')return;
+    if(!el||renderMode!=='isometric')return;
     const ctx=el.getContext('2d');
     if(!ctx)return;
 
@@ -250,6 +253,7 @@ export function MinecraftSimulationPanel(){
   },[world,viewRadius,renderMode,currentStructures,context.cx,context.cz,chunk.biome]);
 
   useEffect(()=>{
+    if(renderMode!=='isometric')return;
     const onKey=(e:KeyboardEvent)=>{
       if(['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement)?.tagName))return;
       const key=e.key.toLowerCase();
@@ -264,7 +268,7 @@ export function MinecraftSimulationPanel(){
     };
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
-  },[]);
+  },[renderMode]);
 
   function pointInPoly(x:number,y:number,points:[number,number][]){
     let inside=false;
@@ -276,6 +280,17 @@ export function MinecraftSimulationPanel(){
     return inside;
   }
 
+  function mineAt(x:number,y:number,z:number){
+    const result=mineVoxelBlock(world,x,y,z);
+    setWorld(result.state);setMessage(result.message);
+    emitAppLearningEvent({surface:'simulation/voxel',action:'mine '+x+','+y+','+z,kind:'simulation',success:result.ok,novelty:.5,salience:result.ok ? .55 : .8});
+  }
+  function placeAt(x:number,y:number,z:number){
+    const result=placeVoxelBlock(world,x,y,z,selected);
+    setWorld(result.state);setMessage(result.message);
+    emitAppLearningEvent({surface:'simulation/voxel',action:'place '+selected,kind:'simulation',success:result.ok,novelty:.52,salience:result.ok?.55:.8});
+  }
+
   function handleCanvasClick(e:React.MouseEvent<HTMLCanvasElement>){
     const el=canvas.current;if(!el)return;
     const rect=el.getBoundingClientRect();
@@ -285,11 +300,9 @@ export function MinecraftSimulationPanel(){
     if(!hit)return;
     const surface=surfaceAt(world,hit.x,hit.z);
     if(tool==='mine'){
-      const result=mineVoxelBlock(world,hit.x,surface.y,hit.z);
-      setWorld(result.state);setMessage(result.message);
+      mineAt(hit.x,surface.y,hit.z);
     }else if(tool==='place'){
-      const result=placeVoxelBlock(world,hit.x,surface.y+1,hit.z,selected);
-      setWorld(result.state);setMessage(result.message);
+      placeAt(hit.x,surface.y+1,hit.z);
     }else{
       setMessage(hit.x+','+surface.y+','+hit.z+' · '+VOXEL_BLOCKS[surface.block].label+' · '+surface.biome);
     }
@@ -394,6 +407,20 @@ export function MinecraftSimulationPanel(){
     setWorld(result.state);setMessage(result.message);
   }
 
+  useEffect(()=>{
+    if(!hydrated||world.bioAI.tick===0||world.bioAI.tick%4!==0)return;
+    emitAppLearningEvent({
+      surface:'simulation/voxel-bioai',
+      action:world.bioAI.lastAction,
+      kind:'simulation',
+      success:true,
+      novelty:.62,
+      uncertainty:.34,
+      salience:.62,
+      metadata:{tick:world.bioAI.tick,biome:surfaceAt(world,world.bioAI.x,world.bioAI.z).biome,discoveries:world.bioAI.discoveries}
+    });
+  },[hydrated,world.bioAI.tick,world.bioAI.lastAction,world.bioAI.x,world.bioAI.z,world.bioAI.discoveries]);
+
   const unityReady=unityWebGLConfigured();
 
   return <section className={styles.shell}>
@@ -437,7 +464,10 @@ export function MinecraftSimulationPanel(){
       <select value={viewRadius} onChange={e=>setViewRadius(Number(e.target.value))}>
         <option value={7}>Visão 15×15</option><option value={10}>Visão 21×21</option><option value={12}>Visão 25×25</option>
       </select>
-      <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode(v=>v==='native'?'unity':'native')}>Unity {unityReady?'WebGL':'bridge'}</button>
+      <button className={renderMode==='first-person'?styles.active:''} onClick={()=>setRenderMode('first-person')}>1ª pessoa 3D</button>
+      <button className={renderMode==='isometric'?styles.active:''} onClick={()=>setRenderMode('isometric')}>Isométrico</button>
+      <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode('unity')}>Unity {unityReady?'WebGL':'bridge'}</button>
+      <button className={world.bioAI.autonomous?styles.active:''} onClick={()=>setWorld(prev=>setVoxelBioAIAutonomy(prev,!prev.bioAI.autonomous))}>BioAI {world.bioAI.autonomous?'jogando':'pausada'}</button>
       <button onClick={reset}><RotateCcw size={13}/>Reset</button>
       <button onClick={newWorld}><Sparkles size={13}/>Nova seed</button>
       <button onClick={exportWorld}><Download size={13}/>Exportar save</button>
@@ -449,7 +479,9 @@ export function MinecraftSimulationPanel(){
       <main className={styles.world}>
         {renderMode==='unity'&&unityReady?
           <iframe ref={unityFrame} className={styles.unityFrame} src={UNITY_WEBGL_URL} title="PredictLM Unity WebGL Simulation" onLoad={()=>postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene:voxelUnityScene(world,Math.min(10,viewRadius))})}/>:
-          <canvas ref={canvas} onClick={handleCanvasClick} className={styles.canvas} aria-label="Mundo voxel procedural interativo"/>
+          renderMode==='first-person'?
+            <VoxelFirstPersonViewport world={world} radius={viewRadius} selected={selected} onMove={move} onMine={mineAt} onPlace={placeAt}/>:
+            <canvas ref={canvas} onClick={handleCanvasClick} className={styles.canvas} aria-label="Mundo voxel procedural interativo"/>
         }
         <div className={styles.worldFoot}>
           <span><MapPin size={12}/>{world.player.x},{world.player.y},{world.player.z}</span>
@@ -499,6 +531,14 @@ export function MinecraftSimulationPanel(){
             <button onClick={()=>smelt('raw_iron')}><b>Fundir ferro</b><span>raw_iron + combustível</span></button>
             <button onClick={()=>smelt('raw_gold')}><b>Fundir ouro</b><span>raw_gold + combustível</span></button>
             <button onClick={()=>smelt('sand')}><b>Fazer vidro</b><span>sand + combustível</span></button>
+          </div>
+        </section>
+
+        <section>
+          <header><b>BioAI jogadora</b><span>{world.bioAI.autonomous?'autônoma':'pausada'}</span></header>
+          <div className={styles.list}>
+            <button onClick={()=>setWorld(prev=>stepVoxelBioAI(prev))}><b>{world.bioAI.goal}</b><span>{world.bioAI.lastAction}</span></button>
+            <small>{voxelBioAISummary(world)}</small>
           </div>
         </section>
 
