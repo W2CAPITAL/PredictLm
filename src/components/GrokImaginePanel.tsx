@@ -502,6 +502,24 @@ export function GrokImaginePanel(){
     }
   }
 
+  async function stylizeImageUrl(sourceUrl:string){
+    try{
+      setImageStage('Aplicando acabamento anime…');
+      const r=await fetch('/api/media/stylize',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sourceUrl,style,model:'animeganv3'})
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data?.stylized||!data?.url)return {url:sourceUrl,stylized:false,provider:''};
+      const url=String(data.url);
+      await preloadGeneratedImage(url);
+      return {url,stylized:true,provider:String(data.provider||'animeganv3-bridge')};
+    }catch{
+      return {url:sourceUrl,stylized:false,provider:''};
+    }
+  }
+
   async function requestImage(options?:{regenerate?:boolean}){
     if(!prompt.trim())throw new Error('Descreva a imagem ou vídeo que você quer criar.');
     const regenerate=!!options?.regenerate&&!!generated;
@@ -702,6 +720,12 @@ export function GrokImaginePanel(){
         return '';
       }
 
+      const animePassRequested=!blockFromRecent&&styleManuallyChosen&&/anime|manga/i.test(style);
+      const stylized=animePassRequested
+        ? await stylizeImageUrl(url)
+        : {url,stylized:false,provider:''};
+      url=stylized.url;
+
       const upscaled=blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
@@ -714,7 +738,11 @@ export function GrokImaginePanel(){
       setGeneratedCaption(caption);
       setImageProviderWarning(data.providerWarning||'');
       if(data.style&&data.style!==style)setStyle(data.style);
-      setProvider(upscaled.upscaled?(data.provider||'image')+' + '+upscaled.provider:(data.provider||''));
+      setProvider([
+        data.provider||'image',
+        stylized.stylized?stylized.provider:'',
+        upscaled.upscaled?upscaled.provider:''
+      ].filter(Boolean).join(' + '));
       if(blockFromRecent){
         setPersisted(false);
         data.providerWarning=[
@@ -740,6 +768,8 @@ export function GrokImaginePanel(){
           semanticReview,
           semanticRepair:!regenerate&&semanticRepair,
           autoQualityRepair:!regenerate&&nextAttempt>0,
+          animeStylized:stylized.stylized,
+          animeStylizerProvider:stylized.stylized?stylized.provider:null,
           superResolution:upscaled.upscaled,
           superResolutionProvider:upscaled.upscaled?upscaled.provider:null,
           autoVariation:true,
