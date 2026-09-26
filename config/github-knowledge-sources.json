@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "policy": {
     "maxFileBytes": 140000,
     "maxFilesPerRepo": 120,
@@ -2603,14 +2603,18 @@
       "repo": "Sairamg18814/shvayambhu",
       "branch": "main",
       "license": "Apache-2.0",
-      "mode": "quarantine",
-      "include": [],
-      "domains": [
-        "consciousness-claims",
-        "self-modification",
-        "introspection"
+      "mode": "reference-only",
+      "include": [
+        "README.md"
       ],
-      "reason": "Repository makes extraordinary consciousness claims that are not established evidence. Do not ingest claims as facts or enable autonomous self-modification from this source."
+      "domains": [
+        "self-modification",
+        "meta-learning",
+        "self-model",
+        "autonomous-goals",
+        "experimental-consciousness"
+      ],
+      "reason": "Apache-2.0 experimental project, but README makes strong consciousness/emergence claims that are not independently established by repository labels or benchmarks. Use only bounded engineering patterns; never import 'genuine consciousness', autonomous desires or emergent-goal claims as facts."
     },
     {
       "repo": "robert1811/life-simulator",
@@ -3323,6 +3327,117 @@
       ],
       "weight": 1.2,
       "reason": "MIT UnityEngine-compatible test double. Ingest GameObject/Component/Transform/Vector/Camera/Collider/Rigidbody/Input/Time separation patterns; actual Unity runtime is only claimed when a real Unity WebGL host is configured."
+    },
+    {
+      "repo": "GAIR-NLP/ASI-Evolve",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "skills/evolve/SKILL.md",
+        "skills/evolve/references/architecture.md",
+        "skills/evolve/references/operating_model.md",
+        "skills/evolve/references/preflight.md",
+        "cognition/cognition.py",
+        "pipeline/analyzer/analyzer.py",
+        "pipeline/researcher/researcher.py"
+      ],
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "weight": 1.28,
+      "reason": "Apache-2.0 research framework. Learn LEARN → DESIGN → EXPERIMENT → ANALYZE, experiment databases, cognition stores and score-driven candidate selection. PredictLM keeps human/CI gates before durable promotion or production changes."
+    },
+    {
+      "repo": "269652/artificial-consciousness-ai",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/memory/persistent_memory.py",
+        "src/memory/memory_consolidator.py",
+        "src/memory/knowledge_extractor.py",
+        "src/modules/AutobiographicalMemory.py",
+        "src/modules/Hippocampus.py",
+        "src/modules/IdentityMemory.py"
+      ],
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "weight": 1.12,
+      "reason": "MIT proof-of-concept. Learn memory layering, consolidation, knowledge extraction and observability patterns only. Treat consciousness/sentience terminology as simulation labels, not evidence of phenomenal consciousness."
+    },
+    {
+      "repo": "jasonkresch/bots",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "artificial-life/src/brain/BotBrain.java",
+        "artificial-life/src/brain/NeuralNetwork.java",
+        "artificial-life/src/brain/Reproduce.java",
+        "artificial-life/src/life/Bot.java",
+        "artificial-life/src/life/BotLife.java"
+      ],
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "weight": 1.08,
+      "reason": "MIT artificial-life experiment. Learn bounded evolutionary selection, mutation, fitness and environment adaptation patterns for simulation/evaluation. Do not treat simulated sentience labels as scientific proof."
+    },
+    {
+      "repo": "tlcdv/the_consciousness_ai",
+      "branch": "main",
+      "license": "non-commercial",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "cognitive-architecture",
+        "global-workspace",
+        "homeostasis",
+        "multisensory-integration",
+        "research-reference"
+      ],
+      "reason": "Non-commercial license. Architecture reference only; do not copy code into commercial/runtime index. Claims/hypotheses about synthetic awareness remain research hypotheses, not established facts."
+    },
+    {
+      "repo": "asi-alliance/Max_folio",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "reference-only",
+      "include": [
+        "articles/omegaclaw/omegaclaw_trainer_manual.md",
+        "fabricpc/hackathon contribution/omegaclaw_fabricpc_hackathon.md"
+      ],
+      "domains": [
+        "agent-training",
+        "self-audit",
+        "autonomous-loop",
+        "failure-modes",
+        "evidence-weighting"
+      ],
+      "reason": "Apache-2.0 reference material with useful agent failure-mode and self-audit lessons. Keep autonomous-goal behavior opt-in and bounded; do not let background loops create external actions or durable goals without user/system authorization."
     }
   ]
 }
