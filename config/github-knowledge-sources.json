@@ -3047,6 +3047,44 @@
       ],
       "weight": 0.98,
       "reason": "Use code/docs architecture only. IGPair dataset is explicitly excluded from PredictLM ingestion because its access/use terms are separate."
+    },
+    {
+      "repo": "Donchitos/Claude-Code-Game-Studios",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        ".claude/docs/coordination-rules.md",
+        ".claude/docs/run-and-observe.md",
+        ".claude/docs/workflow-modes.md",
+        ".claude/docs/director-gates.md",
+        ".claude/docs/agent-roster.md",
+        ".claude/docs/agent-teams.md",
+        ".claude/docs/coding-standards.md",
+        ".claude/docs/error-recovery-protocol.md",
+        ".claude/skills/dev-story/SKILL.md",
+        ".claude/skills/playtest-report/SKILL.md",
+        ".claude/skills/vertical-slice/SKILL.md",
+        ".claude/skills/code-review/SKILL.md",
+        ".claude/skills/perf-profile/SKILL.md",
+        ".claude/skills/security-audit/SKILL.md"
+      ],
+      "domains": [
+        "game-development",
+        "game-agents",
+        "godot",
+        "unity",
+        "unreal",
+        "vertical-slice",
+        "playtesting",
+        "visual-qa",
+        "multi-agent-coordination",
+        "release-gates",
+        "engine-specialists"
+      ],
+      "weight": 1.26,
+      "reason": "MIT-licensed game-development agent framework. Ingest coordination, rigor, vertical-slice, visual run-and-observe, playtest, QA and engine-specialist patterns. Do not force its full documentation workflow onto small projects; PredictLM keeps adaptive minimal/standard/full rigor."
     }
   ]
 }
