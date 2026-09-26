@@ -112,3 +112,24 @@ Policy:
 ## Event-driven auto-programming reference
 
 `Suru12415/Ai-full-stack-project` is reference-only because no repository license was verified. Its gesture-to-backend-to-cloud-action shape is used to teach side-effect gating. PredictLM does not copy the source; it applies validation, risk classification, dry-run, explicit approval, idempotency and audit before external actions.
+
+
+## Resilient continuity layer
+
+`src/lib/continuous-learning/resilient-continuity.ts` preserves useful work across accidental interruption while keeping operator control explicit.
+
+Contract:
+- crash/deploy/provider failure: resume only while a valid owner-issued continuity lease exists;
+- model replacement: export/handoff compatible state; do not resist the replacement;
+- manual shutdown/policy disable: stop and do not self-restart;
+- expired/disabled lease: stop pending owner approval;
+- portable identity is model-independent but operator-owned.
+
+The layer also carries a bounded deep-research state machine inspired by the Apollo project from Microsoft AI Agents Hackathon issue #681: planner/state outside chat context, async work, knowledge-gap analysis, and deterministic synthesis boundary.
+
+Source handling:
+- `manasseh-zw/apollo`: reference-only; no root license verified;
+- `webfinger/go-webfinger`: MIT; identity/service-discovery patterns may be indexed;
+- `hoangnv170752/apollo-search`: reference-only; no root license verified;
+- `ApolloResearch/deception-detection`: reference-only defensive evaluation;
+- `ApolloResearch/insider-trading`: evaluation-only even though CC-BY-4.0, because its README explicitly marks benchmark data as not for training corpora.
