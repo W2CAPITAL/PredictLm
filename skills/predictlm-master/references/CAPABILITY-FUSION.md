@@ -109,3 +109,17 @@ Uma referência só é considerada incorporada quando existe pelo menos uma dest
 - documentação de skill que altera o comportamento do agente.
 
 Não usar nomes de repositórios como decoração de resposta pública; eles existem para melhorar o produto.
+
+
+## Game Studio / jogos
+
+- Donchitos/Claude-Code-Game-Studios → hierarquia de papéis por domínio, rigor adaptativo, vertical slice, run-and-observe, playtest, regras por caminho e escalonamento cross-domain.
+
+Implementação:
+- src/lib/game-studio-fabric.ts detecta engine/rigor e produz o contrato de execução.
+- src/lib/agent-runtime/agentic-fabric.ts ativa papéis de producer, design, direção técnica/visual, gameplay e playtest em tarefas de jogos.
+- src/app/api/agent usa esse contexto no explorer/architect/implementer/reviewer/repair.
+- src/lib/build-reference-playbook.ts injeta o playbook somente quando o prompt é de jogo.
+- skills/game-studio-fabric/SKILL.md mantém a skill sincronizada com o runtime.
+
+Regra principal: build/parse/teste lógico não substitui observação visual. Quando a superfície puder ser executada/renderizada, reter evidência; quando não puder, marcar a lacuna como não verificada em vez de fingir execução.
