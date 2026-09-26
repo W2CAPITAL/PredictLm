@@ -3693,6 +3693,117 @@
         "canary-data"
       ],
       "reason": "Repository is CC-BY-4.0, but its README explicitly marks prompts/results as safety benchmark data that should never appear in training corpora. Keep evaluation-only/reference-only; do not ingest benchmark samples into RAG, fine-tuning or self-improvement training."
+    },
+    {
+      "repo": "4R7I5T/flyloop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/model.md",
+        "docs/advancing-flyloop.md",
+        "sources.json"
+      ],
+      "domains": [
+        "biointelligence",
+        "connectome",
+        "embodied-agent",
+        "simulation"
+      ],
+      "reason": "MIT FlyLoop separates measured electrode input, declared decoder, connectome model and simulated body; useful for BioAI embodiment and evidence boundaries."
+    },
+    {
+      "repo": "danielathome19/pyorganoid",
+      "branch": "main",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "pyorganoid"
+      ],
+      "domains": [
+        "biointelligence",
+        "organoid-simulation",
+        "learning"
+      ],
+      "reason": "BSD-3-Clause organoid intelligence simulation package; use simulation abstractions and scheduling patterns, not claims of biological equivalence."
+    },
+    {
+      "repo": "FinalSpark-np/LiveMEA_ts",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "optional-adapter",
+      "include": [
+        "README.md",
+        "src"
+      ],
+      "domains": [
+        "wetware",
+        "MEA",
+        "finalspark",
+        "biointelligence"
+      ],
+      "reason": "MIT TypeScript interface for authorized live MEA data. Optional adapter only; core remains local and works without FinalSpark credentials."
+    },
+    {
+      "repo": "Cortical-Labs/cl-sdk",
+      "branch": "main",
+      "license": "CC-BY-NC-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "wetware",
+        "CL1",
+        "biocomputing",
+        "biointelligence"
+      ],
+      "reason": "Cortical Labs simulator/API parity reference. Non-commercial license means concepts/interface only for the commercial core."
+    },
+    {
+      "repo": "Cortical-Labs/handwritten-digit-neural-cultures",
+      "branch": "main",
+      "license": "CC-BY-NC-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "wetware",
+        "neural-cultures",
+        "biological-reservoir-computing"
+      ],
+      "reason": "Experimental neural-culture dataset reference; metadata/scientific provenance only unless separately authorized."
+    },
+    {
+      "repo": "cortex-lab/allenCCF",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "mouse-brain",
+        "atlas",
+        "neuroscience"
+      ],
+      "reason": "Mouse CCF tooling reference; use atlas concepts with Allen primary sources, not unverified repository code."
+    },
+    {
+      "repo": "4R7I5T/CL1_LLM_Encoder",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "wetware",
+        "CL1",
+        "LLM"
+      ],
+      "reason": "User-supplied repository could not be resolved through GitHub during this pass. Do not ingest or execute until identity/license are verified."
     }
   ]
 }
