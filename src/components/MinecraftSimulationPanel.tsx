@@ -10,6 +10,8 @@ import {
   chunkSnapshot,
   craftVoxelItem,
   createVoxelWorld,
+  eatVoxelFood,
+  farmVoxelBlock,
   currentVoxelContext,
   mineVoxelBlock,
   moveVoxelPlayer,
@@ -306,6 +308,14 @@ export function MinecraftSimulationPanel(){
     const result=attackVoxelMob(world,mob);
     setWorld(result.state);setMessage(result.message);
   }
+  function eat(item:string){
+    const result=eatVoxelFood(world,item);
+    setWorld(result.state);setMessage(result.message);
+  }
+  function farm(plant=false){
+    const result=farmVoxelBlock(world,world.player.x,world.player.z,plant);
+    setWorld(result.state);setMessage(result.message);
+  }
   function raid(structure:VoxelStructure){
     const result=raidVoxelDungeon(world,structure);
     setWorld(result.state);setMessage(result.message);
@@ -377,6 +387,11 @@ export function MinecraftSimulationPanel(){
           </div>
           <div className={styles.dimensionButtons}>
             {(['overworld','infernal','void'] as const).map(dim=><button key={dim} className={world.player.dimension===dim?styles.active:''} onClick={()=>setWorld(prev=>travelVoxelDimension(prev,dim))}>{dim}</button>)}
+          </div>
+          <div className={styles.dimensionButtons}>
+            <button onClick={()=>eat(world.inventory.bread>0?'bread':'food')}>Comer</button>
+            <button onClick={()=>farm(false)}>Arar</button>
+            <button onClick={()=>farm(true)}>Plantar</button>
           </div>
         </section>
 
