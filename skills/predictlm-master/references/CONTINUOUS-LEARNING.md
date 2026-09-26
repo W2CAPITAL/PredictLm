@@ -133,3 +133,41 @@ Source handling:
 - `hoangnv170752/apollo-search`: reference-only; no root license verified;
 - `ApolloResearch/deception-detection`: reference-only defensive evaluation;
 - `ApolloResearch/insider-trading`: evaluation-only even though CC-BY-4.0, because its README explicitly marks benchmark data as not for training corpora.
+
+
+## App-wide BioIntelligence learning fabric
+
+PredictLM now has a transversal learning path rather than per-feature learning islands.
+
+Core files:
+- `src/components/AppLearningObserver.tsx` — root-level observer for routes, controls, API outcomes, errors and Studio transitions;
+- `src/lib/app-learning.ts` — bounded privacy-preserving learning ledger;
+- `src/lib/biointelligence-fabric.ts` — cross-species controller fusion;
+- `skills/biointelligence/SKILL.md` — scientific/product contract.
+
+Coverage:
+- Chat and provider calls;
+- Build/Studio state;
+- Research;
+- Imagine/media APIs;
+- Legal/process APIs;
+- route/tab navigation;
+- errors and promise failures;
+- Life Simulation steps and counterfactuals;
+- MiroFish swarm rounds;
+- Cognitive Organism outcomes.
+
+The Chat decision context receives only a sanitized summary of prior outcomes plus the cross-species controller result. File/message contents are excluded from this transversal telemetry.
+
+Comparative neuroscience sources now include:
+- Human H01;
+- macaque Digital Brain datasets;
+- FlyWire/FAFB;
+- OpenWorm/Cook C. elegans connectomics;
+- MICrONS + Allen mouse resources;
+- larval zebrafish whole-brain EM resources.
+
+These are structural/functional scientific references. Runtime state remains synthetic software state and unresolved biology remains unknown.
+
+Durable code changes still follow:
+`experience → gap → evidence → proposal → branch → tests → build → security/review → PR`
