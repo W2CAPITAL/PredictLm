@@ -119,6 +119,7 @@ function needLabel(value:number){return Math.max(0,Math.min(100,Math.round(value
 
 export function GrokSimulationPanel(){
   const [state,setState]=useState<LifeSimulationState>(()=>createLifeSimulation());
+  const [simulationView,setSimulationView]=useState<'life'|'voxel'>('life');
   const [voxelWorld,setVoxelWorld]=useState<VoxelWorldState>(()=>createLifeVoxelWorld().voxel);
   const lifeVoxelRef=useRef<LifeVoxelWorldState>(createLifeVoxelWorld());
   const [hydrated,setHydrated]=useState(false);
