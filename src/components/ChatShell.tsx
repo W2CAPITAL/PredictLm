@@ -36,7 +36,7 @@ import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserText } from '@/lib/voice/browser-voice';
 import { appLearningContext } from '@/lib/app-learning';
-import { bioIntelligenceContext } from '@/lib/biointelligence-fabric';
+import { bioAiKernelContext } from '@/lib/bioai';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -509,7 +509,7 @@ export function ChatShell({onOpenLegal}:Props){
       browserKnowledgeContext(prompt),
       capabilityFusionContext(prompt,'chat'),
       appLearningContext(undefined,5),
-      bioIntelligenceContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current' ? .62 : .34,salience:s.deepThink ? .76 : .52})
+      bioAiKernelContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current' ? .62 : .34,salience:s.deepThink ? .76 : .52},prompt)
     ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
