@@ -23,9 +23,9 @@ O repositório W2CAPITAL/PredictLm é público. GitHub Actions em runners padrã
 repositórios públicos não consome a franquia cobrada de minutos de repositórios
 privados. O desenho usa apenas um job curto por hora.
 
-A sincronização do Google Sheets faz poucas chamadas por rodada e foi desenhada para
-permanecer muito abaixo das quotas padrão. Políticas de quota/preço dos provedores
-podem mudar; o workflow deve parar/degradar antes de exigir uma API paga.
+O caminho padrão da planilha não usa a API do Google: ele lê CSVs públicos do branch
+de aprendizado com `IMPORTDATA`. Assim, o ciclo principal não depende de credenciais
+do Google nem de uma quota paga.
 
 ## Planilha online
 
