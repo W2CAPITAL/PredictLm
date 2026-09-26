@@ -36,6 +36,7 @@ import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserText } from '@/lib/voice/browser-voice';
 import { resolveBuildTurn } from '@/lib/build-turn';
+import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { runLocalSmokeTest } from '@/lib/local-tools';
 import { runLocalCouncil } from '@/lib/council';
 import { runBuildDiffReview } from '@/lib/build-diff-review';
@@ -568,18 +569,30 @@ export function ChatShell({onOpenLegal}:Props){
       'PACKAGE · preparando ZIP executável'
     ]);
 
-    const response=await fetch('/api/agent',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        prompt:turn.effectivePrompt,
-        files:baseFiles,
-        mode:s.deepThink?'max':'deep'
-      })
-    });
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok||!Array.isArray(data?.files)||!data.files.length){
-      throw new Error(data?.error||'O Build não produziu arquivos utilizáveis.');
+    let data:any={};
+    let providerBuild=true;
+    try{
+      const response=await fetch('/api/agent',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          prompt:turn.effectivePrompt,
+          files:baseFiles,
+          mode:s.deepThink?'max':'deep'
+        })
+      });
+      data=await response.json().catch(()=>({}));
+      if(!response.ok||!Array.isArray(data?.files)||!data.files.length){
+        throw new Error(data?.error||'Provider Build sem arquivos utilizáveis.');
+      }
+    }catch(providerError:any){
+      providerBuild=false;
+      const local=orchestrateBuild(turn.effectivePrompt,baseFiles);
+      data={
+        files:local.files,
+        explanation:'As APIs de Build não concluíram a implementação. O PredictLM executou o orquestrador local e preservou o projeto atual. '+String(providerError?.message||'')
+      };
+      if(!Array.isArray(data.files)||!data.files.length)throw providerError;
     }
 
     const merged=new Map(baseFiles.map(file=>[file.path,file]));
@@ -639,7 +652,7 @@ export function ChatShell({onOpenLegal}:Props){
       }],
       actions:[
         'Projeto atual preservado',
-        'Provider forte selecionado pelo roteador',
+        providerBuild?'Provider forte selecionado pelo roteador':'Orquestrador local executado após falha das APIs',
         'Arquivos aplicados ao workspace',
         'Smoke/Council/review executados',
         'ZIP executável empacotado'
