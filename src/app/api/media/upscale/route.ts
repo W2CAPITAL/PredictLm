@@ -1,3 +1,5 @@
+import {runComfyImageWorkflow} from '@/lib/media/comfy-image';
+
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
@@ -32,6 +34,42 @@ export async function POST(req:Request){
     const mode=String(process.env.MEDIA_UPSCALE_MODE||'json').trim().toLowerCase();
     const scale=clampScale(Number(body?.scale)||2);
     const faceEnhance=Boolean(body?.faceEnhance);
+    const comfyBase=String(process.env.COMFYUI_UPSCALE_BASE_URL||process.env.COMFYUI_BASE_URL||'').trim().replace(/\/$/,'');
+    const comfyWorkflow=String(process.env.COMFYUI_UPSCALE_WORKFLOW_JSON||'').trim();
+
+    if(comfyBase&&comfyWorkflow){
+      try{
+        const source=await sourceBlob(sourceUrl,req);
+        const bytes=Buffer.from(await source.blob.arrayBuffer()).toString('base64');
+        const result=await runComfyImageWorkflow({
+          prompt:'Upscale and restore the supplied image without changing identity, composition or content.',
+          negativePrompt:'identity drift, altered composition, hallucinated details, halos, oversharpening, plastic texture',
+          width:1024,
+          height:1024,
+          seed:Math.max(1,Math.floor(Date.now()%2147483646)),
+          references:[{mimeType:source.type.split(';')[0],data:bytes}],
+          timeoutMs:45000,
+          baseOverride:comfyBase,
+          workflowOverride:comfyWorkflow,
+          extraTokens:{
+            '{{SCALE}}':scale,
+            '{{MODEL}}':model,
+            '{{FACE_ENHANCE}}':faceEnhance?'true':'false'
+          }
+        });
+        return Response.json({
+          url:result.dataUrl,
+          upscaled:true,
+          provider:'comfyui',
+          model,
+          scale,
+          faceEnhance,
+          workflowPromptId:result.promptId
+        });
+      }catch{
+        // Optional ComfyUI stage failed; continue to the generic upscaler when configured.
+      }
+    }
 
     if(!base){
       return Response.json({
