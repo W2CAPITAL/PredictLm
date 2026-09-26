@@ -56,7 +56,7 @@ conversation history + intent
 
 Chat is open-domain: normal prompts do not need a pre-programmed topic rule. The model is expected to handle factual questions, explanations, hypotheticals, planning, coding, calculations, comparisons, writing, rewriting, translation, summarization and brainstorming directly. Deterministic topic helpers are floors/fallbacks, not a whitelist of what PredictLM can answer.
 
-Browser-local weights are **never downloaded on first visit**. The optional **Ativar Neural Local** action now auto-selects the strongest WebLLM tier that fits: **Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B**. A real load/self-test decides whether the tier actually fits. PCs without usable WebGPU remain fully usable through the normal web/provider route instead of being forced to load a multi-GB local model. The small ONNX Qwen path is compatibility/offline fallback only.
+Browser-local weights are **never downloaded on first visit**. The optional **Ativar Neural Local** action now auto-selects the strongest WebLLM tier that fits: **Qwen3.5 9B → Qwen3.5 4B → Qwen3 1.7B**. A real load/self-test decides whether the tier actually fits. PCs without usable WebGPU remain fully usable through the normal web/provider route instead of being forced to load a multi-GB local model. The small ONNX Qwen path is compatibility/offline fallback only.
 
 ### Model catalog and weight policy
 
@@ -66,7 +66,7 @@ The canonical model map lives in `src/lib/neural-model-catalog.ts`.
 | --- | --- | --- | --- | --- |
 | WebLLM Lite | `Qwen3-1.7B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | weak-GPU fallback |
 | WebLLM Smart | `Qwen3.5-4B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | default local quality tier |
-| WebLLM Power | `Qwen3-8B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | stronger local tier |
+| WebLLM Power | `Qwen3.5-9B-q4f16_1-MLC` | MLC | WebLLM/WebGPU | stronger local tier |
 | Compatibility Lite | `onnx-community/Qwen2.5-0.5B-Instruct` | ONNX | Transformers.js CPU/WASM | emergency/offline compatibility |
 | Compatibility Smart | `onnx-community/Qwen2.5-1.5B-Instruct` | ONNX | Transformers.js | compatibility path |
 
