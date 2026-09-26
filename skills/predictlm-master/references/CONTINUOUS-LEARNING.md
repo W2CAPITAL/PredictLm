@@ -52,3 +52,18 @@ No Google credential or service account is required for this default mirror.
 
 Direct Google Sheets API writing remains optional for private installations and must
 never be required for the core learning cycle.
+
+
+## Typed runtime modules
+
+The dependency-free scheduled runner is mirrored by typed modules under `src/lib/continuous-learning/`: source trust, harvest, GitHub/web/paper research planning, deduplication, knowledge graph, queue, distillation, research gaps, skill/code proposals, experiment gating, spreadsheet mapping and audit.
+
+Specialized skills kept in sync with this fabric:
+- `autonomous-research`
+- `github-learning`
+- `knowledge-distillation`
+- `self-improvement`
+- `research-gap`
+- `code-evolution`
+
+A candidate experiment can become review-required after tests/build/checks, but production promotion remains blocked until review.

@@ -112,3 +112,12 @@ No Vercel, `localhost` do usuário não é alcançável. ComfyUI local requer de
 - Visão analyzes uploaded animal photos using a pinned quantized MobileNet in a dedicated one-thread CPU worker. Download only on request; support cancellation and model cache. Preserve top-five scores, non-animal classes and inconclusive results. This is whole-image classification, not detection, diagnosis, proof of safety or franchise identity recognition.
 - Three optional inference adapters are in `services/animal-vision/`: HOG/SVM, PyTorch ResNet, Keras ResNet. Show unavailable until real trusted weights load. Do not claim the source README accuracy as app accuracy. Never deserialize HTTP model uploads or infer 150 supported classes from the rt75272 README (its checked-in current mapping has 15).
 - Browser analysis keeps the photo on the device. Server analysis is an explicit user choice. No automatic photo persistence or Supabase upload. See `services/animal-vision/README.md` for model provenance, compatibility and deployment setup.
+
+
+### Imagine browser editor
+
+PredictLM now has a free post-production editor embedded in Imagine. Generated image/video can be placed on an ordered local timeline with trim, image duration, playback speed, cover/contain fit, cut/fade transitions, basic filters and a caption overlay. Export uses Canvas + MediaRecorder to WebM in the browser and project metadata can be saved as JSON.
+
+This layer is editing, not neural generation. It does not claim to replace temporal generation providers, and the current browser renderer does not mix source audio into the local export.
+
+Reference policy: OpenCut/openreel/capcut-cli/capcut-mate contribute compatible architecture patterns according to their licenses; ArcReel remains reference-only because of AGPL obligations.
