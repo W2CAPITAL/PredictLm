@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.6.0"
+  version: "3.7.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.6
+# PredictLM Digital Brain / NeuroCore v3.7
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -260,3 +260,17 @@ O NeuroCore pode consumir lições operacionais promovidas pelo autoaprendizado 
 - **pesos neurais**: modelo treinado separadamente.
 
 A promoção automática de uma lição operacional não é auto-modificação de pesos, não cria objetivo externo e não constitui evidência de consciência. Código executável e weight updates permanecem sujeitos a benchmark/gates.
+
+
+## Unified multi-species mesh v3.7
+
+O NeuroCore não mantém mais Fly/Human/Macaque como chats públicos separados. O Chat principal avança um único workspace cognitivo que combina, com proveniência separada:
+
+- **Fly Core** — FlyWire FAFB v783, cérebro inteiro de mosca em resolução sináptica;
+- **Human Core** — H01, fragmento cortical humano direto;
+- **Macaque Core** — atlas cortical/transcriptômico + projectomes/claustro como proxy de primata;
+- **Mouse Core** — MICrONS cortical mm³ para microcircuito visual + Allen Mouse Brain Connectivity Atlas para projeções mesoscale.
+
+Cada fonte mantém sua classe de evidência. MICrONS não vira cérebro inteiro de camundongo; Allen mesoscale não vira conectoma sináptico; macaque não vira medição humana.
+
+O estado combinado pode modular atenção, binding, inibição, exploração, memória, uncertainty e seleção de ação do mesmo PredictLM. Provider/modelo continua sendo motor, não identidade.
