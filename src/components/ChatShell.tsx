@@ -371,13 +371,14 @@ export function ChatShell({onOpenLegal}:Props){
   async function requestStreamingChat(input:{
     messages:Array<{role:string;content:string}>;
     language:string;
+    brainContext?:string;
     signal:AbortSignal;
   }){
     try{
       const response=await fetch('/api/chat/stream',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({messages:input.messages,language:input.language}),
+        body:JSON.stringify({messages:input.messages,language:input.language,brainContext:String(input.brainContext||'').slice(0,10000)}),
         signal:input.signal
       });
       if(!response.ok||!response.body)return {ok:false,text:'',provider:'',model:''};
@@ -1084,6 +1085,7 @@ export function ChatShell({onOpenLegal}:Props){
         const streamed=await requestStreamingChat({
           messages:[...messages,{role:'user',content:prompt}],
           language,
+          brainContext,
           signal:turnController.signal
         });
         if(streamed.ok)return;
@@ -1108,7 +1110,7 @@ export function ChatShell({onOpenLegal}:Props){
       let research=web.items.length?synthesizeResearch(prompt,web.items):null;
       let researchContext=web.text;
 
-      // FreeLLM-first: the provider mesh gets the first chance to generate a
+      // Quality-first: the provider mesh gets the first chance to generate a
       // substantive answer. PredictLM still supplies context, validation and
       // local/knowledge fallbacks when providers are unavailable.
       const offlineAnchor=generativeOfflineReply(prompt,kind);
