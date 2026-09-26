@@ -1,2 +1,32 @@
 import type {LearningRecord,ResearchGap} from './types';
-export function detectResearchGaps(records:LearningRecord[],topics:Array<{id:string;label?:string;priority?:number}>,now=new Date()):ResearchGap[]{return topics.map(topic=>{const accepted=records.filter(x=>x.topic===topic.id&&x.status==='accepted');const latest=accepted.map(x=>Date.parse(x.observedAt)||0).sort((a,b)=>b-a)[0]||0;const ageDays=latest?(now.getTime()-latest)/86400000:Infinity;const open=accepted.length<2||ageDays>14;const base=Math.max(1,Number(topic.priority||3))*10;const priority=Math.round(base+(accepted.length===0?30:0)+(ageDays>30?20:ageDays>14?10:0));return{id:'gap:'+topic.id,topic:topic.id,label:topic.label||topic.id,priority,reason:accepted.length===0?'sem evidência aceita':ageDays>14?'evidência desatualizada':'cobertura suficiente',lastEvidenceAt:latest?new Date(latest).toISOString():null,acceptedRecords:accepted.length,status:open?'open':'covered'}}).sort((a,b)=>b.priority-a.priority)}
+
+export function detectResearchGaps(
+  records:LearningRecord[],
+  topics:Array<{id:string;label?:string;priority?:number}>,
+  now=new Date()
+):ResearchGap[]{
+  return topics.map((topic):ResearchGap=>{
+    const accepted=records.filter(x=>x.topic===topic.id&&x.status==='accepted');
+    const latest=accepted.map(x=>Date.parse(x.observedAt)||0).sort((a,b)=>b-a)[0]||0;
+    const ageDays=latest?(now.getTime()-latest)/86400000:Infinity;
+    const open=accepted.length<2||ageDays>14;
+    const base=Math.max(1,Number(topic.priority||3))*10;
+    const priority=Math.round(base+(accepted.length===0?30:0)+(ageDays>30?20:ageDays>14?10:0));
+    const status:ResearchGap['status']=open?'open':'covered';
+
+    return {
+      id:'gap:'+topic.id,
+      topic:topic.id,
+      label:topic.label||topic.id,
+      priority,
+      reason:accepted.length===0
+        ?'sem evidência aceita'
+        :ageDays>14
+          ?'evidência desatualizada'
+          :'cobertura suficiente',
+      lastEvidenceAt:latest?new Date(latest).toISOString():null,
+      acceptedRecords:accepted.length,
+      status
+    };
+  }).sort((a,b)=>b.priority-a.priority);
+}
