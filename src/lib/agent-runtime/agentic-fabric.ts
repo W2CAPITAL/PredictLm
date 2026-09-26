@@ -55,7 +55,7 @@ function surfaceBoost(surface:AgenticSurface,id:string){
   const boosts:Record<AgenticSurface,Record<string,number>>={
     chat:{
       'predictlm-master':30,'provider-mesh':24,'human-presence':18,'prompt-os':18,'capability-fusion':10,
-      'research-source-matrix':8,'deep-research':8,'centum-parallax':7
+      'research-source-matrix':8,'deep-research':8,'continuous-learning':9,'centum-parallax':7
     },
     build:{
       'predictlm-master':30,'agent-fabric':28,'capability-fusion':27,'saas-builder-fabric':24,'build-review':24,
@@ -66,7 +66,7 @@ function surfaceBoost(surface:AgenticSurface,id:string){
       'media-director-deep':26,'image-skill':22,'media-pipelines':18,'research-source-matrix':10
     },
     research:{
-      'predictlm-master':24,'research-source-matrix':30,'deep-research':28,'web-reach':26,'capability-fusion':24,
+      'predictlm-master':24,'research-source-matrix':30,'continuous-learning':29,'deep-research':28,'web-reach':26,'capability-fusion':24,
       'research-engine':22,'github-knowledge':12,'provider-mesh':10
     },
     simulation:{
