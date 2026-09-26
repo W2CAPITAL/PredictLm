@@ -17,6 +17,7 @@ import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predi
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
 import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -290,7 +291,8 @@ function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
     'The PredictLM core owns the response contract. A configured provider is only an optional generation backend and must obey the selected agents/skills silently.',
     'Use deferred skill discovery: load only task-relevant contracts instead of the entire catalog.',
     'Local/browser runtimes, knowledge and memory are first-class PredictLM paths; no remote provider is required to complete a normal chat turn.',
-    skillContractContext(prompt,surface,surface==='chat'?7:9)
+    skillContractContext(prompt,surface,surface==='chat'?7:9),
+    capabilityFusionContext(prompt,surface)
   ].join('\n');
 }
 
