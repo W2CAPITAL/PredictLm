@@ -1,99 +1,83 @@
 ---
 name: game-studio-fabric
 description: >
-  Orquestração de desenvolvimento de jogos no PredictLM inspirada no Claude-Code-Game-Studios:
-  rigor adaptativo, papéis por domínio, vertical slice, run-and-observe, playtest e gates de QA.
+  Coordenação interna da Life Simulation Studio do PredictLM inspirada no Claude-Code-Game-Studios:
+  rigor adaptativo, papéis por domínio do mundo, loop completo, run-and-observe, playtest e gates de QA.
 metadata:
-  version: "1.0.0"
-  type: build-specialist
+  version: "1.1.0"
+  type: simulation-specialist
   source: "Donchitos/Claude-Code-Game-Studios"
   source_license: "MIT"
 ---
 
-# Game Studio Fabric
+# Game Studio Fabric — Simulation
 
-Use esta skill somente quando a tarefa envolver jogo, gameplay, Godot, Unity, Unreal, level design,
-NPC/IA de jogo, HUD, shader, multiplayer, playtest, protótipo ou vertical slice.
+Esta skill pertence **somente à Simulação**. Não deve ser ativada pelo Build genérico apenas porque o usuário pediu um jogo, site ou código.
 
-## Princípio
+## Objetivo
 
-Não importar uma burocracia de estúdio inteira para cada tarefa. O PredictLM escolhe o menor rigor
-que produz evidência suficiente.
+Organizar a Life Simulation Studio como um pequeno estúdio de mundo persistente, sem transformar cada comando em burocracia.
 
-- **minimal**: brief curto → implementar → rodar/observar → corrigir.
-- **standard**: design/arquitetura enxutos → vertical slice → QA → expandir.
-- **full**: ownership explícito por domínio, gates técnicos/criativos, playtests e release checks.
+O ciclo validado é:
 
-## Papéis internos
+**percepção → decisão → ação → consequência → memória → próxima percepção**
 
-- Producer — escopo, dependências e propagação cross-domain.
-- Creative Director — fantasia, pilares, experiência e coerência.
-- Technical Director — arquitetura, engine, performance e risco técnico.
-- Game Designer — mecânicas e sistemas.
-- Gameplay/Engine/UI/Network specialists — implementação por domínio.
-- Art/UX — identidade visual e legibilidade.
-- QA/Playtest — regressão, observação, feel e evidência.
+Narrativa sem alteração real de estado não conta como execução.
 
-Papéis são internos. A resposta pública continua sendo uma única voz do PredictLM.
+## Rigor adaptativo
+
+- **minimal**: comando simples → validar ação → mutar estado → observar.
+- **standard**: coordenar sistema do mundo + comportamento + memória + visual antes de aceitar a sequência.
+- **full**: cenários complexos/multiagente, ownership explícito, branches contrafactuais, QA visual e continuidade reforçada.
+
+## Papéis internos da Simulação
+
+- **Simulation Producer** — escopo, ordem das mudanças e conflitos entre sistemas.
+- **World / Systems Director** — regras determinísticas, economia, necessidades, locais e objetos.
+- **Behavior Director** — políticas dos agentes, metas, autonomia, memória e percepção.
+- **Visual World Director** — câmera, legibilidade, objetos visíveis, POV e continuidade espacial.
+- **Social Systems Designer** — relações, confiança, afinidade, rotinas e efeitos sociais.
+- **Agent Behavior Specialist** — executabilidade de planos, repair e ações permitidas.
+- **Simulation QA / Playtest** — observa o mundo renderizado, regressões, loop e coerência.
+
+Os papéis nunca aparecem como personalidades públicas. A interface continua sendo PredictLM.
 
 ## Gates
 
-1. **Scope** — o pedido e o loop principal estão claros.
-2. **Architecture** — engine, dependências e boundaries são coerentes.
-3. **Implement** — mudanças ficam no domínio correto.
-4. **Run and Observe** — mudança visível precisa ser renderizada/observada quando o host permite.
-5. **Test/Playtest** — lógica e experiência são verificadas separadamente.
-6. **Vertical Slice** — antes de escalar produção, validar um loop completo representativo.
-7. **Release** — só declarar pronto quando build/test/evidência correspondem ao que realmente rodou.
+1. **World state** — a ação é representável no motor atual?
+2. **Perception** — o agente sabe isso por percepção/memória local ou está usando onisciência?
+3. **Action feasibility** — pré-condições, local, inventário e recursos permitem a ação?
+4. **State transition** — algo verificável mudou de verdade?
+5. **Continuity** — memória, relações, posição, necessidades e objetos continuam coerentes?
+6. **Run and Observe** — quando a interface renderiza o resultado, observar o mundo/POV em vez de inferir só do JSON.
+7. **Playtest** — achados separam comportamento, world-system, visual/UX e bug.
+8. **Loop validation** — cenários complexos validam um ciclo completo antes de expandir.
+
+## Fontes absorvidas pela Simulação
+
+A Game Studio coordena outras capacidades já federadas:
+- MiroFish-Offline → multiagentes, knowledge graph e contrafactuais;
+- mindcraft → agente persistente dentro de um mundo com ações;
+- neuroparticles → percepção local, pequenas políticas e comportamento emergente;
+- RuView → conceitos de sensor fusion e percepção não visual;
+- eNB → disciplina de eventos/estado;
+- tinyrenderer + ENB references → câmera, render, iluminação e legibilidade;
+- trackstudio → identidade persistente entre frames/atores;
+- ai-brain / claude-mem / llm-wiki-agent → memória, episódios, entidades e continuidade.
 
 ## Regra visual
 
-Build, parse ou teste unitário não provam que HUD, menu, cena ou layout estão corretos.
+Build/parse/teste lógico não prova que o mundo da simulação está visualmente correto.
 
-Quando o host puder:
-- executar a superfície real;
-- capturar screenshot/vídeo;
-- comparar com critérios;
-- reter a evidência.
-
-Quando não puder, declarar **NOT VERIFIED** em vez de fingir que olhou.
-
-## Vertical slice
-
-Para projetos não triviais:
-- definir uma pergunta falsificável;
-- implementar um loop completo curto;
-- medir o que realmente funcionou;
-- corrigir arquitetura/design antes de escalar;
-- reduzir escopo antes de reduzir qualidade representativa.
-
-## Playtest
-
-Separar achados em:
-- design;
-- balanceamento;
-- bug;
-- polish.
-
-Observação de playtest é evidência de experiência, não prova universal. Não inventar comportamento de usuários.
-
-## Engines
-
-O runtime detecta, quando possível:
-- Godot;
-- Unity;
-- Unreal;
-- Web/Canvas/WebGL/WebGPU.
-
-Especialistas de engine só entram quando o pedido ou o workspace justificar.
+No navegador, a evidência pode vir do próprio canvas/POV e do estado exibido. Quando uma validação visual externa não puder ser executada, registrar a lacuna; nunca fingir que uma imagem foi observada.
 
 ## Integração nativa
 
 - `src/lib/game-studio-fabric.ts`
 - `src/lib/agent-runtime/agentic-fabric.ts`
-- `src/lib/agent-runtime/catalog.ts`
-- `src/lib/build-reference-playbook.ts`
+- `src/lib/simulation/emergent-swarm.ts`
+- `src/components/GrokSimulationPanel.tsx`
+- `src/app/api/chat/route.ts` no modo `simulation-plan`
 - `src/lib/fusion/capability-fabric.ts`
-- `src/app/api/agent/route.ts`
 
-A fonte é MIT. Adaptar padrões é permitido, mas o PredictLM mantém arquitetura própria e não copia o template inteiro.
+A fonte upstream é MIT. O PredictLM adapta padrões de coordenação; não depende de Claude Code nem importa o framework inteiro.
