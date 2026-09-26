@@ -179,7 +179,7 @@ Code and model-weight self-modification remain benchmark-gated; operational memo
 Predict Auto treats browser inference as hardware-adaptive:
 
 ```
-strong WebGPU -> Qwen3 8B
+strong WebGPU -> Qwen3.5 9B
 ordinary WebGPU -> Qwen3.5 4B
 limited WebGPU -> Qwen3 1.7B
 no usable WebGPU -> web/provider mesh
