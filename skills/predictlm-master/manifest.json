@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.19.0",
+  "version": "3.23.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -66,7 +66,12 @@
     "unity-fabric",
     "unengine-scene-contract",
     "unity-webgl-optional-runtime",
-    "unity-scene-snapshots"
+    "unity-scene-snapshots",
+    "ai-influencer-studio",
+    "persistent-virtual-creator",
+    "social-publisher-adapter",
+    "authorized-persona-voice",
+    "organic-social-growth"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
@@ -145,7 +150,8 @@
     "capability-fusion",
     "game-studio-fabric",
     "minecraft-sandbox",
-    "unity-fabric"
+    "unity-fabric",
+    "ai-influencer-studio"
   ],
   "legacySkillsAreInternal": true,
   "connectomeCores": {
@@ -178,6 +184,9 @@
     "gameStudioScope": "Game Studio is activated by Life Simulation Studio, not generic Build",
     "fusionCoverage": "all user-requested repository sources must remain registered in capability-fabric coverage",
     "minecraftReferenceCoverage": "all 9 primary Minecraft clone references, 2 Dungeons secondary references and UnEngine must remain registered",
-    "unityRuntimeTruth": "real Unity is reported only when a Unity WebGL host is configured; otherwise use native scene fabric"
+    "unityRuntimeTruth": "real Unity is reported only when a Unity WebGL host is configured; otherwise use native scene fabric",
+    "aiInfluencerIdentity": "one persistent fictional adult identity; user references guide aesthetics without silently copying an unrelated real person's exact identity",
+    "socialPublishTruth": "publication is claimed only after an authorized publisher confirms success; otherwise return review-ready",
+    "socialGrowthIntegrity": "no mass comment spam, fake engagement or deceptive impersonation"
   }
 }
