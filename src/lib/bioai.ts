@@ -6,6 +6,7 @@ import {
   type BioIntelligenceState,
   type BioLearningEvent
 } from './biointelligence-fabric';
+import {advanceBioReservoir,bioReservoirContext,createBioReservoirState,normalizeBioReservoirState,type BioReservoirState} from './bio-reservoir';
 
 export type BioAISurface='chat'|'image'|'video'|'simulation'|'processes'|'build'|'research'|'memory'|'learning'|'app';
 
@@ -31,6 +32,7 @@ export interface BioAIState{
   lastUpdated:number;
   tick:number;
   brain:BioIntelligenceState;
+  reservoir:BioReservoirState;
   goal:string;
   attention:string;
   lastAction:string;
@@ -117,6 +119,7 @@ export function createBioAIState(now=Date.now()):BioAIState{
     lastUpdated:now,
     tick:0,
     brain:createBioIntelligenceState(),
+    reservoir:createBioReservoirState(),
     goal:'learn from outcomes while serving the current user request',
     attention:'current surface',
     lastAction:'',
@@ -147,6 +150,7 @@ export function normalizeBioAIState(raw:any):BioAIState{
     ...raw,
     identity:'PredictLM BioAI',
     brain:raw.brain?.version===1?raw.brain:fresh.brain,
+    reservoir:normalizeBioReservoirState(raw.reservoir),
     memory,
     counters:{...fresh.counters,...(raw.counters||{})},
     lastUpdated:Number(raw.lastUpdated)||Date.now()
@@ -211,7 +215,13 @@ function remember(state:BioAIState,event:BioLearningEvent,priority:number,disagr
 
 export function advanceBioAI(previous:BioAIState|undefined,event:BioLearningEvent){
   const state=normalizeBioAIState(previous);
-  const fusion=fuseBioIntelligence(event);
+  const reservoirStep=advanceBioReservoir(state.reservoir,event);
+  const effectiveEvent:BioLearningEvent={
+    ...event,
+    novelty:Math.max(Number(event.novelty??0),reservoirStep.features.noveltyBoost*.78),
+    uncertainty:Math.max(Number(event.uncertainty??0),reservoirStep.features.predictionError*.7)
+  };
+  const fusion=fuseBioIntelligence(effectiveEvent);
   const counters={...state.counters};
   counters.observations+=1;
   if(event.success===true)counters.successes+=1;
@@ -233,12 +243,13 @@ export function advanceBioAI(previous:BioAIState|undefined,event:BioLearningEven
     ...state,
     tick:state.tick+1,
     lastUpdated:Date.now(),
-    brain:advanceBioIntelligence(state.brain,event),
+    brain:advanceBioIntelligence(state.brain,effectiveEvent),
+    reservoir:reservoirStep.state,
     goal:fusion.researchGap?'reduce uncertainty before durable change':'learn from the outcome without drifting from user intent',
     attention,
     lastAction:normalizeText(event.action,180),
     lastOutcome:event.success===false?'failure':event.success===true?'success':'observation',
-    memory:remember(state,event,fusion.learningPriority,fusion.disagreement),
+    memory:remember(state,effectiveEvent,fusion.learningPriority,fusion.disagreement),
     counters
   };
   saveBioAIState(next);
@@ -274,6 +285,7 @@ export function bioAiKernelContext(event:BioLearningEvent,query=''){
   return [
     'PREDICTLM BIOAI — one unified software intelligence spanning all product surfaces.',
     staticContext,
+    state?bioReservoirContext(state.reservoir):bioReservoirContext(undefined),
     'Operating loop: perceive → compare cross-species controllers → predict → choose reversible action → observe outcome → remember → improve.',
     'Wetware adapters are optional experimental I/O only. Local software operation must not depend on CL1, FinalSpark, organoids, paid APIs or remote databases.',
     state?('Persistent local state: tick '+state.tick+' · memories '+state.memory.length+' · failures '+state.counters.failures+' · simulations '+state.counters.simulations+'.'):'',
