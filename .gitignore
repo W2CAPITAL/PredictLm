@@ -10,3 +10,5 @@ training/out/
 __pycache__/
 *.pyc
 services/animal-vision/models/
+
+reports/continuous-learning/
