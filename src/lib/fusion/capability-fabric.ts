@@ -12,6 +12,55 @@ export interface FusionSource{
   ideas:string[];
 }
 
+export const REQUESTED_FUSION_REPOS=[
+  'ItsWambarYT/ai-brain',
+  'tinyhumansai/openhuman',
+  'SamurAIGPT/llm-wiki-agent',
+  'mycelium-hq/ai-brain-starter',
+  'vastsa/PI-Desktop',
+  'zernio-dev/zernio-claude-plugin',
+  'playbox-dev/trackstudio',
+  'nocobase/nocobase',
+  'every-app/open-seo',
+  'dgtlmoon/changedetection.io',
+  'JCodesMore/ai-website-cloner-template',
+  'msamsami/clonellm',
+  'muhammad-fiaz/Charisma',
+  'hugohe3/ppt-master',
+  'D4Vinci/Scrapling',
+  'PaddlePaddle/PaddleOCR',
+  'thedotmack/claude-mem',
+  'tj/watch',
+  'obra/superpowers',
+  'affaan-m/ECC',
+  'ChromeDevTools/chrome-devtools-mcp',
+  'pacifio/atlas',
+  'earendil-works/pi',
+  'alphaXiv/OpenResearch',
+  'nikmcfly/MiroFish-Offline',
+  'debpalash/VoiceStudio',
+  'MG1937/ASC',
+  'ruvnet/RuView',
+  'darkzOGx/youtube-automation-agent',
+  'mindcraft-bots/mindcraft',
+  'xcontcom/neuroparticles',
+  'fasferraz/eNB',
+  'Chaosamongclippers/ENB-for-NVE',
+  'soserrieye0/ENBSeries-GTA5-FiveM',
+  'upscayl/upscayl',
+  'ssloy/tinyrenderer',
+  'TachibanaYoshino/AnimeGANv3',
+  'dtoyoda10/anime-gen',
+  'firecrawl/firecrawl',
+  'Comfy-Org/ComfyUI',
+  'codecrafters-io/build-your-own-x',
+  'sindresorhus/awesome',
+  'public-apis/public-apis',
+  'freeCodeCamp/freeCodeCamp',
+  'mattpocock/skills',
+  'Donchitos/Claude-Code-Game-Studios'
+] as const;
+
 export const FUSION_SOURCES:FusionSource[]=[
   {repo:'ItsWambarYT/ai-brain',license:'MIT',mode:'adapt',areas:['memory','build'],ideas:['project-aware persistent memory','agent context files','doctor/health checks']},
   {repo:'tinyhumansai/openhuman',license:'GPL-3.0',mode:'reference',areas:['memory','chat','research'],ideas:['memory tree','durable orchestration','token compression','goals and todos']},
@@ -160,5 +209,17 @@ export function fusionHealth(){
     acc[source.mode]=(acc[source.mode]||0)+1;
     return acc;
   },{} as Record<string,number>);
-  return {sources:FUSION_SOURCES.length,byMode,surfaces:Object.keys(SURFACE_RULES).length};
+  const registered=new Set(FUSION_SOURCES.map(x=>x.repo));
+  const missing=REQUESTED_FUSION_REPOS.filter(repo=>!registered.has(repo));
+  return {
+    sources:FUSION_SOURCES.length,
+    byMode,
+    surfaces:Object.keys(SURFACE_RULES).length,
+    requestedCoverage:{
+      expected:REQUESTED_FUSION_REPOS.length,
+      covered:REQUESTED_FUSION_REPOS.length-missing.length,
+      missing,
+      complete:missing.length===0
+    }
+  };
 }
