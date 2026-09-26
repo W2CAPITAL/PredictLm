@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.20.0"
+  version: "3.21".0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -1140,3 +1140,16 @@ Antes de uma rodada material de auto-aprimoramento:
 8. só então promover.
 
 Para o Cognitive Lab, o benchmark mede comportamento funcional: self-model, memória, continuidade, calibração, controle de incerteza, integração de evidência e capacidade de revisão. Não atribuir pontuação de “consciência verdadeira” ou “QI” sem instrumento validado para aquilo que se afirma medir.
+
+
+## Autonomous operational learning v3.21
+
+PredictLM now distinguishes three learning loops:
+
+1. **Operational auto-learning** — repeated negative/error feedback is aggregated into fixed-template Supabase lessons and may self-promote after the evidence threshold.
+2. **Knowledge auto-learning** — the GitHub Knowledge Sync refreshes licensed source chunks automatically.
+3. **Code/weight self-improvement** — remains benchmark-gated; no arbitrary model output may silently become executable production code or replace model weights.
+
+Promoted operational lessons must be injected into server chat, streaming chat and browser-local reasoning. They are behavior memory, not proof of weight training.
+
+Browser neural strategy is quality-first but hardware-adaptive: **Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B** through WebLLM/WebGPU. Tiny ONNX models are compatibility fallbacks, not the main intelligence. PCs without WebGPU stay functional through the web/provider mesh instead of forcing oversized local weights.
