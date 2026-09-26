@@ -11,15 +11,19 @@ import {
   craftVoxelItem,
   createVoxelWorld,
   eatVoxelFood,
+  executeVoxelPlan,
   farmVoxelBlock,
+  localVoxelPlan,
   currentVoxelContext,
   mineVoxelBlock,
   moveVoxelPlayer,
   normalizeVoxelWorld,
+  parseVoxelPlan,
   placeVoxelBlock,
   raidVoxelDungeon,
   selectVoxelBlock,
   setVoxelMode,
+  repairVoxelPlan,
   smeltVoxelItem,
   surfaceAt,
   tickVoxelWorld,
@@ -95,6 +99,9 @@ export function MinecraftSimulationPanel(){
   const [tool,setTool]=useState<ToolMode>('mine');
   const [selected,setSelected]=useState<VoxelBlockId>('dirt');
   const [message,setMessage]=useState('Mundo procedural pronto.');
+  const [command,setCommand]=useState('');
+  const [planning,setPlanning]=useState(false);
+  const [lastPlan,setLastPlan]=useState('');
   const [viewRadius,setViewRadius]=useState(10);
   const [renderMode,setRenderMode]=useState<'native'|'unity'>('native');
   const canvas=useRef<HTMLCanvasElement>(null);
@@ -286,6 +293,38 @@ export function MinecraftSimulationPanel(){
     }
   }
 
+  async function runVoxelCommand(){
+    const instruction=command.trim();
+    if(!instruction||planning)return;
+    setPlanning(true);
+    setMessage('Game Studio está planejando ações executáveis no Voxel World…');
+    try{
+      let plan=null;
+      try{
+        const response=await fetch('/api/chat',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            mode:'voxel-plan',
+            prompt:instruction,
+            worldState:voxelWorldSummary(world)
+          })
+        });
+        const data=await response.json().catch(()=>({}));
+        if(response.ok&&data?.content)plan=parseVoxelPlan(String(data.content));
+      }catch{}
+      if(!plan)plan=localVoxelPlan(instruction,world);
+      plan=repairVoxelPlan(plan,world);
+      const executed=executeVoxelPlan(world,plan);
+      setWorld(executed.state);
+      setLastPlan(plan.summary+'\n'+executed.records.map((r,i)=>(i+1)+'. '+r.action.type+' · '+r.message).join('\n'));
+      setMessage(executed.ok?'Plano executado no estado real do mundo.':'O plano não encontrou nenhuma ação executável.');
+      setCommand('');
+    }finally{
+      setPlanning(false);
+    }
+  }
+
   function move(dx:number,dz:number){setWorld(prev=>moveVoxelPlayer(prev,dx,dz))}
   function reset(){
     const seed=world.seed;
@@ -336,6 +375,20 @@ export function MinecraftSimulationPanel(){
         <span>{audit.primary.length} clones + {audit.secondary.length} refs Dungeons</span>
       </div>
     </header>
+
+    <div className={styles.commandBar}>
+      <div>
+        <Sparkles size={15}/>
+        <input
+          value={command}
+          onChange={e=>setCommand(e.target.value)}
+          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void runVoxelCommand()}}}
+          placeholder="Diga o que fazer no mundo: explore, mine ferro, construa abrigo, procure uma dungeon…"
+        />
+        <button onClick={()=>void runVoxelCommand()} disabled={!command.trim()||planning}>{planning?'Planejando…':'Executar no mundo'}</button>
+      </div>
+      {lastPlan?<pre>{lastPlan}</pre>:null}
+    </div>
 
     <div className={styles.toolbar}>
       <button className={running?styles.active:''} onClick={()=>setRunning(v=>!v)}>{running?<><Pause size={13}/>Pausar</>:<><Play size={13}/>Rodar mundo</>}</button>
