@@ -14,13 +14,13 @@ export const WEBLLM_MODELS:Record<WebLLMTier,string>={
   // Default browser brain on ordinary modern PCs.
   smart:'Qwen3.5-4B-q4f16_1-MLC',
   // Highest local-browser tier currently enabled by PredictLM.
-  power:'Qwen3-8B-q4f16_1-MLC'
+  power:'Qwen3.5-9B-q4f16_1-MLC'
 };
 
 export const WEBLLM_VRAM_MB:Record<WebLLMTier,number>={
   lite:2037,
   smart:3868,
-  power:5696
+  power:6433
 };
 
 export interface WebLLMHardwareProfile{
@@ -135,7 +135,7 @@ export async function detectWebLLMHardware():Promise<WebLLMHardwareProfile>{
     recommended,
     candidates,
     reason:recommended==='power'
-      ? 'hardware forte: tentar 8B, depois 4B/1.7B'
+      ? 'hardware forte: tentar 9B, depois 4B/1.7B'
       : recommended==='smart'
         ? 'hardware médio: tentar 4B, depois 1.7B'
         : 'hardware limitado: usar 1.7B local; tarefas difíceis permanecem na rota web/cloud'
