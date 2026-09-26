@@ -41,6 +41,32 @@ export const FLYWIRE_FAFB_V783:ConnectomeProfile={
   ]
 };
 
+export const MICRONS_MOUSE_VISUAL_CORTEX:ConnectomeProfile={
+  id:'microns-mouse-visual-cortex-mm3',
+  species:'Mus musculus',
+  dataset:'MICrONS cortical mm³',
+  release:'Nature 2025 / MICrONS Explorer',
+  scope:'~1 mm³ mouse visual cortex across all six cortical layers and multiple visual areas; not a whole mouse brain',
+  license:'Public research dataset; use/redistribution follows MICrONS source terms',
+  sourceUrl:'https://www.microns-explorer.org/cortical-mm3',
+  paperUrl:'https://doi.org/10.1038/s41586-025-08790-w',
+  neuronsApprox:120000,
+  synapsesApprox:523000000,
+  notes:[
+    'Large multimodal functional-connectomics resource spanning mouse primary visual cortex and higher visual areas.',
+    'MICrONS reports more than 200,000 cells, about 120,000 reconstructed neurons, functional imaging for about 75,000 pyramidal neurons, and more than 523 million detected synapses.',
+    'This is a cortical volume, not a whole-brain mouse connectome.',
+    'PredictLM uses the published structural/functional statistics as controller priors; it does not claim to reproduce a biological mouse brain.'
+  ],
+  structuralFeatures:[
+    'six-layer visual cortical microcircuit',
+    'synapse-scale local connectivity',
+    'functional visual-response coupling',
+    'multi-area visual hierarchy',
+    'excitatory and inhibitory cell populations'
+  ]
+};
+
 export const H01_HUMAN_CORTEX:ConnectomeProfile={
   id:'h01-human-cortex',
   species:'Homo sapiens',
@@ -136,6 +162,21 @@ export type ProjectionAtlasProfile={
   notes:string[];
 };
 
+export const ALLEN_MOUSE_CONNECTIVITY_ATLAS:ProjectionAtlasProfile={
+  id:'allen-mouse-connectivity-atlas',
+  species:'Mus musculus',
+  dataset:'Allen Mouse Brain Connectivity Atlas',
+  release:'Allen Brain Atlas public resource',
+  scope:'Whole-brain mesoscale axonal projection atlas using tracer experiments; not a synapse-resolution connectome',
+  sourceUrl:'https://connectivity.brain-map.org/',
+  paperUrl:'https://www.nature.com/articles/nature13186',
+  notes:[
+    'High-resolution map of axonal projection pathways across the mouse brain from stereotaxic viral-tracer injections.',
+    'Useful for brain-wide mesoscale routing priors and anatomical coverage.',
+    'Projection density is not equivalent to individual synaptic connectivity.'
+  ]
+};
+
 export const MACAQUE_PFC_PROJECTOME:ProjectionAtlasProfile={
   id:'macaque-pfc-projectome-2025',
   species:'Macaca fascicularis (cynomolgus macaque)',
@@ -172,9 +213,9 @@ export const MACAQUE_CLAUSTRUM_CONNECTIVITY:ProjectionAtlasProfile={
   ]
 };
 
-export const CONNECTOME_PROFILES=[FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX] as const;
+export const CONNECTOME_PROFILES=[FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX,MICRONS_MOUSE_VISUAL_CORTEX] as const;
 export const BRAIN_ATLAS_PROFILES=[MACAQUE_CORTEX_SPATIAL_ATLAS] as const;
-export const PROJECTION_ATLAS_PROFILES=[MACAQUE_PFC_PROJECTOME,MACAQUE_CLAUSTRUM_CONNECTIVITY] as const;
+export const PROJECTION_ATLAS_PROFILES=[MACAQUE_PFC_PROJECTOME,MACAQUE_CLAUSTRUM_CONNECTIVITY,ALLEN_MOUSE_CONNECTIVITY_ATLAS] as const;
 
 export function connectomeProvenanceSummary(){
   return CONNECTOME_PROFILES.map(p=>({
