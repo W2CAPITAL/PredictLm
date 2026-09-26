@@ -1,7 +1,7 @@
 {
   "name": "lexis-twincore-x10",
   "displayName": "LEXIS TwinCore X10",
-  "version": "5.25.0",
+  "version": "5.26.0",
   "cores": [
     "FORGE",
     "AEGIS"
@@ -51,7 +51,9 @@
     "entity-self-model",
     "human-presence",
     "predictlm-master",
-    "game-studio-fabric"
+    "game-studio-fabric",
+    "minecraft-sandbox",
+    "unity-fabric"
   ],
   "entry": "SKILL.md",
   "policy": "templates/improvement-policy.yml",
@@ -222,7 +224,15 @@
     "simulation-only-game-studio",
     "simulation-world-director",
     "simulation-playtest-gate",
-    "fusion-source-coverage-audit"
+    "fusion-source-coverage-audit",
+    "minecraft-class-voxel-simulation",
+    "effectively-infinite-voxel-chunks",
+    "voxel-survival-crafting",
+    "voxel-dungeon-secondary-layer",
+    "minecraft-reference-audit",
+    "unity-fabric",
+    "unengine-component-contract",
+    "optional-unity-webgl-runtime"
   ],
   "hosts": [
     "PredictLM",
