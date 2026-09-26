@@ -105,7 +105,7 @@ export type PortableAgentIdentity={
 export function buildPortableIdentity(input:PortableAgentIdentity){
   return {
     ...input,
-    serviceLinks:(input.serviceLinks||[]).filter(link=>/^https:///.test(link.href)),
+    serviceLinks:(input.serviceLinks||[]).filter(link=>/^https:\/\//.test(link.href)),
     operatorOwned:true as const,
     modelIndependent:true as const,
     shutdownAuthority:'operator' as const
