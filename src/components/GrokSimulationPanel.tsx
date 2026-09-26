@@ -44,6 +44,7 @@ import {createMacaqueSimulationState,macaqueSimulationBubble,stepMacaqueSimulati
 import {advanceSyntheticMind,createSyntheticMindBundle,normalizeSyntheticMindBundle,type SyntheticMindBundle} from '@/lib/synthetic-life-memory';
 import {LifeFirstPersonViewport,type PovOtherAgent} from '@/components/LifeFirstPersonViewport';
 import { emergentSwarmContext, simulateEmergentSwarm } from '@/lib/simulation/emergent-swarm';
+import {miroFishSimulationContext,simulateMiroFishSwarm} from '@/lib/simulation/mirofish-fabric';
 import {gameStudioContext,gameStudioPlan} from '@/lib/game-studio-fabric';
 import {capabilityFusionContext,fusionSourcesFor} from '@/lib/fusion/capability-fabric';
 import {MinecraftSimulationPanel} from '@/components/MinecraftSimulationPanel';
@@ -621,6 +622,10 @@ export function GrokSimulationPanel(){
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
   const emergentSwarm=useMemo(()=>simulateEmergentSwarm(state,12),[state]);
+  const miroFishSwarm=useMemo(
+    ()=>simulateMiroFishSwarm(state,command||state.person.currentAction||state.lastEvent||'simulação de vida',{agents:24,rounds:6}),
+    [state,command]
+  );
   const studioPlan=useMemo(
     ()=>gameStudioPlan(command||state.person.currentAction||state.lastEvent||'simulação de vida',true),
     [command,state.person.currentAction,state.lastEvent]
@@ -696,6 +701,7 @@ export function GrokSimulationPanel(){
         researchContext:[
           agentWorldObservation(state,agent,fly),
           emergentSwarmContext(state),
+          miroFishSimulationContext(state,value),
           gameStudioContext(value,true),
           capabilityFusionContext(value,'simulation')
         ].filter(Boolean).join('\n')
@@ -712,7 +718,7 @@ export function GrokSimulationPanel(){
             mode:'simulation-plan',
             prompt:value,
             language:'pt-BR',
-            worldState:agentWorldObservation(state,agent,fly)+'\n'+emergentSwarmContext(state),
+            worldState:agentWorldObservation(state,agent,fly)+'\n'+emergentSwarmContext(state)+'\n'+miroFishSimulationContext(state,value),
             localAdvisory:advisory?.content||'',
             plannerHint:plannerPrompt
           })
@@ -988,6 +994,26 @@ export function GrokSimulationPanel(){
             </article>)}
           </div>
           <small className="sim-note">Camada experimental de percepção local, pequenas políticas neurais e seleção. Ela cria alternativas emergentes para o mundo simulado e não é apresentada como previsão de comportamento humano.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Users size={14}/><b>MiroFish Fabric</b><span>{miroFishSwarm.rounds.length} rodadas</span></div>
+          <div className="sim-agent-vitals">
+            <span>Grafo <b>{miroFishSwarm.graph.nodes.length} nós</b></span>
+            <span>Relações <b>{miroFishSwarm.graph.edges.length}</b></span>
+            <span>Agentes ativos <b>{miroFishSwarm.agents.length}</b></span>
+            <span>Pop. ponderada <b>{miroFishSwarm.weightedPopulation}</b></span>
+            <span>Diversidade <b>{miroFishSwarm.diversity}%</b></span>
+            <span>Incerteza <b>{miroFishSwarm.uncertainty}%</b></span>
+          </div>
+          <div className="sim-thoughts">
+            {miroFishSwarm.rounds.slice(-3).map(round=><article key={round.round}>
+              <b>Rodada {round.round} · {round.dominant}</b>
+              <span>apoio {round.support}% · neutro {round.neutral}% · preocupação {round.concern}%</span>
+              <small>{round.events.join(' · ')}</small>
+            </article>)}
+          </div>
+          <small className="sim-note">{miroFishSwarm.report.summary} Resultado sintético do sandbox; não é previsão de pessoas reais. O modo browser usa agentes representativos ponderados e memória temporal auditável.</small>
         </section>
 
         <section className="sim-panel">
