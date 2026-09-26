@@ -21,7 +21,7 @@ import { answerViaLocalRuntime, probeLocalRuntimes, setLocalRuntimeCredential } 
 import { resolveConversationLanguage } from '@/lib/language-policy';
 import { hasInternalReasoningLeak, publicAnswerGate, sanitizePublicAnswer } from '@/lib/public-answer-gate';
 import { looksLikeOperationalMonologue } from '@/lib/human-presence';
-import { cancelWebLLMLoad, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
+import { cancelWebLLMLoad, loadBestWebLLMModel, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
 import { GrokBuildPanel } from '@/components/GrokBuildPanel';
@@ -151,7 +151,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [search,setSearch]=useState('');
   const [plusOpen,setPlusOpen]=useState(false);
   const [modelMenu,setModelMenu]=useState(false);
-  const [loadState,setLoadState]=useState<{tier:NeuralTier;progress:number|null;status:string}|null>(null);
+  const [loadState,setLoadState]=useState<{tier:NeuralTier|WebLLMTier;progress:number|null;status:string}|null>(null);
   const [modelError,setModelError]=useState('');
   const [localRuntimeLabel,setLocalRuntimeLabel]=useState('Auto');
   const [modelTick,setModelTick]=useState(0);
@@ -1214,17 +1214,18 @@ export function ChatShell({onOpenLegal}:Props){
     try{
       if(caps.webgpu){
         try{
-          await loadWebLLMModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'GPU local · '+p.status}));
+          const loaded=await loadBestWebLLMModel(p=>setLoadState({tier:'smart',progress:p.progress,status:'GPU local · '+p.status}));
           unloadNeuralModel();
-          setLoadState(null);
+          setLoadState({tier:loaded.tier,progress:100,status:'Neural Local pronto · '+loaded.modelId});
+          setTimeout(()=>setLoadState(null),900);
           setModelTick(x=>x+1);
           return;
         }catch{
           await unloadWebLLMModel();
-          setLoadState({tier:'lite',progress:null,status:'GPU indisponível · usando modo econômico CPU/WASM'});
+          setLoadState({tier:'lite',progress:null,status:'WebGPU/modelo grande indisponível · usando compatibilidade CPU/WASM'});
         }
       }
-      await loadNeuralModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'Modo offline · '+p.status}),{persistPreference:true});
+      await loadNeuralModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'Compatibilidade offline · '+p.status}),{persistPreference:true});
       setLoadState(null);
       setModelTick(x=>x+1);
     }catch(err:any){
@@ -1458,7 +1459,7 @@ function Composer(props:any){
               <span><i className={localReady?'online':''}/> {localReady?'Neural Local pronto':'Neural Local sob demanda'}</span>
               <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
-            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Baixa o motor econômico para responder diretamente dentro do PredictLM, sem exigir API externa.</span></button>}
+            {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Escolhe automaticamente 8B → 4B → 1.7B via WebGPU. Em PC sem WebGPU, mantém compatibilidade local e o Predict Auto usa a rota web para tarefas difíceis.</span></button>}
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua por knowledge, pesquisa e providers configurados.</span></button>}
           </div>}
         </div>
