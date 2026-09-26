@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T23:24:51.257Z",
-  "knowledgeVersion": "3eebf3318df1fca8",
-  "chunkCount": 4297,
+  "generatedAt": "2026-09-26T11:12:02.774Z",
+  "knowledgeVersion": "2149b7eee77dc651",
+  "chunkCount": 4643,
   "sources": [
     {
       "repo": "krusemediallc/arcads-claude-code",
@@ -25,9 +25,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "26b5494667dcbdceb13f6221967e290beaff14d0",
+      "commit": "d0288be5b3330d2442e3907185b8e9d0958297bb",
       "files": 2,
-      "chunks": 0,
+      "chunks": 63,
       "error": null
     },
     {
@@ -52,9 +52,9 @@
       "repo": "Alishahryar1/free-claude-code",
       "mode": "allow",
       "license": "MIT",
-      "commit": "8cf820c498c1afc0695617bc4bb90be7b7aa3a74",
+      "commit": "ba4b934147855025df30bbca3ad6d436158fe671",
       "files": 1,
-      "chunks": 36,
+      "chunks": 33,
       "error": null
     },
     {
@@ -88,7 +88,7 @@
       "repo": "rowboatlabs/rowboat",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "d31c03813451ffab5a1c4e1d5870fbbb90ba6108",
+      "commit": "c38f69a0268711909ec53987e2d797804ea0dab8",
       "files": 9,
       "chunks": 137,
       "error": null
@@ -214,7 +214,7 @@
       "repo": "WestFox-AwA/dsh-prompt-optimizer",
       "mode": "allow",
       "license": "BSD-3-Clause",
-      "commit": "f5b408e28991be77ccd7f6ea6b2cd7418527656b",
+      "commit": "84674b1e6c8a7a032dc390180360469ba35ba71f",
       "files": 3,
       "chunks": 47,
       "error": null
@@ -259,7 +259,7 @@
       "repo": "Mintplex-Labs/anything-llm",
       "mode": "allow",
       "license": "MIT",
-      "commit": "ad97bc8dfcb6919f34f7d6d0c722efdda64d66d9",
+      "commit": "128a01575a50f0284aeca75a93399b6fb1db0328",
       "files": 1,
       "chunks": 32,
       "error": null
@@ -394,7 +394,7 @@
       "repo": "AIGeniusInstitute/deepthink",
       "mode": "allow",
       "license": "MIT",
-      "commit": "11bd17f9d2d3a5398bb31518ee57e11a160fb831",
+      "commit": "2d8bc0db10f61739326499456b940738646fbdd1",
       "files": 1,
       "chunks": 117,
       "error": null
@@ -421,7 +421,7 @@
       "repo": "lutzroeder/netron",
       "mode": "allow",
       "license": "MIT",
-      "commit": "fd2ab844ae559f09ce9b4b9f6d6cf438b853d5f7",
+      "commit": "06fec3422bce934fee6f9f442fc11254e2b31406",
       "files": 1,
       "chunks": 5,
       "error": null
@@ -592,7 +592,7 @@
       "repo": "conorbronsdon/avoid-ai-writing",
       "mode": "allow",
       "license": "MIT",
-      "commit": "b2838edef0499378f6c1c2d554a0ec1c73821159",
+      "commit": "830036e5395ec107ce167b5a9d5564f8554a0b53",
       "files": 1,
       "chunks": 57,
       "error": null
@@ -610,7 +610,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "d3960229bfddd3de9afd9e3197630ce757827a45",
+      "commit": "34484551843e575e79cca244d9fca3e4459f59e9",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -628,7 +628,7 @@
       "repo": "tashfeenahmed/freellmapi",
       "mode": "allow",
       "license": "MIT",
-      "commit": "e4a47f203dba3b610dc180f628d3e821abbaf564",
+      "commit": "a0befbc6718bbbf2d856c9cf08d01a92aefbe1e4",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -646,7 +646,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "c17fc6538d573d45bbf6675814392b1e3b9bacda",
+      "commit": "47a10808d78561546a02555d0d2c7fa96fa96300",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -682,7 +682,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "67763b1960a160f9ead1ec67a37dc2424a2dca11",
+      "commit": "24636b016b85a8983dd35c208e1cd569e6eb2fca",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -835,7 +835,7 @@
       "repo": "presenton/presenton",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "768894c4655c6c6fd6ed4cf69501cc502a2c0b41",
+      "commit": "f9d3eba1a25712e25766b35a7af3b25f93ec1c01",
       "files": 1,
       "chunks": 61,
       "error": null
@@ -1600,7 +1600,7 @@
       "repo": "HBAI-Ltd/Toonflow-app",
       "mode": "allow",
       "license": "MIT",
-      "commit": "acdf33ce4ec0c33dac3bccf2d6d7c03f4d2f6807",
+      "commit": "d86cce6b689916ab73f75bc4c1f42a2a7424516c",
       "files": 2,
       "chunks": 57,
       "error": null
@@ -1658,6 +1658,123 @@
       "files": 0,
       "chunks": 0,
       "error": "license-not-allowed"
+    },
+    {
+      "repo": "Donchitos/Claude-Code-Game-Studios",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "7ed2c3e9c46c880c9780fbce49266e7edfa15141",
+      "files": 15,
+      "chunks": 245,
+      "error": null
+    },
+    {
+      "repo": "fogleman/Craft",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "d6888a6e1e54340358ce25b1220f410541360b6b",
+      "files": 1,
+      "chunks": 22,
+      "error": null
+    },
+    {
+      "repo": "dgreenheck/minecraft-threejs-clone",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "0xfabian/mc",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "pquiring/jfcraft",
+      "mode": "reference-only",
+      "license": "LGPL-2.1",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "obiwac/python-minecraft-clone",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "d482ff660326fc9050d86cad5443f83f415eb3db",
+      "files": 1,
+      "chunks": 11,
+      "error": null
+    },
+    {
+      "repo": "Aidanhouk/Minecraft-Clone",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "zardoy/minecraft-web-client",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "637b62f9086d8d33844e7562d1e23a4b5ca408bb",
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "zardoy/mcraft-arwes",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "JEFFY1234599/block-craft-browser-edition",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "TheDoctor200/MinecraftDungeonsLauncher",
+      "mode": "reference-only",
+      "license": "MIT",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "GuyRoosevelt/Minecraft-Dungeons-The-Awakening",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "fcbbeb98cd45d35c4b4fd48747aec2171f34c886",
+      "files": 1,
+      "chunks": 9,
+      "error": null
+    },
+    {
+      "repo": "jbruening/UnEngine",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "3c756cfff75f154444129f57c730db71f8dd0a32",
+      "files": 1,
+      "chunks": 1,
+      "error": null
     }
   ]
 }
