@@ -20,3 +20,17 @@ copies of the Software, subject to the conditions of the original MIT License.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED.
+
+
+## Cognitive / self-improvement research references
+
+PredictLM's knowledge/source policy may ingest or distill bounded engineering patterns from these public repositories:
+
+- **GAIR-NLP/ASI-Evolve** — Apache-2.0. Used for experiment-loop, cognition-store and evaluation-driven improvement patterns.
+- **269652/artificial-consciousness-ai** — MIT. Used for persistent-memory layering and observability patterns; consciousness labels are not treated as scientific proof.
+- **jasonkresch/bots** — MIT. Used for bounded evolutionary simulation, fitness and mutation patterns.
+- **Sairamg18814/shvayambhu** — Apache-2.0, reference-only in PredictLM. Strong consciousness/emergence claims are not imported as established facts.
+- **asi-alliance/Max_folio** — Apache-2.0, reference-only. Used for self-audit/failure-mode ideas with autonomy bounded by PredictLM gates.
+- **tlcdv/the_consciousness_ai** — non-commercial license, reference-only. No source code is copied into the commercial/runtime knowledge index.
+
+Where an upstream source is marked reference-only, PredictLM uses only high-level architectural lessons and does not vendor or bulk-ingest source code.
