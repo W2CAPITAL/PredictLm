@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.21".0"
+  version: "3.22.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.20.0
+# PredictLM Master v3.22.0
 
 ## Regra soberana
 
@@ -1153,3 +1153,41 @@ PredictLM now distinguishes three learning loops:
 Promoted operational lessons must be injected into server chat, streaming chat and browser-local reasoning. They are behavior memory, not proof of weight training.
 
 Browser neural strategy is quality-first but hardware-adaptive: **Qwen3.5 9B → Qwen3.5 4B → Qwen3 1.7B** through WebLLM/WebGPU. Tiny ONNX models are compatibility fallbacks, not the main intelligence. PCs without WebGPU stay functional through the web/provider mesh instead of forcing oversized local weights.
+
+
+## Unified Chat v3.22
+
+A interface pública usa **um único Chat AI** como porta de entrada. Build, Research, Processos/DataJud/DJEN e Cognitive Mesh são capacidades internas acionadas pela intenção; não exigem trocar de chat ou abrir uma personalidade separada.
+
+### Roteamento JEV-inspired
+
+O roteador classifica cada turno em `fast | balanced | strong | long` usando complexidade, raciocínio, ferramentas e pressão de contexto. Política fica em código; o modelo de julgamento nunca recebe permissão de executar a ação.
+
+Regras:
+- tarefa complexa/build/deep sobe para tier forte;
+- low-confidence nunca justifica downgrade destrutivo;
+- o Chat mantém um piso de qualidade Gemini-class no gateway configurado;
+- contexto antigo irrelevante pode ser removido, mas conteúdo retido permanece verbatim;
+- Build seleciona poucos arquivos relevantes e envia o código útil sem truncamento agressivo.
+
+### Build dentro do Chat
+
+Pedidos de criação/edição de app, site, sistema, CRM, backend, API, código ou projeto são detectados no Chat e executam o Build internamente:
+
+`intent → inspect → strong router → implement → smoke → Council → diff review → package → ZIP no Chat`.
+
+O workspace persistente continua sendo a fonte de verdade. A antiga aba Build não é necessária para iniciar uma execução.
+
+### Research e Processos dentro do Chat
+
+Research é acionado automaticamente quando atualidade/evidência externa importa. Um CNJ reconhecido no texto ativa DataJud/DJEN e análise processual no próprio Chat. Rotas antigas podem redirecionar para a entrada única sem perder os backends existentes.
+
+### Cognitive Mesh único
+
+Fly, Human, Macaque e Mouse são controladores internos do mesmo PredictLM, não chats públicos concorrentes. O Chat avança e persiste o estado cognitivo antes de responder.
+
+Mouse Core usa referências separadas e explicitamente limitadas:
+- MICrONS cortical mm³ para microcircuito visual sinapse/função;
+- Allen Mouse Brain Connectivity Atlas para projeções mesoscale de cérebro inteiro.
+
+Nenhuma dessas fontes é tratada como um cérebro biológico completo executando no app.
