@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {Activity,MapPin,Play,Pause,RotateCcw,Sparkles,StepForward} from 'lucide-react';
+import {Activity,Download,MapPin,Play,Pause,RotateCcw,Sparkles,StepForward,Upload} from 'lucide-react';
 import {
   CRAFT_RECIPES,
   VOXEL_BLOCKS,
@@ -106,6 +106,7 @@ export function MinecraftSimulationPanel(){
   const [renderMode,setRenderMode]=useState<'native'|'unity'>('native');
   const canvas=useRef<HTMLCanvasElement>(null);
   const unityFrame=useRef<HTMLIFrameElement>(null);
+  const saveInput=useRef<HTMLInputElement>(null);
   const hitCells=useRef<Array<{x:number;z:number;points:[number,number][];depth:number}>>([]);
   const audit=useMemo(()=>minecraftReferenceAudit(),[]);
 
@@ -335,6 +336,34 @@ export function MinecraftSimulationPanel(){
     setWorld(createVoxelWorld());
     setMessage('Novo mundo procedural criado.');
   }
+  function exportWorld(){
+    const payload=JSON.stringify({
+      format:'predictlm-voxel-save',
+      exportedAt:new Date().toISOString(),
+      world
+    },null,2);
+    const url=URL.createObjectURL(new Blob([payload],{type:'application/json'}));
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='predictlm-voxel-'+world.seed+'-day-'+world.day+'.json';
+    a.click();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1200);
+    setMessage('Save exportado.');
+  }
+  async function importWorld(file:File|null){
+    if(!file)return;
+    try{
+      const raw=JSON.parse(await file.text());
+      const candidate=raw?.format==='predictlm-voxel-save'?raw.world:raw;
+      const restored=normalizeVoxelWorld(candidate);
+      setWorld(restored);
+      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+'.');
+    }catch{
+      setMessage('Save inválido; nenhum dado do mundo foi alterado.');
+    }finally{
+      if(saveInput.current)saveInput.current.value='';
+    }
+  }
   function craft(id:string){
     const result=craftVoxelItem(world,id);
     setWorld(result.state);setMessage(result.message);
@@ -406,6 +435,9 @@ export function MinecraftSimulationPanel(){
       <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode(v=>v==='native'?'unity':'native')}>Unity {unityReady?'WebGL':'bridge'}</button>
       <button onClick={reset}><RotateCcw size={13}/>Reset</button>
       <button onClick={newWorld}><Sparkles size={13}/>Nova seed</button>
+      <button onClick={exportWorld}><Download size={13}/>Exportar save</button>
+      <button onClick={()=>saveInput.current?.click()}><Upload size={13}/>Importar save</button>
+      <input ref={saveInput} hidden type="file" accept="application/json,.json" onChange={e=>void importWorld(e.target.files?.[0]||null)}/>
     </div>
 
     <div className={styles.layout}>
