@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { conversationAnswerIssue, responseTopicAlignment } from '@/lib/chat-intelligence';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -179,17 +180,14 @@ async function openProvider(provider:Provider,messages:Msg[],signal:AbortSignal)
   return response;
 }
 
-async function pipeOpenAIStream(
+async function collectOpenAIStream(
   response:Response,
-  provider:Provider,
-  controller:ReadableStreamDefaultController<Uint8Array>,
-  encoder:TextEncoder,
   signal:AbortSignal
 ){
   const reader=response.body!.getReader();
   const decoder=new TextDecoder();
   let buffer='';
-  let emitted=false;
+  let accumulated='';
 
   while(true){
     if(signal.aborted)throw new DOMException('Aborted','AbortError');
@@ -207,15 +205,26 @@ async function pipeOpenAIStream(
       let data:any;
       try{data=JSON.parse(payload)}catch{continue}
       const token=String(data?.choices?.[0]?.delta?.content||'');
-      if(!token)continue;
-      if(!emitted){
-        controller.enqueue(encoder.encode(sse({meta:{provider:provider.name,model:provider.model}})));
-        emitted=true;
-      }
-      controller.enqueue(encoder.encode(sse({content:token})));
+      if(token)accumulated+=token;
     }
   }
-  return emitted;
+  return accumulated.trim();
+}
+
+function emitValidatedAnswer(
+  content:string,
+  provider:Provider,
+  controller:ReadableStreamDefaultController<Uint8Array>,
+  encoder:TextEncoder
+){
+  controller.enqueue(encoder.encode(sse({meta:{provider:provider.name,model:provider.model,validated:true}})));
+  // Keep the client streaming UX, but only after the complete draft passed the
+  // semantic/public gates. This prevents an off-topic provider stream from
+  // leaking irreversible tokens into the conversation.
+  const chunks=content.match(/[\s\S]{1,180}/g)||[];
+  for(const chunk of chunks)controller.enqueue(encoder.encode(sse({content:chunk})));
+  controller.enqueue(encoder.encode(sse({done:true,provider:provider.name,model:provider.model,validated:true})));
+  controller.enqueue(encoder.encode('data: [DONE]\n\n'));
 }
 
 export async function POST(req:NextRequest){
@@ -247,14 +256,21 @@ export async function POST(req:NextRequest){
           const timer=setTimeout(()=>providerController.abort(),10000);
           try{
             const upstream=await openProvider(provider,messages,providerController.signal);
-            const emitted=await pipeOpenAIStream(upstream,provider,controller,encoder,providerController.signal);
-            if(emitted){
-              completed=true;
-              controller.enqueue(encoder.encode(sse({done:true,provider:provider.name,model:provider.model})));
-              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-              break;
+            const content=await collectOpenAIStream(upstream,providerController.signal);
+            if(!content){
+              errors.push(provider.name+': empty-stream');
+              continue;
             }
-            errors.push(provider.name+': empty-stream');
+            const prompt=[...messages].reverse().find(x=>x.role==='user')?.content||'';
+            const issue=conversationAnswerIssue(prompt,content);
+            const alignment=responseTopicAlignment(prompt,content);
+            if(issue||!alignment.relevant){
+              errors.push(provider.name+': rejected-'+(issue||'off-topic'));
+              continue;
+            }
+            completed=true;
+            emitValidatedAnswer(content,provider,controller,encoder);
+            break;
           }catch(error:any){
             errors.push(provider.name+': '+String(error?.message||error||'failed').slice(0,220));
           }finally{
