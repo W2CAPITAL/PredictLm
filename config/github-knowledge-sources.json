@@ -3602,6 +3602,97 @@
         "mobile-web"
       ],
       "reason": "No repository LICENSE was verified. Use only as a manually distilled architecture case study: sensor/camera event -> backend interpretation -> external action. Do not copy code. The example can trigger EC2 creation directly from gesture recognition, so PredictLM specifically learns the missing controls: input validation, risk classification, dry-run, explicit approval for high-impact external actions, idempotency, audit and least privilege."
+    },
+    {
+      "repo": "manasseh-zw/apollo",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/",
+        "Apollo.Agents/",
+        "Apollo.Search/"
+      ],
+      "domains": [
+        "deep-research",
+        "multi-agent",
+        "state-machine",
+        "self-reflective-rag",
+        "async-events",
+        "knowledge-gaps"
+      ],
+      "reason": "Project linked from Microsoft AI Agents Hackathon issue #681. No root LICENSE was verified. Use architecture patterns only: planner, specialized agents, state machine outside chat context, bounded gap analysis, async ingestion and two-stage synthesis."
+    },
+    {
+      "repo": "webfinger/go-webfinger",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "client.go",
+        "jrd.go",
+        "client_test.go",
+        "jrd_test.go"
+      ],
+      "domains": [
+        "identity-discovery",
+        "portable-identity",
+        "service-discovery",
+        "federation"
+      ],
+      "weight": 1.05,
+      "reason": "MIT-licensed WebFinger client. Learn standards-based identity/service discovery patterns for user-owned, model-independent agent profiles. Never use discovery as hidden persistence or a way to evade operator shutdown."
+    },
+    {
+      "repo": "hoangnv170752/apollo-search",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "academic-search",
+        "citations",
+        "research-synthesis",
+        "local-library"
+      ],
+      "reason": "No root LICENSE verified. Use high-level academic search, filtering, citation and local-library patterns only; Perplexity remains optional and not required by PredictLM."
+    },
+    {
+      "repo": "ApolloResearch/deception-detection",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "deception-detection",
+        "sandbagging",
+        "evaluation",
+        "linear-probes",
+        "agent-safety"
+      ],
+      "reason": "Apollo Research safety-evaluation repository. No root LICENSE verified in this check. Use paper/README concepts for defensive evaluation only; do not ingest rollouts/prompts as training data."
+    },
+    {
+      "repo": "ApolloResearch/insider-trading",
+      "branch": "main",
+      "license": "CC-BY-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "strategic-deception",
+        "pressure-evals",
+        "agent-safety",
+        "canary-data"
+      ],
+      "reason": "Repository is CC-BY-4.0, but its README explicitly marks prompts/results as safety benchmark data that should never appear in training corpora. Keep evaluation-only/reference-only; do not ingest benchmark samples into RAG, fine-tuning or self-improvement training."
     }
   ]
 }
