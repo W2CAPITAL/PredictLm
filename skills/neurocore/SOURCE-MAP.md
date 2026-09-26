@@ -52,3 +52,32 @@ Use science to inform structure and simulation. Use repositories to learn softwa
 
 ## Connectome memory boundary
 O mapa conectômico da Drosophila é usado como referência estrutural. Ele não fornece um dataset recuperável das memórias individuais do animal. O PredictLM não deve alegar que importou lembranças da mosca.
+
+
+## Cross-species BioIntelligence additions
+
+### C. elegans
+- OpenWorm Connectome Toolbox — recurso estruturado para conectividade anatômica/funcional/extrasináptica.
+  - `https://openworm.org/connectome/`
+- Cook et al. (Nature, 2019), *Whole-animal connectomes of both Caenorhabditis elegans sexes*.
+  - `https://www.nature.com/articles/s41586-019-1352-7`
+- Uso: whole-animal sensorimotor/recurrent routing e comparação de motifs.
+- Limite: conectividade anatômica não contém memória autobiográfica, experiência subjetiva ou consciência recuperável.
+
+### Mouse
+- MICrONS Consortium / Nature 2025 — functional connectomics spanning multiple areas of mouse visual cortex.
+  - `https://www.nature.com/articles/s41586-025-08790-w`
+- Allen Mouse Brain Atlas.
+  - `https://mouse.brain-map.org/`
+- Uso: integração estrutura↔função, visual hierarchy, predictive response e anatomical provenance.
+- Limite: MICrONS é um volume cortical denso e extraordinariamente grande, porém parcial; não rotular como conectoma inteiro de camundongo.
+
+### Zebrafish
+- Svara et al., Nature Methods 2022 — automated synapse-level reconstruction / queryable whole-brain larval zebrafish EM resource.
+  - `https://www.nature.com/articles/s41592-022-01622-5`
+- mapzebrain / Z-Brain resources podem complementar anatomia e registro funcional quando a proveniência for verificada.
+- Uso: brain-wide sensorimotor architecture, circuit reconstruction e comparative connectomics.
+- Limite: whole-brain EM volume não significa que toda célula/sinapse foi completamente proofread nem funcionalmente caracterizada.
+
+### Product rule
+Essas três novas espécies entram em `src/lib/biointelligence-fabric.ts` como controladores derivados, não como cópias digitais de indivíduos biológicos.
