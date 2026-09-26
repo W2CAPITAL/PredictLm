@@ -132,53 +132,167 @@ function backendFiles(intent:string,spec:any={}):WorkspaceFile[]{
   ];
 }
 
+function workspacePackage(files:WorkspaceFile[]){
+  const row=files.find(f=>f.path==='package.json');
+  if(!row)return {} as any;
+  try{return JSON.parse(row.content||'{}')}catch{return {} as any}
+}
+
+function externalPackage(specifier:string){
+  const value=String(specifier||'').trim();
+  if(!value||value.startsWith('.')||value.startsWith('/')||value.startsWith('@/')||value.startsWith('node:'))return '';
+  const builtins=new Set(['fs','path','http','https','url','crypto','stream','util','events','buffer','os','zlib','assert','child_process','worker_threads']);
+  const parts=value.split('/');
+  const name=value.startsWith('@')?parts.slice(0,2).join('/'):parts[0];
+  return builtins.has(name)?'':name;
+}
+
+function inferredExternalPackages(files:WorkspaceFile[]){
+  const packages=new Set<string>();
+  const importRe=/(?:from\s*|import\s*\(|require\s*\()\s*['"]([^'"]+)['"]/g;
+  for(const file of files){
+    if(!/\.(?:[cm]?[jt]sx?)$/.test(file.path))continue;
+    let match:RegExpExecArray|null;
+    while((match=importRe.exec(file.content))){
+      const name=externalPackage(match[1]);
+      if(name)packages.add(name);
+    }
+  }
+  return packages;
+}
+
+function relativeModule(fromPath:string,toPath:string,stripExtension=true){
+  const from=fromPath.replace(/^\.\//,'').split('/');
+  const to=toPath.replace(/^\.\//,'').split('/');
+  from.pop();
+  while(from.length&&to.length&&from[0]===to[0]){from.shift();to.shift()}
+  let target='../'.repeat(from.length)+to.join('/');
+  if(!target.startsWith('.'))target='./'+target;
+  if(stripExtension)target=target.replace(/\.(?:tsx?|jsx?|mjs|cjs)$/,'');
+  return target;
+}
+
 export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
-  const spec=readSpec(files);
+  const repaired=repairWorkspaceFiles(files);
+  const spec=readSpec(repaired);
   const intent=String(spec?.spec?.intent||'generic');
-  const app=files.find(f=>/(^|\/)App\.(tsx|jsx|ts|js)$/.test(f.path));
-  const css=files.find(f=>/styles?\.css$/.test(f.path));
-  const name=projectName(files);
+  const foundApp=repaired.find(f=>/(^|\/)App\.(tsx|jsx|ts|js)$/.test(f.path));
+  const app:WorkspaceFile=foundApp
+    ? {...foundApp,content:withReactImport(repairLegacyEscapedNewlines(foundApp.content))}
+    : {path:'App.tsx',language:'typescript',content:withReactImport('export default function App(){return <main>Predict App</main>}')};
+  const css=repaired.find(f=>/(^|\/)styles?\.css$/.test(f.path));
+  const name=projectName(repaired);
   const backend=backendNeeded(intent,spec);
-  const workspaceEnv=files.find(f=>f.path==='.env.example')?.content?.trim()||'';
+  const workspaceEnv=repaired.find(f=>f.path==='.env.example')?.content?.trim()||'';
+  const existingPkg=workspacePackage(repaired);
+  const existingDeps={...(existingPkg.dependencies||{})};
+  const existingDev={...(existingPkg.devDependencies||{})};
+  const commonVersions:Record<string,string>={
+    'lucide-react':'^0.468.0',
+    'react-router-dom':'^7.1.1',
+    'zustand':'^5.0.2',
+    'recharts':'^2.15.0',
+    'date-fns':'^4.1.0',
+    'clsx':'^2.1.1',
+    'tailwind-merge':'^2.5.5',
+    'axios':'^1.7.9',
+    'zod':'^3.24.1',
+    '@tanstack/react-query':'^5.62.11'
+  };
+  const inferred=inferredExternalPackages(repaired);
+  const dependencies:Record<string,string>={
+    react:String(existingDeps.react||'^19.0.0'),
+    'react-dom':String(existingDeps['react-dom']||'^19.0.0')
+  };
+  for(const [key,value] of Object.entries(existingDeps))dependencies[key]=String(value);
+  for(const dep of inferred){
+    if(dep==='react'||dep==='react-dom')continue;
+    if(!(dep in dependencies))dependencies[dep]=commonVersions[dep]||'latest';
+  }
+
   const pkg={
+    ...existingPkg,
     name,
-    version:'1.0.0',
+    version:String(existingPkg.version||'1.0.0'),
     private:true,
     type:'module',
     scripts:{
+      ...(existingPkg.scripts||{}),
       dev:'vite',
       build:'vite build',
       preview:'vite preview',
       test:'vitest run',
       ...(backend?{server:'node server/index.mjs'}:{})
     },
-    dependencies:{react:'^19.0.0','react-dom':'^19.0.0'},
+    dependencies,
     devDependencies:{
-      '@vitejs/plugin-react':'^4.3.4',
-      vite:'^6.0.0',
-      vitest:'^3.0.0',
-      jsdom:'^25.0.0',
-      '@testing-library/react':'^16.1.0'
+      ...existingDev,
+      '@vitejs/plugin-react':String(existingDev['@vitejs/plugin-react']||'^4.3.4'),
+      vite:String(existingDev.vite||'^6.0.0'),
+      typescript:String(existingDev.typescript||'^5.7.2'),
+      vitest:String(existingDev.vitest||'^3.0.0'),
+      jsdom:String(existingDev.jsdom||'^25.0.1'),
+      '@testing-library/react':String(existingDev['@testing-library/react']||'^16.1.0'),
+      '@types/react':String(existingDev['@types/react']||'^19.0.1'),
+      '@types/react-dom':String(existingDev['@types/react-dom']||'^19.0.2')
     }
   };
+
+  const appImport=relativeModule('src/main.tsx',app.path);
+  const cssImport=css?relativeModule('src/main.tsx',css.path,false):'';
   const main=[
     "import React from 'react';",
     "import ReactDOM from 'react-dom/client';",
-    "import App from './App';",
-    "import './styles.css';",
+    "import App from "+JSON.stringify(appImport)+";",
+    cssImport?"import "+JSON.stringify(cssImport)+";":"",
     "ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);",
     ""
-  ].join('\n');
+  ].filter(Boolean).join('\n');
+  const testImport=relativeModule('src/App.test.tsx',app.path);
   const test=[
     "import React from 'react';",
     "import { describe,it,expect } from 'vitest';",
     "import { render } from '@testing-library/react';",
-    "import App from './App';",
+    "import App from "+JSON.stringify(testImport)+";",
     "describe('App',()=>{",
     "  it('renders without crashing',()=>{",
     "    const {container}=render(<App/>);",
     "    expect(container.firstChild).toBeTruthy();",
     "  });",
+    "});",
+    ""
+  ].join('\n');
+  const tsconfig={
+    compilerOptions:{
+      target:'ES2022',
+      useDefineForClassFields:true,
+      lib:['ES2022','DOM','DOM.Iterable'],
+      allowJs:true,
+      skipLibCheck:true,
+      esModuleInterop:true,
+      allowSyntheticDefaultImports:true,
+      strict:false,
+      forceConsistentCasingInFileNames:true,
+      module:'ESNext',
+      moduleResolution:'Bundler',
+      resolveJsonModule:true,
+      isolatedModules:true,
+      noEmit:true,
+      jsx:'react-jsx',
+      baseUrl:'.',
+      paths:{'@/*':['src/*']}
+    },
+    include:['**/*.ts','**/*.tsx','**/*.js','**/*.jsx'],
+    exclude:['node_modules','dist']
+  };
+  const vite=[
+    "import { defineConfig } from 'vite';",
+    "import react from '@vitejs/plugin-react';",
+    "import { fileURLToPath, URL } from 'node:url';",
+    "export default defineConfig({",
+    "  plugins:[react()],",
+    "  resolve:{alias:{'@':fileURLToPath(new URL('./src',import.meta.url))}},",
+    "  test:{environment:'jsdom'}",
     "});",
     ""
   ].join('\n');
@@ -188,36 +302,34 @@ export function buildRunnableProject(files:WorkspaceFile[]):WorkspaceFile[]{
     '1. Install Node.js 20+.',
     '2. Run npm install.',
     '3. Run npm run dev.',
-    ...(backend?['4. In another terminal, run npm run server.','','The frontend can use VITE_API_URL to reach the local backend.']:['','This project is frontend-only by design; no backend is required for its current feature set.']),
+    ...(backend?['4. In another terminal, run npm run server.','','The frontend can use VITE_API_URL to reach the local backend.']:['','No generated backend is required for the current feature set.']),
     '',
-    'Run npm test for the smoke test and npm run build for a production build.'
+    'Validate with npm test and npm run build.',
+    '',
+    'PredictLM preserves the generated source tree and TypeScript extensions in this package.'
   ].join('\n');
 
+  const safeWorkspace=repaired.filter(file=>{
+    const p=file.path.replace(/^\.\//,'');
+    if(!p||p.startsWith('/')||p.includes('..')||p.startsWith('node_modules/')||p.startsWith('.git/'))return false;
+    if(['package.json','index.html','src/main.tsx','src/main.jsx','src/App.test.tsx','src/App.test.jsx','vite.config.js','vite.config.ts','tsconfig.json','.env'].includes(p))return false;
+    return true;
+  });
   const base:WorkspaceFile[]=[
+    ...safeWorkspace,
+    app,
     {path:'package.json',content:JSON.stringify(pkg,null,2),language:'json'},
-    {path:'index.html',content:'<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Predict App</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>',language:'html'},
-    {path:'src/main.jsx',content:main,language:'javascript'},
-    {path:'src/App.jsx',content:withReactImport(repairLegacyEscapedNewlines(app?.content||'export default function App(){return <main>Predict App</main>}')),language:'javascript'},
-    {path:'src/styles.css',content:css?.content||'',language:'css'},
-    {path:'src/App.test.jsx',content:test,language:'javascript'},
-    {path:'vite.config.js',content:"import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({plugins:[react()],test:{environment:'jsdom'}});\n",language:'javascript'},
+    {path:'index.html',content:'<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Predict App</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>',language:'html'},
+    {path:'src/main.tsx',content:main,language:'typescript'},
+    {path:'src/App.test.tsx',content:test,language:'typescript'},
+    {path:'vite.config.ts',content:vite,language:'typescript'},
+    {path:'tsconfig.json',content:JSON.stringify(tsconfig,null,2),language:'json'},
     {path:'.gitignore',content:'node_modules\ndist\n.env\n.DS_Store\n',language:'text'},
     {path:'.env.example',content:backend?Array.from(new Set((['VITE_API_URL=http://localhost:8787','PORT=8787',...workspaceEnv.split(/\r?\n/)]).filter(Boolean))).join('\n')+'\n':(workspaceEnv?workspaceEnv+'\n':'# No environment variables are required for this app.\n'),language:'text'},
     {path:'RUNME.md',content:runme,language:'markdown'}
   ];
-  const preserved=files.filter(f=>
-    ['predict.spec.json','ARCHITECTURE.md','IMPLEMENTATION.md','PRODUCTION_READINESS.md','README.md','SAAS_BLUEPRINT.md','DOMAIN_ENGINE_BLUEPRINT.md','LEXIS_OPERATING_MODEL.md'].includes(f.path)||
-    f.path.startsWith('src/domain/')||
-    f.path.startsWith('src/integrations/')||
-    f.path.startsWith('src/types/')||
-    f.path.startsWith('src/components/')||
-    f.path.startsWith('src/layout/')||
-    f.path.startsWith('src/pages/')||
-    f.path.startsWith('src/state/')||
-    f.path.startsWith('server/integrations')
-  );
   const merged=new Map<string,WorkspaceFile>();
-  for(const file of [...base,...backendFiles(intent,spec),...preserved])merged.set(file.path,file);
+  for(const file of [...base,...backendFiles(intent,spec)])merged.set(file.path,file);
   return Array.from(merged.values());
 }
 
