@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-26T11:12:02.774Z",
-  "knowledgeVersion": "2149b7eee77dc651",
-  "chunkCount": 4643,
+  "generatedAt": "2026-09-26T11:15:35.283Z",
+  "knowledgeVersion": "7a6c168764b98bfb",
+  "chunkCount": 4673,
   "sources": [
     {
       "repo": "krusemediallc/arcads-claude-code",
@@ -1727,8 +1727,8 @@
       "mode": "allow",
       "license": "MIT",
       "commit": "637b62f9086d8d33844e7562d1e23a4b5ca408bb",
-      "files": 0,
-      "chunks": 0,
+      "files": 2,
+      "chunks": 30,
       "error": null
     },
     {

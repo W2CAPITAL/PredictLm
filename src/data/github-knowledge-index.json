@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "2149b7eee77dc651",
-  "generatedAt": "2026-09-26T11:12:02.774Z",
-  "sourceCount": 89,
-  "chunkCount": 4643,
+  "knowledgeVersion": "7a6c168764b98bfb",
+  "generatedAt": "2026-09-26T11:15:35.283Z",
+  "sourceCount": 90,
+  "chunkCount": 4673,
   "chunks": [
     {
       "id": "69f9fa1199c9ded38f50",
@@ -79673,6 +79673,576 @@
       "heading": "List of projects based on this",
       "text": "- **Nim implementation:** https://github.com/phargobikcin/nim-minecraft-clone\n- **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft\n- **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone\n- **Odin implementation:** https://github.com/anthony-63/lvo\n- **Lua implementation:** https://github.com/brennop/lunarcraft\n- **Javascript implementation:** https://github.com/drakeerv/js-minecraft-clone ([Demo](https://drakeerv.github.io/js-minecraft-clone/))",
       "weight": 1.12
+    },
+    {
+      "id": "4419ecd87922be497ccd",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Minecraft Web Client",
+      "text": "![banner](./docs-assets/banner.jpg)\n\nMinecraft **clone** written in TypeScript using the best modern web technologies. A vanilla-compatible client and integrated server packaged into a single web app.\n\nYou can try this out at [mcraft.fun](https://mcraft.fun/), [mcon.vercel.app](https://mcon.vercel.app/), or the GitHub Pages deployment. Every commit from the default (`next`) branch is deployed to [s.mcraft.fun](https://s.mcraft.fun/) and [beta.mcraft.fun](https://beta.mcraft.fun/) - it's usually newer, but might be less stable.\n\n> SAFEST way to join servers.\n>\n> FASTEST way to preview local worlds.\n\nDon't confuse this with [Eaglercraft](https://eagsrc.webmc.xyz) which is a REAL vanilla Minecraft Java Edition port to the web (but with its own limitations). Eaglercraft is a fully playable solution, meanwhile this project is aimed at *device-compatibility* and better performance so it feels portable, flexible and lightweight. It's also a good example on how to build true HTML games for the web at scale entirely with the JS ecosystem. Have fun!\n\n> **UI Design Philosophy**: For now, this project follows classic Minecraft UI guidelines. But if you want to see my **unleashed vision** of th",
+      "weight": 1.16
+    },
+    {
+      "id": "60530ff87e58c212d3cd",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Minecraft Web Client",
+      "text": "e most beautiful UI with stunning animations and futuristic design - check out **[arwes.mcraft.fun](https://arwes.mcraft.fun)**!\n>\n> [![Arwes UI - My Ultimate Vision](./docs-assets/arwes-banner.webp)](https://arwes.mcraft.fun)\n\nFor building the project yourself / contributing, see [Development, Debugging & Contributing](#development-debugging--contributing). For reference at what and how web technologies / frameworks are used, see [TECH.md](./TECH.md) (also for comparison with Eaglercraft).\n\n> **Note**: See [Self-hosting & proxy](#servers--proxy) for Docker, proxy-only setups, and a one-liner VPS script with [Minecraft Everywhere](https://github.com/zardoy/minecraft-everywhere).",
+      "weight": 1.16
+    },
+    {
+      "id": "7d553069bda54113331a",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Big Features",
+      "text": "- Official Mineflayer [plugin integration](https://github.com/zardoy/mcraft-fun-mineflayer-plugin)! View / Control your bot remotely.\n- Open any zip world file or even folder in read-write mode!\n- Connect to Java servers running in both offline (cracked) and online mode* (it's possible because of proxy servers, see below)\n- Integrated JS server clone capable of opening Java world saves in any way (folders, zip, web chunks streaming, etc)\n- Singleplayer mode with simple world generations!\n- Works offline\n- First-class touch (mobile) & controller support\n- First-class keybindings configuration\n- Advanced Resource pack support: Custom GUI, all textures. Server resource packs are supported with proper CORS configuration.\n- Built-in JEI with recipes & descriptions for almost every item (JEI is a creative-inventory replacement)\n- Custom protocol channel extensions (eg for custom block models in the world)\n- Play with friends over internet! (P2P is powered by Peer.js discovery servers)\n- ~~Google Drive support for reading / saving worlds back to the cloud~~\n- Support for custom rendering 3D engines. Modular architecture.\n- and more!\n\nAll components that are in [Storybook](https://minimap.",
+      "weight": 1.16
+    },
+    {
+      "id": "1efaf8682d9150df96c6",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Big Features",
+      "text": "mcraft.fun/storybook/) are published as npm module and can be used in other projects: [`minecraft-react`](https://npmjs.com/minecraft-react)",
+      "weight": 1.16
+    },
+    {
+      "id": "3aec96b8080535722c3f",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Recommended Settings",
+      "text": "- Controls -> **Touch Controls Type** -> **Joystick**\n- Controls -> **Auto Full Screen** -> **On** - To avoid ctrl+w issue\n- Interface -> **Enable Minimap** -> **Always** - To enable useful minimap (why not?)\n- Controls -> **Raw Input** -> **On** - This will make the controls more precise (UPD: already enabled by default)\n- Interface -> **Chat Select** -> **On** - To select chat messages (UPD: already enabled by default)",
+      "weight": 1.16
+    },
+    {
+      "id": "407933201e23b6e83bc7",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Browser Notes",
+      "text": "This project is tested with BrowserStack. Special thanks to [BrowserStack](https://www.browserstack.com/) for providing testing infrastructure!\n\nHowever, it's known that these browsers have issues:\n\n**Opera Mini**: Disable *mouse gestures* in browser settings to avoid opening a new tab on right-click-and-hold.\n\n**Vivaldi**: Disable Controls -> *Raw Input* in game settings if experiencing issues",
+      "weight": 1.16
+    },
+    {
+      "id": "d8f689fc2509d40cfd0e",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Versions Support",
+      "text": "Server versions 1.8 - 1.21.5 are supported.\nFirst class versions (most of the features are tested on these versions):\n\n- 1.19.4\n- 1.21.4\n\nVersions below 1.13 are not tested currently and may not work correctly.",
+      "weight": 1.16
+    },
+    {
+      "id": "4a2554e24646578edc5e",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "World Loading",
+      "text": "Zip files and folders are supported. Just drag and drop them into the browser window. You can open folders in read-only or read-write mode. New chunks may be generated incorrectly for now.\nWhen opening zip files, they are stored entirely in your RAM. There is a ~300 MB file limit on iOS.\nWhatever offline mode you used (zip, folder, just singleplayer), you can always export world with the `/export` command typed in the game chat.\n\n![docs-assets/singleplayer-future-city-1-10-2.jpg](./docs-assets/singleplayer-future-city-1-10-2.jpg)",
+      "weight": 1.16
+    },
+    {
+      "id": "d727b1bb5f75e45b526c",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Servers & Proxy",
+      "text": "You can play on almost any Java server; vanilla servers are fully supported. See the [Mineflayer](https://github.com/PrismarineJS/mineflayer) repo for supported protocol versions.\n\n**How it works:** browsers speak WebSockets; Minecraft Java uses TCP. A **proxy** bridges the two. When you connect with a proxy URL enabled, your browser talks to the proxy over WebSocket **using the proxy's IP**; the proxy opens a TCP connection to the Minecraft server and forwards bytes without deserializing packets. All protocol handling still runs in the browser (Mineflayer in the client).\n\n```mermaid\ngraph LR\n    A[Web App - Client] --> C[Proxy Server]\n    C --> B[Minecraft Server]\n    style A fill:#f9d,stroke:#333,stroke-width:2px\n    style B fill:#fc0,stroke:#333,stroke-width:2px\n    style C fill:#fff,stroke:#333,stroke-width:2px\n```\n\nSo if the server is located in Europe and you are connecting from Europe, you will have ~40ms ping (~180ms with residential proxy version), however if you are in the US and connecting to the server located in US, you will have >200ms ping, which is the worst case scenario.\n\nAgain, the proxy server is not a part of the client, it is a separate service that you can ho",
+      "weight": 1.16
+    },
+    {
+      "id": "a2319fb7eb0f6f010256",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Self-hosting",
+      "text": "| What you want | What to run |\n|---------------|-------------|\n| **Full stack** (your own full game copy + bundled proxy) | This repo: local dev with `pnpm i` and `pnpm prod-start` (see [CONTRIBUTING.md](./CONTRIBUTING.md)), or **Docker** with the [main Dockerfile](./Dockerfile) below. |\n| **Proxy only** (keep using a public game client e.g. [mcraft.fun](https://mcraft.fun)) | Run **[mwc-proxy](https://github.com/zardoy/mwc-proxy)** somewhere that can reach your Minecraft server (often same host/VPC); follow that README for the rest. **Where to host:** your own PC or home network often behaves better than a cloud relay—some servers flag datacenter IPs like “VPN” traffic; for casual play, any reachable host is fine. **URL in the client:** paste your relay’s URL into the **proxy** field; you still have to make it reachable (reverse proxy **with SSL**, **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)**, temporary URL services like cloudflared are not recommended). **Note:** the Minecraft server sees **your relay’s public IP** on the TCP leg (the proxy → server connection). You do **not** need this web-client repo for proxy-only. |",
+      "weight": 1.16
+    },
+    {
+      "id": "51b27dc2695ced28c2e3",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Self-hosting",
+      "text": "| **One-liner deploy on a VPS** | [Minecraft Everywhere](https://github.com/zardoy/minecraft-everywhere) provides a **one-liner** script that can deploy these variants (your own full game copy, proxy, or combined setups)—pick what you need from that repo’s instructions. |\n\nPublic deployments (e.g. GitHub Pages) ship without your private TCP endpoint; for your own server you still point the client at **your** proxy (e.g. mwc-proxy or a stack you deployed with the script above).\n\n**Koyeb (full app from this repo):**\n\n[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=minecraft-web-client&type=git&repository=zardoy%2Fminecraft-web-client&branch=next&builder=dockerfile&env%5B%5D=&ports=8080%3Bhttp%3B%2F)",
+      "weight": 1.16
+    },
+    {
+      "id": "a3927983950d98360205",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Self-hosting",
+      "text": "> **mwc-proxy vs this repo’s proxy:** [mwc-proxy](https://github.com/zardoy/mwc-proxy) is the lightweight standalone WebSocket→TCP bridge you run next to your world. This repo can embed a compatible proxy in `prod-start` / Docker. For “I only need a relay for the hosted client,” use mwc-proxy.",
+      "weight": 1.16
+    },
+    {
+      "id": "70886e4ee585e897cfe4",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Docker (self-hosted)",
+      "text": "Use Docker when you want a reproducible install without local Node/pnpm setup (see [CONTRIBUTING.md](./CONTRIBUTING.md) only if you build from source).\n\n**[Dockerfile](./Dockerfile)** — production image: **your own full game copy (web client) + proxy** in one process. Good when you host the full stack yourself.\n\nFor **proxy only**, use **[mwc-proxy](https://github.com/zardoy/mwc-proxy)** (including its Docker options) instead of maintaining a second image in this repo.",
+      "weight": 1.16
+    },
+    {
+      "id": "82faeb6126d2f1a0ce69",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Three.js Renderer",
+      "text": "- Uses WebGL2. Chunks are rendered using Geometry Buffers prepared by 4 mesher workers.\n- Entities & text rendering\n- Supports resource packs\n- Doesn't support occlusion culling",
+      "weight": 1.16
+    },
+    {
+      "id": "21e21b75b352cbc8c98d",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Advanced Settings",
+      "text": "There are many many settings, that are not exposed in the UI yet. You can find or change them by opening the browser console and typing `options`. You can also change them by typing `options.<setting_name> = <value>`.",
+      "weight": 1.16
+    },
+    {
+      "id": "3ae1e77a5733d49fc267",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Console",
+      "text": "To open the console, press `F12`. On mobile, you can type `#dev` in the browser address bar; the page won't reload, and you'll see a button to open the console. This lets you change advanced settings, see logs, and access global variables (described below).",
+      "weight": 1.16
+    },
+    {
+      "id": "4003cc10296a110bd49f",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Development, Debugging & Contributing",
+      "text": "It should be easy to build/start the project locally. See [CONTRIBUTING.MD](./CONTRIBUTING.md) for more info. Also you can look at Dockerfile for reference.\n\nThere is world renderer playground ([link](https://mcon.vercel.app/playground/)).\n\nHowever, there are many things that can be done in online production version (like debugging actual source code). Also you can access some global variables in the console and there are a few useful examples:\n\n- If you type `debugToggle` and press Enter in the console — it will enable all debug messages! Warning: this will start packet spam.\nInstead, I recommend setting `options.debugLogNotFrequentPackets`. You can also use `debugTopPackets` (with `JSON.stringify`) to see what packets were received/sent by name\n\n- `bot` - Mineflayer bot instance. See Mineflayer documentation for more.\n- `world` - Three.js world instance, basically does all the rendering (part of renderer backend).\n- `world.sectionObjects` - Object with all active chunk sections (geometries) in the world. Each chunk section is a Three.js mesh or group.\n- `debugSceneChunks` - The same as above, but relative to current bot position (e.g. 0,0 is the current chunk).\n- `debugChangedOpt",
+      "weight": 1.16
+    },
+    {
+      "id": "2d7f7dec9e5906720dca",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Development, Debugging & Contributing",
+      "text": "ions` - See what options are changed. Don't change options here.\n- `localServer`/`server` - Only for singleplayer mode/host. Flying Squid server instance, see it's documentation for more.\n- `localServer.overworld.storageProvider.regions` - See ALL LOADED region files with all raw data.\n- `localServer.levelData.LevelName = 'test'; localServer.writeLevelDat()` - Change name of the world\n\n- `nbt.simplify(someNbt)` - Simplifies nbt data, so it's easier to read.\n\nThe most useful thing in devtools is the watch expression. You can add any expression there and it will be re-evaluated in real time. For example, you can add `world.getCameraPosition()` to see the camera position and so on.",
+      "weight": 1.16
+    },
+    {
+      "id": "011fca4fb89ac5726948",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Development, Debugging & Contributing",
+      "text": "<img src=\"./docs-assets/watch-expr.png\" alt=\"Watch expression\" width=\"480\"/>\n\nYou can also drag and drop any .dat or .mca (region files) into the browser window to see it's contents in the console.",
+      "weight": 1.16
+    },
+    {
+      "id": "10dd131ea2b863826764",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "F3 Keybindings",
+      "text": "- `F3` - Toggle debug overlay\n- `F3 + A` - Reload all chunks (these that are loaded from the server)\n<!-- - `F3 + N` - Restart local server (basically resets the world!) -->\n- `F3 + G` - Toggle chunk sections (geometries) border visibility + entities outline (aka Three.js geometry helpers)\n\nworld chunks have a *yellow* border, hostile mobs have a *red* outline, passive mobs have a *green* outline, players have a *blue* outline.",
+      "weight": 1.16
+    },
+    {
+      "id": "197f52408560b864d703",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Query Parameters",
+      "text": "Press `Y` to set query parameters to url of your current game state.\n\nThere are some parameters you can set in the url to archive some specific behaviors:\n\nGeneral:\n\n- **`?setting=<setting_name>:<setting_value>`** - Set and lock the setting on load. You can set multiple settings by separating them with `&` e.g. `?setting=autoParkour:true&setting=renderDistance:4`\n- `?modal=<modal>` - Open specific modal on page load eg `keybindings`. Very useful on UI changes testing during dev. For path use `,` as separator. To get currently opened modal type this in the console: `activeModalStack.at(-1).reactType`\n- `?replayFileUrl=<url>` - Load and start a packet replay session from a URL with a integrated server. For debugging / previewing recorded sessions. The file must be CORS enabled.\n\nMultiplayer specific:\n\n- `?ip=<server_address>` - Display connect screen to the server on load with predefined server ip. `:<port>` is optional and can be added to the ip.\n- `?name=<name>` - Set the server name for saving to the server list\n- `?version=<version>` - Set the version for the server\n- `?proxy=<proxy_address>` - Set the proxy server address to use for the server\n- `?username=<username>` - Set the",
+      "weight": 1.16
+    },
+    {
+      "id": "3daca76d4c8901866f50",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Query Parameters",
+      "text": "username for the server\n- `?lockConnect=true` - Only works when the `ip` parameter is set. Disables cancel/save buttons and all inputs in the connect screen already set as parameters. Useful for embedded iframes.\n- `?autoConnect=true` - Only works when the `ip` and `version` parameters are set and `allowAutoConnect` is `true` in config.json! Directly connects to the specified server. Useful for embedded iframes.\n- `?serversList=<list_or_url>` - `<list_or_url>` can be a list of servers in the format `ip:version,ip` or a url to a json file with the same format (array) or a txt file with line-delimited list of server IPs.",
+      "weight": 1.16
+    },
+    {
+      "id": "5e0a5b0f88d0c25692e4",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Query Parameters",
+      "text": "- `?addPing=<ping>` - Add a latency to both sides of the connection. Useful for testing ping issues. For example `?addPing=100` will add 200ms to your ping.\n\nSingleplayer specific:\n\n- `?loadSave=<save_name>` - Load the save on load with the specified folder name (not title)\n- `?singleplayer=1` or `?sp=1` - Create empty world on load. Nothing will be saved\n- `?version=<version>` - Set the version for the singleplayer world (when used with `?singleplayer=1`)\n- `?noSave=true` - Disable auto save on unload / disconnect / export whenever a world is loaded. Only manual save with `/save` command will work.\n- `?serverSetting=<key>:<value>` - Set local server [options](https://github.com/zardoy/space-squid/tree/everything/src/modules.ts#L51). For example `?serverSetting=noInitialChunksSend:true` will disable initial chunks loading on the loading screen.\n- `?map=<map_url>` - Load the map from ZIP. You can use any url, but it must be **CORS enabled**.\n- `?mapDir=<index_file_url>` - Load the map from a file descriptor. It's recommended and the fastest way to load world but requires additional setup. The file must be in the following format:\n\n```json\n{\n    \"baseUrl\": \"<url>\",\n    \"index\": {",
+      "weight": 1.16
+    },
+    {
+      "id": "2bb8f7693e8affac42db",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Query Parameters",
+      "text": "\"level.dat\": null,\n        \"region\": {\n            \"r.-1.-1.mca\": null,\n            \"r.-1.0.mca\": null,\n            \"r.0.-1.mca\": null,\n            \"r.0.0.mca\": null,\n        }\n    }\n}\n```\n\nNote that `mapDir` also accepts base64 encoded JSON like so:\n`?mapDir=data:application/json;base64,...` where `...` is the base64 encoded JSON of the index file.\nIn this case you must use `?mapDirBaseUrl` to specify the base URL to fetch the files from index.\n\n- `?mapDirBaseUrl` - See above.\n\nOnly during development:\n\n- `?reconnect=true` - Reconnect to the server on page reloads. Very useful on server testing.",
+      "weight": 1.16
+    },
+    {
+      "id": "4e59201a827fe6c08ddb",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Query Parameters",
+      "text": "<!-- - `?mapDirGuess=<base_url>` - Load the map from the provided URL and paths will be guessed with a few additional fetch requests. -->",
+      "weight": 1.16
+    },
+    {
+      "id": "2028aae9359d198f1fc2",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Notable Things that Power this Project",
+      "text": "- [Mineflayer](https://github.com/GenerelSchwerz/mineflayer) - Handles all client-side communications with the server (including the built-in one)\n- [Forked Flying Squid (Space Squid)](https://github.com/zardoy/space-squid) - The built-in offline server that makes singleplayer & P2P possible!\n- [Prismarine Provider Anvil](https://github.com/PrismarineJS/prismarine-provider-anvil) - Handles world loading (region format)\n- [Prismarine Physics](https://github.com/nxg-org/mineflayer-physics-utils/tree/master/src/physics/engines/botcraft.ts) - Does all the physics calculations\n- [Minecraft Protocol](https://github.com/PrismarineJS/node-minecraft-protocol) - Makes connections to servers possible\n- [Peer.js](https://peerjs.com/) - P2P networking (when you open to wan)\n- [Three.js](https://threejs.org/) - Helping in 3D rendering",
+      "weight": 1.16
+    },
+    {
+      "id": "9af1e9964ec82f215de3",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Things that are not planned yet",
+      "text": "- Mods, plugins (basically JARs) support, shaders - since they all are related to specific game pipelines",
+      "weight": 1.16
+    },
+    {
+      "id": "94fa54d8e3af821765cc",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Alternatives",
+      "text": "- [ClassiCube](https://github.com/ClassiCube/ClassiCube) - Better C# rewrite [\\[DEMO\\]](https://www.classicube.net/server/play/?warned=true)\n- [Eaglercraft](https://webmc.xyz/) - Real Minecraft in the browser [\\[DEMO\\]](https://webmc.xyz/#/g/03b1c3b3-bd6a-4b17-ba94-eaf9330df3be)\n- [js-minecraft](https://github.com/LabyStudio/js-minecraft) - An insanely well-done clone from the graphical side that inspired many features here [\\[DEMO\\]](https://labystudio.github.io/js-minecraft/)",
+      "weight": 1.16
+    },
+    {
+      "id": "3abda1015dbc8d323650",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.NPM.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Minecraft React",
+      "text": "Minecraft UI components for React extracted from [mcraft.fun](https://mcraft.fun) project.\n\n```bash\npnpm i minecraft-react\n```\n\n![demo](./docs-assets/npm-banner.jpeg)",
+      "weight": 1.16
+    },
+    {
+      "id": "1808fc1231599e7e1695",
+      "source": "zardoy/minecraft-web-client",
+      "ref": "637b62f9086d",
+      "path": "README.NPM.MD",
+      "license": "MIT",
+      "domains": [
+        "simulation",
+        "minecraft",
+        "browser",
+        "mobile",
+        "networking",
+        "inventory",
+        "offline-online"
+      ],
+      "heading": "Usage",
+      "text": "```jsx\nimport { Scoreboard } from 'minecraft-react'\n\nconst App = () => {\n  return (\n    <Scoreboard\n      open\n      title=\"Scoreboard\"\n      items={[\n        { name: 'Player 1', value: 10 },\n        { name: 'Player 2', value: 20 },\n        { name: 'Player 3', value: 30 },\n      ]}\n    />\n  )\n}\n```\n\nSee [Storybook](https://mcraft.fun/storybook/) or [Storybook (Mirror link)](https://mcon.vercel.app/storybook/) for more examples and full components list. Also take a look at the full [standalone example](https://github.com/zardoy/minecraft-web-client/tree/experiments/UiStandaloneExample.tsx).\n\nThere are two types of components:\n\n- Small UI components or HUD components\n- Full screen components (like sign editor, worlds selector)",
+      "weight": 1.16
     },
     {
       "id": "bc1786855069ea441286",
