@@ -1,5 +1,7 @@
 import { isSensitiveResearchQuery, sourceQuality, suppressRawResearchContent } from '@/lib/security/source-quality';
 import { inferResearchDepth, planResearchQueries, researchSourceBudget, type ResearchDepth } from '@/lib/research-policy';
+import { buildEvidenceGraph } from '@/lib/research/evidence-graph';
+import { fusionSourcesFor } from '@/lib/fusion/capability-fabric';
 
 export const runtime='nodejs';
 
@@ -308,6 +310,13 @@ function coverage(items:any[]){
   };
 }
 
+function researchMeta(query:string,web:any[],news:any[]){
+  return {
+    evidenceGraph:buildEvidenceGraph([...(web||[]),...(news||[])],query),
+    fusionSources:fusionSourcesFor('research',query,6).map(x=>x.repo)
+  };
+}
+
 async function freeSearch(query:string,limit:number){
   const web:any[]=[];
   const warnings:string[]=[];
@@ -408,7 +417,8 @@ export async function POST(req:Request){
           web,
           news,
           images:merged.images.slice(0,Math.max(4,Math.min(12,limit))),
-          coverage:coverage([...web,...news])
+          coverage:coverage([...web,...news]),
+          ...researchMeta(query,web,news)
         });
       }catch(error:any){
         const fallback=await freeSearch(query,limit);
@@ -417,7 +427,8 @@ export async function POST(req:Request){
           ...fallback,
           researchDepth:depth,
           researchPlan:plan,
-          warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])]
+          warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])],
+          ...researchMeta(query,fallback.web||[],fallback.news||[])
         });
       }
     }
@@ -429,7 +440,7 @@ export async function POST(req:Request){
     const successful=settled.filter((x):x is PromiseFulfilledResult<any>=>x.status==='fulfilled').map(x=>x.value);
     if(!successful.length){
       const fallback=await freeSearch(query,limit);
-      return Response.json({query,...fallback,researchDepth:depth,researchPlan:plan});
+      return Response.json({query,...fallback,researchDepth:depth,researchPlan:plan,...researchMeta(query,fallback.web||[],fallback.news||[])});
     }
 
     let web=enrichAndRank(query,successful.flatMap(x=>x.web||[]),limit);
@@ -451,7 +462,8 @@ export async function POST(req:Request){
       news,
       images,
       warnings:Array.from(new Set(warnings)),
-      coverage:coverage([...web,...news])
+      coverage:coverage([...web,...news]),
+      ...researchMeta(query,web,news)
     });
   }catch(err:any){
     return Response.json({error:err?.message||'Research failed'},{status:500});
