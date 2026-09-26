@@ -2,7 +2,7 @@
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {ChevronLeft,ChevronRight,Download,Film,FolderOpen,RefreshCw,Trash2,Upload} from 'lucide-react';
-import {createEditorClip,createEditorProject,editorProjectDuration,parseEditorProject,touchEditorProject,type EditorClipKind,type EditorProject} from '@/lib/media/editor-model';
+import {createEditorClip,createEditorProject,editorProjectDuration,parseEditorProject,touchEditorProject,type EditorClip,type EditorClipKind,type EditorProject} from '@/lib/media/editor-model';
 import {downloadEditorProject,renderEditorProjectToWebm} from '@/lib/media/browser-editor';
 import {downloadBlob} from '@/lib/media/local-motion';
 
@@ -62,7 +62,7 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
 
   function addFiles(files:FileList|null){
     if(!files?.length)return;
-    const accepted=[];
+    const accepted:EditorClip[]=[];
     for(const file of Array.from(files).slice(0,8)){
       let kind:EditorClipKind|null=null;
       if(file.type.startsWith('video/'))kind='video';
