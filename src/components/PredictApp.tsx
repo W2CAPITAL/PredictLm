@@ -13,5 +13,5 @@ export function PredictApp(){
     return()=>{window.clearInterval(id);document.removeEventListener('visibilitychange',onVisibility)};
   },[]);
 
-  return <ChatShell onOpenLegal={()=>window.location.assign('/processos')}/>;
+  return <ChatShell/>;
 }
