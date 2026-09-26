@@ -325,7 +325,7 @@ test('Vercel OIDC keeps online chat on an API when no manual provider key exists
     const headers=init?.headers as Record<string,string>;
     assert.equal(String(headers?.Authorization||''),'Bearer oidc-test-token');
     const body=JSON.parse(String(init?.body||'{}'));
-    assert.equal(body.model,'nvidia/nemotron-3.5-lightning');
+    assert.equal(body.model,'google/gemini-3.8-flash');
     assert.deepEqual(body.models,['google/gemini-3.8-flash','anthropic/claude-sonnet-5']);
     const prompt=[...body.messages].reverse().find((x:any)=>x.role==='user')?.content||'';
     calls.push({body,prompt});
@@ -337,7 +337,7 @@ test('Vercel OIDC keeps online chat on an API when no manual provider key exists
     const {response,data}=await ask('Como uma mosca se comunica?');
     assert.equal(response.status,200);
     assert.equal(data.provider,'vercel-gateway');
-    assert.equal(data.model,'nvidia/nemotron-3.5-lightning');
+    assert.equal(data.model,'google/gemini-3.8-flash');
     assert.match(data.content,/químic|moviment|vibra/i);
     assert.equal(calls.length,1);
   }finally{globalThis.fetch=original}
@@ -479,7 +479,7 @@ test('AI Gateway API key works even when AI_GATEWAY_MODEL is omitted',async()=>{
     const data=await response.json();
     const gateway=(data.providers||[]).find((x:any)=>x.name==='vercel-gateway');
     assert.ok(gateway);
-    assert.equal(gateway.model,'nvidia/nemotron-3.5-lightning');
+    assert.equal(gateway.model,'google/gemini-3.8-flash');
     assert.equal(data.gateway.auth,'api-key');
   }finally{
     for(const key of providerEnv)delete process.env[key];
