@@ -19,3 +19,5 @@ export * from './replay-simulator';
 export * from './improvement-governor';
 
 export * from './autonomy-integrity';
+
+export * from './resilient-continuity';
