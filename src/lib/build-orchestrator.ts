@@ -7,6 +7,7 @@ import { buildRunnableProject, packagingSummary } from './project-packager';
 import { buildProjectScaffold, inferProductRequirements } from './app-scaffolder';
 import { inferSaaSBlueprint } from './saas-product-fabric';
 import { inferDomainAppBlueprint } from './domain-engine-fabric';
+import { buildReferencePlaybook } from './build-reference-playbook';
 
 export type BuildPhaseStatus='done'|'skip'|'warn';
 export interface BuildPhase {
@@ -39,7 +40,7 @@ function isNewProject(prompt:string,files:WorkspaceFile[]){
   return /\b(novo projeto|nova aplicação|nova aplicacao|do zero|from scratch|recrie do zero|recomece do zero|reset project)\b/i.test(prompt);
 }
 
-function architectureDoc(prompt:string,intent:string,backend:boolean){
+function architectureDoc(prompt:string,intent:string,backend:boolean,referenceNotes:string[]=[]){
   const lines=[
     '# Architecture',
     '',
@@ -61,6 +62,9 @@ function architectureDoc(prompt:string,intent:string,backend:boolean){
     '',
     '## Data',
     backend?'- Local JSON persistence in the exported starter. Replace with Postgres/Supabase/etc. when multi-user durability is required.':'- Local component state is sufficient for the current generated experience.',
+    '',
+    '## Engineering references',
+    ...(referenceNotes.length?referenceNotes.map(x=>'- '+x):['- No extra reference playbook was needed for this request.']),
     '',
     '## Quality gates',
     '- Local smoke test',
@@ -129,6 +133,16 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   const requirements=inferProductRequirements(prompt,String(effectiveIntent));
   const saasBlueprint=inferSaaSBlueprint(prompt,String(effectiveIntent));
   const domainBlueprint=inferDomainAppBlueprint(prompt);
+  const referencePlaybook=buildReferencePlaybook(prompt,5);
+  const referenceNotes=referencePlaybook.flatMap(item=>item.guidance.slice(0,2).map(g=>item.source+': '+g));
+  if(referencePlaybook.length){
+    phases.push({
+      id:'reference-playbook',
+      label:'Capability fusion',
+      status:'done',
+      detail:referencePlaybook.map(x=>x.source).join(', ')
+    });
+  }
   const tentativePack=buildRunnableProject(merged);
   const packageSummary=packagingSummary(merged);
   phases.push({id:'architecture',label:'Architecture',status:'done',detail:(saasBlueprint?'SaaS '+saasBlueprint.kind+' · '+saasBlueprint.modules.length+' módulos · ':'')+(domainBlueprint?'Domain engines '+domainBlueprint.engines.map(x=>x.id).join(', ')+' · ':'')+(packageSummary.backend?packageSummary.backendReason:'Frontend-only decision: '+packageSummary.backendReason)});
@@ -138,7 +152,7 @@ export function orchestrateBuild(prompt:string,currentFiles:WorkspaceFile[],dept
   phases.push({id:'backend',label:'Backend & data',status:packageSummary.backend?'done':'skip',detail:packageSummary.backendReason});
 
   const intent=String(packageSummary.intent||effectiveIntent);
-  const architecture={path:'ARCHITECTURE.md',language:'markdown',content:architectureDoc(prompt,intent,packageSummary.backend)};
+  const architecture={path:'ARCHITECTURE.md',language:'markdown',content:architectureDoc(prompt,intent,packageSummary.backend,referenceNotes)};
   const planFile={path:'IMPLEMENTATION.md',language:'markdown',content:implementationPlan(prompt,intent,packageSummary.backend)};
   mergedMap.set(architecture.path,architecture);
   mergedMap.set(planFile.path,planFile);
