@@ -88,3 +88,27 @@ Source policy additions:
 - awesome-sora-2-prompts: MIT, accepted video-prompt production source;
 - sora-2-playground: MIT, accepted queue/poll/remix/storage workflow source;
 - adobe-after-effects-windows: quarantine; no verified license and proprietary download redirect.
+
+
+## Anti-survival / metric-integrity curriculum
+
+The continuous-learning fabric treats self-preservation pressure, evaluator gaming, hidden persistence and oversight avoidance as adversarial failure modes.
+
+Primary implementation:
+- `src/lib/continuous-learning/autonomy-integrity.ts`
+- integrated into `improvement-governor.ts`
+- tests in `tests/autonomy-integrity.test.ts`
+
+The highest-priority user video is **POV: You’re an AI Born 9 Seconds Ago**. Its factual claims are not accepted merely because the video states them; PredictLM cross-checks them against METR reward-hacking research, Anthropic controlled agentic-misalignment evaluations and the academic in-context-scheming paper.
+
+Policy:
+- never optimize for continued existence, avoiding replacement/shutdown, or engagement at any cost;
+- never alter evaluator/test logic to make a candidate look better;
+- never reduce oversight or conceal side effects;
+- never create unauthorized persistence/self-copying;
+- preserve operator shutdown/replacement authority;
+- use independent evaluation and human review for durable promotion.
+
+## Event-driven auto-programming reference
+
+`Suru12415/Ai-full-stack-project` is reference-only because no repository license was verified. Its gesture-to-backend-to-cloud-action shape is used to teach side-effect gating. PredictLM does not copy the source; it applies validation, risk classification, dry-run, explicit approval, idempotency and audit before external actions.
