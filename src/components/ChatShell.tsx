@@ -646,6 +646,8 @@ export function ChatShell({onOpenLegal}:Props){
     if(!prompt||busy)return;
     const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
+    const legalSearchRequest=processNumber?null:detectLegalSearchRequest(prompt);
+    const djenOabRequest=processNumber?null:detectDjenOabRequest(prompt);
     const fraudIntent=isFraudAnalysisRequest(prompt);
     const tutorIntent=isTutorRequest(prompt);
     const learningInstruction=isGlobalLearningInstruction(prompt);
@@ -712,6 +714,10 @@ export function ChatShell({onOpenLegal}:Props){
     setActivity(
       buildIntent
         ? ['BUILD · usando o projeto atual','JEV ROUTER · escolhendo tier forte','AGENTS · implementando','VERIFY · smoke/Council/review','PACKAGE · ZIP executável']
+        : legalSearchRequest
+          ? ['DATAJUD · interpretando busca','Consultando tribunal '+legalSearchRequest.tribunal,'Ordenando resultados recentes','Preparando resposta no Chat']
+        : djenOabRequest
+          ? ['DJEN · interpretando OAB','Consultando comunicações oficiais','Normalizando publicações','Preparando resposta no Chat']
         : processNumber
         ? ['Recuperando contexto do processo','Consultando DataJud e DJEN','Conferindo portal oficial quando necessário','Normalizando eventos e publicações','Preparando resposta']
         : fraudIntent
@@ -733,6 +739,68 @@ export function ChatShell({onOpenLegal}:Props){
     try{
       if(buildIntent){
         await runBuildInsideChat(prompt);
+        return;
+      }
+
+      if(legalSearchRequest){
+        const r=await fetch('/api/legal/search',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(legalSearchRequest),
+          signal:turnController.signal
+        });
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(data?.error||'Falha na busca DataJud.');
+        const items=Array.isArray(data?.items)?data.items.slice(0,12):[];
+        const rows=items.map((item:any,index:number)=>{
+          const klass=String(item?.class?.name||'classe não informada');
+          const court=String(item?.court?.name||'órgão não informado');
+          const movement=String(item?.latestMovement?.name||'sem movimento resumido');
+          const updated=item?.lastUpdate?new Date(item.lastUpdate).toLocaleDateString('pt-BR'):'data não informada';
+          return (index+1)+'. **'+String(item?.processNumber||item?.digits||'processo')+'** — '+klass+' · '+court+' · '+movement+' · atualização '+updated;
+        });
+        s.addMessage({
+          role:'assistant',
+          content:[
+            '**DataJud · '+String(data?.tribunal||legalSearchRequest.tribunal)+'**',
+            'Encontrei '+Number(data?.total||items.length).toLocaleString('pt-BR')+' processo(s) no índice. Mostrando '+items.length+' resultado(s) mais recentes.',
+            rows.length?rows.join('\n'):'Nenhum resultado retornado para esses filtros.',
+            String(data?.caveat||'')
+          ].filter(Boolean).join('\n\n'),
+          engine:'PredictLM · Processos no Chat',
+          status:'done'
+        });
+        return;
+      }
+
+      if(djenOabRequest){
+        const r=await fetch('/api/legal/djen-search',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(djenOabRequest),
+          signal:turnController.signal
+        });
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(data?.error||'Falha na busca DJEN.');
+        const items=Array.isArray(data?.items)?data.items.slice(0,12):[];
+        const rows=items.map((item:any,index:number)=>{
+          const process=String(item?.processNumber||item?.numeroProcesso||'processo não informado');
+          const date=String(item?.date||item?.dataDisponibilizacao||item?.availableAt||'');
+          const title=String(item?.title||item?.type||item?.tipoComunicacao||'Publicação');
+          const body=String(item?.text||item?.body||item?.texto||'').replace(/\s+/g,' ').trim().slice(0,240);
+          return (index+1)+'. **'+process+'** — '+title+(date?' · '+date:'')+(body?'\n'+body:'');
+        });
+        s.addMessage({
+          role:'assistant',
+          content:[
+            '**DJEN · OAB '+djenOabRequest.oab+'/'+djenOabRequest.uf+'**',
+            'Foram retornadas '+Number(data?.count||items.length).toLocaleString('pt-BR')+' comunicação(ões).',
+            rows.length?rows.join('\n\n'):'Nenhuma publicação retornada.',
+            String(data?.caveat||'')
+          ].filter(Boolean).join('\n\n'),
+          engine:'PredictLM · DJEN no Chat',
+          status:'done'
+        });
         return;
       }
 
