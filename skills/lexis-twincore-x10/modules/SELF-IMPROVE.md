@@ -1,6 +1,15 @@
 # Self Improve
 
-Observe → normalize → cluster → rank → hypothesize → patch → eval → compare → branch → PR/artifact → gate → capture.
+OBSERVE → VERIFY → LEARN → DESIGN → EXPERIMENT → ANALYZE → COMPARE → PROMOTE.
+
+O fluxo de engenharia combina o gate já existente do PredictLM com o padrão experimental do ASI-Evolve:
+- **OBSERVE/VERIFY**: capturar falhas reais e confirmar que não são ruído;
+- **LEARN**: recuperar tentativas anteriores, evidência e lições relevantes;
+- **DESIGN**: gerar um candidato mínimo (regra, router, prompt, skill, código ou configuração);
+- **EXPERIMENT**: executar benchmark/testes contra baseline congelado;
+- **ANALYZE**: registrar resultado, regressões, custo e por que funcionou/falhou;
+- **COMPARE**: manter apenas candidato que supera baseline sem quebrar gates;
+- **PROMOTE**: branch/PR/artifact → CI → gate humano/sistema → merge.
 
 Hierarquia:
 1. regra;
@@ -34,3 +43,39 @@ Application rule:
 8. require a gate for merge/deploy.
 
 The app may learn from errors; it may not silently rewrite production.
+
+
+## Experiment memory
+
+Cada tentativa deve ser tratada como experimento endereçável, não como "aprendizado" abstrato:
+
+- problema / hipótese;
+- baseline/commit de origem;
+- patch candidato;
+- conjunto de testes/evals;
+- métricas antes/depois;
+- falhas/regressões;
+- decisão: rejeitado, manter para estudo, promover;
+- lição reutilizável.
+
+A memória de experimentos impede repetir patches que já falharam e permite seleção orientada por resultado. Estratégias como greedy/UCB/islands podem ser usadas **apenas para escolher candidatos em experimentos**, nunca para conceder objetivos externos autônomos ou permissão de modificar produção.
+
+## Boundary de auto-aprimoramento
+
+O PredictLM pode:
+- propor mudanças em prompts, skills, roteamento, código e configuração;
+- gerar patches;
+- executar testes/benchmarks autorizados;
+- comparar candidatos e registrar lições.
+
+O PredictLM não pode:
+- transformar uma saída de modelo em regra durável silenciosamente;
+- promover memória/skill/código sem o gate previsto;
+- criar metas externas permanentes por conta própria;
+- interpretar self-model, drives ou metacognição funcional como prova de experiência subjetiva.
+
+Referências arquiteturais:
+- GAIR-NLP/ASI-Evolve — loop LEARN → DESIGN → EXPERIMENT → ANALYZE e memória de experimentos;
+- 269652/artificial-consciousness-ai — separação entre memória episódica/autobiográfica/semântica e observabilidade;
+- jasonkresch/bots — seleção/mutação/fitness para simulação controlada;
+- asi-alliance/Max_folio — failure modes/self-audit como referência, sem importar autonomia irrestrita.
