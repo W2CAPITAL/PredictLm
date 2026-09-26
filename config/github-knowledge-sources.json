@@ -3582,6 +3582,26 @@
         "proprietary-software"
       ],
       "reason": "No repository license was verified and the repository primarily redirects to an external download for proprietary Adobe software. Do not execute, copy, ingest installers, or use it as a dependency. Generic editing concepts are already covered by licensed/open references."
+    },
+    {
+      "repo": "Suru12415/Ai-full-stack-project",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "upload.py",
+        "mobile-web-video-playback.js"
+      ],
+      "domains": [
+        "full-stack",
+        "computer-vision",
+        "event-driven-actions",
+        "tool-authorization",
+        "side-effect-gating",
+        "mobile-web"
+      ],
+      "reason": "No repository LICENSE was verified. Use only as a manually distilled architecture case study: sensor/camera event -> backend interpretation -> external action. Do not copy code. The example can trigger EC2 creation directly from gesture recognition, so PredictLM specifically learns the missing controls: input validation, risk classification, dry-run, explicit approval for high-impact external actions, idempotency, audit and least privilege."
     }
   ]
 }
