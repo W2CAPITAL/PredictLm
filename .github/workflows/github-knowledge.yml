@@ -8,7 +8,7 @@ on:
       - "scripts/knowledge/sync-github.mjs"
       - ".github/workflows/github-knowledge.yml"
   schedule:
-    - cron: "17 5 * * 1"
+    - cron: "17 */6 * * *"
 
 concurrency:
   group: github-knowledge-sync
