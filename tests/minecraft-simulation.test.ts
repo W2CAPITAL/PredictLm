@@ -15,6 +15,7 @@ import {
   moveVoxelPlayer,
   placeVoxelBlock,
   surfaceAt,
+  terrainHeight,
   voxelUnityScene
 } from '../src/lib/simulation/minecraft-sandbox';
 
@@ -42,25 +43,23 @@ test('voxel world is deterministic and effectively unbounded in X/Z chunks',()=>
 
 test('mining and placing persist as deltas over generated terrain',()=>{
   let world=createVoxelWorld(777);
-  let cell=surfaceAt(world,world.player.x,world.player.z);
-  for(let dx=-8;dx<=8&&(cell.block==='water'||cell.block==='lava');dx++){
-    for(let dz=-8;dz<=8&&(cell.block==='water'||cell.block==='lava');dz++){
-      const candidate=surfaceAt(world,world.player.x+dx,world.player.z+dz);
-      if(candidate.block!=='water'&&candidate.block!=='lava')cell=candidate;
-    }
-  }
-  assert.notEqual(cell.block,'water');
-  assert.notEqual(cell.block,'lava');
+  const x=world.player.x;
+  const z=world.player.z;
+  const y=terrainHeight(world.seed,x,z,world.player.dimension);
+  const original=blockAt(world,x,y,z);
+  assert.notEqual(original,'air');
+  assert.notEqual(original,'water');
+  assert.notEqual(original,'lava');
 
-  const mined=mineVoxelBlock(world,cell.x,cell.y,cell.z);
+  const mined=mineVoxelBlock(world,x,y,z);
   assert.equal(mined.ok,true);
   world=mined.state;
-  assert.equal(blockAt(world,cell.x,cell.y,cell.z),'air');
+  assert.equal(blockAt(world,x,y,z),'air');
 
   world={...world,player:{...world.player,mode:'creative'}};
-  const placed=placeVoxelBlock(world,cell.x,cell.y,cell.z,'bricks');
+  const placed=placeVoxelBlock(world,x,y,z,'bricks');
   assert.equal(placed.ok,true);
-  assert.equal(blockAt(placed.state,cell.x,cell.y,cell.z),'bricks');
+  assert.equal(blockAt(placed.state,x,y,z),'bricks');
 });
 
 test('movement can cross arbitrary chunks without a gameplay world border',()=>{
