@@ -50,7 +50,14 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'upscayl/upscayl',license:'AGPL-3.0',mode:'optional-adapter',areas:['media'],ideas:['AI upscaling stage','quality-model selection']},
   {repo:'ssloy/tinyrenderer',license:'unverified',mode:'reference',areas:['media','simulation'],ideas:['rasterization','z-buffer','camera','lighting','toon shading']},
   {repo:'TachibanaYoshino/AnimeGANv3',license:'custom/unknown',mode:'optional-adapter',areas:['media','video'],ideas:['anime stylization stage','fast ONNX inference concept','frame-consistent style pass']},
-  {repo:'dtoyoda10/anime-gen',license:'MIT',mode:'adapt',areas:['media'],ideas:['anime generation UX','text/image input routing']}
+  {repo:'dtoyoda10/anime-gen',license:'MIT',mode:'adapt',areas:['media'],ideas:['anime generation UX','text/image input routing']},
+  {repo:'firecrawl/firecrawl',license:'AGPL-3.0',mode:'optional-adapter',areas:['research','browser','documents'],ideas:['search + scrape + interact pipeline','LLM-ready markdown/JSON','crawl/map for agent research','bounded web actions behind explicit adapter']},
+  {repo:'Comfy-Org/ComfyUI',license:'GPL-3.0',mode:'optional-adapter',areas:['media','video','voice'],ideas:['node-graph media workflows','local/offline image and video generation','inpaint/outpaint/upscale pipeline','workflow JSON as reusable production contract']},
+  {repo:'codecrafters-io/build-your-own-x',license:'unverified',mode:'reference',areas:['build','chat'],ideas:['learn architecture by recreating core systems','decompose black boxes into small testable layers','implementation-first systems understanding']},
+  {repo:'sindresorhus/awesome',license:'CC0-1.0',mode:'adapt',areas:['research','build'],ideas:['curated discovery index','category-first resource discovery','prefer maintained canonical lists over random search']},
+  {repo:'public-apis/public-apis',license:'MIT',mode:'adapt',areas:['research','build'],ideas:['free API discovery catalog','auth/HTTPS/category-aware integration selection','prototype with public APIs before paid dependencies']},
+  {repo:'freeCodeCamp/freeCodeCamp',license:'BSD-3-Clause',mode:'adapt',areas:['chat','build','research'],ideas:['project-based curriculum','small exercises with immediate feedback','progressive practice from fundamentals to real projects']},
+  {repo:'mattpocock/skills',license:'MIT',mode:'adapt',areas:['build','chat'],ideas:['small composable engineering skills','shared project vocabulary and ADRs','TDD red-green-refactor','diagnose bugs in gated phases','spec before broad edits']}
 ];
 
 const SURFACE_RULES:Record<FusionSurface,string[]>={
@@ -68,12 +75,16 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'inspect current code before editing and preserve existing architecture',
     'checkpoint plan, changed files, review findings and verification result',
     'treat browser console/network/performance evidence as first-class debugging input',
+    'prefer small composable changes with fast feedback; use spec → test/failure → implementation → verification for non-trivial edits',
+    'use curated catalogs only to discover options; verify the selected library/API against its primary documentation before integration',
     'keep plugins/adapters permission-scoped and secrets server-side'
   ],
   research:[
     'plan parallel queries/hypotheses for complex research',
     'tie every conclusion to source evidence and record contradictions/gaps',
     'make runs reproducible with query plan, source set and timestamp',
+    'use Firecrawl only when configured; otherwise preserve the free-search path and never pretend scraping occurred',
+    'use curated indexes such as Awesome/Public APIs as discovery leads, then verify against primary sources',
     'support bounded change monitoring instead of repeated full re-research'
   ],
   documents:[
@@ -84,6 +95,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
   media:[
     'separate semantic identity fidelity from technical image quality',
     'use staged generation → review → repair → upscale/postprocess',
+    'treat ComfyUI workflow JSON as an optional local/remote production graph for image/edit/upscale when configured',
     'keep optional external stylizers/upscalers behind adapters; never pretend they ran'
   ],
   video:[
