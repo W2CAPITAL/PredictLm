@@ -1,3 +1,5 @@
+import {bioAiSurfaceDirectives,type BioAISurface} from '@/lib/bioai';
+
 export type FusionSurface=
   |'chat'|'build'|'research'|'memory'|'documents'
   |'media'|'video'|'simulation'|'voice'|'browser';
@@ -228,8 +230,17 @@ export function fusionSourcesFor(surface:FusionSurface,prompt='',limit=8){
 
 export function capabilityFusionContext(prompt:string,surface:FusionSurface){
   const sources=fusionSourcesFor(surface,prompt,7);
+  const bioSurface:BioAISurface=
+    surface==='media'?'image':
+    surface==='video'?'video':
+    surface==='simulation'?'simulation':
+    surface==='research'?'research':
+    surface==='build'?'build':
+    surface==='memory'?'memory':
+    surface==='chat'?'chat':'app';
   return [
     'CAPABILITY FUSION — use these patterns as architecture guidance, not as claims that external software executed.',
+    bioAiSurfaceDirectives(bioSurface,prompt),
     ...SURFACE_RULES[surface].map(x=>'RULE · '+x),
     ...sources.map(x=>'PATTERN · '+x.repo+' · '+x.mode+' · '+x.ideas.join('; ')),
     'LICENSE GATE · reference-only sources must not have code copied into PredictLM; optional adapters run only when explicitly configured.'
