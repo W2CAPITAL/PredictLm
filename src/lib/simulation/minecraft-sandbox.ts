@@ -122,6 +122,33 @@ export interface VoxelChunkSnapshot{
   mobs:VoxelMob[];
 }
 
+export type VoxelActionType='move'|'mine'|'place'|'craft'|'smelt'|'attack'|'raid'|'eat'|'farm'|'dimension'|'wait'|'set_mode';
+
+export interface VoxelAction{
+  id:string;
+  type:VoxelActionType;
+  dx?:number;
+  dz?:number;
+  steps?:number;
+  x?:number;
+  y?:number;
+  z?:number;
+  block?:VoxelBlockId;
+  recipe?:string;
+  item?:string;
+  dimension?:VoxelDimension;
+  mode?:'survival'|'creative';
+  plant?:boolean;
+  reason?:string;
+}
+
+export interface VoxelPlan{
+  objective:string;
+  summary:string;
+  source:'provider'|'local';
+  actions:VoxelAction[];
+}
+
 export interface CraftRecipe{
   id:string;
   label:string;
@@ -604,6 +631,151 @@ export function tickVoxelWorld(state:VoxelWorldState,steps=1){
 
 export function selectVoxelBlock(state:VoxelWorldState,item:string){
   return{...state,player:{...state.player,selected:item}};
+}
+
+function parseJsonObject(raw:string){
+  const text=String(raw||'').trim();
+  const fenced=text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]||text;
+  const start=fenced.indexOf('{'),end=fenced.lastIndexOf('}');
+  if(start<0||end<=start)return null;
+  try{return JSON.parse(fenced.slice(start,end+1))}catch{return null}
+}
+
+export function parseVoxelPlan(raw:string):VoxelPlan|null{
+  const data=parseJsonObject(raw);
+  if(!data||!Array.isArray(data.actions))return null;
+  const allowed=new Set<VoxelActionType>(['move','mine','place','craft','smelt','attack','raid','eat','farm','dimension','wait','set_mode']);
+  const actions:VoxelAction[]=data.actions.slice(0,12).map((a:any,index:number)=>({
+    id:String(a?.id||'voxel-action-'+index),
+    type:String(a?.type||'wait') as VoxelActionType,
+    dx:Number.isFinite(Number(a?.dx))?Number(a.dx):undefined,
+    dz:Number.isFinite(Number(a?.dz))?Number(a.dz):undefined,
+    steps:Number.isFinite(Number(a?.steps))?Math.max(1,Math.min(24,Math.floor(Number(a.steps)))):undefined,
+    x:Number.isFinite(Number(a?.x))?Math.floor(Number(a.x)):undefined,
+    y:Number.isFinite(Number(a?.y))?Math.floor(Number(a.y)):undefined,
+    z:Number.isFinite(Number(a?.z))?Math.floor(Number(a.z)):undefined,
+    block:String(a?.block||'') as VoxelBlockId,
+    recipe:String(a?.recipe||'').slice(0,80)||undefined,
+    item:String(a?.item||'').slice(0,80)||undefined,
+    dimension:['overworld','infernal','void'].includes(String(a?.dimension))?a.dimension:undefined,
+    mode:['survival','creative'].includes(String(a?.mode))?a.mode:undefined,
+    plant:Boolean(a?.plant),
+    reason:String(a?.reason||'').slice(0,180)
+  })).filter((a:VoxelAction)=>allowed.has(a.type));
+  if(!actions.length)return null;
+  return{
+    objective:String(data.objective||'Executar plano no mundo voxel').slice(0,180),
+    summary:String(data.summary||'Plano voxel').slice(0,260),
+    source:'provider',
+    actions
+  };
+}
+
+export function localVoxelPlan(instruction:string,state:VoxelWorldState):VoxelPlan{
+  const q=String(instruction||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  const actions:VoxelAction[]=[];
+  const add=(type:VoxelActionType,extra:Partial<VoxelAction>={})=>actions.push({id:'local-'+actions.length,type,...extra});
+
+  if(/criativo|creative/.test(q))add('set_mode',{mode:'creative'});
+  if(/sobreviv|survival/.test(q))add('set_mode',{mode:'survival'});
+  if(/infernal|nether/.test(q))add('dimension',{dimension:'infernal'});
+  if(/void|end\b/.test(q))add('dimension',{dimension:'void'});
+  if(/overworld|mundo normal/.test(q))add('dimension',{dimension:'overworld'});
+
+  if(/explor|andar|caminh|viaj|frente/.test(q)){
+    const steps=/longe|muito|explor/.test(q)?12:4;
+    add('move',{dx:1,dz:0,steps,reason:'explorar novos chunks'});
+  }
+  if(/miner|minerar|quebr|cavar/.test(q))add('mine',{dx:0,dz:0,reason:'coletar recurso no bloco atual'});
+  if(/constru|colocar|por bloco|pôr bloco|place/.test(q))add('place',{block:state.player.selected as VoxelBlockId,dx:1,dz:0});
+  const recipe=CRAFT_RECIPES.find(r=>q.includes(r.id.replace(/_/g,' '))||q.includes(r.label.toLowerCase()));
+  if(/craft|criar|fabricar/.test(q)&&recipe)add('craft',{recipe:recipe.id});
+  if(/fundir|smelt|fornalha/.test(q))add('smelt',{item:(state.inventory.raw_iron||0)>0?'raw_iron':(state.inventory.raw_gold||0)>0?'raw_gold':'sand'});
+  if(/comer|eat|fome/.test(q))add('eat',{item:(state.inventory.bread||0)>0?'bread':'food'});
+  if(/arar|plantar|farm|fazenda/.test(q)){add('farm',{plant:false});if(/plantar/.test(q))add('farm',{plant:true})}
+  if(/atacar|lutar|combate|mob/.test(q))add('attack');
+  if(/masmorra|dungeon|boss|saque/.test(q))add('raid');
+  if(!actions.length)add('move',{dx:1,dz:0,steps:3,reason:'exploração segura padrão'});
+
+  return{
+    objective:String(instruction||'Explorar mundo voxel').slice(0,180),
+    summary:'Plano local determinístico para o Voxel World.',
+    source:'local',
+    actions:actions.slice(0,12)
+  };
+}
+
+export function repairVoxelPlan(plan:VoxelPlan,state:VoxelWorldState):VoxelPlan{
+  const actions=plan.actions.slice(0,12).map((action,index)=>{
+    const next={...action,id:action.id||'repair-'+index};
+    if(next.type==='place'){
+      const block=String(next.block||state.player.selected) as VoxelBlockId;
+      next.block=VOXEL_BLOCKS[block]?block:'dirt';
+    }
+    if(next.type==='craft'&&!CRAFT_RECIPES.some(r=>r.id===next.recipe)){
+      const available=CRAFT_RECIPES.find(r=>hasItems(state.inventory,r.input));
+      next.recipe=available?.id||'planks';
+    }
+    if(next.type==='dimension'&&!['overworld','infernal','void'].includes(String(next.dimension)))next.dimension='overworld';
+    if(next.type==='set_mode'&&!['survival','creative'].includes(String(next.mode)))next.mode=state.player.mode;
+    next.steps=Math.max(1,Math.min(24,Math.floor(Number(next.steps)||1)));
+    next.dx=Number.isFinite(Number(next.dx))?clamp(Number(next.dx),-1,1):0;
+    next.dz=Number.isFinite(Number(next.dz))?clamp(Number(next.dz),-1,1):0;
+    return next;
+  });
+  return{...plan,actions};
+}
+
+export function executeVoxelAction(state:VoxelWorldState,action:VoxelAction){
+  if(action.type==='move'){
+    let next=state;
+    const steps=Math.max(1,Math.min(24,action.steps||1));
+    const dx=Number(action.dx)||1,dz=Number(action.dz)||0;
+    for(let i=0;i<steps;i++)next=moveVoxelPlayer(next,dx,dz);
+    return{state:next,ok:true,message:'Moveu '+steps+' passo(s) e explorou o terreno.'};
+  }
+  if(action.type==='mine'){
+    const x=action.x??state.player.x+(action.dx||0);
+    const z=action.z??state.player.z+(action.dz||0);
+    const surface=surfaceAt(state,x,z);
+    return mineVoxelBlock(state,x,action.y??surface.y,z);
+  }
+  if(action.type==='place'){
+    const x=action.x??state.player.x+(action.dx||1);
+    const z=action.z??state.player.z+(action.dz||0);
+    const surface=surfaceAt(state,x,z);
+    return placeVoxelBlock(state,x,action.y??surface.y+1,z,action.block);
+  }
+  if(action.type==='craft')return craftVoxelItem(state,action.recipe||'planks');
+  if(action.type==='smelt')return smeltVoxelItem(state,action.item||'raw_iron');
+  if(action.type==='eat')return eatVoxelFood(state,action.item||((state.inventory.bread||0)>0?'bread':'food'));
+  if(action.type==='farm')return farmVoxelBlock(state,action.x??state.player.x,action.z??state.player.z,!!action.plant);
+  if(action.type==='dimension')return{state:travelVoxelDimension(state,action.dimension||'overworld'),ok:true,message:'Dimensão alterada.'};
+  if(action.type==='set_mode')return{state:setVoxelMode(state,action.mode||'survival'),ok:true,message:'Modo alterado.'};
+  if(action.type==='wait')return{state:tickVoxelWorld(state,Math.max(1,action.steps||1)),ok:true,message:'O mundo avançou no tempo.'};
+  if(action.type==='attack'){
+    const {snapshot}=currentVoxelContext(state);
+    const target=snapshot.mobs.find(x=>x.hostile)||snapshot.mobs[0];
+    return target?attackVoxelMob(state,target):{state,ok:false,message:'Nenhum mob próximo para atacar.'};
+  }
+  if(action.type==='raid'){
+    const {snapshot}=currentVoxelContext(state);
+    const dungeon=snapshot.structures.find(x=>x.kind==='dungeon');
+    return dungeon?raidVoxelDungeon(state,dungeon):{state,ok:false,message:'Nenhuma masmorra no chunk atual.'};
+  }
+  return{state,ok:false,message:'Ação voxel não suportada.'};
+}
+
+export function executeVoxelPlan(state:VoxelWorldState,plan:VoxelPlan){
+  let next=state;
+  const records:Array<{action:VoxelAction;ok:boolean;message:string}>=[];
+  for(const action of repairVoxelPlan(plan,state).actions){
+    const result=executeVoxelAction(next,action);
+    next=result.state;
+    records.push({action,ok:result.ok,message:result.message});
+    if(!result.ok&&['dimension','set_mode'].includes(action.type))break;
+  }
+  return{state:next,records,ok:records.some(x=>x.ok)};
 }
 
 export function currentVoxelContext(state:VoxelWorldState){
