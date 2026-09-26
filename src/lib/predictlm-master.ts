@@ -44,6 +44,7 @@ export function classifyMasterRoute(prompt:string):MasterRoute{
   if(/\b(simulacao de vida|simulação de vida|life simulation|mundo vivo|personagem ativa)\b/.test(q)&&/\b(abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|quero ver)\b/.test(q))return 'simulation-world';
   if(/\b(runtime|provider|modelo ativo|skill|router|debug|diagnostico|diagnóstico|log|trace)\b/.test(q))return 'diagnostics';
   if(/\b(build|app|aplicativo|site|sistema|codigo|código|implemente|corrija|exporte|zip)\b/.test(q))return 'build';
+  if(/\b(crie|criar|implemente|desenvolva|construa|prototipe|faça|faca)\b/.test(q)&&/\b(game|jogo|gameplay|godot|unity|unreal|ue5|level|npc|hud|multiplayer)\b/.test(q))return 'build';
   if(/\b(cnj|datajud|djen|processo judicial|tribunal|dossie|dossiê)\b/.test(q))return 'process';
   if(/\b(juridic|jurídic|peticao|petição|recurso|contrato|tese legal)\b/.test(q))return 'legal';
   if(/\b(pesquise|pesquisar|fontes|research|noticia|notícia|atual|hoje|verifique na web)\b/.test(q))return 'research';
