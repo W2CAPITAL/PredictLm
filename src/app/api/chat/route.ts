@@ -18,6 +18,7 @@ import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib
 import { parseJsonObject } from '@/lib/server/provider-mesh';
 import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
+import { gameStudioContext } from '@/lib/game-studio-fabric';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -250,14 +251,22 @@ function simulationPlanGate(raw:string){
 async function simulationPlanResponse(configured:Provider[],body:any,prompt:string){
   const worldState=String(body?.worldState||'').slice(0,7000);
   const localAdvisory=String(body?.localAdvisory||'').slice(0,1800);
+  const studio=gameStudioContext(prompt,true);
+  const fusion=capabilityFusionContext(prompt,'simulation');
+  const skillsContext=skillContractContext(prompt,'simulation',10);
+  const agentPlan=planAgenticRun(prompt,'simulation',true);
   const system=[
-    'Você é o planejador de uma simulação de vida 2D. Sua saída é executada pelo motor da simulação.',
+    'Você é o planejador da Life Simulation Studio do PredictLM. Sua saída é executada por um motor persistente; narrativa sozinha nunca altera o mundo.',
     'Retorne SOMENTE JSON válido. Nunca escreva prosa fora do JSON e nunca inclua chain-of-thought.',
     'Formato: {"objective":"...","summary":"...","actions":[{"type":"move","target":"Mercado","reason":"..."},{"type":"buy_food"}]}',
     'Ações permitidas: move, buy_food, eat, rest, work, study, socialize, exercise, healthcare, wait, set_goal, speak, cook, clean_home, shower, create, message_friend.',
     'Destinos: Casa, Trabalho, Café, Parque, Mercado, Clínica, Biblioteca.',
     'Pré-condições: comprar comida=Mercado; comer/cozinhar em Casa exige comida; estudar=Biblioteca; trabalhar=Trabalho; descansar/limpar/banho=Casa; exercício=Parque; saúde=Clínica; criar=Casa ou Biblioteca.',
-    'Planeje no máximo 10 ações e prefira ações que alteram o estado real.',
+    'Planeje no máximo 10 ações. Cada ação deve ser executável pelo motor, causar uma transição de estado verificável e respeitar percepção/memória local do agente.',
+    'Papéis internos deste plano: '+agentPlan.roles.join(' → ')+'.',
+    studio,
+    fusion,
+    skillsContext,
     worldState?'ESTADO DO MUNDO:\n'+worldState:'',
     localAdvisory?'SEGUNDA OPINIÃO LOCAL:\n'+localAdvisory:''
   ].filter(Boolean).join('\n\n');
