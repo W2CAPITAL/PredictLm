@@ -1191,3 +1191,22 @@ Mouse Core usa referências separadas e explicitamente limitadas:
 - Allen Mouse Brain Connectivity Atlas para projeções mesoscale de cérebro inteiro.
 
 Nenhuma dessas fontes é tratada como um cérebro biológico completo executando no app.
+
+
+## AI Influencer Studio v3.23
+
+Social creator requests are an internal PredictLM Master capability, not a separate personality or disconnected app.
+
+Default pipeline:
+`persistent fictional adult identity → visual/content brief → image or temporal video → identity/quality review → optional authorized synthetic voice → edit/captions → publishing manifest → analytics feedback`.
+
+Rules:
+- the creator remains one stable fictional adult across posts; user reference images guide aesthetic/wardrobe/composition unless an explicitly authorized edit requires otherwise;
+- the luxury-goth default uses the Vesper Noire identity lock from `src/lib/social/influencer-studio.ts`;
+- feed portrait defaults to 4:5; Reels/Stories default to 9:16;
+- VibeVoice/GPT-SoVITS are optional voice adapters for synthetic, owned or explicitly authorized voices only;
+- OpenCut/capcut-cli patterns may drive editing and captions, but unofficial cracked/bypass packages are never production dependencies;
+- realistic generated social content carries the destination platform's required AI disclosure;
+- growth may use relevant human-quality comments, collaborations, trend participation, hashtags/search and cross-posting, but never mass comment spam, fake followers/likes or deceptive impersonation;
+- a publish action is successful only after an authorized publisher confirms it. Missing publisher credentials produce a review-ready queue, never a false success;
+- JEV compaction must preserve identity anchors, campaign decisions, active assets and recent analytics verbatim while dropping stale/redundant campaign context.
