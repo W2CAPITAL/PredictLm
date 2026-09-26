@@ -628,7 +628,7 @@ export function responseTopicAlignment(prompt:string,content:string){
     || /\b(quanto|calcule|calcular|resultado|soma|subtra|multiplica|divid|porcent|percentual)\b/.test(p);
   if(arithmetic&&/[\d]/.test(c))return {relevant:true,score:1,subject:[] as string[]};
 
-  const conciseQuestion=/^(?:qual|quais|quanto|quantos|quantas|onde|quando|quem|o que|como se chama)\b/.test(p);
+  const conciseQuestion=/^(?:qual|quais|quanto|quantos|quantas|quando|quem|o que|como se chama|onde fica)\b/.test(p);
   // A very short direct answer may legitimately omit the entity name ("Paris", "em 1969").
   // Longer answers must still overlap the requested subject; otherwise README/search dumps
   // used to pass this shortcut simply because they were under 800 characters.
