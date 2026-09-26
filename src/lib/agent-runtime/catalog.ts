@@ -3,10 +3,18 @@ export const PREDICT_AGENTS=[
   {id:'scanner-processual',name:'Scanner Processual',role:'DataJud + DJEN + portal oficial + recovery'},
   {id:'legal-review',name:'Legal Review',role:'fatos, prova, tese, contra-tese, requisitos e riscos'},
   {id:'research',name:'Research',role:'fontes atuais e cruzamento de evidência'},
-  {id:'document',name:'Document',role:'extração e grounding em arquivos'},
-  {id:'codebase-investigator',name:'Codebase Investigator',role:'arquitetura, dependências e hot files'},
-  {id:'error-recovery',name:'Error Recovery',role:'timeout, geo-block, rate limit e upstream'},
-  {id:'qa',name:'QA',role:'build, testes, segurança e regressão'},
+  {id:'evidence-graph',name:'Evidence Graph',role:'corroboração, conflitos, gaps e proveniência entre fontes'},
+  {id:'memory-librarian',name:'Memory Librarian',role:'memória persistente, compressão, entidades, conceitos e contradições'},
+  {id:'document',name:'Document',role:'extração estruturada, OCR/layout, tabelas e grounding em arquivos'},
+  {id:'codebase-investigator',name:'Codebase Investigator',role:'arquitetura, dependências, hot files e padrões do projeto'},
+  {id:'browser-debugger',name:'Browser Debugger',role:'DOM, console, rede, performance e automação reproduzível'},
+  {id:'build-architect',name:'Build Architect',role:'data model, plugin boundaries, permissões e plano de implementação'},
+  {id:'run-librarian',name:'Run Librarian',role:'checkpoint, lineage, replay e contexto entre agentes'},
+  {id:'error-recovery',name:'Error Recovery',role:'timeout, geo-block, rate limit, upstream e recuperação'},
+  {id:'qa',name:'QA',role:'build, testes, segurança, performance e regressão'},
   {id:'self-improve',name:'Self Improve',role:'feedback → hipótese → patch → eval → PR'},
-  {id:'media',name:'Media',role:'imagem, storyboard, motion e vídeo'}
+  {id:'media-director',name:'Media Director',role:'identidade, composição, storyboard, continuidade e direção visual'},
+  {id:'media-quality',name:'Media Quality',role:'artifact gate, temporal continuity, stylization e upscale'},
+  {id:'simulation-swarm',name:'Simulation Swarm',role:'percepção local, políticas emergentes e contrafactuais sem tratar simulação como previsão'},
+  {id:'voice',name:'Voice',role:'transcrição, design de voz, síntese e dublagem por adapters explícitos'}
 ] as const;
