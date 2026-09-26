@@ -6,7 +6,7 @@ description: >
   memória local-first, continuidade de projeto, pesquisa, Build, DataJud/DJEN, Lexis Revisional,
   GTM, self-improve, skill federation e gates de segurança/licença.
 metadata:
-  version: "5.25.0"
+  version: "5.26.0"
   type: meta-orchestrator
   cores: 2
   council: 10
@@ -14,7 +14,7 @@ metadata:
   superseded_by: predictlm-master
 ---
 
-# LEXIS TwinCore X10 v5.25.0
+# LEXIS TwinCore X10 v5.26.0
 
 ## Relação com PredictLM Master
 TwinCore X10 agora é um subsistema interno da **PredictLM Master**. FORGE, AEGIS, Council X10, Chair, Centum e PARALLAX não competem por controle da resposta pública; todos obedecem ao contrato soberano de `skills/predictlm-master/SKILL.md`.
@@ -204,6 +204,25 @@ Dentro da simulação:
 - trata playtest como evidência do simulador, não previsão de comportamento humano.
 
 Fonte: Donchitos/Claude-Code-Game-Studios (MIT).
+
+## Voxel World + Unity Fabric
+
+A Life Simulation Studio pode alternar para Voxel World sem sair da superfície de Simulação.
+
+Voxel World:
+- 9 referências primárias Minecraft clone registradas;
+- 2 referências Minecraft Dungeons usadas apenas como segunda camada;
+- chunks procedurais/determinísticos e delta persistence;
+- mineração, construção, inventário, crafting, fundição, farming, survival/creative;
+- mobs, estruturas, combate, dungeon/loot, dia/noite, clima e dimensões.
+
+Unity:
+- `jbruening/UnEngine` (MIT) é referência de GameObject/Component/Transform;
+- `src/lib/unity-fabric.ts` cria o contrato nativo;
+- `unity/PredictLMSimulation` é o companion WebGL;
+- runtime Unity real só é declarado quando `NEXT_PUBLIC_UNITY_SIMULATION_URL` estiver configurada.
+
+Fontes sem licença verificada permanecem reference-only; não copiar assets proprietários do Minecraft.
 
 ## Skill Federation
 
