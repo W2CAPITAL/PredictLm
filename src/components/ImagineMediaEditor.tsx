@@ -1,8 +1,8 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {ChevronLeft,ChevronRight,Download,Film,RefreshCw,Trash2,Upload} from 'lucide-react';
-import {createEditorClip,createEditorProject,editorProjectDuration,touchEditorProject,type EditorClipKind,type EditorProject} from '@/lib/media/editor-model';
+import {ChevronLeft,ChevronRight,Download,Film,FolderOpen,RefreshCw,Trash2,Upload} from 'lucide-react';
+import {createEditorClip,createEditorProject,editorProjectDuration,parseEditorProject,touchEditorProject,type EditorClipKind,type EditorProject} from '@/lib/media/editor-model';
 import {downloadEditorProject,renderEditorProjectToWebm} from '@/lib/media/browser-editor';
 import {downloadBlob} from '@/lib/media/local-motion';
 
@@ -75,6 +75,20 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
     if(!accepted.length)return;
     setProject(prev=>touchEditorProject(prev,{clips:[...prev.clips,...accepted].slice(0,20)}));
     setSelected(accepted[0].id);
+    setError('');
+  }
+
+  async function importProject(file:File|null){
+    if(!file)return;
+    try{
+      const parsed=parseEditorProject(await file.text());
+      const transient=parsed.clips.filter(item=>item.url.startsWith('blob:')).length;
+      setProject(parsed);
+      setSelected(parsed.clips[0]?.id||'');
+      setError(transient?'Projeto aberto. Clips locais antigos usam URLs temporárias; reimporte esses arquivos se não carregarem.':'');
+    }catch(err:any){
+      setError(String(err?.message||'Não foi possível abrir o projeto.'));
+    }
   }
 
   async function exportVideo(){
@@ -121,6 +135,7 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
     <div style={{padding:10,display:'grid',gap:10}}>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <label style={{...buttonStyle,cursor:'pointer'}}><Upload size={12}/>Adicionar mídia<input hidden type="file" accept="image/*,video/*" multiple onChange={e=>addFiles(e.target.files)}/></label>
+        <label style={{...buttonStyle,cursor:'pointer'}}><FolderOpen size={12}/>Abrir projeto<input hidden type="file" accept="application/json,.json" onChange={e=>void importProject(e.target.files?.[0]||null)}/></label>
         <button type="button" onClick={exportVideo} disabled={busy||!project.clips.length} style={buttonStyle}>
           {busy?<RefreshCw className="spin" size={12}/>:<Download size={12}/>}
           {busy?'Exportando '+Math.round(progress*100)+'%':'Exportar WebM'}
@@ -132,7 +147,7 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
         {project.clips.map((item,index)=><button key={item.id} onClick={()=>setSelected(item.id)} type="button" style={{minWidth:126,textAlign:'left',border:selected===item.id?'1px solid #b7c3ff':'1px solid #2a2f37',background:selected===item.id?'#171b28':'#101319',color:'inherit',borderRadius:9,padding:8}}>
           <small style={{color:'#818a98'}}>#{index+1} · {item.kind}</small>
           <b style={{display:'block',fontSize:10,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.name}</b>
-          <span style={{fontSize:9,color:'#7e8795'}}>{item.speed.toFixed(2)}× · {item.transition}</span>
+          <span style={{fontSize:9,color:'#7e8795'}}>{item.speed.toFixed(2)}× · {item.transition}{item.kind==='video'?' · '+Math.round(item.volume*100)+'%':''}</span>
         </button>)}
       </div>
 
@@ -140,6 +155,7 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
         <label style={{fontSize:9,color:'#8e96a4'}}>Início (s)<input type="number" min="0" step=".1" value={clip.trimStart} onChange={e=>patchClip({trimStart:Number(e.target.value)})} style={{width:'100%',marginTop:3}}/></label>
         <label style={{fontSize:9,color:'#8e96a4'}}>{clip.kind==='video'?'Fim (s, vazio=auto)':'Duração (s)'}<input type="number" min=".25" step=".1" value={clip.kind==='video'?(clip.trimEnd??''):clip.duration} onChange={e=>patchClip(clip.kind==='video'?{trimEnd:e.target.value===''?null:Number(e.target.value)}:{duration:Number(e.target.value)})} style={{width:'100%',marginTop:3}}/></label>
         <label style={{fontSize:9,color:'#8e96a4'}}>Velocidade<select value={clip.speed} onChange={e=>patchClip({speed:Number(e.target.value)})} style={{width:'100%',marginTop:3}}><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1">1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+        {clip.kind==='video'?<label style={{fontSize:9,color:'#8e96a4'}}>Volume {Math.round(clip.volume*100)}%<input type="range" min="0" max="1" step=".05" value={clip.volume} onChange={e=>patchClip({volume:Number(e.target.value)})} style={{width:'100%',marginTop:5}}/></label>:null}
         <label style={{fontSize:9,color:'#8e96a4'}}>Enquadramento<select value={clip.fit} onChange={e=>patchClip({fit:e.target.value})} style={{width:'100%',marginTop:3}}><option value="cover">Preencher</option><option value="contain">Conter</option></select></label>
         <label style={{fontSize:9,color:'#8e96a4'}}>Transição<select value={clip.transition} onChange={e=>patchClip({transition:e.target.value})} style={{width:'100%',marginTop:3}}><option value="cut">Corte</option><option value="fade">Fade</option></select></label>
         <label style={{fontSize:9,color:'#8e96a4'}}>Filtro<select value={project.filter} onChange={e=>setProject(prev=>touchEditorProject(prev,{filter:e.target.value as EditorProject['filter']}))} style={{width:'100%',marginTop:3}}><option value="none">Nenhum</option><option value="cinematic">Cinematic</option><option value="warm">Warm</option><option value="cool">Cool</option><option value="mono">Mono</option><option value="vivid">Vivid</option></select></label>
@@ -155,7 +171,7 @@ export function ImagineMediaEditor(props:{sourceUrl?:string;sourceKind?:EditorCl
         <button type="button" onClick={naturalizeCaption} disabled={!project.caption.trim()} style={buttonStyle}>Naturalizar</button>
       </div>
 
-      <small style={{color:'#717a88'}}>Exportação gratuita no navegador: clips, cortes, velocidade, fade, filtros e legenda em WebM. O áudio original ainda não é mixado no render local; mídia externa precisa permitir leitura pelo navegador.</small>
+      <small style={{color:'#717a88'}}>Exportação gratuita no navegador: clips, cortes, velocidade, volume, fade, filtros e legenda em WebM. O áudio é preservado quando o navegador expõe a faixa do vídeo; mídia externa ainda precisa permitir leitura por CORS.</small>
       {error?<div style={{fontSize:10,color:'#ff9ea7'}}>{error}</div>:null}
     </div>
   </section>;
