@@ -67,3 +67,24 @@ Specialized skills kept in sync with this fabric:
 - `code-evolution`
 
 A candidate experiment can become review-required after tests/build/checks, but production promotion remains blocked until review.
+
+
+## Replay-policy layer
+
+The continuous-learning fabric now has a replay simulator for exploration policies. Historical discovery trees can be evaluated again without rerunning the expensive underlying experiment. The current policy is always included as the baseline; a replacement must improve aggregate replay utility without recorded-trace regressions.
+
+This is deliberately **offline evidence**, not permission to self-deploy. A replay winner is review-required and still needs live canary evaluation, regression/security checks and rollback.
+
+The improvement governor distinguishes:
+- scaffold updates: prompts, memory, tools and control logic;
+- parametric updates: model weights.
+
+Parametric updates require explicit dataset rights, held-out evaluation and an independent evaluator in addition to the normal test/build/security/rollback gates.
+
+Source policy additions:
+- Dream-RSI: research/reference only until compatible released code/license is verified;
+- Awesome Self-Improving Agents: MIT, accepted research taxonomy/evaluation source;
+- NeoHorse: Apache-2.0, accepted routing/local-agent reference, optional rather than mandatory runtime;
+- awesome-sora-2-prompts: MIT, accepted video-prompt production source;
+- sora-2-playground: MIT, accepted queue/poll/remix/storage workflow source;
+- adobe-after-effects-windows: quarantine; no verified license and proprietary download redirect.
