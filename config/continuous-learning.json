@@ -139,16 +139,20 @@
     {
       "id": "media-ai",
       "label": "Imagem, vídeo e mídia generativa",
-      "priority": 3,
+      "priority": 4,
       "githubQueries": [
         "image generation workflow stars:>500",
-        "video generation workflow stars:>300"
+        "video generation workflow stars:>300",
+        "open source video editor web stars:>100",
+        "video timeline editor typescript stars:>50"
       ],
       "arxivQuery": "controllable image video generation identity consistency",
       "skills": [
         "grok-imagine-parity",
         "image-skill",
-        "higgsfield-media"
+        "higgsfield-media",
+        "media-editor",
+        "knowledge-distillation"
       ]
     },
     {
@@ -246,7 +250,9 @@
     ],
     "media-ai": [
       "grok-imagine-parity",
-      "image-skill"
+      "image-skill",
+      "media-editor",
+      "knowledge-distillation"
     ],
     "automation": [
       "agent-browser",

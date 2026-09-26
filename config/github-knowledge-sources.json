@@ -3323,6 +3323,148 @@
       ],
       "weight": 1.2,
       "reason": "MIT UnityEngine-compatible test double. Ingest GameObject/Component/Transform/Vector/Camera/Collider/Rigidbody/Input/Time separation patterns; actual Unity runtime is only claimed when a real Unity WebGL host is configured."
+    },
+    {
+      "repo": "OpenCut-app/OpenCut",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "apps/desktop/src/panels/timeline.rs",
+        "apps/desktop/src/panels/inspector.rs",
+        "apps/desktop/src/panels/preview.rs",
+        "crates/media/setup/ffmpeg.json"
+      ],
+      "domains": [
+        "media-ai",
+        "video-editor",
+        "timeline",
+        "plugins",
+        "headless-render"
+      ],
+      "weight": 1.18,
+      "reason": "MIT editor reference. Learn editor, timeline, plugin and headless architecture while keeping PredictLM browser-first."
+    },
+    {
+      "repo": "Hommy-master/capcut-mate",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/timelines.md",
+        "docs/add_keyframes.md",
+        "docs/add_captions.md",
+        "src/pyJianYingDraft/track.py",
+        "src/pyJianYingDraft/keyframe.py"
+      ],
+      "domains": [
+        "media-ai",
+        "timeline",
+        "keyframes",
+        "captions",
+        "draft-schema"
+      ],
+      "weight": 1.12,
+      "reason": "Apache-2.0 automation reference. Learn generic timeline, keyframe and caption data models; external desktop/cloud rendering remains optional."
+    },
+    {
+      "repo": "renezander030/capcut-cli",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/draft-schema/00-overview.md",
+        "docs/draft-schema/01-tracks-and-segments.md",
+        "docs/draft-schema/03-keyframes-and-animations.md",
+        "docs/draft-schema/04-effects-filters-stickers.md",
+        "src/render.ts",
+        "src/caption.ts"
+      ],
+      "domains": [
+        "media-ai",
+        "timeline",
+        "captions",
+        "effects",
+        "export"
+      ],
+      "weight": 1.1,
+      "reason": "MIT CLI reference. Learn generic timeline, effect, caption and export patterns without making proprietary editor compatibility a core dependency."
+    },
+    {
+      "repo": "Augani/openreel-video",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "apps/desktop/src/main/ipc/export.ts",
+        "apps/desktop/src/main/sidecar/export-job.ts",
+        "apps/image/src/components/editor/EditorInterface.tsx",
+        "apps/image/src/services/export-service.ts"
+      ],
+      "domains": [
+        "media-ai",
+        "video-editor",
+        "export",
+        "inspector",
+        "ffmpeg"
+      ],
+      "weight": 1.16,
+      "reason": "MIT editor suite. Learn inspector, export-job and editor architecture; browser MediaRecorder remains the free default path."
+    },
+    {
+      "repo": "ArcReel/ArcReel",
+      "branch": "main",
+      "license": "AGPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/adr/0090-edit-timeline-named-follows-current-not-artifact.md"
+      ],
+      "domains": [
+        "media-ai",
+        "storyboard",
+        "asset-management",
+        "timeline",
+        "pipeline"
+      ],
+      "weight": 0.86,
+      "reason": "AGPL reference. Use production-pipeline and asset/storyboard concepts only unless a separately reviewed compatible implementation is selected."
+    },
+    {
+      "repo": "blader/humanizer",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "SKILL.md"
+      ],
+      "domains": [
+        "captions",
+        "writing",
+        "humanization",
+        "quality"
+      ],
+      "weight": 1.02,
+      "reason": "MIT writing skill. Learn natural caption and prose-quality patterns while preserving factual content."
+    },
+    {
+      "repo": "snarepigeonrouter/Cap-Cut-Pro",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "media-ai",
+        "proprietary-entitlement",
+        "untrusted-installer"
+      ],
+      "weight": 0,
+      "reason": "No verified reusable license and the repository describes modifying proprietary entitlement/security settings through an external installer. Exclude from ingestion, execution and runtime dependencies."
     }
   ]
 }
