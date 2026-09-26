@@ -60,3 +60,27 @@ The Fly Core is exposed directly at `/cognitive/fly`. It has its own conversatio
 The Life Simulation Studio also contains a visible autonomous fly agent. Its movement state is driven by the same `FlyCoreState` fields used by Fly chat (salience, threat, exploration, inhibition, mushroom-body association, central-complex drive and action selection).
 
 The simulation periodically synchronizes its Fly Core back to the Cognitive Lab IndexedDB state, so Fly chat and the simulated fly share one persistent controller state. The normal PredictLM Chat at `/` remains independent.
+
+
+## Scientific evidence levels
+
+PredictLM separates four layers so the Cognitive Lab can use neuroscience without overstating what the datasets contain.
+
+| Layer | Meaning | Examples |
+|---|---|---|
+| **Measured / published** | Data or quantitative facts tied to a named dataset/paper | FlyWire neuron/synapse scale, H01 cortical fragment, macaque cortical atlas/projectomes |
+| **Imported real subset** | User-authorized edge subset parsed locally and summarized by the runtime | FlyWire/H01 CSV subset |
+| **Derived controller** | Software variables/dynamics informed by published organization, motifs or priors | salience, excitation/inhibition balance, integration, action-selection controls |
+| **Simulated state** | State invented/accumulated by PredictLM during execution | memories, goals, publicThought, synthetic biography, scenario actions |
+
+Anything outside those layers remains **unresolved/unknown**. A macaque prior is never silently relabeled as human measurement, and a connectome is never treated as a source of autobiographical memories.
+
+## Macaque references
+
+The Human↔Primate bridge uses macaque data only as an explicitly labeled proxy outside direct H01 coverage:
+
+- Cell 2023 macaque cortical spatial/transcriptomic atlas: 143 cortical regions, 264 transcriptome-defined cell types;
+- macaque PFC single-neuron projectome atlas: long-range projection priors, not synapse-level connectivity;
+- macaque claustrum tracer connectivity: brain-wide projection evidence, not a whole-brain synaptic connectome.
+
+These references improve anatomical/organizational priors while preserving the distinction between **human direct evidence**, **non-human primate proxy**, and **unknown**.
