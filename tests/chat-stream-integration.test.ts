@@ -100,7 +100,7 @@ test('stream chat falls through from failed Groq to Vercel AI Gateway',async()=>
     assert.equal(url,'https://ai-gateway.vercel.sh/v1/chat/completions');
     assert.equal(String((init?.headers as any)?.Authorization||''),'Bearer oidc-test');
     const body=JSON.parse(String(init?.body||'{}'));
-    assert.equal(body.model,'nvidia/nemotron-3.5-lightning');
+    assert.equal(body.model,'google/gemini-3.8-flash');
     assert.deepEqual(body.models,['google/gemini-3.8-flash','anthropic/claude-sonnet-5']);
     return upstream(['Oi! ','Funcionou pelo Gateway.']);
   };
