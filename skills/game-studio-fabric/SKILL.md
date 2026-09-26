@@ -4,7 +4,7 @@ description: >
   Coordenação interna da Life Simulation Studio do PredictLM inspirada no Claude-Code-Game-Studios:
   rigor adaptativo, papéis por domínio do mundo, loop completo, run-and-observe, playtest e gates de QA.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   type: simulation-specialist
   source: "Donchitos/Claude-Code-Game-Studios"
   source_license: "MIT"
@@ -65,6 +65,52 @@ A Game Studio coordena outras capacidades já federadas:
 - trackstudio → identidade persistente entre frames/atores;
 - ai-brain / claude-mem / llm-wiki-agent → memória, episódios, entidades e continuidade.
 
+## Voxel World / Minecraft-class
+
+A Simulação possui um segundo mundo nativo: **Voxel World**, com arquitetura Minecraft-class.
+
+Contrato:
+- chunks determinísticos e efetivamente sem limite de gameplay em X/Z;
+- seed + geração procedural + biomas + recursos;
+- mineração e colocação de blocos;
+- persistência por deltas, sem salvar o mundo inteiro;
+- sobrevivência e criativo;
+- vida, fome, experiência, inventário, hotbar/bloco selecionado;
+- crafting, fundição, comida e farming;
+- mobs passivos/hostis, combate e progressão;
+- estruturas procedurais, cavernas, vilas, minas e masmorras;
+- ciclo dia/noite, clima e dimensões;
+- Dungeons é camada secundária de masmorras/loot, nunca o modelo principal.
+
+Referências primárias registradas:
+`fogleman/Craft`, `dgreenheck/minecraft-threejs-clone`, `0xfabian/mc`,
+`pquiring/jfcraft`, `obiwac/python-minecraft-clone`, `Aidanhouk/Minecraft-Clone`,
+`zardoy/minecraft-web-client`, `zardoy/mcraft-arwes` e
+`JEFFY1234599/block-craft-browser-edition`.
+
+Referências secundárias:
+`TheDoctor200/MinecraftDungeonsLauncher` e
+`GuyRoosevelt/Minecraft-Dungeons-The-Awakening`.
+
+Arquivos canônicos:
+- `src/lib/simulation/minecraft-sandbox.ts`
+- `src/lib/simulation/minecraft-reference-fabric.ts`
+- `src/components/MinecraftSimulationPanel.tsx`
+
+Referências sem licença verificada permanecem **reference-only**. Não copiar assets, sons ou código proprietário do Minecraft.
+
+## Unity Fabric
+
+A simulação usa `jbruening/UnEngine` (MIT) como referência para o contrato
+GameObject / Component / Transform / Vector / Camera / Collider / Rigidbody / Physics / Input / Time.
+
+- o runtime web continua leve e nativo;
+- `src/lib/unity-fabric.ts` produz scene snapshots;
+- o Voxel World exporta o estado para esse contrato;
+- um build Unity WebGL real pode ser ligado por `NEXT_PUBLIC_UNITY_SIMULATION_URL`;
+- o projeto-companheiro fica em `unity/PredictLMSimulation`;
+- ausência de build Unity não é mascarada como Unity executando.
+
 ## Regra visual
 
 Build/parse/teste lógico não prova que o mundo da simulação está visualmente correto.
@@ -79,5 +125,8 @@ No navegador, a evidência pode vir do próprio canvas/POV e do estado exibido. 
 - `src/components/GrokSimulationPanel.tsx`
 - `src/app/api/chat/route.ts` no modo `simulation-plan`
 - `src/lib/fusion/capability-fabric.ts`
+- `src/lib/simulation/minecraft-sandbox.ts`
+- `src/components/MinecraftSimulationPanel.tsx`
+- `src/lib/unity-fabric.ts`
 
 A fonte upstream é MIT. O PredictLM adapta padrões de coordenação; não depende de Claude Code nem importa o framework inteiro.
