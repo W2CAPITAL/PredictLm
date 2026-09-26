@@ -139,13 +139,57 @@ export function emitAppLearningEvent(event:AppLearningEvent){
   return fusion;
 }
 
+
+export interface AppImprovementCandidate{
+  id:string;
+  surface:string;
+  action:string;
+  occurrences:number;
+  failures:number;
+  meanPriority:number;
+  meanDisagreement:number;
+  rationale:string;
+  status:'candidate';
+  promotion:'proposal-only';
+}
+
+export function deriveAppImprovementCandidates(ledger=readAppLearningLedger(),limit=12):AppImprovementCandidate[]{
+  const groups=new Map<string,{surface:string;action:string;rows:AppLearningLedger['events']}>();
+  for(const row of ledger.events){
+    if(row.success!==false&&row.priority<.68)continue;
+    const key=row.surface+'|'+row.action;
+    const group=groups.get(key)||{surface:row.surface,action:row.action,rows:[]};
+    group.rows.push(row);
+    groups.set(key,group);
+  }
+  return [...groups.values()].map(group=>{
+    const failures=group.rows.filter(x=>x.success===false).length;
+    const meanPriority=group.rows.reduce((sum,x)=>sum+x.priority,0)/Math.max(1,group.rows.length);
+    const meanDisagreement=group.rows.reduce((sum,x)=>sum+x.disagreement,0)/Math.max(1,group.rows.length);
+    const severity=failures>1?'repeated failure':failures===1?'observed failure':'high-priority cross-species disagreement';
+    return {
+      id:'app:'+group.surface+':'+group.action,
+      surface:group.surface,
+      action:group.action,
+      occurrences:group.rows.length,
+      failures,
+      meanPriority:Number(meanPriority.toFixed(3)),
+      meanDisagreement:Number(meanDisagreement.toFixed(3)),
+      rationale:severity+'; inspect the responsible code path, reproduce, propose the smallest reversible patch, then run tests/build/security checks.',
+      status:'candidate' as const,
+      promotion:'proposal-only' as const
+    };
+  }).sort((a,b)=>b.failures-a.failures||b.meanPriority-a.meanPriority||b.occurrences-a.occurrences).slice(0,Math.max(1,Math.min(30,limit)));
+}
+
 export function appLearningContext(surface?:string,limit=8){
   const ledger=readAppLearningLedger();
   const rows=ledger.events
     .filter(x=>!surface||x.surface===surface)
     .sort((a,b)=>b.priority-a.priority||b.at-a.at)
     .slice(0,Math.max(1,Math.min(20,limit)));
-  if(!rows.length)return '';
+  const candidates=deriveAppImprovementCandidates(ledger,4);
+  if(!rows.length&&!candidates.length)return '';
   return [
     'APP-WIDE LEARNING LEDGER — behavioral telemetry with values/content redacted.',
     'Experiences '+ledger.total+' · successes '+ledger.successes+' · failures '+ledger.failures+'.',
@@ -156,7 +200,8 @@ export function appLearningContext(surface?:string,limit=8){
       'priority '+Math.round(x.priority*100)+'%',
       'disagreement '+Math.round(x.disagreement*100)+'%',
       x.success===undefined?'outcome unknown':x.success?'success':'failure'
-    ].join(' · '))
+    ].join(' · ')),
+    ...candidates.map(x=>'IMPROVEMENT CANDIDATE · '+x.surface+' · '+x.action+' · failures '+x.failures+' · priority '+Math.round(x.meanPriority*100)+'% · proposal-only')
   ].join('\n');
 }
 
