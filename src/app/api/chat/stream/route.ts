@@ -232,18 +232,22 @@ function emitValidatedAnswer(
 export async function POST(req:NextRequest){
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
-  const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
-  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
-  const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
-  const messages=safeMessages(body?.messages,language,autoLearning);
   const candidates=providerList().slice(0,8);
 
+  // Do not touch Supabase/learning or any other network when there is no
+  // configured streaming provider. This keeps the offline/no-provider path
+  // deterministic and avoids a pointless request before the 503 fallback.
   if(!candidates.length){
     return Response.json({
       error:'Nenhum provider de chat está configurado.',
       code:'NO_STREAM_PROVIDER'
     },{status:503,headers:{'Cache-Control':'no-store'}});
   }
+
+  const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
+  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
+  const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
+  const messages=safeMessages(body?.messages,language,autoLearning);
 
   const encoder=new TextEncoder();
   const requestSignal=req.signal;
