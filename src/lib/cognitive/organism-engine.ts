@@ -1,5 +1,6 @@
 import type {FlyCoreState} from './fly-core';
 import type {HumanCoreState} from './human-core';
+import {emitAppLearningEvent} from '../app-learning';
 
 export type SimulatedBrainProfile='explorer'|'planner'|'skeptic'|'social';
 
@@ -209,6 +210,7 @@ export function advanceOrganism(
 
 export function learnOrganismOutcome(previous:OrganismState|undefined,input:{reward:number;predictionError:number;experience:string}){
   const prev=normalizeOrganismState(previous);
+  emitAppLearningEvent({surface:'cognitive/organism',action:'learn-outcome '+clean(input.experience,90),kind:'cognitive',success:input.reward>=.5,novelty:input.predictionError,uncertainty:input.predictionError,salience:Math.max(input.reward,input.predictionError),metadata:{tick:prev.tick}});
   const reward=clamp(input.reward);
   const predictionError=clamp(input.predictionError);
   return {
