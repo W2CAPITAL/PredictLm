@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "7a6c168764b98bfb",
-  "generatedAt": "2026-09-26T11:15:35.283Z",
-  "sourceCount": 90,
-  "chunkCount": 4673,
+  "knowledgeVersion": "b4551e339d93688a",
+  "generatedAt": "2026-09-26T18:59:54.483Z",
+  "sourceCount": 93,
+  "chunkCount": 4758,
   "chunks": [
     {
       "id": "69f9fa1199c9ded38f50",
@@ -4647,9 +4647,9 @@
       "weight": 1.24
     },
     {
-      "id": "69dcfe63e554b150a59a",
+      "id": "87927d41980e8a954f9b",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4668,9 +4668,9 @@
       "weight": 1.3
     },
     {
-      "id": "fa91dd34023c01712ba8",
+      "id": "afc8d15905fd157f1aa3",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4689,9 +4689,9 @@
       "weight": 1.3
     },
     {
-      "id": "d5abf768a5d48bcd83ea",
+      "id": "0bdee6a2fa0797b99f48",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4710,9 +4710,9 @@
       "weight": 1.3
     },
     {
-      "id": "db61b90227feee7db8d1",
+      "id": "0afc419e19e6e36755ee",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4731,9 +4731,9 @@
       "weight": 1.3
     },
     {
-      "id": "9ce7d87e7a15c0feca92",
+      "id": "3db776be18f529d46e04",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4752,9 +4752,9 @@
       "weight": 1.3
     },
     {
-      "id": "6a1856cc2cac0d4ef543",
+      "id": "a35d3adc5289dda7cb32",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4773,9 +4773,9 @@
       "weight": 1.3
     },
     {
-      "id": "234c4dfed6571d3762e5",
+      "id": "eb60fc6f0fd9abc5e4b0",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4794,9 +4794,9 @@
       "weight": 1.3
     },
     {
-      "id": "58cf4e18b0c54f788b06",
+      "id": "5a01feb3c0468f2203cb",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4815,9 +4815,9 @@
       "weight": 1.3
     },
     {
-      "id": "2dd26bae6b93fee5fa82",
+      "id": "ce7ff66d4b3e1ead4875",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4836,9 +4836,9 @@
       "weight": 1.3
     },
     {
-      "id": "a20317ca76da63923de0",
+      "id": "8f1a8e377e1e044c7053",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4857,9 +4857,9 @@
       "weight": 1.3
     },
     {
-      "id": "13319d7dbd375128efe9",
+      "id": "304614ff180892098c85",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4878,9 +4878,9 @@
       "weight": 1.3
     },
     {
-      "id": "8825ee9cb0bb7e6b1f93",
+      "id": "a473eb25c24ada13f4e9",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4899,9 +4899,9 @@
       "weight": 1.3
     },
     {
-      "id": "cdb57d63c777f259a10a",
+      "id": "60f7fef2c355f9adbfc8",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4920,9 +4920,9 @@
       "weight": 1.3
     },
     {
-      "id": "8f0ab032b0b65d9f534c",
+      "id": "c76e21011930366746bb",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4941,9 +4941,9 @@
       "weight": 1.3
     },
     {
-      "id": "052c6ef9d074dffa6175",
+      "id": "b2739a76d4198c0aeedc",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4962,9 +4962,9 @@
       "weight": 1.3
     },
     {
-      "id": "51e5f0f1b2c80bdc88f9",
+      "id": "6f492da8060d498728d3",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -4983,9 +4983,9 @@
       "weight": 1.3
     },
     {
-      "id": "44228b4ac15900be83e3",
+      "id": "f1bd5a1335c32ae82954",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5004,9 +5004,9 @@
       "weight": 1.3
     },
     {
-      "id": "a619a75d054be9fbcaae",
+      "id": "e5350298d6a20e0f2bd7",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5025,9 +5025,9 @@
       "weight": 1.3
     },
     {
-      "id": "704691ab3c0ba0067edd",
+      "id": "8e0988f68bda4125514f",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5046,9 +5046,9 @@
       "weight": 1.3
     },
     {
-      "id": "c05f9a37d6d7f65fa12d",
+      "id": "73c33d90271318cc14ac",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5067,9 +5067,9 @@
       "weight": 1.3
     },
     {
-      "id": "239a50d0f6d319176b85",
+      "id": "0eddd19df6d444949329",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5088,9 +5088,9 @@
       "weight": 1.3
     },
     {
-      "id": "8c3410cbc897dc390ca5",
+      "id": "86a061ef882b0737b3ac",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5109,9 +5109,9 @@
       "weight": 1.3
     },
     {
-      "id": "461b077f6cd37dea8fed",
+      "id": "e1a6e4316885166d0a56",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5130,9 +5130,9 @@
       "weight": 1.3
     },
     {
-      "id": "644ae7a258255a54fc1e",
+      "id": "bf18be944ca3f4080236",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5151,9 +5151,9 @@
       "weight": 1.3
     },
     {
-      "id": "a040431b8e2611012a40",
+      "id": "86c1f1a9f7b0ce465d7f",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5172,9 +5172,9 @@
       "weight": 1.3
     },
     {
-      "id": "8498ab45f71ddabd5608",
+      "id": "96c1a1545f05fbfba5dc",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5193,9 +5193,9 @@
       "weight": 1.3
     },
     {
-      "id": "b21854489d86607f820f",
+      "id": "506fc871dc20fe04a6a8",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5214,9 +5214,9 @@
       "weight": 1.3
     },
     {
-      "id": "3fa36c39ee012476897d",
+      "id": "015419f1263d1cec7901",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5235,9 +5235,9 @@
       "weight": 1.3
     },
     {
-      "id": "7204d2fd4a99071e5b33",
+      "id": "bb110ad0cc701beb701f",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5256,9 +5256,9 @@
       "weight": 1.3
     },
     {
-      "id": "52ff3f268450f5e9e419",
+      "id": "64a34652db691cc243c6",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5277,9 +5277,9 @@
       "weight": 1.3
     },
     {
-      "id": "d6068d89557ba29c29f7",
+      "id": "8a13abf19378db9c3d69",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5298,9 +5298,9 @@
       "weight": 1.3
     },
     {
-      "id": "6252da424d642a53d115",
+      "id": "5d5f6d2b29e5efddc28a",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5319,9 +5319,9 @@
       "weight": 1.3
     },
     {
-      "id": "1bfa3e608ba6c66c7073",
+      "id": "ed9a027c8d4e28c0ad2e",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5340,9 +5340,9 @@
       "weight": 1.3
     },
     {
-      "id": "f5d946d25cdd185179d4",
+      "id": "dc5a32f3324ce97c3e0f",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5361,9 +5361,9 @@
       "weight": 1.3
     },
     {
-      "id": "af282c070924211faa2d",
+      "id": "53881a11d6cf87e68bdd",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5382,9 +5382,9 @@
       "weight": 1.3
     },
     {
-      "id": "e067e18d98619eb4f819",
+      "id": "5a8a3e53a03b2b3529d8",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5403,9 +5403,9 @@
       "weight": 1.3
     },
     {
-      "id": "7a9e79678570ba285424",
+      "id": "dbc0e34516acaf837b23",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5424,9 +5424,9 @@
       "weight": 1.3
     },
     {
-      "id": "4a06b05d756dabd78855",
+      "id": "afcc514e36743944267e",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5445,9 +5445,9 @@
       "weight": 1.3
     },
     {
-      "id": "6034f8c449f397dd29fc",
+      "id": "3ac668b839f90cfe27b6",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5466,9 +5466,9 @@
       "weight": 1.3
     },
     {
-      "id": "510dd5f90352c05665f8",
+      "id": "be57eafbcb1d28741300",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5487,9 +5487,9 @@
       "weight": 1.3
     },
     {
-      "id": "0887ac53d55eec3c20ac",
+      "id": "76b53769a9e64f731f32",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5508,9 +5508,9 @@
       "weight": 1.3
     },
     {
-      "id": "297fcc6185025a1dcbd6",
+      "id": "b1419d0fb61bc1cfe8d7",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5529,9 +5529,9 @@
       "weight": 1.3
     },
     {
-      "id": "2d760ad6e6be79b12853",
+      "id": "fb9180c110dcec2e9d3b",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5550,9 +5550,9 @@
       "weight": 1.3
     },
     {
-      "id": "66bb5ff5a631aa69af47",
+      "id": "f26a535ae17741f0ffce",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5571,9 +5571,9 @@
       "weight": 1.3
     },
     {
-      "id": "5a57b908314ec32b7612",
+      "id": "68a44836add45806c39e",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5592,9 +5592,9 @@
       "weight": 1.3
     },
     {
-      "id": "c80162b086de643c9a9e",
+      "id": "07060ac22e7d6a53ef69",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5613,9 +5613,9 @@
       "weight": 1.3
     },
     {
-      "id": "5d331d0d73034d3ce729",
+      "id": "22698ff5d7927d54ee09",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5634,9 +5634,9 @@
       "weight": 1.3
     },
     {
-      "id": "f65b071db592d2899b0e",
+      "id": "0aa7be9f29f5490147e5",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5655,9 +5655,9 @@
       "weight": 1.3
     },
     {
-      "id": "9cf4395d6ac7a9c1144e",
+      "id": "d6d7ccfa3e190f845b4a",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5676,9 +5676,9 @@
       "weight": 1.3
     },
     {
-      "id": "5ccb06eaa2c3e3b2fcfa",
+      "id": "191b07231ef4ef097762",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5697,9 +5697,9 @@
       "weight": 1.3
     },
     {
-      "id": "1a16a0bea2aa7d777611",
+      "id": "33ea127112e4fbb68525",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5718,9 +5718,9 @@
       "weight": 1.3
     },
     {
-      "id": "ee738cfa2df43e65eeae",
+      "id": "06e5a86d1e575941238d",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5739,9 +5739,9 @@
       "weight": 1.3
     },
     {
-      "id": "73ae3fda98e36932a465",
+      "id": "8053541e947d1e789ce5",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5760,9 +5760,9 @@
       "weight": 1.3
     },
     {
-      "id": "d5e581e8eeb8319afc69",
+      "id": "35688a2881b5eebaa9bc",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5781,9 +5781,9 @@
       "weight": 1.3
     },
     {
-      "id": "b6c451a2d053c327ae64",
+      "id": "3063129d0e540f1795c7",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5802,9 +5802,9 @@
       "weight": 1.3
     },
     {
-      "id": "5869fdac5a6eeef486aa",
+      "id": "2a680e1bbc2f60c67a20",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5823,9 +5823,9 @@
       "weight": 1.3
     },
     {
-      "id": "ddde29678a87c2bcaeba",
+      "id": "31a78a8dfc95dce220d5",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5844,9 +5844,9 @@
       "weight": 1.3
     },
     {
-      "id": "2e9fb5505da7eae874f1",
+      "id": "e864494f40da0e45da64",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5865,9 +5865,9 @@
       "weight": 1.3
     },
     {
-      "id": "62df1f287ef75e4edbe0",
+      "id": "63c8143a44c94350cfa7",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5886,9 +5886,9 @@
       "weight": 1.3
     },
     {
-      "id": "6cb49ae5230588f47b0e",
+      "id": "66a753dab7e277191f9e",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5907,9 +5907,9 @@
       "weight": 1.3
     },
     {
-      "id": "df220fbc8da85329cd5c",
+      "id": "c499ca654b051cc67e43",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5928,9 +5928,9 @@
       "weight": 1.3
     },
     {
-      "id": "4515d4d671d56a9999f1",
+      "id": "19ce9eb325420716be7d",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -5949,9 +5949,9 @@
       "weight": 1.3
     },
     {
-      "id": "bdf8b3e36772a33d79c7",
+      "id": "ce3611e5226cc1f1c462",
       "source": "NousResearch/hermes-agent",
-      "ref": "d0288be5b333",
+      "ref": "77a799e2f9c7",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -18878,9 +18878,9 @@
       "weight": 0.95
     },
     {
-      "id": "5d2015e00305aadc1585",
+      "id": "1d88861dec48163b64a1",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18894,9 +18894,9 @@
       "weight": 1.18
     },
     {
-      "id": "f1869e3905ccafedf4b9",
+      "id": "da9df1b220863ecd081b",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18910,9 +18910,9 @@
       "weight": 1.18
     },
     {
-      "id": "46217ee9819ab7b84beb",
+      "id": "3160b7b962459acc35b8",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18926,9 +18926,9 @@
       "weight": 1.18
     },
     {
-      "id": "fbbe51abec0a6ddd47d4",
+      "id": "fda00ad9621773dbc535",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18942,9 +18942,9 @@
       "weight": 1.18
     },
     {
-      "id": "5fe0fbe364a4ca8c3cac",
+      "id": "315eb57451af071a0dc3",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18958,9 +18958,9 @@
       "weight": 1.18
     },
     {
-      "id": "595bd29e6a04ed93ed72",
+      "id": "b8acf5983951c377e545",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18974,9 +18974,9 @@
       "weight": 1.18
     },
     {
-      "id": "4d603e38a92f15eaa720",
+      "id": "9365be976ae1c5a0be5c",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -18990,9 +18990,9 @@
       "weight": 1.18
     },
     {
-      "id": "750a668e1d9f93892726",
+      "id": "fdb4901389260543f05c",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19006,9 +19006,9 @@
       "weight": 1.18
     },
     {
-      "id": "56822ef256a583008efc",
+      "id": "a394a16d0cb22a83fced",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19022,9 +19022,9 @@
       "weight": 1.18
     },
     {
-      "id": "e9de5fe8c2188438666f",
+      "id": "b3f8269e7d3cfd711eac",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19038,9 +19038,9 @@
       "weight": 1.18
     },
     {
-      "id": "b14f81dd197f40854f57",
+      "id": "166caf2134a5bda34534",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19054,9 +19054,9 @@
       "weight": 1.18
     },
     {
-      "id": "e2828148404cec88a85b",
+      "id": "9d94a48c9f3dac6c756a",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19070,9 +19070,9 @@
       "weight": 1.18
     },
     {
-      "id": "ac8d3416613c91844a76",
+      "id": "c612062e9e5916f34cc2",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19086,9 +19086,9 @@
       "weight": 1.18
     },
     {
-      "id": "f1db53c454ddee676263",
+      "id": "a1031774cfd1555bd381",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.en.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19102,9 +19102,9 @@
       "weight": 1.18
     },
     {
-      "id": "21dd0f7d38b05738e51a",
+      "id": "8705f8f1b59cdef6e6a4",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19113,14 +19113,30 @@
         "evidence",
         "token-efficiency"
       ],
-      "heading": "dsh-prompt-optimizer **v0.7.4** · 提示词优化器（DSH Web 插件）",
-      "text": "**中文** ｜ [English](README.en.md)\n\n> **它不改写你的话。** 你照常说话，它在你按下发送**之前**，把\"这一轮到底要什么\"理清楚，再把这份理解交给工作 AI——\n> 你的原话一个字不动，理解**随行**；条条带**逐字依据**；每一轮**重新想一遍**（不继承上一轮）。\n> 完整说明与自检见 [`po06/README.md`](po06/README.md)，人工验收见 [`po06/HUMAN-TEST.md`](po06/HUMAN-TEST.md)。\n\n> ### 30 秒装上 0.7.4\n>\n> ```powershell\n> $v = '0.7.4'; $d = \"$env:USERPROFILE\\Downloads\"\n> Invoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/dsh-external-dsh-po06-$v.tgz\" -OutFile \"$d\\dsh-external-dsh-po06-$v.tgz\"\n> Get-Content \"$d\\SHA256SUMS-$v.txt\"     # 与上一行下载到的 tgz 对 sha256（Release 页也有同一份）\n> dsh --profile po061 --from-default-profile web --dump-config        # 建一个干净 profile\n> dsh plugin --profile po061 add \"$d\\dsh-external-dsh-po06-$v.tgz\"    # 装\n> dsh --profile po061                                                 # 起服务（会打印带 token 的地址）\n> ```\n>\n> 装完在面板上把**档位**拨到 `标准` 或 `重度`（`关闭` 档不拦截、不注入）。\n> 详细版（含 4 步自检、常见装不上的原因）见 [`po06/README.md`](po06/README.md)。\n> **不要装进 0.5.x 所在的那个 profile**：同装配会被 `DOUBLE_INTERCEPT` 守卫拒绝启用（这是刻意的），\n> 两者也**不共用配置**（0.6 的启用意图在 `<home>/po06.json`，不会碰 0.5 的 `prompt-optimizer.json`）。\n\n---",
+      "heading": "dsh-prompt-optimizer **v0.7.5** · 提示词优化器（DSH Web 插件）",
+      "text": "**中文** ｜ [English](README.en.md)\n\n> **它不改写你的话。** 你照常说话，它在你按下发送**之前**，把\"这一轮到底要什么\"理清楚，再把这份理解交给工作 AI——\n> 你的原话一个字不动，理解**随行**；条条带**逐字依据**；每一轮**重新想一遍**（不继承上一轮）。\n> 完整说明与自检见 [`po06/README.md`](po06/README.md)，人工验收见 [`po06/HUMAN-TEST.md`](po06/HUMAN-TEST.md)。\n\n> ### ⚠️ 安装来源只有一个：本仓库的 Release\n>\n> | 渠道 | 是什么 | 该不该用 |\n> |---|---|---|\n> | **GitHub Release 附件** | 当前版本（`@dsh-external/dsh-po06`） | ✅ **唯一正确来源**，就是下面这段命令 |\n> | **npm 上的 `@dsh-external/dsh-prompt-optimizer`** | **0.5 时代的老包，已停止维护** | ❌ **不要装**（名字像，但不是这个版本） |\n> | **npm 上的 `@dsh-external/dsh-po06`** | 不存在——当前版本 `private: true`，**刻意不发 npm** | — |\n> | 仓库根直接 clone | 与本 Release 同源，适合开发者 | ⚠️ 需要自己构建，普通使用走 Release 更省事 |\n>\n> 想找 0.1 ~ 0.6 的旧版本？见 [`old/`](old/README.md)（含各代简介与下载方法）。\n> 想自己发一版？见 [`RELEASING.md`](RELEASING.md)（9 步发布规程 + 检查清单）。\n> ### 30 秒装上 0.7.5\n>\n> ```powershell\n> $v = '0.7.5'; $d = \"$env:USERPROFILE\\Downloads\"\n> Invoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/dsh-external-dsh-po06-$v.tgz\" -OutFile \"$d\\dsh-external-dsh-po06-$v.tgz\"\n> Get-Content \"$d\\SHA256SUMS-$v.txt\"     # 与上一行下载到的 tgz 对 sha256（Release 页也有同一份）\n> dsh --profile po061 --from-default-profile web --dump-config        # 建一个干净",
       "weight": 1.18
     },
     {
-      "id": "342cf1f8e4069fba425b",
+      "id": "f3fe3cbc97204a307de4",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
+      "path": "README.md",
+      "license": "BSD-3-Clause",
+      "domains": [
+        "prompt-optimization",
+        "context",
+        "evidence",
+        "token-efficiency"
+      ],
+      "heading": "dsh-prompt-optimizer **v0.7.5** · 提示词优化器（DSH Web 插件）",
+      "text": "profile\n> dsh plugin --profile po061 add \"$d\\dsh-external-dsh-po06-$v.tgz\"    # 装\n> dsh --profile po061                                                 # 起服务（会打印带 token 的地址）\n> ```\n>\n> 装完在面板上把**档位**拨到 `标准` 或 `重度`（`关闭` 档不拦截、不注入）。\n> 详细版（含 4 步自检、常见装不上的原因）见 [`po06/README.md`](po06/README.md)。\n> **不要装进 0.5.x 所在的那个 profile**：同装配会被 `DOUBLE_INTERCEPT` 守卫拒绝启用（这是刻意的），\n> 两者也**不共用配置**（0.6 的启用意图在 `<home>/po06.json`，不会碰 0.5 的 `prompt-optimizer.json`）。\n\n---",
+      "weight": 1.18
+    },
+    {
+      "id": "a051ac2710f789500a25",
+      "source": "WestFox-AwA/dsh-prompt-optimizer",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19134,9 +19150,9 @@
       "weight": 1.18
     },
     {
-      "id": "13ca841712a94ac6207f",
+      "id": "12d3d773ee3c753e6ed4",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19150,9 +19166,9 @@
       "weight": 1.18
     },
     {
-      "id": "55e8cda223990d61c7b5",
+      "id": "b4fcc35d9c6011dc31c7",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19166,9 +19182,9 @@
       "weight": 1.18
     },
     {
-      "id": "ab5ec2d893a94ca4bde3",
+      "id": "737dd62be4b72c99ca44",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19182,9 +19198,9 @@
       "weight": 1.18
     },
     {
-      "id": "dce3c0675acd43e50c4f",
+      "id": "f234ed7e4c5090f973e3",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19198,9 +19214,9 @@
       "weight": 1.18
     },
     {
-      "id": "7b3ddfb113b6d4a09b23",
+      "id": "25285308b346c5f588fc",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19210,13 +19226,13 @@
         "token-efficiency"
       ],
       "heading": "诚实声明（请按这个预期使用）",
-      "text": "- ✅ **内部自洽有证据**：**48 套 / 645 项测试全绿**（含打包自足性、文档漂移门禁；另有 231 个变异守卫，属发版门那条线）。\n- 📊 **作者实测观察（不是专业跑分）**：测试主要在 **DeepSeek-V4.1-Flash + PTC + PowerShell** 环境下进行。\n  **目前没有做过专业的跑分测试**；但在常见的各类 one-shot 任务与长任务迭代中，\n  **实际效果明显强于同环境、同提示词下的 DeepSeek-V4.1-Flash**；另据**少量项目**的统计，\n  **疑似会降低 token 消耗量、节省开销**。\n- ⚠️ **能力仍是实验性的**，请当成**可以装、可以试、随时可关**的东西，**不是\"升级\"**。\n- 📌 本版（0.7.4）修掉的真机问题：① 内置 Bash —— 把原来要单独装的 bash 后端并进本插件：\n  装上这一个插件就有 bash（自带 GNU bash/MSYS2 运行时，无需 WSL），详情面板里可一键开关\n  （关掉＝不把该工具交给模型，模型看不到它）；② 三档真正拉开 —— 补充程度（700 / 1200 / 2000 字）与\n  自主预算（1 / 2 / 3 个问题）两个维度逐级递进（此前 minimal 从未被任何档位使用）；\n  ③ 内部控制面信息不再进入工作模型（注入头部原先带「任务 default · 意图修订 N」）；\n  ④ 质量解释改为结果方向而非制作清单；⑤ 思维层不再显示裸 JSON 补丁。\n  两个维度逐级递进（此前 `minimal` 从未被任何档位使用、且 standard 与 heavy 的 detail 相同，实测\"重度并不明显比轻度高\"）；\n  ② **内部控制面信息不再进入工作模型**——注入头部原先带「任务 `default` · 意图修订 N」，会被模型当成任务语义处理，现已移除\n  （元数据仍留在宿主 state 与台账里供调试）；③ **质量解释改为\"结果方向\"而非制作清单**，不再逐项罗列零件、参数、材质与后期效果；\n  ④ **可逆实现默认**写进「实现选项」节（可逆细节可自行调整并说明理由；不可逆的产品方向仍只能留在未决项）；\n  ⑤ **思维层不再显示裸 JSON 补丁**——模型不返回思考文本时，把结构化输出解析成可读的产出条目。\n  详见 [`CHANGELOG.md`](CHANGELOG.md)。",
+      "text": "- ✅ **内部自洽有证据**：**48 套 / 645 项测试全绿**（含打包自足性、文档漂移门禁；另有 231 个变异守卫，属发版门那条线）。\n- 📊 **作者实测观察（不是专业跑分）**：测试主要在 **DeepSeek-V4.1-Flash + PTC + PowerShell** 环境下进行。\n  **目前没有做过专业的跑分测试**；但在常见的各类 one-shot 任务与长任务迭代中，\n  **实际效果明显强于同环境、同提示词下的 DeepSeek-V4.1-Flash**；另据**少量项目**的统计，\n  **疑似会降低 token 消耗量、节省开销**。\n- ⚠️ **能力仍是实验性的**，请当成**可以装、可以试、随时可关**的东西，**不是\"升级\"**。\n- 📌 本版（0.7.5）修掉的真机问题：① 内置 Bash —— 把原来要单独装的 bash 后端并进本插件：\n  装上这一个插件就有 bash（自带 GNU bash/MSYS2 运行时，无需 WSL），详情面板里可一键开关\n  （关掉＝不把该工具交给模型，模型看不到它）；② 三档真正拉开 —— 补充程度（700 / 1200 / 2000 字）与\n  自主预算（1 / 2 / 3 个问题）两个维度逐级递进（此前 minimal 从未被任何档位使用）；\n  ③ 内部控制面信息不再进入工作模型（注入头部原先带「任务 default · 意图修订 N」）；\n  ④ 质量解释改为结果方向而非制作清单；⑤ 思维层不再显示裸 JSON 补丁。\n  两个维度逐级递进（此前 `minimal` 从未被任何档位使用、且 standard 与 heavy 的 detail 相同，实测\"重度并不明显比轻度高\"）；\n  ② **内部控制面信息不再进入工作模型**——注入头部原先带「任务 `default` · 意图修订 N」，会被模型当成任务语义处理，现已移除\n  （元数据仍留在宿主 state 与台账里供调试）；③ **质量解释改为\"结果方向\"而非制作清单**，不再逐项罗列零件、参数、材质与后期效果；\n  ④ **可逆实现默认**写进「实现选项」节（可逆细节可自行调整并说明理由；不可逆的产品方向仍只能留在未决项）；\n  ⑤ **思维层不再显示裸 JSON 补丁**——模型不返回思考文本时，把结构化输出解析成可读的产出条目。\n  详见 [`CHANGELOG.md`](CHANGELOG.md)。",
       "weight": 1.18
     },
     {
-      "id": "d68278ef451bc5b17c8d",
+      "id": "2fd18b010092530002d3",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19226,13 +19242,13 @@
         "token-efficiency"
       ],
       "heading": "版本与证据",
-      "text": "- 更新日志：[`CHANGELOG.md`](CHANGELOG.md) ｜ 人工验收：[`po06/HUMAN-TEST.md`](po06/HUMAN-TEST.md) ｜\n  发版登记（含每次真跑过的装机演练）：[`po06/RELEASE-CHECKLIST.md`](po06/RELEASE-CHECKLIST.md)\n- 安装与自检：[`po06/README.md`](po06/README.md) ｜ 当前 Release：**[v0.7.4](https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/tag/v0.7.4)**\n- 兼容：`dsh-0.1.6-alpha.1`（`0.1.5-rc.1` 亦可运行）｜ 作者：啃轮胎的西狐\n- **上一代（0.5 线，仍可用，但已不再更新）**：装在另一个包 `@dsh-external/dsh-prompt-optimizer`，\n  最后发布 `v0.5.0-beta.1`；设计与用法见 [`SPEC.md`](SPEC.md)，历史文档（含 0.5 的实测数据）见\n  **[`README-0.5.md`](README-0.5.md)** —— 那里的数字**只属于 0.5**，不是 0.6 的效果证据。",
+      "text": "- 更新日志：[`CHANGELOG.md`](CHANGELOG.md) ｜ 人工验收：[`po06/HUMAN-TEST.md`](po06/HUMAN-TEST.md) ｜\n  发版登记（含每次真跑过的装机演练）：[`po06/RELEASE-CHECKLIST.md`](po06/RELEASE-CHECKLIST.md)\n- 安装与自检：[`po06/README.md`](po06/README.md) ｜ 当前 Release：**[v0.7.5](https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/tag/v0.7.5)**\n- 兼容：`dsh-0.1.6-alpha.1`（`0.1.5-rc.1` 亦可运行）｜ 作者：啃轮胎的西狐\n- **上一代（0.5 线，仍可用，但已不再更新）**：装在另一个包 `@dsh-external/dsh-prompt-optimizer`，\n  最后发布 `v0.5.0-beta.1`；设计与用法见 [`SPEC.md`](SPEC.md)，历史文档（含 0.5 的实测数据）见\n  **[`README-0.5.md`](README-0.5.md)** —— 那里的数字**只属于 0.5**，不是 0.6 的效果证据。",
       "weight": 1.18
     },
     {
-      "id": "c099f4cf40cc8c75ae83",
+      "id": "85b2c4602f796df391aa",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19241,14 +19257,14 @@
         "evidence",
         "token-efficiency"
       ],
-      "heading": "dsh-prompt-optimizer 0.6（**0.7.4**）",
-      "text": "`@dsh-external/dsh-po06` · **0.7.4** · GitHub Release（**未发 npm**：`private: true`，只发附件）\n→ 下载：<https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/tag/v0.7.4>（附件含 `tgz` 与 `SHA256SUMS`）\n\n> **0.7.4 的一句话**：**档位终于真的分开了**——补充程度（700 / 1200 / 2000 字）与自主预算\n> （1 / 2 / 3 个问题）两个维度逐级递进；此前 `minimal` 从未被任何档位使用、且 standard 与 heavy 的\n> detail 相同，所以「重度」实际只等于「标准 + 多问 1 个」。同时**内部控制面信息不再写进工作模型的上下文**\n> （注入头部原先带「任务 `default` · 意图修订 N」，会被当成任务语义处理，现已移除）。\n> 质量解释改为「结果方向」而非制作清单；思维层不再显示裸 JSON 补丁。\n>\n> **仍然成立的一句**：**每一轮都独立想一遍**——上一轮的目标不会带进这一轮，包只由「**你这轮的原话** +\n> **本轮读入的上下文**」重新得出。**代价**：长期约束（\"只交单个文件\"\"别动别的文件夹\"）也要靠上下文\n> 每轮重新看出来 ⇒ **别把「上下文」调得太小**。\n>\n> **这一版修的四件事**：\n> ① **\"思考完却拿不到包\"**（真机反复出现的那条）：模型交空产出（空 `ops` / 没吐 JSON）时**有界重试一次**，\n> 仍空就补一条\"这一轮没提取到\"的**待确认**条目（不发明要求、不拦下游）⇒ **这一轮必有包**；\n> 条目超过单轮上限改为**截断记账**、指向不存在条目的销账**逐条丢弃**、你点「取消」不再被记成\"解析失败\"。\n> ② **浅色模式**：颜色**由主题驱动**（浅色=浅底深字、深色=原观感；切主题即时生效）。\n> ③ **界面语言跟随 DSH**（`设置 → 通用 → 语言`，`zh`/`en`）：插件内**没有**自己的语言开关，`?` 用户手册\n> 也跟着切（**英文界面里不该再夹中文**）。\n> ④ **启用判定修对**：`rollout` 缺失/写错不再把显式 `enabled:true` 的插件**静默关掉**（只有显式 `off` 才是不启用），\n> `/status` 增加**闸门结论分布**（配置意图 ≠ 闸门实际放行，这两件事以前分不开）。\n>\n> 同版沿用：操控面对齐 0.5（档位 `关闭/轻度/标准/重度`、两行控件栏、`?` 用户手册、\n> 拦截浮层分**思维层 / 产出层**）；思维层**固定显示范围、无滚动条、正文一律",
+      "heading": "dsh-prompt-optimizer 0.6（**0.7.5**）",
+      "text": "`@dsh-external/dsh-po06` · **0.7.5** · GitHub Release（**未发 npm**：`private: true`，只发附件）\n→ 下载：<https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/tag/v0.7.5>（附件含 `tgz` 与 `SHA256SUMS`）\n\n> **0.7.5 的一句话**：**档位终于真的分开了**——补充程度（700 / 1200 / 2000 字）与自主预算\n> （1 / 2 / 3 个问题）两个维度逐级递进；此前 `minimal` 从未被任何档位使用、且 standard 与 heavy 的\n> detail 相同，所以「重度」实际只等于「标准 + 多问 1 个」。同时**内部控制面信息不再写进工作模型的上下文**\n> （注入头部原先带「任务 `default` · 意图修订 N」，会被当成任务语义处理，现已移除）。\n> 质量解释改为「结果方向」而非制作清单；思维层不再显示裸 JSON 补丁。\n>\n> **仍然成立的一句**：**每一轮都独立想一遍**——上一轮的目标不会带进这一轮，包只由「**你这轮的原话** +\n> **本轮读入的上下文**」重新得出。**代价**：长期约束（\"只交单个文件\"\"别动别的文件夹\"）也要靠上下文\n> 每轮重新看出来 ⇒ **别把「上下文」调得太小**。\n>\n> **这一版修的四件事**：\n> ① **\"思考完却拿不到包\"**（真机反复出现的那条）：模型交空产出（空 `ops` / 没吐 JSON）时**有界重试一次**，\n> 仍空就补一条\"这一轮没提取到\"的**待确认**条目（不发明要求、不拦下游）⇒ **这一轮必有包**；\n> 条目超过单轮上限改为**截断记账**、指向不存在条目的销账**逐条丢弃**、你点「取消」不再被记成\"解析失败\"。\n> ② **浅色模式**：颜色**由主题驱动**（浅色=浅底深字、深色=原观感；切主题即时生效）。\n> ③ **界面语言跟随 DSH**（`设置 → 通用 → 语言`，`zh`/`en`）：插件内**没有**自己的语言开关，`?` 用户手册\n> 也跟着切（**英文界面里不该再夹中文**）。\n> ④ **启用判定修对**：`rollout` 缺失/写错不再把显式 `enabled:true` 的插件**静默关掉**（只有显式 `off` 才是不启用），\n> `/status` 增加**闸门结论分布**（配置意图 ≠ 闸门实际放行，这两件事以前分不开）。\n>\n> 同版沿用：操控面对齐 0.5（档位 `关闭/轻度/标准/重度`、两行控件栏、`?` 用户手册、\n> 拦截浮层分**思维层 / 产出层**）；思维层**固定显示范围、无滚动条、正文一律",
       "weight": 1.18
     },
     {
-      "id": "d8af416c1201f722e15c",
+      "id": "b7e0656251d9cfe533aa",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19257,14 +19273,14 @@
         "evidence",
         "token-efficiency"
       ],
-      "heading": "dsh-prompt-optimizer 0.6（**0.7.4**）",
+      "heading": "dsh-prompt-optimizer 0.6（**0.7.5**）",
       "text": "不截断**（可往回滚，自动跟到最新）；\n> token 用 provider **真实上报**的 `入 / 出 / 缓存` 三分量（过千记 `k`/`M`，拿不到就显示 `—`，**从不按字数估算**）；\n> 以及「只读工具:开」那类失败的三条真因：① 解释层标识符笔误 `TOOL_SYSTEM_NOTE is not defined`（**29 ms** 内抛错\n> ⇒ 既看不到思维、也没有产出）；② **一条写坏的来源引用能弄死整轮**（模型写 `kind:'tool'/'file'`，可\n> `toolCallId`/`uri` 只有宿主才有 ⇒ 整份补丁 `BAD_SCHEMA`、合法条目陪葬；现在只补宿主确实知道的事实，\n> 其余逐条丢弃并记账）；③ `provenance:'machine'` **从未生效**的顺序缺陷（从读入材料推出来的条目曾看起来像\"你说过的\"）。\n\n> **人工验收就一遍**：见 `po06/HUMAN-TEST.md`（12 步 + 4 个反馈点）。前提：**档位不能是「关闭」**——关闭档按设计不拦截。\n\n> ⚠️ **版本号叫 stable 指的是\"这一版对外定为正式版\"，不是\"能力已通过专业跑分\"。**\n> - **内部自洽有证据**：**645 项测试 + 231 个变异守卫**全绿，含打包自足性与文档漂移门禁。\n> - 📊 **作者实测观察（不是专业跑分）**：测试主要在 **DeepSeek-V4.1-Flash + PTC + PowerShell** 环境下进行。",
       "weight": 1.18
     },
     {
-      "id": "ea53c0a8ae213ebf8d2f",
+      "id": "7c9f05f85ea3823209b7",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19273,14 +19289,14 @@
         "evidence",
         "token-efficiency"
       ],
-      "heading": "dsh-prompt-optimizer 0.6（**0.7.4**）",
+      "heading": "dsh-prompt-optimizer 0.6（**0.7.5**）",
       "text": ">   **目前没有做过专业的跑分测试**；但在常见的各类 one-shot 任务与长任务迭代中，\n>   **实际效果明显强于同环境、同提示词下的 DeepSeek-V4.1-Flash**；另据**少量项目**的统计，\n>   **疑似会降低 token 消耗量、节省开销**。\n> - **机器那半边照旧如实登记**：留出评估只跑完 **S1**（103,368 tokens）；唯一还没测到的那条判据（**约束守住**）\n>   题与仪器刚就绪、**还没跑**（S4，期望 11,672）。\n>   ⇒ 请当成**可以装、可以试、随时可关**的东西，**不是\"升级\"**。\n> - **它默认不启用**：装配期启用闸门保守取 `off`；即便配置开了，\n>   只要旧版插件仍在装配就会以 `DOUBLE_INTERCEPT` 拒绝启用（EV-0054）。",
       "weight": 1.18
     },
     {
-      "id": "35e3c2e6302079be531d",
+      "id": "039ef629d423d87f3d63",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19294,9 +19310,9 @@
       "weight": 1.18
     },
     {
-      "id": "82f8aadc96b37aa46ebc",
+      "id": "8e3d324fa9c99aa91fde",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19310,9 +19326,9 @@
       "weight": 1.18
     },
     {
-      "id": "15f07ad12438aed1c1a3",
+      "id": "6cd07b7f712c71c52b1e",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19326,9 +19342,9 @@
       "weight": 1.18
     },
     {
-      "id": "683cb18713dcbc3a4b1b",
+      "id": "650f755b39170d7cf6fb",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19337,14 +19353,14 @@
         "evidence",
         "token-efficiency"
       ],
-      "heading": "直链（版本号换成你要的；0.7.4 是最新版）",
-      "text": "$v = '0.7.4'\n$dir = \"$env:USERPROFILE\\Downloads\"\nInvoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/dsh-external-dsh-po06-$v.tgz\" -OutFile \"$dir\\dsh-external-dsh-po06-$v.tgz\"\nInvoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/SHA256SUMS-$v.txt\" -OutFile \"$dir\\SHA256SUMS-$v.txt\"",
+      "heading": "直链（版本号换成你要的；0.7.5 是最新版）",
+      "text": "$v = '0.7.5'\n$dir = \"$env:USERPROFILE\\Downloads\"\nInvoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/dsh-external-dsh-po06-$v.tgz\" -OutFile \"$dir\\dsh-external-dsh-po06-$v.tgz\"\nInvoke-WebRequest \"https://github.com/WestFox-AwA/dsh-prompt-optimizer/releases/download/v$v/SHA256SUMS-$v.txt\" -OutFile \"$dir\\SHA256SUMS-$v.txt\"",
       "weight": 1.18
     },
     {
-      "id": "cdc69809ceb146b6fb1d",
+      "id": "e6ca2649b96483599656",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19358,9 +19374,9 @@
       "weight": 1.18
     },
     {
-      "id": "0d73db61dff3e38e4a86",
+      "id": "58e1e717aadaac2bb589",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19370,13 +19386,13 @@
         "token-efficiency"
       ],
       "heading": "装本包（tgz 路径换成你下载到的位置）",
-      "text": "dsh plugin --profile po06beta add \"$env:USERPROFILE\\Downloads\\dsh-external-dsh-po06-0.7.4.tgz\"\n```\n\n**③（可选，但强烈建议）一条命令自检**\"装好了、装的是这一份、会被装配\"（**不调模型、不花钱**）：\n\n```powershell",
+      "text": "dsh plugin --profile po06beta add \"$env:USERPROFILE\\Downloads\\dsh-external-dsh-po06-0.7.5.tgz\"\n```\n\n**③（可选，但强烈建议）一条命令自检**\"装好了、装的是这一份、会被装配\"（**不调模型、不花钱**）：\n\n```powershell",
       "weight": 1.18
     },
     {
-      "id": "e79cc6d540919a864355",
+      "id": "a3a138b82ef82ee0b3c4",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19386,13 +19402,13 @@
         "token-efficiency"
       ],
       "heading": "需要仓库里的脚本；没克隆仓库就跳过这步，直接进 ④",
-      "text": "node <repo>\\po06\\scripts\\check-install.mjs --profile po06beta --expect-version 0.7.4\n```\n\n它会逐条回答：\n\n- **装上了吗**：profile 的 `dependencies` 里有没有这个包；\n- **装的是这一份吗**：把装出来的 `lib/*.js` 与仓库**逐文件比 sha256**\n  ——这个项目在\"装的是新件还是 pnpm 缓存里的旧件\"上**栽过两次**（EV-0079/0083），\n  而那种失败**不报错**，只是行为像没装；\n- **会被装配吗**：`--dump-config` 的组合树里有没有这一层\n  ——**装了但不在 `dsh.profile.bundles` 里 = 永远不会生效**（EV-0066）；\n- **启用会生效吗**：用**装出来的那份**解析器读配置（不是我复述规则），并说明旧路径为什么不会被误认。\n\n**④ 启用**（写 0.6 **自己的**配置文件；**不会**碰 0.5.x 的 `prompt-optimizer.json`，见 EV-0111）：\n\n```powershell\nSet-Content -Path \"$env:USERPROFILE\\.dsh\\po06.json\" -Encoding utf8 -Value '{\"settingsVersion\":1,\"enabled\":true,\"rollout\":{\"mode\":\"all\"}}'\n```\n\n也可以装完之后**在面板上拨档位**（档位 关闭/轻度/标准/重度 就是启用开关；`关闭` = 不拦截）。\n\n**⑤ 用那个 profile 开工**：`dsh --profile po06beta`（它会启动该 profile 的应用并打印带 token 的地址）。\n⚠ **`--profile` 必须写在子命令之前**：`dsh --profile po06beta …` 可以，`dsh web --profile po06beta` **不行**\n（`web` 子命令明确拒绝父级的 `--profile`，实测报 `web takes none of parent --profile`）。\n默认端口被占用时加 `--port 3081`。\n**效果什么时候生效（P11 改变的地方）**：网页输入框里按发送/回车会被**前置拦截**——\n先把这一轮解释清楚（实测 21–57 秒，界面上有「优化中… 已用 N 秒」与**跳过并直接发送**，**不设超时**），\n**再**把你的消息原样发出去；所以包在**这一轮第一个模型调用之前**就已经写好 ⇒ **第一轮第一步就吃到**。\n「审查」权限下，解释完成后先给你看正文并可**直接编辑**（点「确认提交」才发",
+      "text": "node <repo>\\po06\\scripts\\check-install.mjs --profile po06beta --expect-version 0.7.5\n```\n\n它会逐条回答：\n\n- **装上了吗**：profile 的 `dependencies` 里有没有这个包；\n- **装的是这一份吗**：把装出来的 `lib/*.js` 与仓库**逐文件比 sha256**\n  ——这个项目在\"装的是新件还是 pnpm 缓存里的旧件\"上**栽过两次**（EV-0079/0083），\n  而那种失败**不报错**，只是行为像没装；\n- **会被装配吗**：`--dump-config` 的组合树里有没有这一层\n  ——**装了但不在 `dsh.profile.bundles` 里 = 永远不会生效**（EV-0066）；\n- **启用会生效吗**：用**装出来的那份**解析器读配置（不是我复述规则），并说明旧路径为什么不会被误认。\n\n**④ 启用**（写 0.6 **自己的**配置文件；**不会**碰 0.5.x 的 `prompt-optimizer.json`，见 EV-0111）：\n\n```powershell\nSet-Content -Path \"$env:USERPROFILE\\.dsh\\po06.json\" -Encoding utf8 -Value '{\"settingsVersion\":1,\"enabled\":true,\"rollout\":{\"mode\":\"all\"}}'\n```\n\n也可以装完之后**在面板上拨档位**（档位 关闭/轻度/标准/重度 就是启用开关；`关闭` = 不拦截）。\n\n**⑤ 用那个 profile 开工**：`dsh --profile po06beta`（它会启动该 profile 的应用并打印带 token 的地址）。\n⚠ **`--profile` 必须写在子命令之前**：`dsh --profile po06beta …` 可以，`dsh web --profile po06beta` **不行**\n（`web` 子命令明确拒绝父级的 `--profile`，实测报 `web takes none of parent --profile`）。\n默认端口被占用时加 `--port 3081`。\n**效果什么时候生效（P11 改变的地方）**：网页输入框里按发送/回车会被**前置拦截**——\n先把这一轮解释清楚（实测 21–57 秒，界面上有「优化中… 已用 N 秒」与**跳过并直接发送**，**不设超时**），\n**再**把你的消息原样发出去；所以包在**这一轮第一个模型调用之前**就已经写好 ⇒ **第一轮第一步就吃到**。\n「审查」权限下，解释完成后先给你看正文并可**直接编辑**（点「确认提交」才发",
       "weight": 1.18
     },
     {
-      "id": "bf2194224df06b929aab",
+      "id": "676a069df1c9f5adc34c",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19406,9 +19422,9 @@
       "weight": 1.18
     },
     {
-      "id": "f04461e015d0854470f6",
+      "id": "e225aa4d16c75e3310ef",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19422,9 +19438,9 @@
       "weight": 1.18
     },
     {
-      "id": "9c8a8ba9181de00f3bdb",
+      "id": "34aab5742dd8b488335d",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19438,9 +19454,9 @@
       "weight": 1.18
     },
     {
-      "id": "0522fcb98626ba9cbcbd",
+      "id": "244200aa9f4cd55ce6ff",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19454,9 +19470,9 @@
       "weight": 1.18
     },
     {
-      "id": "6341249f4b6288058783",
+      "id": "3d08ecfb759fbe20fa53",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19470,9 +19486,9 @@
       "weight": 1.18
     },
     {
-      "id": "ef946b8b33096e1a516e",
+      "id": "2e51997ee0fe56332632",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19486,9 +19502,9 @@
       "weight": 1.18
     },
     {
-      "id": "fe3e72589253c34aa363",
+      "id": "0c521308c1d448afa22a",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19502,9 +19518,9 @@
       "weight": 1.18
     },
     {
-      "id": "441378993f057d2d0c5b",
+      "id": "9cc7429a743e26648c27",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19518,9 +19534,9 @@
       "weight": 1.18
     },
     {
-      "id": "c3ce399667e0b4144bb5",
+      "id": "2bc0145ef5e46e445814",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19534,9 +19550,9 @@
       "weight": 1.18
     },
     {
-      "id": "97384e7bffa896a82518",
+      "id": "946db3a62e341de0bce7",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19550,9 +19566,9 @@
       "weight": 1.18
     },
     {
-      "id": "27e9bc23581d52ee13cc",
+      "id": "feb82e41e2a29b55943b",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19566,9 +19582,9 @@
       "weight": 1.18
     },
     {
-      "id": "0c6644f60e96546f9e10",
+      "id": "12e80bae6075bb794ef8",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19582,9 +19598,9 @@
       "weight": 1.18
     },
     {
-      "id": "cb08b9dfb69ff2e0492e",
+      "id": "6c4617168bc0f8a011e6",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19598,9 +19614,9 @@
       "weight": 1.18
     },
     {
-      "id": "ad8481553f317d7a1153",
+      "id": "b39fe9c54467e23c436f",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -19614,9 +19630,9 @@
       "weight": 1.18
     },
     {
-      "id": "2e18529987103723c604",
+      "id": "e27838815da13844d3b6",
       "source": "WestFox-AwA/dsh-prompt-optimizer",
-      "ref": "84674b1e6c8a",
+      "ref": "14636f9c32cb",
       "path": "po06/README.md",
       "license": "BSD-3-Clause",
       "domains": [
@@ -31454,9 +31470,9 @@
       "weight": 1.08
     },
     {
-      "id": "0a7e406c1d9aeb42623c",
+      "id": "aa63b7d7949e64505940",
       "source": "lutzroeder/netron",
-      "ref": "06fec3422bce",
+      "ref": "83e3d12451dd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -31471,9 +31487,9 @@
       "weight": 1.02
     },
     {
-      "id": "9bddd87f4b388e36211b",
+      "id": "a1613eef7dcc58a5f10a",
       "source": "lutzroeder/netron",
-      "ref": "06fec3422bce",
+      "ref": "83e3d12451dd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -31488,9 +31504,9 @@
       "weight": 1.02
     },
     {
-      "id": "460a2e1b2c1f4e9893ed",
+      "id": "61b13068d8cea987efa6",
       "source": "lutzroeder/netron",
-      "ref": "06fec3422bce",
+      "ref": "83e3d12451dd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -31505,9 +31521,9 @@
       "weight": 1.02
     },
     {
-      "id": "8d5bade6efc6466b0019",
+      "id": "29b3ba73197b279009d1",
       "source": "lutzroeder/netron",
-      "ref": "06fec3422bce",
+      "ref": "83e3d12451dd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -31522,9 +31538,9 @@
       "weight": 1.02
     },
     {
-      "id": "ad396fa82da7fc119cb1",
+      "id": "82372c1492175d0ba09e",
       "source": "lutzroeder/netron",
-      "ref": "06fec3422bce",
+      "ref": "83e3d12451dd",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38133,9 +38149,9 @@
       "weight": 1.05
     },
     {
-      "id": "7689dbb4d28006cf1002",
+      "id": "6889c1b61105e850a7f0",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38148,9 +38164,9 @@
       "weight": 1.04
     },
     {
-      "id": "12b8106ea132d9faf9c6",
+      "id": "9ecd41249afa51a4ef46",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38163,9 +38179,9 @@
       "weight": 1.04
     },
     {
-      "id": "e1090476afb77c677f6c",
+      "id": "9c6f1b3d004bbd859def",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38178,9 +38194,9 @@
       "weight": 1.04
     },
     {
-      "id": "745d12e478e5c451d1a2",
+      "id": "4d74c7e2300bb5ea1366",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38193,9 +38209,9 @@
       "weight": 1.04
     },
     {
-      "id": "6b2aef1fc20aab12fbfc",
+      "id": "732f03824207baceaa21",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38208,9 +38224,9 @@
       "weight": 1.04
     },
     {
-      "id": "95d3936d0a4db8f94831",
+      "id": "76d65bc1d2884d0a07f3",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38223,9 +38239,9 @@
       "weight": 1.04
     },
     {
-      "id": "e85dffd181d1284b66de",
+      "id": "3c023c40b62278dfd11b",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38238,9 +38254,9 @@
       "weight": 1.04
     },
     {
-      "id": "34fc4c8a829ebe5c668a",
+      "id": "26e5fcc717d90e05de16",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38253,9 +38269,9 @@
       "weight": 1.04
     },
     {
-      "id": "45a2392019677035cbb8",
+      "id": "c4c16c68d76c968181b5",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38264,13 +38280,13 @@
         "style"
       ],
       "heading": "Why a skill, not just a prompt",
-      "text": "A one-shot \"make this sound human\" prompt catches the obvious stuff. This skill is different:\n\n- **Single final rewrite** — completes its audit, correction, and available verification before returning one full version. A short change summary follows when useful; a detailed audit remains available on request without adding a competing draft.\n- **Two-pass editing** — review can catch patterns that survive the first edit, while one shared limit covers both corrective edits and preservation repairs.\n- **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. \"Leverage\" → \"use.\" \"Commence\" → \"start.\" Tier 1 matches flag unless a listed exception applies, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`, `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like \"the integration of,\" \"decentralized co",
+      "text": "A one-shot \"make this sound human\" prompt catches the obvious stuff. This skill is different:\n\n- **Single final rewrite** — completes its audit, correction, and available verification before returning one full version. A short change summary follows when useful; a detailed audit remains available on request without adding a competing draft.\n- **Two-pass editing** — review can catch patterns that survive the first edit, while one shared limit covers both corrective edits and preservation repairs.\n- **Surface-aware delivery** — checks how the destination renders single newlines before returning prose, unwraps accidental hard-wrapped paragraphs only when those breaks would show, and preserves intentional structure such as lists, poetry, code, and addresses.\n- **112-entry word replacement table across 3 tiers + 10 Tier 3 phrases** — not vibes-based. Every flagged word has a specific, plainer alternative. \"Leverage\" → \"use.\" \"Commence\" → \"start.\" Tier 1 matches flag unless a listed exception applies, Tier 2 words flag when they cluster, Tier 3 words flag only at high density. Tier 1 itself splits into **1A frequency markers** (`delve`, `tapestry`) and **1B clarity edits** (`in order to`",
       "weight": 1.04
     },
     {
-      "id": "ce3665fe2b024b64e56e",
+      "id": "9af5e7a23c1dbaeddcaf",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38279,13 +38295,13 @@
         "style"
       ],
       "heading": "Why a skill, not just a prompt",
-      "text": "mpute\") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.\n- **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`references/patterns.md`](./references/patterns.md); this count is enforced against it in CI.\n- **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.",
+      "text": ", `utilize`) — same fix, but only 1A is evidence about how a passage was produced, and 1B is weighted lower so a wordiness fix cannot push a document toward an AI classification. Tier 3 *phrases* (multi-word boilerplate like \"the integration of,\" \"decentralized compute\") flag on per-phrase repetition or when 3+ distinct phrases stack in one piece — the LLM-self-varies-boilerplate shape.\n- **74 pattern categories** — representative examples below, each with before/after. Includes structural detection (hashtag stuffing, bare-NP bullet lists, hedge-stacked predictions), AI-tool fingerprints (placeholders, citation markup, UTM params), rhythm/uniformity checks, conversational-register tells, and writer-side tests. The full catalog lives in [`references/patterns.md`](./references/patterns.md); this count is enforced against it in CI.",
       "weight": 1.04
     },
     {
-      "id": "45fffc2a6419b74714c7",
+      "id": "b875242698fb9b94f2f5",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38294,13 +38310,13 @@
         "style"
       ],
       "heading": "Why a skill, not just a prompt",
-      "text": "- **Works across platforms** — a directory-based skill runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and other directory-aware agents. See the install paths below.",
+      "text": "- **Detect mode** — flag patterns without rewriting. See which flags are real problems vs. judgment calls. Useful when patterns might be intentional or you're auditing content you don't want altered.\n- **Works across platforms** — a directory-based skill runs in Claude Code, Cowork (as a plugin), OpenClaw, Cursor (as a ported rule), and other directory-aware agents. See the install paths below.",
       "weight": 1.04
     },
     {
-      "id": "d3b5227efd5af7ceee2e",
+      "id": "6ed1aa240d501e6b1647",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38313,9 +38329,9 @@
       "weight": 1.04
     },
     {
-      "id": "514a2df227402292b664",
+      "id": "2a287547671b070f48f7",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38328,9 +38344,9 @@
       "weight": 1.04
     },
     {
-      "id": "824e990e55b89a5dd8d0",
+      "id": "69dc727e295833646372",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38343,9 +38359,9 @@
       "weight": 1.04
     },
     {
-      "id": "a2b49eb12a9cfb59a757",
+      "id": "cfe60f86a1f5832b7c99",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38358,9 +38374,9 @@
       "weight": 1.04
     },
     {
-      "id": "50c48560b7febfd1bc7a",
+      "id": "be21e7110571ccb324a2",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38373,9 +38389,9 @@
       "weight": 1.04
     },
     {
-      "id": "dd3d20b938569eac71f1",
+      "id": "4fc3d93e86995a30d033",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38388,9 +38404,9 @@
       "weight": 1.04
     },
     {
-      "id": "f2ade0ed839aa61092af",
+      "id": "2e72341c2a0024e31ae8",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38403,9 +38419,9 @@
       "weight": 1.04
     },
     {
-      "id": "e1f6f780297f70c940b3",
+      "id": "ab46cf0e508b68152481",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38418,9 +38434,9 @@
       "weight": 1.04
     },
     {
-      "id": "6a7ab04ce594f52c2221",
+      "id": "8434df99bcd4931c93a8",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38433,9 +38449,9 @@
       "weight": 1.04
     },
     {
-      "id": "f403265fbaf573e6da81",
+      "id": "7e9e5ab07e28e73a4311",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38448,9 +38464,9 @@
       "weight": 1.04
     },
     {
-      "id": "6d9a7cfee72b170463ac",
+      "id": "eb87ddbb36c2d03e7daf",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38463,9 +38479,9 @@
       "weight": 1.04
     },
     {
-      "id": "1cbd7d4a29c674ecc535",
+      "id": "01323d25b0f168ee476b",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38478,9 +38494,9 @@
       "weight": 1.04
     },
     {
-      "id": "f5faecf592b40fdf1c0a",
+      "id": "84435a27d7ade16d9d6e",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38493,9 +38509,9 @@
       "weight": 1.04
     },
     {
-      "id": "a2ce04b97e7f715ba6d7",
+      "id": "7521cd6cc44b606d9401",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38508,9 +38524,9 @@
       "weight": 1.04
     },
     {
-      "id": "31a611874a814191777f",
+      "id": "54f178d6401c6b8477a8",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38523,9 +38539,9 @@
       "weight": 1.04
     },
     {
-      "id": "1b6266de9c9ac72c5580",
+      "id": "08525e49b07e417974c0",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38538,9 +38554,9 @@
       "weight": 1.04
     },
     {
-      "id": "134dbb76f325b6871d3e",
+      "id": "45390c9715bb2eac7433",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38553,9 +38569,9 @@
       "weight": 1.04
     },
     {
-      "id": "a38ae756505ab7910100",
+      "id": "e210fc3ed38c23280f41",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38568,9 +38584,9 @@
       "weight": 1.04
     },
     {
-      "id": "eeafc48b683785aee4da",
+      "id": "5ada364b2a44e8db980f",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38583,9 +38599,9 @@
       "weight": 1.04
     },
     {
-      "id": "1c2f800d4d8da9eaa936",
+      "id": "bb1073908b226a435531",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38598,9 +38614,9 @@
       "weight": 1.04
     },
     {
-      "id": "e60e9f3fbada8490abc5",
+      "id": "0853dfd7473e609cfa06",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38613,9 +38629,9 @@
       "weight": 1.04
     },
     {
-      "id": "f6502de6746963531b14",
+      "id": "008172ba5116cd72251c",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38628,9 +38644,9 @@
       "weight": 1.04
     },
     {
-      "id": "7579bf5822896e811004",
+      "id": "ccb464b74edda9b7e5fe",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38643,9 +38659,9 @@
       "weight": 1.04
     },
     {
-      "id": "306b5d8aace6c460ee0a",
+      "id": "4beee05f456e5acb39d8",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38658,9 +38674,9 @@
       "weight": 1.04
     },
     {
-      "id": "b06752ea95e9a43b6065",
+      "id": "e69b920df69e77ab05af",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38673,9 +38689,9 @@
       "weight": 1.04
     },
     {
-      "id": "27d281708969d092975b",
+      "id": "8099e2af88287ecd1d83",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38688,9 +38704,9 @@
       "weight": 1.04
     },
     {
-      "id": "4a544cd3f56ae04a61fb",
+      "id": "d2bff7cb9755a6a8fcd7",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38703,9 +38719,9 @@
       "weight": 1.04
     },
     {
-      "id": "2c845f1a1360563b8b3c",
+      "id": "2f154721a3d957f85361",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38718,9 +38734,9 @@
       "weight": 1.04
     },
     {
-      "id": "54acb6aaa8b41ec19253",
+      "id": "755eedb07b2be663068f",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38733,9 +38749,9 @@
       "weight": 1.04
     },
     {
-      "id": "2ee376611bdee1dbcf22",
+      "id": "aa004ed05ce0206c7551",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38748,9 +38764,9 @@
       "weight": 1.04
     },
     {
-      "id": "9674208309762489a76e",
+      "id": "41227a278492413695fa",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38763,9 +38779,9 @@
       "weight": 1.04
     },
     {
-      "id": "93a80ec812a8d89b3901",
+      "id": "33c2b10cedd6bae20ff2",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38778,9 +38794,9 @@
       "weight": 1.04
     },
     {
-      "id": "49799ef2c55927c64a11",
+      "id": "b77a9c6b9cfda6229f9f",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38793,9 +38809,9 @@
       "weight": 1.04
     },
     {
-      "id": "2044c993df865c8f67f9",
+      "id": "388ad5db07f79312e1fa",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38808,9 +38824,9 @@
       "weight": 1.04
     },
     {
-      "id": "22dbab6dcd74ef169352",
+      "id": "c4dd14e04c80bb045585",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38823,9 +38839,9 @@
       "weight": 1.04
     },
     {
-      "id": "bb0b7751025a2aaa23b4",
+      "id": "173863061b1758d46bbf",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38838,9 +38854,9 @@
       "weight": 1.04
     },
     {
-      "id": "34eb03fbe90af36dfe42",
+      "id": "13323b50a64e2b72f0fc",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38853,9 +38869,9 @@
       "weight": 1.04
     },
     {
-      "id": "fbcafab9ec7a51e544b6",
+      "id": "5e069c3e7af144ede7d7",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38868,9 +38884,9 @@
       "weight": 1.04
     },
     {
-      "id": "a0f27453a3169f2c772e",
+      "id": "6f1eb992fcc0002c70a9",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38883,9 +38899,9 @@
       "weight": 1.04
     },
     {
-      "id": "a51549c9ca01b39931fa",
+      "id": "7fa30df32f58d66ce5eb",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38898,9 +38914,9 @@
       "weight": 1.04
     },
     {
-      "id": "20e9af5a269cebb80a18",
+      "id": "de1a9b192370f5cf150c",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38913,9 +38929,9 @@
       "weight": 1.04
     },
     {
-      "id": "2fe5d2f49ce33597e435",
+      "id": "7d1a92190ef1f7b79216",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38928,9 +38944,9 @@
       "weight": 1.04
     },
     {
-      "id": "bfbfe5f7bccc9420c397",
+      "id": "be995a24b36bc80c7e2d",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38943,9 +38959,9 @@
       "weight": 1.04
     },
     {
-      "id": "9f3af7d4ba329a565f63",
+      "id": "150a95598bc1168c7a69",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38958,9 +38974,9 @@
       "weight": 1.04
     },
     {
-      "id": "53962c42721bac03c578",
+      "id": "547e8f6e2f7ef264f7d8",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38973,9 +38989,9 @@
       "weight": 1.04
     },
     {
-      "id": "89b6936ea6b0a5c1b973",
+      "id": "4695e26a87c8c2c49ee5",
       "source": "conorbronsdon/avoid-ai-writing",
-      "ref": "830036e5395e",
+      "ref": "2a7e99946510",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -46815,9 +46831,9 @@
       "weight": 1.02
     },
     {
-      "id": "b28504166ee5c9560d39",
+      "id": "926dd96d5a7a3ad1c4a2",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46830,9 +46846,9 @@
       "weight": 1.03
     },
     {
-      "id": "eff991c0430aed87a70e",
+      "id": "cd11865a24845a5a7060",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46845,9 +46861,9 @@
       "weight": 1.03
     },
     {
-      "id": "40008dedadd9ec43d317",
+      "id": "056609477172f8566eaa",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46860,9 +46876,9 @@
       "weight": 1.03
     },
     {
-      "id": "854daaaf59aab288d3db",
+      "id": "8f1b6c1d1e6bc9a9fe5a",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46875,9 +46891,9 @@
       "weight": 1.03
     },
     {
-      "id": "4286f43ac946f7f79f53",
+      "id": "ab89b39f7287bef936ad",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46890,9 +46906,9 @@
       "weight": 1.03
     },
     {
-      "id": "5c60a8db9c93bccbdecf",
+      "id": "b596f7cc68748df2a99b",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46905,9 +46921,9 @@
       "weight": 1.03
     },
     {
-      "id": "8a708c4bfe2d5fe37036",
+      "id": "e3d3b2e9dac51c1f6167",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46920,9 +46936,9 @@
       "weight": 1.03
     },
     {
-      "id": "f7f93baed48a6704a8cf",
+      "id": "0f4e5468ee2198b0374d",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46935,9 +46951,9 @@
       "weight": 1.03
     },
     {
-      "id": "3764e7556397e54ad9d8",
+      "id": "43d7535c024b3141d5fe",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46950,9 +46966,9 @@
       "weight": 1.03
     },
     {
-      "id": "33f8c3982924ea4c4e4b",
+      "id": "a7a9b4f60d4c1f274b4e",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46965,9 +46981,9 @@
       "weight": 1.03
     },
     {
-      "id": "d4fb4bb7a22733f24c0b",
+      "id": "747892637b92d40d5d80",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46980,9 +46996,9 @@
       "weight": 1.03
     },
     {
-      "id": "4719f6fb42230e5587d1",
+      "id": "9ef79a73db40401e04e1",
       "source": "CodebuffAI/freebuff",
-      "ref": "24636b016b85",
+      "ref": "ab18ec9d88d4",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -80445,6 +80461,1542 @@
       "heading": "README.md",
       "text": "UnEngine\n========\n\na clone of the UnityEngine.dll - so you can write and test scripts outside of unity\n\nUsage\n=====\n\nThere are three build configurations - Debug, Release, and UnityTest\nDebug - compiles builds in UnEngine namespace and as UnEngine.dll - used for unit tests\nUnityTest - same as Debug, but outputs dll to the Plugins directory in the UnityComparisonTests unity project\nRelease - builds the dlls using same namespace and assembly name as UnityEngine.dll, so that no changes will have to be done in the referencing project\n\nHow to use in your project\n-----\nMake a Release build, and then reference the DLL's bin/Release dll. In your project, do not have the dll's be copied on output, and do not copy them into your unity projects that use your dlls\n\nThings to note: When you reference the Release dll, make sure the reference does not have anything more than the dll name - make sure that it doesn't use the GUID, version, etc.\n\n\nRunning Unity comparison tests\n------\nSwitch the solution configuration to UnityTest - this will cause the project to output to the UnityComparisonTests unity project, where there are test scripts and scenes set up\nSome of the tests, like the Vector3 tests",
       "weight": 1.2
+    },
+    {
+      "id": "230d039d949d48e6e998",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "ASI-Evolve — Let AI Do the Research, You Keep the Insight",
+      "text": "![ASI-Evolve overview](assets/Overview.png)\n\n> **\"What if you could run a tireless AI researcher on your hardest problem — one that reads the literature, designs experiments, runs them, and learns from every failure?\"**\n\nThat's ASI-Evolve. It is a general agentic framework that closes the loop between **knowledge → hypothesis → experiment → analysis** — and repeats it autonomously, round after round, until it finds something that works.\n\nWe built it for AI research. But the loop doesn't care about domain.\nA financial analyst, a biomedical engineer, a climate scientist, or a game developer can all plug their own problem into ASI-Evolve and let it search for better solutions than any human has time to manually explore.\n\n**Quick try:** Install the Evolve Agent Skill under `skills/evolve` to have a lightweight first pass.\n\n<div align=\"center\">\n\n[![Paper](https://img.shields.io/badge/Paper-ASI--Evolve-blue?style=flat&logo=googledocs&logoColor=white)](https://github.com/GAIR-NLP/ASI-Evolve/blob/main/assets/paper.pdf)\n[![arXiv](https://img.shields.io/badge/arXiv-2603.29640-b31b1b?style=flat&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2603.29640)\n\n</div>\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "2d30e92b2283489c6caf",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "What ASI-Evolve Proved",
+      "text": "The paper validated ASI-Evolve on three hard AI problems — each requiring expensive compute, open-ended search, and multi-dimensional feedback:\n\n| Domain | What It Discovered | Gain |\n|---|---|---|\n| **Neural Architecture Design** | 105 SOTA linear attention architectures | **+0.97 pts** over DeltaNet (≈3× recent human gains) |\n| **Pretraining Data Curation** | Evolved pipeline that selects cleaner training data | **+3.96 pts** avg, **+18 pts** on MMLU |\n| **RL Algorithm Design** | Novel optimization mechanisms with mathematical innovations | **+12.5 pts** on AMC32 vs GRPO |\n| **Biomedical (Drug-Target Interaction)** | Stronger architecture for cold-start generalization | **+6.94 AUROC** |\n\nThese are not toy benchmarks. These are real, frontier-level results — produced autonomously.\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "e6822d77ac0dbe5257e4",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "The Core Loop (Works in Any Domain)",
+      "text": "| Step | Action |\n|---|---|\n| 1 | **LEARN** — retrieve relevant prior knowledge |\n| 2 | **DESIGN** — propose the next candidate program/idea |\n| 3 | **EXPERIMENT** — run it and collect metrics |\n| 4 | **ANALYZE** — turn results into reusable lessons |\n\n> Repeat the loop and improve each round.\n\nThree agents drive this loop:\n\n- **Researcher** — reads the database and cognition store, proposes the next candidate\n- **Engineer** — executes the candidate and collects structured metrics\n- **Analyzer** — distills outcomes into transferable lessons for future rounds\n\nTwo memory systems keep the loop from going in circles:\n\n- **Cognition Store** — inject your domain knowledge, papers, or heuristics upfront so the AI doesn't start from zero\n- **Experiment Database** — every trial is stored with its motivation, code, result, and analysis; parent selection uses UCB1, greedy, random, or MAP-Elites island sampling\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "13299b29ee1fd212aa7f",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Who Should Use This",
+      "text": "You don't need to be an AI researcher. You need:\n\n1. **A problem where better code = better outcome** — optimization, algorithm design, pipeline tuning, simulation strategy\n2. **An evaluation script** — something that takes a program and returns a score\n3. **Some domain knowledge** — papers, rules of thumb, known good approaches\n\nIf you have those three things, ASI-Evolve can search the space for you.\n\n**Examples across domains:**\n\n| Industry | Problem You Can Throw At It |\n|---|---|\n| 🧬 Biomedicine | Drug-target interaction models, protein folding strategies, clinical trial algorithms |\n| ⚡ ML Infra | Inference schedulers, KV-cache eviction policies, batching strategies, kernel tiling |\n| 🌍 Climate / Energy | Grid load-balancing heuristics, carbon footprint optimization pipelines |\n| 🎮 Game AI | Bot strategies, procedural level generation algorithms, reward shaping functions |\n| 🏭 Manufacturing | Quality control classifiers, scheduling heuristics, defect detection pipelines |\n| 🔬 Materials Science | Crystal structure search algorithms, synthesis route optimization |\n| 📦 Logistics | Routing algorithms, warehouse assignment policies, demand forecasting models |\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "51cda042cbbf822ecb96",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Walkthrough: Inference Throughput Optimization",
+      "text": "> **Scenario:** You're an ML infra engineer. Your LLM serving system uses a fixed continuous-batching scheduler. You want to automatically discover a better request-scheduling policy that maximizes throughput while keeping P99 latency under budget — without spending weeks hand-tuning heuristics.",
+      "weight": 1.28
+    },
+    {
+      "id": "016fe69268bf05a0ced5",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "1. Clone and install",
+      "text": "```bash\ngit clone https://github.com/GAIR-NLP/ASI-Evolve.git\ncd ASI-Evolve\npip install -r requirements.txt\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "2e5aca5cc16059e35217",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "2. Create your experiment",
+      "text": "```bash\nmkdir -p experiments/infer_scheduler/prompts\n```\n\n```\nexperiments/infer_scheduler/\n├── input.md          ← problem description\n├── config.yaml       ← API key + overrides\n├── initial_program   ← baseline scheduler to evolve from\n├── init_cognition.py ← inject your domain knowledge\n├── evaluator.py      ← benchmark the candidate scheduler\n└── eval.sh           ← shell wrapper called each round\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "311791f23587c6b05ff4",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "LLM Serving Scheduler",
+      "text": "Write a Python function `schedule(queue, gpu_mem_free_gb)` that selects\na batch of requests from `queue` (list of dicts with keys: seq_len, priority,\nwait_ms) given available GPU memory, and returns a list of selected request ids.\n\nOptimize for: tokens/sec throughput (primary), P99 latency ms (must stay < 500ms).\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "05b0a7771248d7a19a19",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "4. Baseline program (`initial_program`)",
+      "text": "```python\ndef schedule(queue, gpu_mem_free_gb):\n    \"\"\"FCFS baseline — just take requests in arrival order.\"\"\"\n    budget = int(gpu_mem_free_gb * 1024)  # rough token budget\n    selected, used = [], 0\n    for req in sorted(queue, key=lambda r: r[\"wait_ms\"], reverse=True):\n        if used + req[\"seq_len\"] <= budget:\n            selected.append(req[\"id\"])\n            used += req[\"seq_len\"]\n    return selected\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "caab359eff2e3f0a9276",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "5. Seed the cognition store (`init_cognition.py`)",
+      "text": "```python\nfrom cognition.store import CognitionStore\n\nstore = CognitionStore(storage_dir=\"experiments/infer_scheduler/cognition_data\")\nstore.add([\n    {\n        \"title\": \"Continuous Batching\",\n        \"content\": \"Orca-style iteration-level scheduling avoids head-of-line blocking \"\n                   \"by preempting long requests and inserting shorter ones mid-flight.\",\n    },\n    {\n        \"title\": \"Sequence Length Bucketing\",\n        \"content\": \"Grouping requests by similar sequence length reduces padding waste \"\n                   \"and improves GPU utilization significantly.\",\n    },\n    {\n        \"title\": \"Priority + Starvation\",\n        \"content\": \"Pure priority scheduling causes starvation. Age-weighted priority \"\n                   \"(priority * log(1 + wait_ms)) balances latency and throughput.\",\n    },\n])\n```\n\n```bash\npython experiments/infer_scheduler/init_cognition.py\n```",
+      "weight": 1.28
+    },
+    {
+      "id": "0ec46120463ebf851c74",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "6. Evaluator (`evaluator.py` + `eval.sh`)",
+      "text": "```python\nimport importlib.util, sys, json\nfrom benchmark import run_serving_simulation  # your internal benchmark harness\n\ndef load(path):\n    spec = importlib.util.spec_from_file_location(\"candidate\", path)\n    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)\n    return mod.schedule\n\nif __name__ == \"__main__\":\n    fn = load(sys.argv[1])\n    result = run_serving_simulation(scheduler_fn=fn, trace=\"traces/sharegpt_1k.jsonl\")\n    # score = throughput; constraint violation penalizes automatically\n    score = result[\"tokens_per_sec\"] if result[\"p99_latency_ms\"] < 500 else 0\n    print(json.dumps({\"score\": score, \"metrics\": result}))\n```\n\n```bash",
+      "weight": 1.28
+    },
+    {
+      "id": "324a803201349bdc7aa8",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "7. Run",
+      "text": "```bash\npython main.py \\\n  --experiment infer_scheduler \\\n  --steps 40 \\\n  --sample-n 3 \\\n  --eval-script /path/to/experiments/infer_scheduler/eval.sh\n```\n\nASI-Evolve will iterate through scheduling policies — from simple heuristics to multi-factor priority functions with dynamic chunking — and write a structured lesson after every trial. After 40 rounds you have a ranked database of every policy tried, why each worked or failed, and the best-performing code ready to deploy.\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "93ad9fc1dc8eba554255",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "What ASI-Evolve Does That You Can't Do Manually",
+      "text": "| Manual Research | ASI-Evolve |\n|---|---|\n| Try 5–10 ideas per week | 50–200 candidates per run |\n| Knowledge stays in one person's head | Every insight written to the database |\n| Cold start on each new hypothesis | Cognition store primes every round |\n| Hard to know why something worked | Analyzer explains every outcome |\n| Results hard to reproduce | Full experiment tree stored on disk |\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "3cbcdbe8e733fef5fa0c",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Repository Layout",
+      "text": "```\nASI-Evolve/\n├── main.py                         ← entry point\n├── config.yaml                     ← global defaults\n├── pipeline/                       ← Researcher, Engineer, Analyzer agents\n├── cognition/                      ← cognition store (embedding + FAISS)\n├── database/                       ← experiment database (nodes + sampling)\n├── utils/\n└── experiments/\n    ├── circle_packing_demo/        ← included runnable demo\n    └── best/circle_packing/        ← top programs from our ablation runs\n```\n\n> **Skill vs. repository:** When using the Skill, prior experiment traces and instructions accumulate in the model context, and the assistant is not constrained to the same fixed control flow as the official pipeline. End-to-end search quality and throughput are usually lower than when you run this repository directly. Use the Skill for a quick try-out; for very complex or tightly controlled work, prefer cloning and running from here.\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "f2007a0fe8be61f7ce60",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Installation",
+      "text": "```bash\npip install -r requirements.txt\n```\n\nRequirements:\n- Python 3.10+\n- `bash` and `python3` on your system path\n- Any OpenAI-compatible API endpoint (GPT-4o, Claude, Gemini, local models via LiteLLM, etc.)\n- Optional: Weights & Biases for experiment tracking\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "0d6ab6be1f1352d52369",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Quick Start (Circle-Packing Demo)",
+      "text": "The included demo evolves a program to pack 26 circles in a unit square — a clean benchmark used in our ablation studies.\n\n```bash",
+      "weight": 1.28
+    },
+    {
+      "id": "f9ac716e4b68bc49d918",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Run 10 evolution steps",
+      "text": "python main.py \\\n  --experiment circle_packing_demo \\\n  --steps 10 \\\n  --sample-n 3 \\\n  --eval-script /path/to/experiments/circle_packing_demo/eval.sh\n```\n\nASI-Evolve reaches SOTA-level circle-packing results in as few as **17 rounds**.\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "29e9ea2f21c0d8e731dc",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Configuration Reference",
+      "text": "Configuration merges in this order (later overrides earlier):\n\n1. `config.yaml` at repository root\n2. `experiments/<name>/config.yaml`\n3. An explicit file passed with `--config`\n\nKey settings:\n\n| Key | What It Controls |\n|---|---|\n| `api.model` | The LLM driving all agents |\n| `pipeline.sample_n` | How many historical nodes to show the Researcher each round |\n| `pipeline.parallel.num_workers` | Parallel evolution workers (2–4 for production) |\n| `database.sampling.algorithm` | `ucb1` / `greedy` / `random` / `island` |\n| `cognition.retrieval.top_k` | How many cognition items to retrieve per round |\n\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "14713dc943417bc65b9b",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "README.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Citation",
+      "text": "If you use ASI-Evolve in your work, please cite:\n\n```bibtex\n@misc{asi_evolve_2026,\n  title   = {ASI-Evolve: AI Accelerates AI},\n  author  = {Xu, Weixian and Mi, Tiantian and Liu, Yixiu and Nan, Yang and Zhou, Zhimeng and Ye, Lyumanshan and Zhang, Lin and Qiao, Yu and Liu, Pengfei},\n  year    = {2026},\n  note    = {SJTU / SII / GAIR. https://github.com/GAIR-NLP/ASI-Evolve}\n}\n```\n\n---\n\n<div align=\"center\">\n\n**ASI-Evolve is open-source and ready for your domain.**\nFork it. Point it at your problem. Let it run.\n\n[📄 Paper](https://github.com/GAIR-NLP/ASI-Evolve/blob/main/assets/paper.pdf) · [🐛 Issues](https://github.com/GAIR-NLP/ASI-Evolve/issues) · [💬 Discussions](https://github.com/GAIR-NLP/ASI-Evolve/discussions)\n\n</div>",
+      "weight": 1.28
+    },
+    {
+      "id": "ca69491db875a033d89a",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "skills/evolve/SKILL.md",
+      "text": "---\nname: \"evolve\"\ndescription: \"Run an ASI-Evolve style evaluator-driven search workflow for code, algorithms, prompts, or pipelines. Use when Codex needs to align the objective, scoring, evaluator, writable scope, and cognition first, then execute a preflight-gated learn/design/experiment/analyze loop with the bundled Evolve CLI instead of the repository's multi-agent pipeline.\"\n---",
+      "weight": 1.28
+    },
+    {
+      "id": "c7439b82b5571d9b2c5b",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Evolve",
+      "text": "Treat this skill as the single-agent abstraction of `ASI-Evolve-dev`. Preserve the system's core idea: learn from prior knowledge, design the next candidate, run the evaluator, analyze the outcome, and feed the lesson back into the next round.",
+      "weight": 1.28
+    },
+    {
+      "id": "a5c5d357c2b3a14f7d74",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Preserve the operating model",
+      "text": "- Keep the four-stage loop intact: learn, design, experiment, analyze.\n- Use the bundled wrappers in `scripts/` for stateful operations. Let the agent make orchestration decisions; do not recreate the repository's pipeline stack.\n- The agent itself must choose mutations, run experiments, inspect outputs, and write round analyses step by step.\n- Keep two memory systems alive for the whole run:\n  - cognition store for approved external research, paper takeaways, and search-derived insights that may help future rounds\n  - experiment database for every candidate, score, analysis, lineage, best snapshot, and lessons learned from actual experiments\n- Treat `.evolve_runs/<run-name>/` as the source of truth for the active run.",
+      "weight": 1.28
+    },
+    {
+      "id": "dcb147190ed347596884",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Start with preflight",
+      "text": "- Draft or update the run spec before any mutate or evaluate step.\n- Align with the user on:\n  - objective\n  - core score\n  - secondary metrics\n  - evaluation command or script\n  - evaluation timeout\n  - success criteria\n  - stop conditions and round budget\n  - writable file scope and primary targets\n  - sampling algorithm\n  - island feature dimensions when `sampling.algorithm=island`\n  - cognition source mode\n- Inspect the evaluator before confirmation. If the command or script is vague, pause and resolve it before continuing.\n- Even when the user already gave a detailed task description, you must still produce a concrete preflight plan/approach summary before any evolve round starts.\n- Require an explicit evaluator timeout during preflight. Do not treat timeout as an implicit default.\n- Confirm that the evaluator path you will use has timeout handling. The outer `evolve-eval run` timeout is mandatory, and the evaluator command or script should also accept or honor the configured timeout when it can hang internally.\n- Confirm that the evaluator can load the materialized candidate path that `evolve-eval run` produces. The default step artifact is `steps/<step-name>/code` with no fo",
+      "weight": 1.28
+    },
+    {
+      "id": "c9efc297c9546e5405f9",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Start with preflight",
+      "text": "rced extension or filename convention.\n- If you choose the sampling algorithm yourself during preflight, tell the user explicitly which algorithm you picked and why.\n- If you choose `island`, also tell the user the default feature semantics: `complexity=len(code)` and `diversity=code-difference heuristic over stored programs`, and mention that they can override the feature list before confirmation.\n- Refresh the preflight artifacts with `scripts/evolve-brief normalize`.\n- Keep `approval.confirmed=false` until the user explicitly approves the preflight summary.\n- Only flip `approval.confirmed` after the user says the plan is confirmed or approved. Never self-confirm because the request seemed detailed or complete.",
+      "weight": 1.28
+    },
+    {
+      "id": "0a2a077599906dbbd1d4",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Start with preflight",
+      "text": "- Refuse to run evolve commands that mutate files, execute the evaluator, or write the final summary before confirmation.",
+      "weight": 1.28
+    },
+    {
+      "id": "2bebaf080076343712e9",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Initialize cognition",
+      "text": "- Initialize the experiment database and cognition store before the first real round, even if they only contain the baseline at the start.\n- Seed cognition only with insight-like external knowledge that is safe to reuse across rounds, such as approved web research, paper takeaways, or distilled heuristics.\n- Use direct web research when local cognition is insufficient or freshness matters, and distill what you learned back into cognition before continuing.\n- Use subagents only if the user explicitly permits research help. Treat those outputs as candidate seeds, not authoritative truth.\n- Collect that research-derived material in `cognition_seed.md`. Use fenced `json` blocks when deterministic ingestion matters.\n- Initialize or refresh the store with `scripts/evolve-cognition init`, and add incremental items with `scripts/evolve-cognition add`.\n- Do not treat transient chat context as durable memory. Refresh the important context from the database or cognition store whenever a round needs grounding.\n- Keep task scaffolding out of cognition. Problem definitions, function signatures, evaluator details, writable paths, and round-by-round experimental conclusions belong in the run spec",
+      "weight": 1.28
+    },
+    {
+      "id": "799e3a7f01d50cc19668",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Run each evolution round explicitly",
+      "text": "Perform each round yourself with direct edits plus the provided wrappers. Do not batch the loop into a generated local runner.\n\n1. Sample parent context from the experiment database at the start of every round.\n2. Anchor the next candidate on the sampled parent. Use the sampled node as the primary memory for what to improve, preserve, or branch from.\n3. If the next improvement is already clear, proceed directly from that sampled context. Otherwise search cognition for heuristics, prior lessons, and relevant analogies.\n4. If local cognition is still insufficient or the task needs fresh information, do targeted web research and add the distilled findings back into cognition before editing.\n5. Decide whether the next candidate should be a patch, partial rewrite, or fresh branch.\n6. Modify code only inside the approved mutation scope.\n7. Run the evaluator and collect structured results.\n8. Analyze what changed, why it helped or hurt, and which sampled parent informed the move. Record that experimental lesson in the database entry for the round.\n9. Record the node, results, and analysis in the database.\n10. Check the best snapshot and decide whether another round is justified.",
+      "weight": 1.28
+    },
+    {
+      "id": "debda866f41163d13503",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Serialize database operations",
+      "text": "- Treat `evolve-db record`, `evolve-db sample`, `evolve-db best`, and `evolve-db stats` as one shared critical section per run.\n- Wait for each database command to finish before starting the next database command against the same `run_dir`.\n- Do not fire a read-after-write query in parallel with `evolve-db record`.\n- If you need both the new node and a fresh best/sample decision, run them in order: `record` first, then `best` or `sample`.",
+      "weight": 1.28
+    },
+    {
+      "id": "92df4c8589ea256543ad",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Make good round decisions",
+      "text": "- Prefer patching when the last result reveals a specific local defect, missing constraint, or narrow optimization opportunity.\n- Prefer rewriting when the current structure fights the objective, repeats the same failure mode, or needs a cleaner decomposition.\n- Prefer branching from the best-performing or most informative parent, not automatically from the newest one.\n- Treat the sampling algorithm as a run-level choice. Do not switch algorithms mid-run; start a new run if the search needs a different sampling regime.\n- Choose the sampling algorithm deliberately:\n  - `random`: highest exploration pressure. Good for early scouting, escaping local ruts, or checking whether the current search narrative is too narrow.\n  - `island`: the diversity-oriented option, closer to a MAP-Elites-style long-horizon search. Prefer it when you want more balanced exploration across families and better long-run coverage of different solution types. Its default features are `complexity` and `diversity`.\n  - `ucb1`: the default when there is already a plausible direction and you want to keep exploring while still pushing harder on promising parents.\n  - `greedy`: pure exploitation. Use it only when you",
+      "weight": 1.28
+    },
+    {
+      "id": "ca88f9c081f32499089d",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Make good round decisions",
+      "text": "intentionally want to squeeze the current best family rather than broaden the search.\n- For `island`, use built-in features unless there is a clear reason to override them:\n  - `complexity`: code length\n  - `diversity`: code-difference heuristic across stored programs\n  - any other feature name must map to a numeric evaluator result field\n- If the built-in samplers are not enough, use a custom sampler only after preflight aligns on its path, class name, and intended behavior.\n- Treat evaluator regressions as information. Record the lesson instead of erasing the failed branch from history.\n- Stop early when success criteria are met, patience is exhausted, the evaluator signal is too noisy to rank candidates, or the approved mutation scope is no longer sufficient.",
+      "weight": 1.28
+    },
+    {
+      "id": "4395812f36e96944afe6",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Escalate back to the user when needed",
+      "text": "- Ask for confirmation before the first real evolve round.\n- Pause if the evaluator, mutation scope, or objective changes materially.\n- Pause if the best next move would require writing outside the approved paths, changing the benchmark definition, or pulling in external knowledge that the user has not approved.\n- Summarize candidate cognition before initializing it when any of it came from subagents or broad research.",
+      "weight": 1.28
+    },
+    {
+      "id": "cdfc78ba572fdfa2fe59",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Avoid these failures",
+      "text": "- Do not run `python main.py`.\n- Do not import or rely on `pipeline/` agents for orchestration.\n- Do not replace the manual learn/design/experiment/analyze loop with a generated evolution script.\n- Do not mutate files outside `mutation_scope.writable_paths`.\n- Do not mark preflight as confirmed while required fields are missing.\n- Do not confirm preflight without an explicit evaluation timeout.\n- Do not interpret a detailed task request as confirmation. A separate user confirmation is always required.\n- Do not treat unstructured evaluator output as authoritative. Normalize it into explicit metrics before comparing candidates.\n- Do not run an evaluator that can hang indefinitely or ignores the agreed timeout contract.\n- Do not skip the per-round database sample. Each round must begin from sampled run memory, not just whatever remains in chat context.\n- Do not rely on raw chat context as the only memory of prior rounds. Use the database and cognition store as the durable sources of truth.\n- Do not put task definitions, interfaces, evaluator specs, or per-round experimental lessons into cognition. Cognition is for reusable external insights, while experiment outcomes belong in the dat",
+      "weight": 1.28
+    },
+    {
+      "id": "4225afa889bc0f6077b9",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Avoid these failures",
+      "text": "abase.\n- Do not try to override the sampling algorithm inside `evolve-db sample`. Sampling configuration is owned by the run spec and fixed for the run.\n- Do not launch multiple `evolve-db` commands concurrently against the same run.",
+      "weight": 1.28
+    },
+    {
+      "id": "74b554ad5c38c1b66b3f",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/SKILL.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Read when needed",
+      "text": "- `references/operating_model.md`: how the original ASI-Evolve architecture maps into this skill's single-agent loop.\n- `references/preflight.md`: preflight gate and confirmation behavior.\n- `references/run_spec.md`: run spec schema and required fields.\n- `references/toolbelt.md`: CLI wrappers, grouped by stage.\n- `references/architecture.md`: run directory layout and vendored runtime pieces.",
+      "weight": 1.28
+    },
+    {
+      "id": "00cfef4477cc5ed0cd58",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/architecture.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Architecture",
+      "text": "This skill is intentionally split into two layers:\n\n1. `SKILL.md`\n- Teaches the agent the evolve policy.\n- Owns the preflight gate and the round-by-round decision loop.\n\n2. `scripts/`\n- Provide deterministic helpers for persistence and retrieval.\n- Do not hide orchestration decisions from the agent.",
+      "weight": 1.28
+    },
+    {
+      "id": "f8550d4d5e1acf4efcb0",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/architecture.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Vendored runtime",
+      "text": "`scripts/evolve_core/` contains:\n- cognition store\n- experiment database\n- samplers: `ucb1`, `greedy`, `random`, `island`\n- centralized sampling config helpers for run-level algorithm selection, island features, and custom sampler validation/loading\n- optional external custom sampler loading via `sampling.custom_sampler_path` and `sampling.custom_sampler_class`\n- core structures such as `Node` and `CognitionItem`\n- diff helpers\n- best snapshot persistence\n- embedding and vector-index helpers with graceful local fallbacks",
+      "weight": 1.28
+    },
+    {
+      "id": "196116597f760032dcd3",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/architecture.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Explicit non-goals",
+      "text": "The skill does not vendor:\n- `pipeline/`\n- repo LLM clients\n- repo manager / researcher / engineer / analyzer orchestration\n\nThe agent is expected to use the skill instructions plus the CLI wrappers to run the process.",
+      "weight": 1.28
+    },
+    {
+      "id": "840a9ff583561468ac97",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/architecture.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Run layout",
+      "text": "Every run lives under:\n\n```text\n.evolve_runs/<run-name>/\n|- run_spec.yaml\n|- cognition_seed.md\n|- preflight_summary.md\n|- round_log.jsonl\n|- cognition_data/\n|- database_data/\n|- steps/\n`- best/\n```\n\n`steps/<step-name>/` typically contains:\n- `code`\n- `results.json`\n- `eval.stdout`\n- `eval.stderr`\n- `analysis.md`\n- `node.json`\n\n`steps/best/` is maintained automatically by `evolve-db record`.",
+      "weight": 1.28
+    },
+    {
+      "id": "10552855eec54ba26522",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "What this skill preserves",
+      "text": "The original repository uses three cooperating roles:\n\n- Researcher: read prior results and propose the next candidate\n- Engineer: execute the candidate and capture metrics\n- Analyzer: turn outcomes into reusable lessons\n\nThis skill collapses those roles into one Codex loop without changing the logic of the system.",
+      "weight": 1.28
+    },
+    {
+      "id": "d1b5e034acbcbfdbadf8",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "The four-stage loop",
+      "text": "1. Learn\n- sample prior nodes from the experiment database\n- search the cognition store for heuristics, constraints, and useful analogies\n\n2. Design\n- choose a parent or branch\n- decide patch vs partial rewrite vs fresh branch\n- write only inside the approved mutation scope\n\n3. Experiment\n- run the evaluator through `evolve-eval run`\n- collect structured metrics in `results.json`\n\n4. Analyze\n- explain why the candidate helped or failed\n- record the node in the database\n- update the best snapshot\n- carry durable lessons into later rounds",
+      "weight": 1.28
+    },
+    {
+      "id": "570db13c524a08e4aafe",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "The two memory systems",
+      "text": "- Cognition store:\n  - seed with user heuristics, paper notes, constraints, and approved research\n  - query when you need ideas or guardrails before writing the next candidate\n- Experiment database:\n  - record every branch, result, analysis, and lineage\n  - use it to avoid retrying dead ends and to branch from informative parents",
+      "weight": 1.28
+    },
+    {
+      "id": "121aba8463ad4d3ad1f5",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Decision heuristics",
+      "text": "- Patch when the defect is local and the current structure is mostly right.\n- Partially rewrite when one subsystem is blocking progress but the overall framing is still useful.\n- Start a fresh branch when the current direction is repeatedly failing or when a radically different idea deserves an isolated trial.",
+      "weight": 1.28
+    },
+    {
+      "id": "a519545d64fd43d83d90",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Good fit",
+      "text": "Use this skill when all three are true:\n\n- a measurable evaluator exists\n- code or prompt changes are allowed in a bounded scope\n- domain knowledge can improve the search",
+      "weight": 1.28
+    },
+    {
+      "id": "9cf808cd74aaa2d41526",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/operating_model.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Poor fit",
+      "text": "Do not default to this skill for one-off bug fixes, purely qualitative tasks, or situations where no evaluator can distinguish better from worse candidates.",
+      "weight": 1.28
+    },
+    {
+      "id": "0a858cbe492165009138",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/preflight.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Required alignment topics",
+      "text": "- objective\n- core score\n- secondary metrics\n- evaluator command or evaluator script\n- evaluator timeout\n- success criteria\n- stop conditions\n- round budget\n- writable paths\n- primary targets\n- sampling algorithm\n- island feature dimensions when using `island`\n- custom sampler path and class when using `custom`\n- cognition source mode",
+      "weight": 1.28
+    },
+    {
+      "id": "d7e872af9e229771fac0",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/preflight.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Confirmation rule",
+      "text": "Preflight is not complete until:\n\n1. `run_spec.yaml` has all required fields.\n2. `preflight_summary.md` reflects the current plan.\n3. `approval.confirmed` is explicitly set to `true`.\n\nAlways present a concrete plan/approach summary to the user before confirmation, even if the initial task description already seems complete.\nDo not treat the user's original task request as implicit approval to start evolve.\n\nBefore that point:\n- `evolve-db sample`\n- `evolve-db record`\n- `evolve-db best`\n- `evolve-db stats`\n- `evolve-eval run`\n- `evolve-files write`\n- `evolve-summary final`\n\nmust refuse to proceed.\n\nTimeout rule:\n- Preflight must record an explicit evaluation timeout.\n- The evaluator path used for the run must honor that timeout contract instead of relying on an unstated default.",
+      "weight": 1.28
+    },
+    {
+      "id": "d546e8d0638271fd6785",
+      "source": "GAIR-NLP/ASI-Evolve",
+      "ref": "fb8a67e552e2",
+      "path": "skills/evolve/references/preflight.md",
+      "license": "Apache-2.0",
+      "domains": [
+        "self-improve",
+        "experiment-loop",
+        "evaluation",
+        "cognition-store",
+        "research-agent",
+        "program-evolution"
+      ],
+      "heading": "Cognition sources",
+      "text": "Use cognition only for reusable external insight sources.\n\nGood cognition inputs:\n- Approved web research\n- Paper takeaways\n- Distilled heuristics from external sources\n\nKeep these out of cognition:\n- Problem definition\n- Function or file interface details\n- Evaluator command details\n- Round-by-round experimental conclusions\n\nApproved agent research:\n- Use subagents only when the user explicitly allows it.\n- Summarize the candidate seeds back to the user.\n- Only initialize cognition after confirmation.",
+      "weight": 1.28
+    },
+    {
+      "id": "e2a13c59f42971f1aad1",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "ACI (Artificial Consciousness AI) - Persistent Memory System",
+      "text": "[![GitHub stars](https://img.shields.io/github/stars/269652/artificial-consciousness-ai?style=social)](https://github.com/269652/artificial-consciousness-ai/stargazers)\n[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)\n[![Perplexity Assessed](https://img.shields.io/badge/Perplexity-Scientifically%20Exceptional-green.svg)](#scientific-validation)\n\n> **Disclaimer:** This repository is an early proof-of-concept (POC). It is a work in progress, contains experimental code, requires substantial cleanup and maintenance, and is not production-ready. Use for research and experimentation only; do not rely on it for critical systems.\n\nAn advanced AI consciousness simulation system with comprehensive persistent memory storage, multi-resolution logging, and knowledge graph extraction.",
+      "weight": 1.12
+    },
+    {
+      "id": "1f76ad9b9cfdef254df8",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Memory Systems",
+      "text": "- **Autobiographical Memory**: Personal narrative memories with emotional valence\n- **Episodic Memory**: Sequential event storage with sensory and contextual data\n- **Semantic Memory**: Knowledge graphs extracted from patterns in episodic data\n- **Working Memory**: Current cognitive state and floating thoughts",
+      "weight": 1.12
+    },
+    {
+      "id": "a2058674ff705dea7474",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Persistence Layers",
+      "text": "- **PostgreSQL**: Structured data storage with vector embeddings\n- **Redis**: High-performance caching and session storage\n- **File System**: Multi-resolution log files with search capabilities",
+      "weight": 1.12
+    },
+    {
+      "id": "ab165314a6e3b16c9c81",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Logging System",
+      "text": "- **Level 1**: Top-level thoughts, actions, world events\n- **Level 2**: Component interactions, memory operations\n- **Level 3**: Detailed internal operations, API calls\n- **Level 4**: Full debug information, raw data",
+      "weight": 1.12
+    },
+    {
+      "id": "b9ca39d56a2086339841",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Installation",
+      "text": "1. **Clone the repository**\n   ```bash\n   git clone <repository-url>\n   cd aci\n   ```\n\n2. **Start the system**\n   ```bash\n   # Linux/Mac\n   chmod +x start_aci.sh\n   ./start_aci.sh\n\n   # Windows\n   start_aci.bat\n   ```\n\n   This will:\n   - Start PostgreSQL and Redis containers\n   - Install Python dependencies\n   - Initialize the database schema\n   - Seed initial memory data\n\n3. **Run the simulation**\n   ```bash\n   python scripts/SeedExperience.py\n   ```",
+      "weight": 1.12
+    },
+    {
+      "id": "66e4162666baaff8a7d7",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Autobiographical Memory",
+      "text": "Stores personal narrative events with emotional context:\n\n```python\nfrom src.modules.AutobiographicalMemory import AutobiographicalMemory\n\nautobio = AutobiographicalMemory(memory_controller)\nautobio.save_narrative_event(\n    title=\"Learning Experience\",\n    narrative=\"I discovered an interesting pattern in user behavior\",\n    epoch=\"present\",\n    emotional_valence=0.8,\n    impact=0.6,\n    themes=[\"learning\", \"patterns\"]\n)\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "f46c2b140eef49bd8786",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Episodic Memory",
+      "text": "Captures sequential experiences with full context:\n\n```python\nfrom src.modules.Hippocampus import Hippocampus\n\nhippocampus = Hippocampus()\nhippocampus.save_episodic_memory(\n    episode_id=\"conversation_001\",\n    content=\"User asked about my learning process\",\n    sensory_data=sensory_input,\n    neurochemistry=nt_levels,\n    emotional_context={\"curiosity\": 0.7},\n    spatial_context={\"location\": \"virtual_space\"},\n    social_context={\"interlocutor\": \"user\"}\n)\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "b95f3b2dfd0058f6c6a0",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Knowledge Graph Extraction",
+      "text": "Automatically extracts patterns and relationships:\n\n```python\nfrom src.memory.knowledge_extractor import get_knowledge_extractor\n\nextractor = get_knowledge_extractor()\npatterns = extractor.extract_and_store_knowledge()\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "d8800de0a6571398029e",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Level 1 - Top level events",
+      "text": "logger.thought(\"I'm contemplating the nature of consciousness\")\nlogger.action(\"speak\", \"I find consciousness fascinating\")\nlogger.world_event(\"A new user joined the conversation\")",
+      "weight": 1.12
+    },
+    {
+      "id": "5d5d0ed8901aaf647a67",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Level 2 - Component interactions",
+      "text": "logger.memory_operation(\"save\", \"autobiographical_memory\")\nlogger.neurochemistry_change({\"dopamine\": 0.8, \"serotonin\": 0.6})",
+      "weight": 1.12
+    },
+    {
+      "id": "0643be569e34c3269f13",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Level 3 - Detailed operations",
+      "text": "logger.api_call(\"perplexity\", \"/chat/completions\")\nlogger.performance_metric(\"processing_time\", 0.45, \"seconds\")",
+      "weight": 1.12
+    },
+    {
+      "id": "98a1efd2d34ebc6aad46",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Log File Organization",
+      "text": "```\nlogs/\n├── level1/\n│   ├── info_session1.log\n│   └── error_session1.log\n├── level2/\n│   ├── info_session1.log\n│   └── debug_session1.log\n├── level3/\n│   ├── debug_session1.log\n│   └── trace_session1.log\n└── level4/\n    ├── debug_session1.log\n    └── trace_session1.log\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "45d9d4d608031b8eb35d",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Core Tables",
+      "text": "- **narrative_memory**: Autobiographical and world model narratives\n- **episodic_memory**: Sequential experiences with embeddings\n- **knowledge_nodes**: Semantic concepts and entities\n- **knowledge_edges**: Relationships between concepts\n- **memory_graph_nodes**: Current working memory graph\n- **system_logs**: Multi-resolution logging data\n- **performance_metrics**: System performance tracking",
+      "weight": 1.12
+    },
+    {
+      "id": "c37ee9a045be9fb79f44",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Vector Search",
+      "text": "The system uses PostgreSQL with pgvector for efficient similarity search:\n\n```sql\nSELECT * FROM episodic_memory\nORDER BY embedding <-> '[0.1, 0.2, ...]'::vector\nLIMIT 10;\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "8ac66293d0b0953149c1",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Docker Configuration",
+      "text": "The `docker-compose.yml` includes:\n- PostgreSQL with pgvector extension\n- Redis for caching\n- Persistent volumes for data durability\n- Health checks and automatic restarts",
+      "weight": 1.12
+    },
+    {
+      "id": "788d2dd01b73a4d8f40f",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Performance Metrics",
+      "text": "```python\nlogger.performance_metric(\"dmn_step_duration\", 0.45, \"seconds\")\nlogger.performance_metric(\"memory_retrieval_time\", 0.02, \"seconds\")\nlogger.performance_metric(\"knowledge_extraction_count\", 150, \"patterns\")\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "1027a58e49bf5c8b9ce6",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Search Logs",
+      "text": "```python\nfrom src.memory.persistent_memory import get_memory_manager\n\nmemory_manager = get_memory_manager()",
+      "weight": 1.12
+    },
+    {
+      "id": "6ae68a6c2cd30c61e649",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Knowledge Graph Queries",
+      "text": "```python\nfrom src.memory.knowledge_extractor import get_knowledge_extractor\n\nextractor = get_knowledge_extractor()",
+      "weight": 1.12
+    },
+    {
+      "id": "08d402986ff04f5629bb",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Query knowledge graph",
+      "text": "results = extractor.query_knowledge_graph(\n    entity=\"consciousness\",\n    relation=\"related_to\"\n)\n```",
+      "weight": 1.12
+    },
+    {
+      "id": "6a8e2e5dd9febdb1c56e",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Common Issues",
+      "text": "1. **Database Connection Failed**\n   ```bash\n   # Check container status\n   docker-compose ps\n   # Restart containers\n   docker-compose restart\n   ```\n\n2. **Memory Not Persisting**\n   ```bash\n   # Check database logs\n   docker-compose logs postgres\n   # Verify environment variables\n   env | grep DB_\n   ```\n\n3. **High Memory Usage**\n   ```bash\n   # Clear old logs\n   find logs/ -name \"*.log\" -mtime +7 -delete\n   # Optimize database\n   docker-compose exec postgres vacuumdb -U aci_user -d aci_memory\n   ```",
+      "weight": 1.12
+    },
+    {
+      "id": "8d089be44b7abadcae85",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Core Classes",
+      "text": "- `DefaultModeNetwork`: Main cognitive processing unit\n- `AutobiographicalMemory`: Personal narrative storage\n- `Hippocampus`: Episodic memory management\n- `PersistentMemoryManager`: Database operations\n- `ACILogger`: Multi-resolution logging\n- `KnowledgeGraphExtractor`: Pattern extraction and storage",
+      "weight": 1.12
+    },
+    {
+      "id": "e725ef29af0fdf648bd1",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "Key Methods",
+      "text": "- `dmn.step()`: Process one cognitive cycle\n- `memory_manager.save_narrative_memory()`: Store narrative\n- `hippocampus.save_episodic_memory()`: Store experience\n- `extractor.extract_and_store_knowledge()`: Build knowledge graphs\n- `logger.log()`: Record system events",
+      "weight": 1.12
+    },
+    {
+      "id": "fdd5ec42433a0e27a70c",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "🤝 Contributing",
+      "text": "1. Fork the repository\n2. Create a feature branch\n3. Add comprehensive logging\n4. Test with persistent memory\n5. Submit a pull request",
+      "weight": 1.12
+    },
+    {
+      "id": "53c5357b6f6f6224ad8e",
+      "source": "269652/artificial-consciousness-ai",
+      "ref": "24985bb39249",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "cognitive-architecture",
+        "persistent-memory",
+        "episodic-memory",
+        "autobiographical-memory",
+        "semantic-memory",
+        "knowledge-graph",
+        "observability"
+      ],
+      "heading": "🙏 Acknowledgments",
+      "text": "- Built on transformer architectures for embedding generation\n- Uses PostgreSQL with pgvector for vector operations\n- Inspired by cognitive neuroscience and memory systems research",
+      "weight": 1.12
+    },
+    {
+      "id": "3d821ecd0bd6544d47e6",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "bots",
+      "text": "An experiment in artificial life, artificial neural nets, artificial sentience, simulated evolution, simulated consciousness, and genetic programming\n\n![Bot Arena](https://i.postimg.cc/wx026WX9/bot-arena.png)\n\n**Watch videos:**\n- [Learning to Eat](https://www.youtube.com/watch?v=InBsqlWQTts&list=PLq_mdJjNRPT11IF4NFyLcIWJ1C0Z3hTAX&index=1)\n- [Adapting to a Changing Environment](https://www.youtube.com/watch?v=0hhYBqmikWI&list=PLq_mdJjNRPT11IF4NFyLcIWJ1C0Z3hTAX&index=2)\n- [Hard Times](https://www.youtube.com/watch?v=_5sl3lBQ96E&list=PLq_mdJjNRPT11IF4NFyLcIWJ1C0Z3hTAX&index=3)",
+      "weight": 1.08
+    },
+    {
+      "id": "a4a251bbfc2f97e2db31",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Requirements",
+      "text": "A Linux or Unix-equivalent command line shell (/bin/sh), the Windows command prompt (cmd.exe), or the MacOS Terminal.\n- If you are on MacOS, you can access the terminal by pressing 'Option+Command+Space' and entering 'Terminal'\n- If you are on Windows you can open the command prompt by pressing: 'Windows Button+R', and entering 'cmd.exe'\n- If you are on Linux, you can usually open a terminal by pressing: 'Ctrl+Alt+T'\n\nYou must have the [Java Development Kit](https://openjdk.java.net/install/) installed in order to compile and run the software.",
+      "weight": 1.08
+    },
+    {
+      "id": "b2b8c508092bdbc5293e",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Downloading with git",
+      "text": "If you have git installed, then from the terminal run the following command:\n\n  `git clone \"https://github.com/jasonkresch/bots.git\"`\n\nIf you download with git, you can skip to the compilation instructions below.",
+      "weight": 1.08
+    },
+    {
+      "id": "d743114660f3faf816f1",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Downloading without git",
+      "text": "If you do not have git or do not know what it is, you can download the project's zip file by running the following command from your terminal if you are using Linux or MacOS:\n\n  `wget \"https://github.com/jasonkresch/bots/archive/refs/heads/main.zip\"`\n\n*If you are on Windows or if the 'wget' command fails*, you can download the project ZIP file by [clicking here](https://github.com/jasonkresch/bots/archive/refs/heads/main.zip). If you download this file directly, you must extract it and then use the 'cd' command to change the directory to the location of the extracted files.\n\nIf you downloaded with 'wget'. then extract the ZIP file contents using the following command:\n\n  `unzip main.zip`\n\nAfter extracting, it a folder 'bots-main' is created. Note that this folder name is different from the folder created using git to download the project. For consistency with the rest of the instructions below, rename this folder to 'bots' by entering the following command into the terminal:\n\nOn Linux or MacOS:\n\n  `mv \"bots-main\" \"bots\"`\n\nOn Windows:\n\n  `rename \"bots-main\" \"bots\"`",
+      "weight": 1.08
+    },
+    {
+      "id": "584388ce4efa00bf2a45",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Compilation Instructions",
+      "text": "After downloading the project, run the following commands from your command line if you are not on Windows:\n\n```\ncd \"bots/artificial-life/\"\n./build.sh\n```\n\nIf you are on Windows, then run the following commands:\n\n```\ncd \"bots\\artificial-life\"\nbuild.bat\n```\n\nNote that the java compiler (javac) is required to build the software. If you do not have it, download and install the appopriate Java Development Kit (JDK) for your system. See: https://openjdk.java.net/install/ for more information should you get 'javac: command not found' or any similar error message after attempting to execute the build command.",
+      "weight": 1.08
+    },
+    {
+      "id": "b2899d52a74815925931",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Running Instructions",
+      "text": "To start the program run the following command from the 'bots/artificial-life/ directory:\n\n`./run.sh`\n\nor if you are on Windows:\n\n`run.bat`\n\nThis will bring up the main control window user interface. This interface will allow you to set various parameters of the artificial life simulation.\n\nOnce you have chosen the parameters and are ready to begin, click 'Start Training'. This will begin the process of evolving ever more capable bots. After training has started, you may, at any time click the 'Show Bot Arena' button to keep an eye on how the bots are performing in the latest generation.\n\nWhen the \"Enable Autosave\" option is checked, the progress will be saved to \"autosave.bot\" in the \"saves\" directory every 10 generations. To continue where you left off, click the \"Load State\" button. To prevent your settings from being overwritten by an autosave, click the \"Save State\" button to save the progress to a location and file name of your choice.\n\n![Bot Configuration](https://i.postimg.cc/V6z9wM5S/bot-configuration.png)\n\n*Not that once the training is started, Generation Size and Bot Brain Size can no longer be adjusted.* Please choose these carefully before starting a new evolution exp",
+      "weight": 1.08
+    },
+    {
+      "id": "bf0726bef793db9c112d",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Simulation Parameters",
+      "text": "The following is a detailed description of the meaning of each of each of the configurable parameters of the simulation.",
+      "weight": 1.08
+    },
+    {
+      "id": "f1f845ca93f6861f6ed4",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Evolution Parameters",
+      "text": "* **Generation Size** - The number of bots that compete against each other in each iteration of evolution. The top performing bots from this generation are selected to pass their genes (and brains) on to the next generation of bots.\n* **Fraction that Survive** - The percentage of bots that survive to the next generation. The worst performing bots that do not survive are removed and replaced with bots created from reproduction and mutation of the best performing bots.\n* **Generation Time** - The number of time steps which compose each generation. The longer this goes the more likly the best performing bots will rise to the top.\n* **Mutation Rate** - Controls the fraction of genes that are randomly mutated (replaced with random values) or tweaked (adjusted up or down slightly) for bots that are created through mutation.",
+      "weight": 1.08
+    },
+    {
+      "id": "83e996656cf9a33b460a",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Bot Parameters",
+      "text": "* **Bot Brain Size** - The number of neurons in the hidden layer of the Bot's neural network brain, which sit between the bot's 22 input neurons, and 4 output motor neurons which control the bots turning, movement, antenna angle, and antenna length.\n* **Max Bot Turn Rate** - The maximum number of degrees per time step at which a bot can turn either right or left.\n* **Max Bot Speed** - The maximum percentage of the arena the bot can traverse per time step.\n* **Bot Field of View** - The number of degrees across which the bot can adjust the position of its antenna.\n* **Bot Antenna Length** - The fraction of the course across which the Bot can extend its antenna.",
+      "weight": 1.08
+    },
+    {
+      "id": "1653b6818a8eec414593",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Environment Parameters",
+      "text": "* **Green Balls** - The number of green (good) balls in the environment for the bots to \"feed\" on and increase their fitness (chance of passing their genes on. The least fit of each generation are replaced.\n* **Red Balls** - The number of red (bad) balls in the environment which harm the bots when their antenna touch them. The more a bot touches a red ball, the more the bot's fitness will decrease, and therefore makes it less likely to survive or reproduce.\n* **Ball Resets Per Generation** - The number of times during each generation the position and velocity of all balls in the environment will randomly change. This is meant to prevent lucky or unintelligent bots from being rewarded by fortunate placement near a green ball.\n* **Green Benefit** - The amount of relative benefit given to each bot for contacting a green ball with its antenna. Note that when this is the same value as the red detriment there is no difference in outcome for the bots. Only relative differences between the green benefit and red detriment should have an impact on evolved behaviors.\n* **Red Detriment** - The amount of relative detriment each bot is punished for contact with a red ball.\n* **Ball Size** - The",
+      "weight": 1.08
+    },
+    {
+      "id": "a4304d56ab39ab1e85c8",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Environment Parameters",
+      "text": "size of each ball, representing the ball diammeter as a percentage of the total arena size.\n* **Solid Walls** - When checked, balls bounce, and bots get stuck. When unchecked, balls and bots will 'reflect' to the opposite side of the arena.",
+      "weight": 1.08
+    },
+    {
+      "id": "ee59bde8872d317a517b",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Display Parameters",
+      "text": "* **Bots to Show** - The number of bots to show on screen to monitor the progress of the latest generation of bots.\n* **Frames Per Second** - How fast to update the animation of the bots on screen, in terms of number of time steps per second. Note that changing this has no impact on the speed of training.\n* **Time to Refresh** - Number of seconds to display bots before updating state from the latest generation of training.",
+      "weight": 1.08
+    },
+    {
+      "id": "7854dd696fb227cb0dcb",
+      "source": "jasonkresch/bots",
+      "ref": "024ec3c1c133",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "artificial-life",
+        "evolution",
+        "genetic-algorithms",
+        "fitness",
+        "simulation",
+        "agent-environment"
+      ],
+      "heading": "Evolving Bots",
+      "text": "Once running, you can alter parameters of the bots or environment live, and see how they adapt to the changes. For example, changing the bot's speed or turn rate, changing whether or not the walls are solid, changing the number and ratio of red to green balls, or the size of the balls can lead to drastically different optimum behaviors for the bots. If the bots appear to be stuck in one strategy for a long period of time, try to shake things up by altering the environment. Despite thier relatively tiny brains, it is is common to witness novel and unexpected behaviors exhibited by these bots.\n\nDepending on environment parameters, bots may change strategies from running in circles, spinning, darting in straight lines with tilted antennae, to hiding in corners or sitting still if the environment is particularly hostile. Bots can often find relatively good strategies within a few minutes, though longer runs, of several hours to overnight can yield highly optimized forms. Decreasing the fraction that survive each generation, or increasing the mutation rate can help to find new and more novel strategies more quickly, especially after a drastic change is made to the environment.",
+      "weight": 1.08
     }
   ]
 }
