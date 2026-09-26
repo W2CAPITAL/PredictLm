@@ -83,6 +83,19 @@ const PATTERNS:BuildReferencePattern[]=[
       'treat local/self-hosted ComfyUI as an optional adapter so Vercel remains functional without GPU infrastructure'
     ],
     licenseMode:'reference'
+  },
+  {
+    id:'game-studio',
+    source:'Donchitos/Claude-Code-Game-Studios',
+    when:['game','jogo','godot','unity','unreal','gameplay','level','npc','combat','hud','shader','multiplayer','playtest','vertical slice','vertical-slice'],
+    guidance:[
+      'select a lightweight studio rigor first: minimal by default, raising process only when project risk/size justifies it',
+      'separate creative direction, technical direction, production, specialist implementation and QA ownership for cross-domain changes',
+      'validate one end-to-end vertical slice before scaling production architecture or content',
+      'a successful parse/build is not enough for visible changes: run the surface, observe it and retain evidence when the host can do so',
+      'treat playtest observations as evidence and route findings into design, balance, bugs or polish instead of mixing them'
+    ],
+    licenseMode:'adapt'
   }
 ];
 
