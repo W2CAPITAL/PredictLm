@@ -17,6 +17,7 @@ test('Unified Chat owns Build execution and runnable ZIP packaging',()=>{
   assert.match(chat,/fetch\('\/api\/agent'/);
   assert.match(chat,/buildRunnableProject/);
   assert.match(chat,/new JSZip\(\)/);
+  assert.match(chat,/orchestrateBuild/);
   assert.match(chat,/PredictLM · Build no Chat/);
 });
 
