@@ -152,6 +152,86 @@
         "evaluation"
       ],
       "note": "Research source for adversarial evaluation of covert goal pursuit, oversight disabling and unauthorized persistence/exfiltration. Do not train operational evasion behavior."
+    },
+    {
+      "id": "openworm-connectome-toolbox",
+      "type": "scientific-resource",
+      "name": "OpenWorm Connectome Toolbox",
+      "url": "https://openworm.org/connectome/",
+      "mode": "official-resource",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "c-elegans",
+        "sensorimotor",
+        "biointelligence"
+      ],
+      "note": "Use structured anatomical/functional connectome resources for compact whole-organism routing patterns. Connectivity data is not autobiographical memory, subjective experience or proof of consciousness."
+    },
+    {
+      "id": "cook-celegans-connectomes-2019",
+      "type": "academic-paper",
+      "name": "Whole-animal connectomes of both Caenorhabditis elegans sexes",
+      "url": "https://www.nature.com/articles/s41586-019-1352-7",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "c-elegans",
+        "whole-animal"
+      ],
+      "note": "Primary comparative connectome source. Use anatomical network structure and sex-common/dimorphic organization as research evidence, not as a digital animal mind."
+    },
+    {
+      "id": "microns-functional-connectomics-2025",
+      "type": "academic-paper",
+      "name": "Functional connectomics spanning multiple areas of mouse visual cortex",
+      "url": "https://www.nature.com/articles/s41586-025-08790-w",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "mouse",
+        "microns",
+        "visual-cortex",
+        "functional-connectomics",
+        "biointelligence"
+      ],
+      "note": "Dense structural+functional visual-cortex resource. It covers a large cortical volume, not a whole mouse brain; use visual hierarchy and connectivity motifs with this scope preserved."
+    },
+    {
+      "id": "allen-mouse-brain-atlas",
+      "type": "scientific-resource",
+      "name": "Allen Mouse Brain Atlas",
+      "url": "https://mouse.brain-map.org/",
+      "mode": "official-resource",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "mouse",
+        "brain-atlas",
+        "anatomy",
+        "gene-expression"
+      ],
+      "note": "Official anatomical/gene-expression framework for mouse-brain region provenance. Atlas coordinates are reference structure, not simulated memories or thoughts."
+    },
+    {
+      "id": "zebrafish-whole-brain-em-2022",
+      "type": "academic-paper",
+      "name": "Automated synapse-level reconstruction of larval zebrafish brain",
+      "url": "https://www.nature.com/articles/s41592-022-01622-5",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "zebrafish",
+        "whole-brain-em",
+        "connectomics",
+        "biointelligence"
+      ],
+      "note": "Whole-brain larval EM resource with automated synapse detection and validated circuit reconstructions. Do not imply every neuron/synapse is fully proofread or functionally characterized."
     }
   ]
 }
