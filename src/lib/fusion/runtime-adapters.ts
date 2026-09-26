@@ -8,6 +8,9 @@ export type RuntimeAdapterId=
   |'paddleocr'
   |'media-upscaler'
   |'voice-studio'
+  |'gpt-sovits'
+  |'vibevoice'
+  |'social-publisher'
   |'animegan-stylizer'
   |'scrapling'
   |'changedetection'
@@ -105,6 +108,36 @@ export function runtimeAdapterStates():RuntimeAdapterState[]{
       required:['VOICE_STUDIO_BASE_URL'],
       optional:['VOICE_STUDIO_API_KEY'],
       notes:'Optional transcription/synthesis/dubbing bridge; identity-sensitive voice cloning still requires explicit consent.'
+    },
+    {
+      id:'gpt-sovits',
+      label:'GPT-SoVITS Persona Voice',
+      surfaces:['voice','media','social'],
+      configured:has('GPT_SOVITS_BASE_URL'),
+      mode:'self-hosted',
+      required:['GPT_SOVITS_BASE_URL'],
+      optional:['GPT_SOVITS_API_KEY'],
+      notes:'Optional few-shot TTS for synthetic, owned or explicitly authorized persona voices only.'
+    },
+    {
+      id:'vibevoice',
+      label:'VibeVoice Persona Voice',
+      surfaces:['voice','media','social'],
+      configured:has('VIBEVOICE_BASE_URL'),
+      mode:'self-hosted',
+      required:['VIBEVOICE_BASE_URL'],
+      optional:['VIBEVOICE_API_KEY'],
+      notes:'Optional original synthetic voice/speech bridge for virtual creators.'
+    },
+    {
+      id:'social-publisher',
+      label:'Authorized Social Publisher',
+      surfaces:['social'],
+      configured:has('SOCIAL_PUBLISHER_BASE_URL'),
+      mode:'hosted-api',
+      required:['SOCIAL_PUBLISHER_BASE_URL'],
+      optional:['SOCIAL_PUBLISHER_PATH','SOCIAL_PUBLISHER_API_KEY'],
+      notes:'Publishes only through an explicitly connected account and returns confirmation; otherwise the campaign remains review-ready.'
     },
     {
       id:'animegan-stylizer',
