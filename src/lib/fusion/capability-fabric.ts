@@ -57,7 +57,8 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'sindresorhus/awesome',license:'CC0-1.0',mode:'adapt',areas:['research','build'],ideas:['curated discovery index','category-first resource discovery','prefer maintained canonical lists over random search']},
   {repo:'public-apis/public-apis',license:'MIT',mode:'adapt',areas:['research','build'],ideas:['free API discovery catalog','auth/HTTPS/category-aware integration selection','prototype with public APIs before paid dependencies']},
   {repo:'freeCodeCamp/freeCodeCamp',license:'BSD-3-Clause',mode:'adapt',areas:['chat','build','research'],ideas:['project-based curriculum','small exercises with immediate feedback','progressive practice from fundamentals to real projects']},
-  {repo:'mattpocock/skills',license:'MIT',mode:'adapt',areas:['build','chat'],ideas:['small composable engineering skills','shared project vocabulary and ADRs','TDD red-green-refactor','diagnose bugs in gated phases','spec before broad edits']}
+  {repo:'mattpocock/skills',license:'MIT',mode:'adapt',areas:['build','chat'],ideas:['small composable engineering skills','shared project vocabulary and ADRs','TDD red-green-refactor','diagnose bugs in gated phases','spec before broad edits']},
+  {repo:'Donchitos/Claude-Code-Game-Studios',license:'MIT',mode:'adapt',areas:['build','simulation','media','video'],ideas:['studio-style agent hierarchy with scoped ownership','rigor modes from minimal to full','vertical-slice validation before production','run-and-observe visual QA with retained evidence','playtest-driven iteration','engine-specific specialists for Godot Unity Unreal','path-scoped rules and escalation for cross-domain changes']}
 ];
 
 const SURFACE_RULES:Record<FusionSurface,string[]>={
@@ -76,6 +77,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'checkpoint plan, changed files, review findings and verification result',
     'treat browser console/network/performance evidence as first-class debugging input',
     'prefer small composable changes with fast feedback; use spec → test/failure → implementation → verification for non-trivial edits',
+    'for game/interactive projects, choose a rigor level, keep domain ownership explicit, validate a vertical slice before broad production, and require run-and-observe evidence for visible changes',
     'use curated catalogs only to discover options; verify the selected library/API against its primary documentation before integration',
     'keep plugins/adapters permission-scoped and secrets server-side'
   ],
@@ -100,12 +102,14 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
   ],
   video:[
     'plan script/shots/assets/continuity before render',
+    'for interactive/game media, keep an art-direction brief and validate visible output instead of treating a successful render call as proof of quality',
     'track identity and scene state across frames',
     'distinguish true generative video from local keyframe motion fallback',
     'use recoverable job stages and quality gates'
   ],
   simulation:[
     'agents act from local perception plus persistent memory, not omniscient state',
+    'for game-like simulations, separate creative direction, systems design, implementation and playtest/QA roles instead of letting one agent silently own every domain',
     'use deterministic state transitions for core world rules',
     'allow emergent policies/evolution only as a simulation layer, never as factual prediction',
     'run baseline, adverse, third-path and second-order counterfactuals'
