@@ -6,6 +6,7 @@ import { mediaErrorText } from '@/lib/media/media-errors';
 import { mediaPostprocessPlan, mediaQualityDirectives } from '@/lib/media/postprocess-pipeline';
 import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
+import {comfyImageConfig,runComfyImageWorkflow} from '@/lib/media/comfy-image';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -236,9 +237,65 @@ export async function POST(req:Request){
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
     const requestedModel=String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
     const nanoModel=String(process.env.NANO_BANANA_MODEL||'nano-banana').trim();
-    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,nano,configured')
+    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,comfyui,nano,configured')
       .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
     if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
+
+    const comfy=comfyImageConfig();
+    if(order.includes('comfyui')&&comfy.enabled){
+      try{
+        const comfyResult=await runComfyImageWorkflow({
+          prompt:providerPrompt,
+          negativePrompt,
+          width,
+          height,
+          seed,
+          references:inlineReferences,
+          timeoutMs:42000
+        });
+        const comfyReferenceTransport=inlineReferences.length>0&&(
+          comfy.workflow.includes('{{REFERENCE_1_FILENAME}}')||
+          comfy.workflow.includes('{{IMAGE_FILENAME}}')
+        );
+        const fidelityWarning=needsStrongIdentity
+          ? referencePlan.references.length===0&&userInline.length===0
+            ? 'Pedido de alta fidelidade sem referência visual disponível; o workflow ComfyUI depende do modelo e do prompt.'
+            : inlineReferences.length>0&&!comfyReferenceTransport
+              ? 'Referências foram preparadas, mas o workflow ComfyUI não expõe token de imagem de referência; o grounding ficou textual.'
+              : ''
+          : '';
+        return Response.json({
+          url:comfyResult.dataUrl,
+          provider:'comfyui',
+          model:String(process.env.COMFYUI_IMAGE_MODEL||requestedModel||'workflow'),
+          workflowPromptId:comfyResult.promptId,
+          width,height,seed,
+          identityLocked:true,
+          referenceQuery:referencePlan.query||null,
+          referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
+          referenceImagesPassed:comfyReferenceTransport?inlineReferences.length:0,
+          userReferenceCount:userInline.length,
+          searchedReferenceCount:searchedInline.length,
+          referenceReview,
+          referenceWarnings:referencePlan.warnings,
+          originalPrompt:sourcePrompt,
+          expandedPrompt:providerPrompt,
+          caption:buildSafeCaptionPtBr(sourcePrompt),
+          displayTitle:buildDisplayTitle(sourcePrompt),
+          parityContract:'grok-imagine-parity',
+          promptMode:effectivePromptMode,
+          negativePrompt,
+          style,
+          styleLocked,
+          fidelityLimited:!!fidelityWarning,
+          providerWarning:fidelityWarning||null,
+          postprocessPlan
+        });
+      }catch{
+        // ComfyUI is optional. Continue through the remaining providers.
+      }
+    }
+
     const providers=[
       ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
       ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
