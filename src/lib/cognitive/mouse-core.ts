@@ -38,14 +38,14 @@ export function advanceMouseCore(previous:MouseCoreState|undefined,prompt:string
   const entropy=hash01(q+'|'+prev.lastUpdated);
   return {
     version:1,
-    visualIntegration:clamp(prev.visualIntegration*.82+(visual?.15:.03)),
+    visualIntegration:clamp(prev.visualIntegration*.82+(visual ? .15 : .03)),
     synapticDensity:clamp(prev.synapticDensity*.96+.04),
-    functionalCoupling:clamp(prev.functionalCoupling*.82+(visual||spatial?.12:.04)+entropy*.02),
-    mesoscaleProjection:clamp(prev.mesoscaleProjection*.86+(spatial?.1:.03)),
+    functionalCoupling:clamp(prev.functionalCoupling*.82+((visual||spatial) ? .12 : .04)+entropy*.02),
+    mesoscaleProjection:clamp(prev.mesoscaleProjection*.86+(spatial ? .10 : .03)),
     cellTypeDiversity:clamp(prev.cellTypeDiversity*.98+.02),
-    inhibition:clamp(prev.inhibition*.9+(uncertainty?.08:.03)),
-    exploration:clamp(prev.exploration*.82+(spatial?.12:.04)+entropy*.03),
-    uncertainty:clamp(prev.uncertainty*.72+(uncertainty?.18:.06)),
+    inhibition:clamp(prev.inhibition*.9+(uncertainty ? .08 : .03)),
+    exploration:clamp(prev.exploration*.82+(spatial ? .12 : .04)+entropy*.03),
+    uncertainty:clamp(prev.uncertainty*.72+(uncertainty ? .18 : .06)),
     lastUpdated:Date.now()
   };
 }
