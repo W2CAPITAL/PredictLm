@@ -11,6 +11,8 @@ import {
   blockAt,
   chunkSnapshot,
   createVoxelWorld,
+  executeVoxelPlan,
+  localVoxelPlan,
   mineVoxelBlock,
   moveVoxelPlayer,
   placeVoxelBlock,
@@ -77,4 +79,15 @@ test('voxel state exports a Unity-style scene snapshot',()=>{
   assert.equal(scene.sceneId,'predictlm-voxel-world');
   assert.ok(scene.objects.some(x=>x.id==='player'));
   assert.ok(scene.objects.some(x=>x.id.startsWith('block:')));
+});
+
+
+test('Game Studio local voxel plan mutates the real world state instead of narrating only',()=>{
+  const world=createVoxelWorld(123);
+  const plan=localVoxelPlan('explore bastante para encontrar novos chunks',world);
+  const executed=executeVoxelPlan(world,plan);
+  assert.equal(executed.ok,true);
+  assert.notEqual(executed.state.player.x,world.player.x);
+  assert.ok(executed.state.stats.distance>world.stats.distance);
+  assert.ok(executed.records.some(x=>x.action.type==='move'&&x.ok));
 });
