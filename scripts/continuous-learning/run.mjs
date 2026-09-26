@@ -419,11 +419,56 @@ async function syncSpreadsheet({newRecords,gaps,codeProposals,skillRows,audit}){
   }
 }
 
+function csvCell(value){
+  const text=String(value??'').replace(/\r?\n/g,' ').trim();
+  return '"'+text.replace(/"/g,'""')+'"';
+}
+
+function csvData(rows){
+  return rows.map(row=>row.map(csvCell).join(',')).join('\n')+(rows.length?'\n':'');
+}
+
+function spreadsheetCsvArtifacts(index){
+  const accepted=index.records.filter(r=>r.status==='accepted'&&r.kind!=='source-error');
+  const sources=new Map();
+  for(const r of index.records){
+    const key=[r.source,r.url].join('|');
+    if(!sources.has(key))sources.set(key,r);
+  }
+  return {
+    'learning-data/APRENDIZADO.csv':csvData(accepted.map(r=>[
+      r.observedAt,r.id,r.topic,r.kind,r.title,r.summary,r.source,r.url,r.confidence,
+      r.evidenceLevel||'',r.license||'',r.status
+    ])),
+    'learning-data/FONTES.csv':csvData([...sources.values()].map(r=>[
+      r.observedAt,r.source,hostOf(r.url),r.kind,r.confidence,r.license||'',r.url,r.status
+    ])),
+    'learning-data/GITHUB.csv':csvData(index.records.filter(r=>String(r.kind).startsWith('github-')).map(r=>[
+      r.observedAt,r.source,r.ref||'',r.path||'',r.topic,(r.domains||[]).join(', '),
+      r.license||'',r.confidence,r.summary,r.url,r.status
+    ])),
+    'learning-data/SKILLS.csv':csvData((index.skillProposals||[]).map(x=>[
+      x.createdAt,x.skill,x.topic,x.action,(x.evidenceIds||[]).join(', '),x.status
+    ])),
+    'learning-data/CODIGO.csv':csvData((index.codeProposals||[]).map(x=>[
+      x.createdAt,x.id,x.topic,x.title,x.area,x.action,x.risk,(x.evidenceIds||[]).join(', '),x.status
+    ])),
+    'learning-data/PENDENCIAS.csv':csvData((index.gaps||[]).filter(x=>x.status==='open').map(x=>[
+      index.generatedAt,x.topic,x.label,x.priority,x.acceptedRecords,x.lastObservedAt||'',x.nextQuery,x.status
+    ])),
+    'learning-data/AUDITORIA.csv':csvData([[
+      index.generatedAt,index.audit?.runId||'',index.audit?.newRecords||0,index.audit?.accepted||0,
+      index.audit?.candidates||0,index.audit?.rejected||0,index.audit?.openGaps||0,
+      index.audit?.codeProposals||0,PUBLISH_BRANCH,'ok'
+    ]])
+  };
+}
+
 async function ensurePublishBranch(){
-  if(!TOKEN)return false;
+  if(!TOKEN)return null;
   const branchEndpoint='/repos/'+REPO+'/git/ref/heads/'+encodeURIComponent(PUBLISH_BRANCH);
   const response=await fetch('https://api.github.com'+branchEndpoint,{headers:GH_HEADERS});
-  if(response.ok)return true;
+  if(response.ok)return (await response.json()).object?.sha||null;
   if(response.status!==404)throw new Error('GitHub branch check '+response.status);
   const base=await ghJson('/repos/'+REPO+'/git/ref/heads/main');
   const created=await fetch('https://api.github.com/repos/'+REPO+'/git/refs',{
@@ -432,34 +477,49 @@ async function ensurePublishBranch(){
     body:JSON.stringify({ref:'refs/heads/'+PUBLISH_BRANCH,sha:base.object.sha})
   });
   if(!created.ok)throw new Error('GitHub branch create '+created.status);
-  return true;
+  return (await created.json()).object?.sha||base.object.sha;
+}
+
+async function ghWriteJson(endpoint,body,method='POST'){
+  const response=await fetch('https://api.github.com'+endpoint,{
+    method,
+    headers:{...GH_HEADERS,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if(!response.ok){
+    const text=await response.text().catch(()=> '');
+    throw new Error('GitHub '+method+' '+response.status+' '+endpoint+' '+text.slice(0,300));
+  }
+  return response.json();
 }
 
 async function publishIndex(index){
   if(!TOKEN)return {status:'local-only'};
-  await ensurePublishBranch();
-  const filePath=CONFIG.publish.path||'learning-data/index.json';
-  const endpoint='/repos/'+REPO+'/contents/'+filePath;
-  let sha=null;
-  const current=await fetch('https://api.github.com'+endpoint+'?ref='+encodeURIComponent(PUBLISH_BRANCH),{headers:GH_HEADERS});
-  if(current.ok)sha=(await current.json()).sha||null;
-  else if(current.status!==404)throw new Error('GitHub file read '+current.status);
-  const payload={
-    message:'chore(learning): refresh continuous knowledge '+NOW_ISO,
-    content:Buffer.from(JSON.stringify(index,null,2)+'\n').toString('base64'),
-    branch:PUBLISH_BRANCH,
-    ...(sha?{sha}:{})
+  const parentSha=await ensurePublishBranch();
+  if(!parentSha)throw new Error('Missing publish branch parent SHA');
+  const parent=await ghJson('/repos/'+REPO+'/git/commits/'+parentSha);
+  const artifacts={
+    [CONFIG.publish.path||'learning-data/index.json']:JSON.stringify(index,null,2)+'\n',
+    ...spreadsheetCsvArtifacts(index)
   };
-  const written=await fetch('https://api.github.com'+endpoint,{
-    method:'PUT',
-    headers:{...GH_HEADERS,'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
-  if(!written.ok){
-    const body=await written.text().catch(()=> '');
-    throw new Error('GitHub publish '+written.status+' '+body.slice(0,300));
+  const tree=[];
+  for(const [artifactPath,artifactContent] of Object.entries(artifacts)){
+    const blob=await ghWriteJson('/repos/'+REPO+'/git/blobs',{content:artifactContent,encoding:'utf-8'});
+    tree.push({path:artifactPath,mode:'100644',type:'blob',sha:blob.sha});
   }
-  return {status:'ok',branch:PUBLISH_BRANCH,path:filePath};
+  const newTree=await ghWriteJson('/repos/'+REPO+'/git/trees',{base_tree:parent.tree.sha,tree});
+  const commit=await ghWriteJson('/repos/'+REPO+'/git/commits',{
+    message:'chore(learning): refresh continuous knowledge '+NOW_ISO,
+    tree:newTree.sha,
+    parents:[parentSha]
+  });
+  await ghWriteJson('/repos/'+REPO+'/git/refs/heads/'+encodeURIComponent(PUBLISH_BRANCH),{sha:commit.sha,force:false},'PATCH');
+  return {
+    status:'ok',
+    branch:PUBLISH_BRANCH,
+    commit:commit.sha,
+    artifacts:Object.keys(artifacts)
+  };
 }
 
 const previous=await readPrevious();
