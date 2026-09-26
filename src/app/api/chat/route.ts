@@ -280,11 +280,15 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
 
 function apiAgentSkillEnvelope(prompt:string,deep=false,hasResearch=false){
   const q=normalize(prompt);
+  const gameBuild=/\b(crie|criar|implemente|desenvolva|construa|prototipe|faça|faca|build)\b/i.test(q)
+    && /\b(game|jogo|gameplay|godot|unity|unreal|ue5|level|npc|hud|multiplayer)\b/i.test(q);
   const surface=/(imagem|image|video|vídeo|anime|render|foto|storyboard)/i.test(q)
     ? 'media'
-    : hasResearch||/(pesquis|research|fonte|source|web|documenta[cç][aã]o)/i.test(q)
-      ? 'research'
-      : 'chat';
+    : gameBuild
+      ? 'build'
+      : hasResearch||/(pesquis|research|fonte|source|web|documenta[cç][aã]o)/i.test(q)
+        ? 'research'
+        : 'chat';
   const plan=planAgenticRun(prompt,surface,deep);
   return [
     'API AGENTIC PLAN: '+plan.roles.join(' → ')+'.',
