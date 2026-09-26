@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { mediaErrorText } from '@/lib/media/media-errors';
+import { mediaPostprocessPlan, mediaQualityDirectives } from '@/lib/media/postprocess-pipeline';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -328,6 +329,22 @@ export async function POST(req:Request){
     : clampDuration(body?.duration,resolvedProvider==='veo'||resolvedProvider==='sora'?3:4,resolvedProvider==='veo'?8:15);
   const imageUrl=body?.imageUrl?String(body.imageUrl):'';
   const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(body?.seed)||Date.now()%2147483646)));
+  const style=String(body?.style||'Cinematic').trim()||'Cinematic';
+  const identitySensitive=Boolean(hasVisualInput||body?.identitySensitive);
+  const postprocessPlan=mediaPostprocessPlan({
+    kind:'video',
+    prompt,
+    style,
+    identitySensitive,
+    hasReferences:hasVisualInput
+  });
+  const effectivePrompt=prompt+'\n\n'+mediaQualityDirectives({
+    kind:'video',
+    prompt,
+    style,
+    identitySensitive,
+    hasReferences:hasVisualInput
+  });
 
   try{
     if(resolvedProvider==='comfyui'){
@@ -337,7 +354,7 @@ export async function POST(req:Request){
       const width=geminiAspect(body?.aspectRatio)==='9:16'?720:1280;
       const height=geminiAspect(body?.aspectRatio)==='9:16'?1280:720;
       const workflow=workflowReplace(parsed,{
-        '{{PROMPT}}':prompt,
+        '{{PROMPT}}':effectivePrompt,
         '{{NEGATIVE_PROMPT}}':String(body?.negativePrompt||'low quality, flicker, temporal inconsistency, deformed anatomy, watermark'),
         '{{WIDTH}}':width,
         '{{HEIGHT}}':height,
@@ -358,7 +375,7 @@ export async function POST(req:Request){
       if(!r.ok)return NextResponse.json({error:mediaErrorText(data?.error||data,'ComfyUI HTTP '+r.status)},{status:502});
       const taskId=String(data?.prompt_id||data?.promptId||'');
       if(!taskId)return NextResponse.json({error:'ComfyUI não retornou prompt_id.'},{status:502});
-      return NextResponse.json({provider:'comfyui',requestedProvider:provider,taskId,status:'queued',videoUrl:null});
+      return NextResponse.json({provider:'comfyui',requestedProvider:provider,taskId,status:'queued',videoUrl:null,postprocessPlan,effectivePrompt});
     }
 
     let endpoint='';
@@ -371,7 +388,7 @@ export async function POST(req:Request){
       const startImage=imageUrl?await imageToInline(imageUrl,req.url):null;
       const referenceImages=(await Promise.all(referenceUrls.map((url:string)=>imageToInline(url,req.url)))).filter(Boolean) as InlineImage[];
       const supportsReferenceImages=/veo-3\.1/i.test(cfg.gemini.model);
-      const instance:any={prompt};
+      const instance:any={prompt:effectivePrompt};
       if(startImage)instance.image={inlineData:{mimeType:startImage.mimeType,data:startImage.data}};
       if(referenceImages.length&&supportsReferenceImages){
         instance.referenceImages=referenceImages.map(ref=>({
@@ -395,7 +412,7 @@ export async function POST(req:Request){
     }else if(resolvedProvider==='veo'){
       endpoint=entry.base+'/veo/generate';
       payload={
-        prompt,
+        prompt:effectivePrompt,
         model:String(body?.model||'veo-3-fast'),
         duration,
         resolution:String(body?.resolution||'1080p'),
@@ -404,7 +421,7 @@ export async function POST(req:Request){
     }else if(resolvedProvider==='sora'){
       endpoint=entry.base+'/sora/generate';
       payload={
-        prompt,
+        prompt:effectivePrompt,
         duration,
         resolution:String(body?.resolution||'1080p'),
         ...(imageUrl?{imageUrl}:{})
@@ -414,7 +431,7 @@ export async function POST(req:Request){
       payload={
         model:String(body?.model||'sd2-fast'),
         inputs:{
-          prompt,
+          prompt:effectivePrompt,
           duration:duration+'s',
           resolution:String(body?.resolution||'1280x720'),
           ...(imageUrl?{urls:[imageUrl]}:{})
@@ -443,7 +460,7 @@ export async function POST(req:Request){
         visualInputDowngraded=true;
         compatibilityWarning='O modelo Gemini configurado rejeitou a imagem/referências inline; o PredictLM repetiu a geração como texto→vídeo em vez de falhar.';
         const textOnlyPayload={
-          instances:[{prompt}],
+          instances:[{prompt:effectivePrompt}],
           parameters:{
             numberOfVideos:1,
             durationSeconds:String(duration),
@@ -482,7 +499,9 @@ export async function POST(req:Request){
       effectiveDuration:duration,
       resolution:requestedResolution,
       visualInputDowngraded,
-      compatibilityWarning:compatibilityWarning||null
+      compatibilityWarning:compatibilityWarning||null,
+      postprocessPlan,
+      effectivePrompt
     });
   }catch(error:any){
     return NextResponse.json({error:mediaErrorText(error,'Falha ao iniciar geração de vídeo.')},{status:502});
