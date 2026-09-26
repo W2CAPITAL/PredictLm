@@ -1,4 +1,5 @@
 import {isMinecraftSandboxTask,minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
+import {miroFishSimulationContext} from '@/lib/simulation/mirofish-fabric';
 
 export type GameEngine='godot'|'unity'|'unreal'|'web'|'unknown';
 export type StudioRigor='minimal'|'standard'|'full';
@@ -108,6 +109,7 @@ export function gameStudioContext(prompt:string,forceSimulation=false){
       : '',
     'Simulation truth rule: narration never outranks state. If an action cannot be represented by the engine, do not pretend it happened.',
     'Perception rule: simulated agents act from their own visible/local state and memory, not omniscient world knowledge.',
+    miroFishSimulationContext(),
     'Visual rule: when the browser renders the world, visible state should be checked from the rendered world/POV instead of inferred only from data.',
     minecraft?minecraftSimulationContext():'',
     'Playtest rule: observations describe simulator behavior and UX, never predictions about real human behavior.'
