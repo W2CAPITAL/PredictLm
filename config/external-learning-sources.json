@@ -232,6 +232,107 @@
         "biointelligence"
       ],
       "note": "Whole-brain larval EM resource with automated synapse detection and validated circuit reconstructions. Do not imply every neuron/synapse is fully proofread or functionally characterized."
+    },
+    {
+      "id": "youtube-biocomputing-readiness",
+      "type": "youtube-video",
+      "name": "We're Not Ready for Biocomputing",
+      "url": "https://www.youtube.com/watch?v=uKhsbQcFVwQ",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "biocomputing",
+        "biointelligence",
+        "wetware"
+      ],
+      "note": "Title verified from the public YouTube page. Keep metadata-only unless transcript/notes are explicitly available; use as a prompt for risk/readiness questions, not as factual evidence by itself."
+    },
+    {
+      "id": "youtube-minecraft-ai-civilization",
+      "type": "youtube-video",
+      "name": "Scientists Left 1000 AIs Alone in Minecraft. They Created A Civilization.",
+      "url": "https://www.youtube.com/watch?v=uRDBco-cSK4",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "simulation",
+        "minecraft",
+        "multi-agent",
+        "emergence"
+      ],
+      "note": "Title verified from the public YouTube page. Use as thematic inspiration for persistent-world agent simulation only; do not claim the video's experiment/results without transcript or corroborating sources."
+    },
+    {
+      "id": "cortical-labs-cl1-docs",
+      "type": "official-docs",
+      "name": "Cortical Labs CL1 Developer Guide",
+      "url": "https://docs.corticallabs.com/",
+      "mode": "vendor-primary",
+      "priority": 5,
+      "domains": [
+        "biocomputing",
+        "CL1",
+        "wetware",
+        "closed-loop-neural-io"
+      ],
+      "note": "Primary documentation for CL API and simulator. Core PredictLM remains independent of CL1 hardware; adapter is optional and authorization-gated."
+    },
+    {
+      "id": "finalspark-neuroplatform",
+      "type": "vendor-primary",
+      "name": "FinalSpark Neuroplatform",
+      "url": "https://finalspark.com/neuroplatform/",
+      "mode": "vendor-primary",
+      "priority": 5,
+      "domains": [
+        "biocomputing",
+        "organoids",
+        "wetware",
+        "MEA"
+      ],
+      "note": "Primary vendor source for remotely accessible organoid recordings/stimulation. Treat remote wetware as optional experimental I/O, never as required runtime."
+    },
+    {
+      "id": "finalspark-digital-twins-2026",
+      "type": "vendor-research-summary",
+      "name": "Digital twins of brain organoids",
+      "url": "https://finalspark.com/digital-twins-of-brain-organoids/",
+      "mode": "vendor-primary-summary",
+      "priority": 5,
+      "domains": [
+        "biointelligence",
+        "digital-twin",
+        "organoid",
+        "spiking-networks"
+      ],
+      "note": "Use the digital-twin pattern: fit software dynamics to measured biological recordings while labeling measured signal vs model output separately."
+    },
+    {
+      "id": "github-next-projects",
+      "type": "research-lab",
+      "name": "GitHub Next Projects",
+      "url": "https://githubnext.com/projects/",
+      "mode": "public-research",
+      "priority": 4,
+      "domains": [
+        "auto-programming",
+        "continuous-ai",
+        "repo-understanding",
+        "agentic-workflows"
+      ],
+      "note": "Research/prototype source. Useful patterns include Autoloop, Continuous AI, Repo Mind and Discovery Agent; concepts only unless a specific open repository/license is separately verified."
+    },
+    {
+      "id": "github-topic-spark",
+      "type": "github-topic",
+      "name": "GitHub topic: spark",
+      "url": "https://github.com/topics/spark",
+      "mode": "discovery-only",
+      "priority": 2,
+      "domains": [
+        "github-discovery"
+      ],
+      "note": "Broad topic feed only. Never ingest repositories from this page automatically; each candidate requires relevance, license and provenance verification first."
     }
   ]
 }
