@@ -1,4 +1,5 @@
 import { compactText } from '@/lib/token-budget';
+import {mediaContinuityContext} from '@/lib/media/continuity-tracker';
 
 export type MediaPipelinePattern={
   id:string;
@@ -29,7 +30,12 @@ export const MEDIA_PIPELINE_PATTERNS:MediaPipelinePattern[]=[
   {id:'sana-video2',name:'SANA-Video 2.0',repo:'NVlabs/Sana',role:'efficient 720p text-to-video and text-image-to-video; 5s/8s release patterns',runtime:'adapter'},
   {id:'infinity',name:'Infinity visual synthesis',repo:'FoundationVision/Infinity',role:'prompt rewrite, high-resolution synthesis and self-correction patterns',runtime:'reference'},
   {id:'custom-diffusion',name:'Custom Diffusion concepts',repo:'adobe-research/custom-diffusion',role:'few-shot concept identity preservation and multi-concept composition patterns',runtime:'reference'},
-  {id:'imagdressing',name:'IMAGDressing concepts',repo:'muzishen/IMAGDressing',role:'reference-conditioned identity/garment preservation with adapter-style control',runtime:'reference'}
+  {id:'imagdressing',name:'IMAGDressing concepts',repo:'muzishen/IMAGDressing',role:'reference-conditioned identity/garment preservation with adapter-style control',runtime:'reference'},
+  {id:'trackstudio',name:'Temporal identity tracking',repo:'playbox-dev/trackstudio',role:'stable tracked entity identity, cross-view continuity and scene-state ledger patterns',runtime:'reference'},
+  {id:'youtube-agent',name:'Recoverable video production jobs',repo:'darkzOGx/youtube-automation-agent',role:'script → assets → render → publish job-stage and recovery patterns',runtime:'reference'},
+  {id:'comfyui',name:'ComfyUI workflow graph',repo:'Comfy-Org/ComfyUI',role:'optional local/self-hosted graph for image/video stages',runtime:'adapter'},
+  {id:'animeganv3',name:'AnimeGAN stylization',repo:'TachibanaYoshino/AnimeGANv3',role:'optional anime/toon stylization pass after semantic identity is locked',runtime:'adapter'},
+  {id:'upscayl',name:'Upscale/restoration',repo:'upscayl/upscayl',role:'optional super-resolution postprocess through configured bridge',runtime:'adapter'}
 ];
 
 export function buildLocalMotionPlan(prompt:string,aspect:string){
@@ -52,7 +58,8 @@ export type StoryboardFrame={
 
 export function buildStoryboardFrames(prompt:string,style:string,aspect:string):StoryboardFrame[]{
   const subject=compactText(prompt.trim()||'cinematic subject',180);
-  const continuity='same subject identity, same wardrobe/materials, same environment, same color palette, '+style.toLowerCase()+', '+aspect+', coherent continuity, high detail, no watermark';
+  const continuityLedger=mediaContinuityContext({prompt,style,aspect});
+  const continuity='same subject identity, same wardrobe/materials, same environment, same color palette, '+style.toLowerCase()+', '+aspect+', coherent continuity, high detail, no watermark. '+compactText(continuityLedger,420);
   return [
     {
       id:'establishing',
@@ -89,6 +96,11 @@ export function buildGenerativeVideoPrompt(input:{
   const style=compactText(input.style||'Cinematic',32);
   const brief=compactText(input.directorBrief||'',320);
   const research=compactText(input.researchContext||'',280);
+  const continuity=mediaContinuityContext({
+    prompt:input.prompt,
+    style:input.style,
+    aspect:input.aspect
+  });
   const pieces=[
     subject,
     'Generate one coherent real moving video clip, not a slideshow, not a still image with pan/zoom, and not a sequence of unrelated frames.',
@@ -98,6 +110,7 @@ export function buildGenerativeVideoPrompt(input:{
     'Describe clear physical action over time, believable secondary motion, stable anatomy/geometry, and temporally coherent lighting.',
     'Specify camera position and motion only when it improves the shot; avoid impossible camera teleportation and abrupt scene cuts unless explicitly requested.',
     'For dialogue/audio requests, include dialogue, SFX and ambience as explicit audio cues. Otherwise prefer natural synchronized ambience.',
+    continuity,
     brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
     research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
   ].filter(Boolean);
