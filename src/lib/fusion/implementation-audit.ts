@@ -9,7 +9,8 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
   build:[
     'src/app/api/agent/route.ts',
     'src/lib/build-orchestrator.ts',
-    'src/lib/build-reference-playbook.ts'
+    'src/lib/build-reference-playbook.ts',
+    'src/lib/unity-fabric.ts'
   ],
   research:[
     'src/app/api/research/route.ts',
@@ -30,19 +31,26 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
     'src/app/api/media/generate/route.ts',
     'src/app/api/media/stylize/route.ts',
     'src/app/api/media/upscale/route.ts',
-    'src/lib/media/postprocess-pipeline.ts'
+    'src/lib/media/postprocess-pipeline.ts',
+    'src/lib/unity-fabric.ts'
   ],
   video:[
     'src/app/api/media/video/route.ts',
     'src/lib/media/video-pipelines.ts',
-    'src/lib/media/postprocess-pipeline.ts'
+    'src/lib/media/postprocess-pipeline.ts',
+    'src/lib/unity-fabric.ts'
   ],
   simulation:[
     'src/components/GrokSimulationPanel.tsx',
+    'src/components/MinecraftSimulationPanel.tsx',
     'src/lib/game-studio-fabric.ts',
     'src/lib/simulation/emergent-swarm.ts',
+    'src/lib/simulation/minecraft-sandbox.ts',
+    'src/lib/simulation/minecraft-reference-fabric.ts',
     'src/lib/life-simulation-engine.ts',
-    'src/lib/life-simulation-agent.ts'
+    'src/lib/life-simulation-agent.ts',
+    'src/lib/unity-fabric.ts',
+    'unity/PredictLMSimulation'
   ],
   voice:[
     'src/app/api/voice/route.ts',
