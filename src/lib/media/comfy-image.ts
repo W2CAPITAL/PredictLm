@@ -111,17 +111,21 @@ export async function runComfyImageWorkflow(input:{
   seed:number;
   references?:ComfyInlineImage[];
   timeoutMs?:number;
+  baseOverride?:string;
+  workflowOverride?:string;
 }):Promise<ComfyImageResult>{
-  const cfg=comfyImageConfig();
-  if(!cfg.enabled)throw new Error('ComfyUI de imagem não configurado ou não alcançável pelo servidor.');
+  const defaultCfg=comfyImageConfig();
+  const base=String(input.baseOverride||defaultCfg.base||'').trim().replace(/\/$/,'');
+  const workflowJson=String(input.workflowOverride||defaultCfg.workflow||'').trim();
+  if(!base||!workflowJson||!comfyServerReachable(base))throw new Error('ComfyUI não configurado ou não alcançável pelo servidor.');
 
   let parsed:any;
-  try{parsed=JSON.parse(cfg.workflow)}
-  catch{throw new Error('COMFYUI_IMAGE_WORKFLOW_JSON não contém JSON válido.');}
+  try{parsed=JSON.parse(workflowJson)}
+  catch{throw new Error('Workflow ComfyUI não contém JSON válido.');}
 
   const refs=(input.references||[]).slice(0,3);
   const filenames:string[]=[];
-  for(let i=0;i<refs.length;i++)filenames.push(await uploadImage(cfg.base,refs[i],i+1));
+  for(let i=0;i<refs.length;i++)filenames.push(await uploadImage(base,refs[i],i+1));
 
   const tokens:Record<string,string|number>={
     '{{PROMPT}}':input.prompt,
@@ -135,7 +139,7 @@ export async function runComfyImageWorkflow(input:{
     '{{IMAGE_FILENAME}}':filenames[0]||''
   };
   const workflow=replaceTokens(parsed,tokens);
-  const queued=await fetch(cfg.base+'/prompt',{
+  const queued=await fetch(base+'/prompt',{
     method:'POST',
     headers:{'Content-Type':'application/json',Accept:'application/json'},
     body:JSON.stringify({prompt:workflow,client_id:'predictlm-image-'+input.seed}),
@@ -146,9 +150,9 @@ export async function runComfyImageWorkflow(input:{
   const promptId=String(queuedData?.prompt_id||queuedData?.promptId||'').trim();
   if(!promptId)throw new Error('ComfyUI não retornou prompt_id.');
 
-  const file=await waitForImage(cfg.base,promptId,Math.max(5000,Math.min(50000,input.timeoutMs||42000)));
+  const file=await waitForImage(base,promptId,Math.max(5000,Math.min(50000,input.timeoutMs||42000)));
   const params=new URLSearchParams(file);
-  const media=await fetch(cfg.base+'/view?'+params.toString(),{
+  const media=await fetch(base+'/view?'+params.toString(),{
     cache:'no-store',
     signal:AbortSignal.timeout(20000)
   });
