@@ -61,7 +61,7 @@ function providerList():Provider[]{
       name:'vercel-gateway',
       base:process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1',
       key:gatewayKey,
-      model:process.env.AI_GATEWAY_MODEL||'nvidia/nemotron-3.5-lightning',
+      model:process.env.AI_GATEWAY_MODEL||'google/gemini-3.8-flash',
       models:['google/gemini-3.8-flash','anthropic/claude-sonnet-5']
     });
   }
