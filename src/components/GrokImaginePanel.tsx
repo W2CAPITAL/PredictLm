@@ -205,6 +205,7 @@ export function GrokImaginePanel(){
           // Legacy plain-string prefills are intentionally discarded. Old builds
           // could leave unrelated prompts in sessionStorage and reopen Imagine
           // with text the user did not explicitly place there.
+          setError('Um prompt automático legado/sem origem verificável foi descartado. O Imagine não vai reutilizá-lo.');
         }
         sessionStorage.removeItem('predictlm:imagine-prefill');
         if(trustedText){
