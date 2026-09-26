@@ -592,6 +592,7 @@ export function synthesizeResearch(prompt:string,items:ResearchItem[]){
 
 const TOPIC_STOPWORDS=new Set([
   'como','posso','pode','podem','quero','preciso','criar','fazer','montar','construir','comecar','começar','aprender','ensine',
+  'diga','dizer','responda','responder','fale','falar',
   'passo','passos','zero','sobre','para','uma','umas','uns','que','qual','quais','isso','isto','esse','essa','este','esta','agora','hoje'
 ]);
 
