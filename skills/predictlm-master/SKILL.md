@@ -1152,4 +1152,4 @@ PredictLM now distinguishes three learning loops:
 
 Promoted operational lessons must be injected into server chat, streaming chat and browser-local reasoning. They are behavior memory, not proof of weight training.
 
-Browser neural strategy is quality-first but hardware-adaptive: **Qwen3 8B → Qwen3.5 4B → Qwen3 1.7B** through WebLLM/WebGPU. Tiny ONNX models are compatibility fallbacks, not the main intelligence. PCs without WebGPU stay functional through the web/provider mesh instead of forcing oversized local weights.
+Browser neural strategy is quality-first but hardware-adaptive: **Qwen3.5 9B → Qwen3.5 4B → Qwen3 1.7B** through WebLLM/WebGPU. Tiny ONNX models are compatibility fallbacks, not the main intelligence. PCs without WebGPU stay functional through the web/provider mesh instead of forcing oversized local weights.
