@@ -43,6 +43,7 @@ import {createFlySimulationState,flySimulationBubble,stepFlySimulation,type FlyS
 import {createMacaqueSimulationState,macaqueSimulationBubble,stepMacaqueSimulation,type MacaqueSimulationState} from '@/lib/cognitive/macaque-simulation';
 import {advanceSyntheticMind,createSyntheticMindBundle,normalizeSyntheticMindBundle,type SyntheticMindBundle} from '@/lib/synthetic-life-memory';
 import {LifeFirstPersonViewport,type PovOtherAgent} from '@/components/LifeFirstPersonViewport';
+import { emergentSwarmContext, simulateEmergentSwarm } from '@/lib/simulation/emergent-swarm';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
@@ -615,6 +616,7 @@ export function GrokSimulationPanel(){
   },[state,manualTarget,fly,macaque,cameraZoom,cameraFocus]);
 
   const circuits=useMemo(()=>dominantCircuits(state.neuro,6),[state.neuro]);
+  const emergentSwarm=useMemo(()=>simulateEmergentSwarm(state,12),[state]);
   const humanVision=useMemo(()=>perceiveHumanWorld(state,fly),[
     state.person.x,state.person.y,state.person.heading,state.person.currentAction,state.person.location,
     fly.x,fly.y
@@ -677,7 +679,7 @@ export function GrokSimulationPanel(){
     const deterministic=wantsAutonomy?autonomousLifePlan(state,agent,value,fly):deterministicLifePlan(value,state);
     let selected=deterministic;
     try{
-      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent,fly)});
+      const advisory=await localBrainAdvisory(value,[],{language:'pt-BR',researchContext:agentWorldObservation(state,agent,fly)+'\n'+emergentSwarmContext(state)});
       const plannerPrompt=simulationPlannerPrompt(value,state,agent);
       const controller=new AbortController();
       const timeout=window.setTimeout(()=>controller.abort(),18000);
@@ -690,7 +692,7 @@ export function GrokSimulationPanel(){
             mode:'simulation-plan',
             prompt:value,
             language:'pt-BR',
-            worldState:agentWorldObservation(state,agent,fly),
+            worldState:agentWorldObservation(state,agent,fly)+'\n'+emergentSwarmContext(state),
             localAdvisory:advisory?.content||'',
             plannerHint:plannerPrompt
           })
@@ -915,6 +917,23 @@ export function GrokSimulationPanel(){
           <div className="sim-panel-title"><Brain size={14}/><b>NeuroCore</b><span>Digital Brain</span></div>
           <div className="circuit-list">{circuits.map(([id,value])=><div key={id}><span>{id}</span><i><u style={{width:Math.round(value*100)+'%'}}/></i><b>{Math.round(value*100)}%</b></div>)}</div>
           <small className="sim-note">O cérebro digital permanece ativo fora da simulação; aqui ele também controla saliência, memória, inibição, estado social e ação da personagem.</small>
+        </section>
+
+        <section className="sim-panel">
+          <div className="sim-panel-title"><Activity size={14}/><b>Emergent Swarm</b><span>geração {emergentSwarm.generation}</span></div>
+          <div className="sim-agent-vitals">
+            <span>Diversidade <b>{emergentSwarm.diversity}%</b></span>
+            <span>Política dominante <b>{emergentSwarm.dominantPolicy}</b></span>
+            <span>Agentes <b>{emergentSwarm.agents.length}</b></span>
+          </div>
+          <div className="sim-thoughts">
+            {emergentSwarm.agents.slice(0,4).map(item=><article key={item.id}>
+              <b>{item.policy} · fitness {item.fitness}</b>
+              <span>{item.action}</span>
+              <small>{item.perception.join(' · ')}</small>
+            </article>)}
+          </div>
+          <small className="sim-note">Camada experimental de percepção local, pequenas políticas neurais e seleção. Ela cria alternativas emergentes para o mundo simulado e não é apresentada como previsão de comportamento humano.</small>
         </section>
 
         <section className="sim-panel">
