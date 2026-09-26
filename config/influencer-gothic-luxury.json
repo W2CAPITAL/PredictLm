@@ -1,0 +1,38 @@
+{
+  "id": "vesper-noire",
+  "displayName": "Vesper Noire",
+  "adultAge": 23,
+  "fictional": true,
+  "disclosure": "virtual creator / AI-generated media",
+  "handleCandidates": [
+    "@vesper.noire.ai",
+    "@vespernoire.virtual",
+    "@noire.vesper.ai"
+  ],
+  "bio": "Vesper Noire · virtual creator\nLuxury goth • dark couture • night city\nAI-generated character · BR",
+  "identityAnchors": [
+    "long glossy black hair",
+    "straight blunt bangs",
+    "porcelain/cool editorial makeup",
+    "precise black eyeliner",
+    "soft rose or muted wine lip",
+    "black couture silhouette",
+    "silver hardware and layered chokers",
+    "occasional black-and-white striped sleeve accent"
+  ],
+  "palette": ["black", "charcoal", "silver", "deep wine", "ivory highlight"],
+  "contentPillars": ["dark couture", "night city", "beauty", "trend reels", "accessories", "luxury lifestyle", "virtual BTS"],
+  "publishing": {
+    "feedRatio": "4:5",
+    "reelRatio": "9:16",
+    "aiDisclosure": true
+  },
+  "growthPolicy": {
+    "organicOnly": true,
+    "allowRelevantComments": true,
+    "allowCollaborations": true,
+    "allowTrendParticipation": true,
+    "banMassCommentSpam": true,
+    "banFakeEngagement": true
+  }
+}
