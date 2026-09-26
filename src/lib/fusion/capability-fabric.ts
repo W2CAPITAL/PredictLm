@@ -1,3 +1,5 @@
+import {bioAiSurfaceDirectives,type BioAISurface} from '@/lib/bioai';
+
 export type FusionSurface=
   |'chat'|'build'|'research'|'memory'|'documents'
   |'media'|'video'|'simulation'|'voice'|'browser';
@@ -71,7 +73,8 @@ export const REQUESTED_FUSION_REPOS=[
   'JEFFY1234599/block-craft-browser-edition',
   'TheDoctor200/MinecraftDungeonsLauncher',
   'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',
-  'jbruening/UnEngine'
+  'jbruening/UnEngine',
+  'OpenBMB/ChatDev'
 ] as const;
 
 export const FUSION_SOURCES:FusionSource[]=[
@@ -133,7 +136,8 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'JEFFY1234599/block-craft-browser-edition',license:'unverified',mode:'reference',areas:['simulation','browser'],ideas:['browser/mobile voxel interaction','customization UX']},
   {repo:'TheDoctor200/MinecraftDungeonsLauncher',license:'MIT',mode:'reference',areas:['simulation'],ideas:['secondary offline profile/save selection concepts','mod/profile boundary','launcher UX only']},
   {repo:'GuyRoosevelt/Minecraft-Dungeons-The-Awakening',license:'Apache-2.0',mode:'reference',areas:['simulation'],ideas:['secondary dungeon loop','chests','economy','bosses','weapons','abilities','save/load','infinite adventure loop']},
-  {repo:'jbruening/UnEngine',license:'MIT',mode:'adapt',areas:['simulation','build','media','video'],ideas:['Unity GameObject/Component/MonoBehaviour semantics','Transform/Vector/Quaternion','Camera/Collider/Rigidbody/Physics','Input/Time/PlayerPrefs','testable Unity-compatible script architecture']}
+  {repo:'jbruening/UnEngine',license:'MIT',mode:'adapt',areas:['simulation','build','media','video'],ideas:['Unity GameObject/Component/MonoBehaviour semantics','Transform/Vector/Quaternion','Camera/Collider/Rigidbody/Physics','Input/Time/PlayerPrefs','testable Unity-compatible script architecture']},
+  {repo:'OpenBMB/ChatDev',license:'Apache-2.0',mode:'adapt',areas:['build','research','simulation','media'],ideas:['DAG-based multi-agent orchestration','shared run context','workflow validation','role sequencing','parallel review','observability and artifacts','evolving central orchestrator']}
 ];
 
 const SURFACE_RULES:Record<FusionSurface,string[]>={
@@ -228,8 +232,17 @@ export function fusionSourcesFor(surface:FusionSurface,prompt='',limit=8){
 
 export function capabilityFusionContext(prompt:string,surface:FusionSurface){
   const sources=fusionSourcesFor(surface,prompt,7);
+  const bioSurface:BioAISurface=
+    surface==='media'?'image':
+    surface==='video'?'video':
+    surface==='simulation'?'simulation':
+    surface==='research'?'research':
+    surface==='build'?'build':
+    surface==='memory'?'memory':
+    surface==='chat'?'chat':'app';
   return [
     'CAPABILITY FUSION — use these patterns as architecture guidance, not as claims that external software executed.',
+    bioAiSurfaceDirectives(bioSurface,prompt),
     ...SURFACE_RULES[surface].map(x=>'RULE · '+x),
     ...sources.map(x=>'PATTERN · '+x.repo+' · '+x.mode+' · '+x.ideas.join('; ')),
     'LICENSE GATE · reference-only sources must not have code copied into PredictLM; optional adapters run only when explicitly configured.'

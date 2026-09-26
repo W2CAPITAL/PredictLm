@@ -1,4 +1,5 @@
 import type {LifeSimulationState} from '@/lib/life-simulation-engine';
+import {emitAppLearningEvent} from '@/lib/app-learning';
 
 export type MiroFishStance='support'|'neutral'|'concern';
 export type MiroFishArchetype='pragmatic'|'social'|'cautious'|'explorer'|'contrarian'|'builder';
@@ -255,6 +256,8 @@ export function simulateMiroFishSwarm(
   const minority=(['support','neutral','concern'] as MiroFishStance[])
     .filter(x=>x!==dominant)
     .map(x=>x+': '+last[x].toFixed(1)+'%');
+
+  emitAppLearningEvent({surface:'simulation/mirofish',action:'swarm '+objective.slice(0,80),kind:'simulation',success:true,novelty:.76,uncertainty:uncertainty/100,salience:.7,metadata:{agents:agents.length,rounds:roundCount,dominant}});
 
   return {
     version:1,

@@ -7,17 +7,19 @@ import {planAgenticRun,selectSkillContracts} from '../src/lib/agent-runtime/agen
 
 test('all user-requested capability sources remain registered',()=>{
   const health=fusionHealth();
-  assert.equal(health.requestedCoverage.expected,59);
-  assert.equal(health.requestedCoverage.covered,59);
+  const expected=REQUESTED_FUSION_REPOS.length;
+  assert.equal(health.requestedCoverage.expected,expected);
+  assert.equal(health.requestedCoverage.covered,expected);
   assert.deepEqual(health.requestedCoverage.missing,[]);
   assert.equal(health.requestedCoverage.complete,true);
-  assert.equal(REQUESTED_FUSION_REPOS.length,59);
+  assert.ok(REQUESTED_FUSION_REPOS.includes('OpenBMB/ChatDev'));
 });
 
 test('implementation audit maps every requested source to real app surfaces',()=>{
   const audit=fusionImplementationAudit();
-  assert.equal(audit.expected,59);
-  assert.equal(audit.registered,59);
+  const expected=REQUESTED_FUSION_REPOS.length;
+  assert.equal(audit.expected,expected);
+  assert.equal(audit.registered,expected);
   assert.equal(audit.complete,true);
   assert.deepEqual(audit.missing,[]);
   for(const row of audit.rows){

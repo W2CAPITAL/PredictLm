@@ -1,11 +1,50 @@
 # PredictLM
 
-PredictLM has two distinct product surfaces:
+PredictLM is built around **one persistent intelligence: PredictLM BioAI**.
 
-- **Chat** — the default assistant experience for normal questions, explanations, research, planning and coding help.
-- **Build** — the developer workspace for creating and modifying applications with files, editor, preview, project memory, review gates and runnable export.
+Chat, Build, Research, Imagine, Video, Processos, agents, plugins, skills, local inference, Neural Local, comparative brain controllers, memory, simulation, continuous learning and self-improvement are **capabilities of the same BioAI**, not separate AIs that hand work to one another.
 
-The product is local-first and does not require Ollama or an API key for its main workflow.
+```
+PredictLM BioAI
+  ├─ local/runtime layer: Neural Local + WebLLM/ONNX/local routers
+  ├─ cognition layer: NeuroCore + 8 comparative biological references
+  ├─ adaptive layer: synthetic spiking reservoir + prediction error/plasticity
+  ├─ memory layer: bounded local persistent memory + project/world memory
+  ├─ capability layer: Chat / Build / Research / Imagine / Video / Processos
+  ├─ agent layer: agents / tools / plugins / skills / Council / Game Studio
+  ├─ world layer: one persistent LifeVoxel Minecraft-class simulation
+  └─ learning layer: app learning → research gaps → replay → improvement proposals
+```
+
+The public identity is still **Predict Auto / PredictLM BioAI**. Providers, models, brains, agents and tools are internal engines of that same identity.
+
+The product is local-first and does not require Ollama, Supabase, a paid database, a paid API or wetware hardware for its core workflow.
+
+## One intelligence across every surface
+
+A single `src/lib/bioai.ts` state is the product-level identity and memory boundary. It consumes sanitized outcomes from the whole app through `src/lib/app-learning.ts`, combines them with the comparative BioIntelligence controller and local synthetic reservoir, and exposes the same cognition context to Chat, Build, Research, media, Processos and simulation.
+
+This means:
+- **Neural Local is not another assistant**; it is a local inference engine used by BioAI.
+- **Human/Macaque/Fly/C. elegans/Mouse/Zebrafish/Ciona/Platynereis are not separate product identities**; they are provenance-preserving comparative controller references feeding BioAI.
+- **agents, plugins and skills are not separate minds**; they are scoped capabilities/tools of BioAI.
+- **continuous learning and self-improvement do not create a second autonomous AI**; they are review-gated learning loops of BioAI.
+- **Imagine and Video use the same memory/identity/continuity context as Chat and the rest of the app**.
+- **Processos/DataJud/DJEN use the same uncertainty/inhibition controller rather than an isolated legal model**.
+
+## One LifeVoxel world
+
+PredictLM no longer treats “life simulation”, “Voxel World” and “Minecraft mode” as separate worlds. The canonical simulation is **LifeVoxel**: one persistent Minecraft-class procedural world with multiple interaction layers.
+
+LifeVoxel contains:
+- effectively unbounded procedural X/Z chunks;
+- first-person WebGL exploration as the main native view;
+- survival/creative state, mining, building, inventory, crafting, smelting, farming, mobs, structures, dungeons, day/night, weather and dimensions;
+- the same BioAI embodied as an autonomous player with health, hunger, inventory, goals and world memory;
+- social/life systems, relationships, routines, objects and higher-level simulation state layered into the same persistent world model rather than a disconnected 2D box;
+- isometric/diagnostic and optional Unity WebGL renderers as alternate views of the same simulation state.
+
+The implementation is being kept lightweight by persisting **seed + deltas + compact agent/world memory** instead of materializing the entire world or requiring a large remote database.
 
 ## Chat
 
@@ -174,6 +213,9 @@ GitHub Actions runs dependency installation and `npm run build` against PredictL
 Chat routes each turn before deciding whether to search or generate:
 
 - greetings, acknowledgements and personal/casual questions stay in conversation and never trigger random web searches
+- identity/consciousness/emotion prompts stay conversational; repository code, memory, BioAI state or autonomy are never presented as proof of subjective consciousness
+- direct action requests such as “crie uma conta no GitHub” are classified as actions: PredictLM must distinguish executing a connected tool from merely explaining, and must never answer with unrelated README/setup snippets
+- threats/provocations such as “vou apagar você” remain ordinary conversation and cannot pull infrastructure, Neo4j, skills or knowledge-pack dumps into the public answer
 - contextual replies such as "já está ativo" use the preceding conversation instead of treating the phrase as a new topic
 - stable factual questions such as "quem é..." or "o que é..." can fetch source material and synthesize a direct answer instead of dumping result links
 - current questions use fresh research when needed
@@ -339,3 +381,16 @@ The Dossier Second Brain does not replace the normal Chat answer. It assembles e
 Open **Visão** in the sidebar (or **+ → Identificar animal** in Chat). The browser runs a small quantized image classifier on demand without a paid API. Five model scores, uncertain/non-animal outcomes, upload validation and cancellation are supported. The three optional upstream-compatible adapters and their real weight requirements are documented in `services/animal-vision/README.md`. Image classification does not increase the text model’s weights or validate fictional characters.
 
 `npm test` exercises the uploaded Chat/Imagine acceptance cases and vision contracts. `npm run build` validates production compilation.
+
+
+## Benchmark policy
+
+PredictLM benchmarks are reproducible repository artifacts, not marketing claims.
+
+- competitor results must come from either a reproducible configured run or a cited public benchmark/model card;
+- no score is invented because a provider is unavailable;
+- local, cloud and hybrid runs are labeled separately;
+- latency, correctness, tool-use, memory, coding, research, multimodal planning and simulation are measured independently;
+- “IQ” is not treated as a scientifically valid literal IQ measurement for an AI. The repo may report a clearly labeled **IQ-like proxy / Cognitive Benchmark Index** derived from the fixed benchmark suite, alongside the raw category scores and methodology.
+
+A benchmark result never grants production-promotion authority to self-generated code.

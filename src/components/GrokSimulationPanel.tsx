@@ -48,8 +48,12 @@ import {miroFishSimulationContext,simulateMiroFishSwarm} from '@/lib/simulation/
 import {gameStudioContext,gameStudioPlan} from '@/lib/game-studio-fabric';
 import {capabilityFusionContext,fusionSourcesFor} from '@/lib/fusion/capability-fabric';
 import {MinecraftSimulationPanel} from '@/components/MinecraftSimulationPanel';
+import {normalizeVoxelWorld,type VoxelWorldState} from '@/lib/simulation/minecraft-sandbox';
+import {createLifeVoxelWorld,normalizeLifeVoxelWorld,updateLifeVoxelLife,updateLifeVoxelVoxel,type LifeVoxelWorldState} from '@/lib/simulation/lifevoxel-world';
 
 const STORAGE_KEY='predictlm-life-simulation-v1';
+const LEGACY_VOXEL_STORAGE_KEY='predictlm-minecraft-sandbox-v1';
+const LIFEVOXEL_STORAGE_KEY='predictlm-lifevoxel-v1';
 const AGENT_STORAGE_KEY='predictlm-life-agent-v1';
 const FLY_STORAGE_KEY='predictlm-life-fly-agent-v1';
 const MACAQUE_STORAGE_KEY='predictlm-life-macaque-agent-v1';
@@ -95,10 +99,28 @@ function loadSyntheticMinds(humanIdentity:string):SyntheticMindBundle{
   catch{return createSyntheticMindBundle(humanIdentity)}
 }
 
+
+function loadLifeVoxelWorld():LifeVoxelWorldState{
+  if(typeof window==='undefined')return createLifeVoxelWorld();
+  const legacyLife=loadState();
+  let legacyVoxel:VoxelWorldState|null=null;
+  try{
+    const rawVoxel=JSON.parse(localStorage.getItem(LEGACY_VOXEL_STORAGE_KEY)||'null');
+    if(rawVoxel)legacyVoxel=normalizeVoxelWorld(rawVoxel);
+  }catch{}
+  let raw:any=null;
+  try{raw=JSON.parse(localStorage.getItem(LIFEVOXEL_STORAGE_KEY)||'null')}catch{}
+  const unified=normalizeLifeVoxelWorld(raw,legacyLife,legacyVoxel);
+  // Opening the Studio remains explicit; persistence must not silently resume it.
+  return {...unified,life:{...unified.life,running:legacyLife.running}};
+}
+
 function needLabel(value:number){return Math.max(0,Math.min(100,Math.round(value)))}
 
 export function GrokSimulationPanel(){
   const [state,setState]=useState<LifeSimulationState>(()=>createLifeSimulation());
+  const [voxelWorld,setVoxelWorld]=useState<VoxelWorldState>(()=>createLifeVoxelWorld().voxel);
+  const lifeVoxelRef=useRef<LifeVoxelWorldState>(createLifeVoxelWorld());
   const [hydrated,setHydrated]=useState(false);
   const [command,setCommand]=useState('');
   const [manualTarget,setManualTarget]=useState<LifeLocation|null>(null);
@@ -111,7 +133,6 @@ export function GrokSimulationPanel(){
   const [agentError,setAgentError]=useState('');
   const [cameraZoom,setCameraZoom]=useState(1);
   const [cameraFocus,setCameraFocus]=useState<'world'|'human'|'fly'|'macaque'>('world');
-  const [simulationView,setSimulationView]=useState<'life'|'voxel'>('life');
   const canvas=useRef<HTMLCanvasElement>(null);
   const stateRef=useRef(state);
   const flyRef=useRef(fly);
@@ -120,8 +141,11 @@ export function GrokSimulationPanel(){
   useEffect(()=>{flyRef.current=fly},[fly]);
 
   useEffect(()=>{
-    const nextState=loadState();
+    const unified=loadLifeVoxelWorld();
+    lifeVoxelRef.current=unified;
+    const nextState=unified.life;
     setState(nextState);
+    setVoxelWorld(unified.voxel);
     setAgent(loadAgentState());
     const localFly=loadFlyState();
     const localMacaque=loadMacaqueState();
@@ -141,7 +165,20 @@ export function GrokSimulationPanel(){
 
   useEffect(()=>{
     if(!hydrated)return;
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch{}
+    const next=updateLifeVoxelLife({...lifeVoxelRef.current,life:state,voxel:voxelWorld},state);
+    lifeVoxelRef.current=next;
+    const v=next.voxel;
+    const current=voxelWorld;
+    if(
+      v.seed!==current.seed||
+      v.day!==current.day||
+      v.timeOfDay!==current.timeOfDay||
+      v.player.health!==current.player.health||
+      v.player.hunger!==current.player.hunger||
+      v.bioAI.health!==current.bioAI.health||
+      v.bioAI.hunger!==current.bioAI.hunger
+    )setVoxelWorld(v);
+    try{localStorage.setItem(LIFEVOXEL_STORAGE_KEY,JSON.stringify(next))}catch{}
   },[state,hydrated]);
 
   useEffect(()=>{

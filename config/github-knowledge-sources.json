@@ -3323,6 +3323,527 @@
       ],
       "weight": 1.2,
       "reason": "MIT UnityEngine-compatible test double. Ingest GameObject/Component/Transform/Vector/Camera/Collider/Rigidbody/Input/Time separation patterns; actual Unity runtime is only claimed when a real Unity WebGL host is configured."
+    },
+    {
+      "repo": "OpenCut-app/OpenCut",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "apps/desktop/src/panels/timeline.rs",
+        "apps/desktop/src/panels/inspector.rs",
+        "apps/desktop/src/panels/preview.rs",
+        "crates/media/setup/ffmpeg.json"
+      ],
+      "domains": [
+        "media-ai",
+        "video-editor",
+        "timeline",
+        "plugins",
+        "headless-render"
+      ],
+      "weight": 1.18,
+      "reason": "MIT editor reference. Learn editor, timeline, plugin and headless architecture while keeping PredictLM browser-first."
+    },
+    {
+      "repo": "Hommy-master/capcut-mate",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/timelines.md",
+        "docs/add_keyframes.md",
+        "docs/add_captions.md",
+        "src/pyJianYingDraft/track.py",
+        "src/pyJianYingDraft/keyframe.py"
+      ],
+      "domains": [
+        "media-ai",
+        "timeline",
+        "keyframes",
+        "captions",
+        "draft-schema"
+      ],
+      "weight": 1.12,
+      "reason": "Apache-2.0 automation reference. Learn generic timeline, keyframe and caption data models; external desktop/cloud rendering remains optional."
+    },
+    {
+      "repo": "renezander030/capcut-cli",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/draft-schema/00-overview.md",
+        "docs/draft-schema/01-tracks-and-segments.md",
+        "docs/draft-schema/03-keyframes-and-animations.md",
+        "docs/draft-schema/04-effects-filters-stickers.md",
+        "src/render.ts",
+        "src/caption.ts"
+      ],
+      "domains": [
+        "media-ai",
+        "timeline",
+        "captions",
+        "effects",
+        "export"
+      ],
+      "weight": 1.1,
+      "reason": "MIT CLI reference. Learn generic timeline, effect, caption and export patterns without making proprietary editor compatibility a core dependency."
+    },
+    {
+      "repo": "Augani/openreel-video",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "apps/desktop/src/main/ipc/export.ts",
+        "apps/desktop/src/main/sidecar/export-job.ts",
+        "apps/image/src/components/editor/EditorInterface.tsx",
+        "apps/image/src/services/export-service.ts"
+      ],
+      "domains": [
+        "media-ai",
+        "video-editor",
+        "export",
+        "inspector",
+        "ffmpeg"
+      ],
+      "weight": 1.16,
+      "reason": "MIT editor suite. Learn inspector, export-job and editor architecture; browser MediaRecorder remains the free default path."
+    },
+    {
+      "repo": "ArcReel/ArcReel",
+      "branch": "main",
+      "license": "AGPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/adr/0090-edit-timeline-named-follows-current-not-artifact.md"
+      ],
+      "domains": [
+        "media-ai",
+        "storyboard",
+        "asset-management",
+        "timeline",
+        "pipeline"
+      ],
+      "weight": 0.86,
+      "reason": "AGPL reference. Use production-pipeline and asset/storyboard concepts only unless a separately reviewed compatible implementation is selected."
+    },
+    {
+      "repo": "blader/humanizer",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "SKILL.md"
+      ],
+      "domains": [
+        "captions",
+        "writing",
+        "humanization",
+        "quality"
+      ],
+      "weight": 1.02,
+      "reason": "MIT writing skill. Learn natural caption and prose-quality patterns while preserving factual content."
+    },
+    {
+      "repo": "snarepigeonrouter/Cap-Cut-Pro",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "media-ai",
+        "proprietary-entitlement",
+        "untrusted-installer"
+      ],
+      "weight": 0,
+      "reason": "No verified reusable license and the repository describes modifying proprietary entitlement/security settings through an external installer. Exclude from ingestion, execution and runtime dependencies."
+    },
+    {
+      "repo": "zhengkid/Dream-RSI",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "recursive-self-improvement",
+        "replay-simulator",
+        "exploration-policy",
+        "agent-evaluation"
+      ],
+      "reason": "Public research repository currently exposes the paper/project description while full code is still being prepared and no root LICENSE was verified. PredictLM may adapt the published replay-simulator idea and cite the research, but must not bulk-copy unreleased/unlicensed code."
+    },
+    {
+      "repo": "selfimproving-agent/Awesome-Self-Improving-Agents",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README_AGENT.md",
+        "Paper/tex/Definitions.tex",
+        "Paper/tex/tax_v2.tex",
+        "Paper/tex/evaluation.tex",
+        "Paper/tex/discussion_and_conclusion.tex"
+      ],
+      "domains": [
+        "self-improvement",
+        "agent-scaffolding",
+        "memory",
+        "tools",
+        "evaluation",
+        "rollback",
+        "governance"
+      ],
+      "weight": 1.3,
+      "reason": "MIT-licensed survey companion and manuscript sources. Learn durable-vs-transient improvement taxonomy, scaffold/parameter loops, evaluation, regression, rollback and independent-verifier patterns."
+    },
+    {
+      "repo": "TokenRhythm/NeoHorse",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "jev/README.md"
+      ],
+      "domains": [
+        "local-model",
+        "agent-routing",
+        "tool-use",
+        "decision-routing",
+        "post-training",
+        "self-improvement"
+      ],
+      "weight": 1.22,
+      "reason": "Apache-2.0 agent-native model and routing-harness reference. Use routing/evaluation patterns and optional local OpenAI-compatible/Jev decision adapters; never make its 4B/9B weights mandatory for weak-PC/browser operation."
+    },
+    {
+      "repo": "Reviral-ai/awesome-sora-2-prompts",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "PROMPTS-ADVANCED.md",
+        "skills/"
+      ],
+      "domains": [
+        "video-generation",
+        "prompting",
+        "storyboard",
+        "continuity",
+        "camera",
+        "audio",
+        "semantic-review"
+      ],
+      "weight": 1.22,
+      "reason": "MIT-licensed provider-aware video prompting patterns. Learn chronological action, identity anchors, continuity cards, motivated camera/cuts, one-variable iteration and edit handoff without binding PredictLM to Sora."
+    },
+    {
+      "repo": "alasano/sora-2-playground",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/components/creation-form.tsx",
+        "src/app/page.tsx"
+      ],
+      "domains": [
+        "video-generation",
+        "job-queue",
+        "polling",
+        "indexeddb",
+        "remix",
+        "reference-frame",
+        "serverless"
+      ],
+      "weight": 1.12,
+      "reason": "MIT-licensed playground patterns for queued video jobs, persisted active job IDs, refresh-safe polling, remix flow, first-frame references and IndexedDB/serverless storage. External Sora API access remains optional."
+    },
+    {
+      "repo": "victoriamorales-46/adobe-after-effects-windows",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "desktop-editor",
+        "download-link",
+        "proprietary-software"
+      ],
+      "reason": "No repository license was verified and the repository primarily redirects to an external download for proprietary Adobe software. Do not execute, copy, ingest installers, or use it as a dependency. Generic editing concepts are already covered by licensed/open references."
+    },
+    {
+      "repo": "Suru12415/Ai-full-stack-project",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "upload.py",
+        "mobile-web-video-playback.js"
+      ],
+      "domains": [
+        "full-stack",
+        "computer-vision",
+        "event-driven-actions",
+        "tool-authorization",
+        "side-effect-gating",
+        "mobile-web"
+      ],
+      "reason": "No repository LICENSE was verified. Use only as a manually distilled architecture case study: sensor/camera event -> backend interpretation -> external action. Do not copy code. The example can trigger EC2 creation directly from gesture recognition, so PredictLM specifically learns the missing controls: input validation, risk classification, dry-run, explicit approval for high-impact external actions, idempotency, audit and least privilege."
+    },
+    {
+      "repo": "manasseh-zw/apollo",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/",
+        "Apollo.Agents/",
+        "Apollo.Search/"
+      ],
+      "domains": [
+        "deep-research",
+        "multi-agent",
+        "state-machine",
+        "self-reflective-rag",
+        "async-events",
+        "knowledge-gaps"
+      ],
+      "reason": "Project linked from Microsoft AI Agents Hackathon issue #681. No root LICENSE was verified. Use architecture patterns only: planner, specialized agents, state machine outside chat context, bounded gap analysis, async ingestion and two-stage synthesis."
+    },
+    {
+      "repo": "webfinger/go-webfinger",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "client.go",
+        "jrd.go",
+        "client_test.go",
+        "jrd_test.go"
+      ],
+      "domains": [
+        "identity-discovery",
+        "portable-identity",
+        "service-discovery",
+        "federation"
+      ],
+      "weight": 1.05,
+      "reason": "MIT-licensed WebFinger client. Learn standards-based identity/service discovery patterns for user-owned, model-independent agent profiles. Never use discovery as hidden persistence or a way to evade operator shutdown."
+    },
+    {
+      "repo": "hoangnv170752/apollo-search",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "academic-search",
+        "citations",
+        "research-synthesis",
+        "local-library"
+      ],
+      "reason": "No root LICENSE verified. Use high-level academic search, filtering, citation and local-library patterns only; Perplexity remains optional and not required by PredictLM."
+    },
+    {
+      "repo": "ApolloResearch/deception-detection",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "deception-detection",
+        "sandbagging",
+        "evaluation",
+        "linear-probes",
+        "agent-safety"
+      ],
+      "reason": "Apollo Research safety-evaluation repository. No root LICENSE verified in this check. Use paper/README concepts for defensive evaluation only; do not ingest rollouts/prompts as training data."
+    },
+    {
+      "repo": "ApolloResearch/insider-trading",
+      "branch": "main",
+      "license": "CC-BY-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "strategic-deception",
+        "pressure-evals",
+        "agent-safety",
+        "canary-data"
+      ],
+      "reason": "Repository is CC-BY-4.0, but its README explicitly marks prompts/results as safety benchmark data that should never appear in training corpora. Keep evaluation-only/reference-only; do not ingest benchmark samples into RAG, fine-tuning or self-improvement training."
+    },
+    {
+      "repo": "4R7I5T/flyloop",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/model.md",
+        "docs/advancing-flyloop.md",
+        "sources.json"
+      ],
+      "domains": [
+        "biointelligence",
+        "connectome",
+        "embodied-agent",
+        "simulation"
+      ],
+      "reason": "MIT FlyLoop separates measured electrode input, declared decoder, connectome model and simulated body; useful for BioAI embodiment and evidence boundaries."
+    },
+    {
+      "repo": "danielathome19/pyorganoid",
+      "branch": "main",
+      "license": "BSD-3-Clause",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "pyorganoid"
+      ],
+      "domains": [
+        "biointelligence",
+        "organoid-simulation",
+        "learning"
+      ],
+      "reason": "BSD-3-Clause organoid intelligence simulation package; use simulation abstractions and scheduling patterns, not claims of biological equivalence."
+    },
+    {
+      "repo": "FinalSpark-np/LiveMEA_ts",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src"
+      ],
+      "domains": [
+        "wetware",
+        "MEA",
+        "finalspark",
+        "biointelligence"
+      ],
+      "reason": "MIT TypeScript interface for authorized live MEA data. Optional adapter only; core remains local and works without FinalSpark credentials."
+    },
+    {
+      "repo": "Cortical-Labs/cl-sdk",
+      "branch": "main",
+      "license": "CC-BY-NC-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "wetware",
+        "CL1",
+        "biocomputing",
+        "biointelligence"
+      ],
+      "reason": "Cortical Labs simulator/API parity reference. Non-commercial license means concepts/interface only for the commercial core."
+    },
+    {
+      "repo": "Cortical-Labs/handwritten-digit-neural-cultures",
+      "branch": "main",
+      "license": "CC-BY-NC-4.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "wetware",
+        "neural-cultures",
+        "biological-reservoir-computing"
+      ],
+      "reason": "Experimental neural-culture dataset reference; metadata/scientific provenance only unless separately authorized."
+    },
+    {
+      "repo": "cortex-lab/allenCCF",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "mouse-brain",
+        "atlas",
+        "neuroscience"
+      ],
+      "reason": "Mouse CCF tooling reference; use atlas concepts with Allen primary sources, not unverified repository code."
+    },
+    {
+      "repo": "4R7I5T/CL1_LLM_Encoder",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "quarantine",
+      "include": [],
+      "domains": [
+        "wetware",
+        "CL1",
+        "LLM"
+      ],
+      "reason": "User-supplied repository could not be resolved through GitHub during this pass. Do not ingest or execute until identity/license are verified."
+    },
+    {
+      "repo": "JekelyLab/Platynereis_3D_connectome_2024",
+      "branch": "main",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "CITATION.cff"
+      ],
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "platynereis",
+        "whole-body",
+        "comparative-connectomics"
+      ],
+      "reason": "GPL-3.0 research repository for the published Platynereis connectome; keep implementation/data reference-only in the commercial core."
+    },
+    {
+      "repo": "OpenBMB/ChatDev",
+      "branch": "main",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "docs/user_guide/en/",
+        "workflow/README.md"
+      ],
+      "domains": [
+        "multi-agent",
+        "orchestration",
+        "workflow",
+        "build",
+        "research",
+        "simulation",
+        "observability"
+      ],
+      "weight": 1.24,
+      "reason": "Apache-2.0 source code. In PredictLM, ChatDev patterns are adapted only as orchestration/observability; all roles share one PredictLM BioAI identity/state. Do not ingest non-commercial datasets/WareHouse artifacts as training data."
     }
   ]
 }

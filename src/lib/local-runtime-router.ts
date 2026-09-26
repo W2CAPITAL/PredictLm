@@ -6,6 +6,7 @@ import { publicAnswerGate } from './public-answer-gate';
 import { classifyDomainEngines } from './domain-engine-fabric';
 import { trainingContext } from './training/context';
 import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
+import { continuousLearningContext } from './continuous-learning';
 import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
 import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
@@ -298,6 +299,7 @@ export async function answerViaLocalRuntime(
   const knowledge=knowledgeContext(prompt,runtime.kind==='lowram'?3:4);
   const trained=trainingContext(prompt,runtime.kind==='lowram'?3:4);
   const github=githubEnabled?githubKnowledgeContext(prompt,topK):'';
+  const continuous=await continuousLearningContext(prompt,runtime.kind==='lowram'?2:(deepMode?4:3));
   const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
@@ -315,6 +317,7 @@ export async function answerViaLocalRuntime(
     sections:[
       {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
       {label:'GitHub Knowledge',text:github,priority:5},
+      {label:'Aprendizado contínuo verificado',text:continuous,priority:7},
       {label:'Knowledge',text:knowledge,priority:5},
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},

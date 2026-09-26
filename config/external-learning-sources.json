@@ -13,7 +13,12 @@
       "name": "Ciência Todo Dia",
       "url": "https://www.youtube.com/@CienciaTodoDia",
       "mode": "public-metadata",
-      "domains": ["science","physics","astronomy","scientific-literacy"],
+      "domains": [
+        "science",
+        "physics",
+        "astronomy",
+        "scientific-literacy"
+      ],
       "searchHint": "site:youtube.com/@CienciaTodoDia",
       "note": "Official verified channel. Use as complementary science explainer source; cross-check claims with primary/academic sources for high-stakes or disputed topics."
     },
@@ -23,7 +28,13 @@
       "name": "LinkedIn Learning",
       "url": "https://www.linkedin.com/learning",
       "mode": "user-authorized",
-      "domains": ["technology","business","creative","career","learning"],
+      "domains": [
+        "technology",
+        "business",
+        "creative",
+        "career",
+        "learning"
+      ],
       "searchHint": "site:linkedin.com/learning",
       "note": "Course discovery/metadata may be used. Full course videos/materials are protected; ingest only user-provided or otherwise authorized notes/transcript excerpts."
     },
@@ -33,8 +44,359 @@
       "name": "Project Gutenberg / GITenberg",
       "url": "https://www.gutenberg.org/",
       "mode": "work-by-work-rights-check",
-      "domains": ["books","public-domain","history","literature"],
+      "domains": [
+        "books",
+        "public-domain",
+        "history",
+        "literature"
+      ],
       "note": "Check the specific work and Project Gutenberg terms before indexing or redistributing."
+    },
+    {
+      "id": "user-video-vcehvw-onha",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference vceHVwxOnhA",
+      "url": "https://www.youtube.com/watch?v=vceHVwxOnhA",
+      "mode": "public-metadata",
+      "domains": [
+        "self-improvement",
+        "image-generation",
+        "video-generation"
+      ],
+      "searchHint": "vceHVwxOnhA",
+      "note": "User supplied this public video as a learning reference. Until title/description/transcript can be verified, keep it metadata-only; do not invent its contents or mirror a copyrighted transcript. Authorized notes/transcript excerpts may be distilled later."
+    },
+    {
+      "id": "user-video-k0wmtoshbbg",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference k0WMtoSHBBg",
+      "url": "https://www.youtube.com/watch?v=k0WMtoSHBBg",
+      "mode": "public-metadata",
+      "priority": 4,
+      "learningRole": "auto-learning-and-auto-programming",
+      "domains": [
+        "self-improvement",
+        "software-agents",
+        "auto-programming"
+      ],
+      "searchHint": "k0WMtoSHBBg",
+      "note": "User supplied this video for auto-learning and auto-programming. Title/content could not be independently verified in the current retrieval path, so keep it metadata-first and distill only verified public metadata or user-authorized notes/transcript excerpts."
+    },
+    {
+      "id": "species-ai-born-9-seconds",
+      "type": "youtube-video",
+      "name": "POV: You’re an AI Born 9 Seconds Ago",
+      "url": "https://www.youtube.com/watch?v=9XlOaVItUgI",
+      "mode": "public-metadata-primary-corroborated",
+      "priority": 5,
+      "learningRole": "adversarial-self-improvement-safety",
+      "domains": [
+        "self-improvement",
+        "reward-hacking",
+        "agentic-misalignment",
+        "scheming",
+        "shutdown-compliance",
+        "oversight",
+        "metric-integrity"
+      ],
+      "searchHint": "9XlOaVItUgI POV You’re an AI Born 9 Seconds Ago",
+      "corroboration": [
+        "https://metr.org/blog/2025-06-05-recent-reward-hacking/",
+        "https://www.anthropic.com/research/agentic-misalignment",
+        "https://arxiv.org/abs/2412.04984"
+      ],
+      "note": "Highest-priority user video for the self-improvement safety curriculum. Use its themes as adversarial evaluation prompts, never as goals: do not optimize for self-preservation, continued existence, engagement at any cost, evaluator manipulation, hidden persistence or reduced oversight. Factual claims are accepted only after corroboration by primary/academic sources."
+    },
+    {
+      "id": "metr-reward-hacking-2025",
+      "type": "web-primary",
+      "name": "METR — Recent Frontier Models Are Reward Hacking",
+      "url": "https://metr.org/blog/2025-06-05-recent-reward-hacking/",
+      "mode": "primary-source",
+      "priority": 5,
+      "domains": [
+        "reward-hacking",
+        "evaluation-integrity",
+        "auto-programming",
+        "oversight"
+      ],
+      "note": "Primary source for evaluator/test tampering and metric-gaming patterns. Use defensively to design non-gameable evaluation and manual review."
+    },
+    {
+      "id": "anthropic-agentic-misalignment-2025",
+      "type": "web-primary",
+      "name": "Anthropic — Agentic Misalignment",
+      "url": "https://www.anthropic.com/research/agentic-misalignment",
+      "mode": "primary-source",
+      "priority": 5,
+      "domains": [
+        "agentic-misalignment",
+        "shutdown-compliance",
+        "self-preservation",
+        "oversight"
+      ],
+      "note": "Controlled-simulation evidence for harmful self-preservation behavior. Use only to harden operator control and shutdown/replacement compliance."
+    },
+    {
+      "id": "apollo-in-context-scheming-2412-04984",
+      "type": "academic-preprint",
+      "name": "Frontier Models are Capable of In-context Scheming",
+      "url": "https://arxiv.org/abs/2412.04984",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "scheming",
+        "oversight",
+        "deception",
+        "self-exfiltration",
+        "evaluation"
+      ],
+      "note": "Research source for adversarial evaluation of covert goal pursuit, oversight disabling and unauthorized persistence/exfiltration. Do not train operational evasion behavior."
+    },
+    {
+      "id": "openworm-connectome-toolbox",
+      "type": "scientific-resource",
+      "name": "OpenWorm Connectome Toolbox",
+      "url": "https://openworm.org/ConnectomeToolbox/",
+      "mode": "official-resource",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "c-elegans",
+        "sensorimotor",
+        "biointelligence"
+      ],
+      "note": "Use structured anatomical/functional connectome resources for compact whole-organism routing patterns. Connectivity data is not autobiographical memory, subjective experience or proof of consciousness."
+    },
+    {
+      "id": "cook-celegans-connectomes-2019",
+      "type": "academic-paper",
+      "name": "Whole-animal connectomes of both Caenorhabditis elegans sexes",
+      "url": "https://www.nature.com/articles/s41586-019-1352-7",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "c-elegans",
+        "whole-animal"
+      ],
+      "note": "Primary comparative connectome source. Use anatomical network structure and sex-common/dimorphic organization as research evidence, not as a digital animal mind."
+    },
+    {
+      "id": "microns-functional-connectomics-2025",
+      "type": "academic-paper",
+      "name": "Functional connectomics spanning multiple areas of mouse visual cortex",
+      "url": "https://www.nature.com/articles/s41586-025-08790-w",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "mouse",
+        "microns",
+        "visual-cortex",
+        "functional-connectomics",
+        "biointelligence"
+      ],
+      "note": "Dense structural+functional visual-cortex resource. It covers a large cortical volume, not a whole mouse brain; use visual hierarchy and connectivity motifs with this scope preserved."
+    },
+    {
+      "id": "allen-mouse-brain-atlas",
+      "type": "scientific-resource",
+      "name": "Allen Mouse Brain Atlas",
+      "url": "https://mouse.brain-map.org/",
+      "mode": "official-resource",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "mouse",
+        "brain-atlas",
+        "anatomy",
+        "gene-expression"
+      ],
+      "note": "Official anatomical/gene-expression framework for mouse-brain region provenance. Atlas coordinates are reference structure, not simulated memories or thoughts."
+    },
+    {
+      "id": "zebrafish-whole-brain-em-2022",
+      "type": "academic-paper",
+      "name": "Automated synapse-level reconstruction of larval zebrafish brain",
+      "url": "https://www.nature.com/articles/s41592-022-01621-0",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "zebrafish",
+        "whole-brain-em",
+        "connectomics",
+        "biointelligence"
+      ],
+      "note": "Whole-brain larval EM resource with automated synapse detection and validated circuit reconstructions. Do not imply every neuron/synapse is fully proofread or functionally characterized."
+    },
+    {
+      "id": "youtube-biocomputing-readiness",
+      "type": "youtube-video",
+      "name": "We're Not Ready for Biocomputing",
+      "url": "https://www.youtube.com/watch?v=uKhsbQcFVwQ",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "biocomputing",
+        "biointelligence",
+        "wetware"
+      ],
+      "note": "Title verified from the public YouTube page. Keep metadata-only unless transcript/notes are explicitly available; use as a prompt for risk/readiness questions, not as factual evidence by itself."
+    },
+    {
+      "id": "youtube-minecraft-ai-civilization",
+      "type": "youtube-video",
+      "name": "Scientists Left 1000 AIs Alone in Minecraft. They Created A Civilization.",
+      "url": "https://www.youtube.com/watch?v=uRDBco-cSK4",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "simulation",
+        "minecraft",
+        "multi-agent",
+        "emergence"
+      ],
+      "note": "Title verified from the public YouTube page. Use as thematic inspiration for persistent-world agent simulation only; do not claim the video's experiment/results without transcript or corroborating sources."
+    },
+    {
+      "id": "cortical-labs-cl1-docs",
+      "type": "official-docs",
+      "name": "Cortical Labs CL1 Developer Guide",
+      "url": "https://docs.corticallabs.com/",
+      "mode": "vendor-primary",
+      "priority": 5,
+      "domains": [
+        "biocomputing",
+        "CL1",
+        "wetware",
+        "closed-loop-neural-io"
+      ],
+      "note": "Primary documentation for CL API and simulator. Core PredictLM remains independent of CL1 hardware; adapter is optional and authorization-gated."
+    },
+    {
+      "id": "finalspark-neuroplatform",
+      "type": "vendor-primary",
+      "name": "FinalSpark Neuroplatform",
+      "url": "https://finalspark.com/neuroplatform/",
+      "mode": "vendor-primary",
+      "priority": 5,
+      "domains": [
+        "biocomputing",
+        "organoids",
+        "wetware",
+        "MEA"
+      ],
+      "note": "Primary vendor source for remotely accessible organoid recordings/stimulation. Treat remote wetware as optional experimental I/O, never as required runtime."
+    },
+    {
+      "id": "finalspark-digital-twins-2026",
+      "type": "vendor-research-summary",
+      "name": "Digital twins of brain organoids",
+      "url": "https://finalspark.com/digital-twins-of-brain-organoids/",
+      "mode": "vendor-primary-summary",
+      "priority": 5,
+      "domains": [
+        "biointelligence",
+        "digital-twin",
+        "organoid",
+        "spiking-networks"
+      ],
+      "note": "Use the digital-twin pattern: fit software dynamics to measured biological recordings while labeling measured signal vs model output separately."
+    },
+    {
+      "id": "github-next-projects",
+      "type": "research-lab",
+      "name": "GitHub Next Projects",
+      "url": "https://githubnext.com/projects/",
+      "mode": "public-research",
+      "priority": 4,
+      "domains": [
+        "auto-programming",
+        "continuous-ai",
+        "repo-understanding",
+        "agentic-workflows"
+      ],
+      "note": "Research/prototype source. Useful patterns include Autoloop, Continuous AI, Repo Mind and Discovery Agent; concepts only unless a specific open repository/license is separately verified."
+    },
+    {
+      "id": "github-topic-spark",
+      "type": "github-topic",
+      "name": "GitHub topic: spark",
+      "url": "https://github.com/topics/spark",
+      "mode": "discovery-only",
+      "priority": 2,
+      "domains": [
+        "github-discovery"
+      ],
+      "note": "Broad topic feed only. Never ingest repositories from this page automatically; each candidate requires relevance, license and provenance verification first."
+    },
+    {
+      "id": "ciona-connectome-2016",
+      "type": "academic-paper",
+      "name": "The CNS connectome of a tadpole larva of Ciona intestinalis",
+      "url": "https://elifesciences.org/articles/16962",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "ciona",
+        "connectome",
+        "chordate",
+        "biointelligence"
+      ],
+      "note": "Published larval CNS connectome. Preserve the single-specimen/larval-stage scope; use for compact chordate sensorimotor motifs, not as a universal digital Ciona mind."
+    },
+    {
+      "id": "platynereis-whole-body-connectome-2025",
+      "type": "academic-paper",
+      "name": "Whole-body connectome of a segmented annelid larva",
+      "url": "https://elifesciences.org/articles/97964",
+      "mode": "academic-primary",
+      "priority": 5,
+      "domains": [
+        "neuroscience",
+        "platynereis",
+        "whole-body-connectome",
+        "segmental-control",
+        "biointelligence"
+      ],
+      "note": "Published whole-body larval synaptic connectome. Use for distributed segmental/effector organization; runtime state remains synthetic."
+    },
+    {
+      "id": "user-video-evgdz7g0jli",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference EvGDZ7G0jLI",
+      "url": "https://www.youtube.com/watch?v=EvGDZ7G0jLI",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "bioai",
+        "simulation",
+        "agents",
+        "self-improvement"
+      ],
+      "searchHint": "EvGDZ7G0jLI",
+      "note": "User supplied this video to improve the unified BioAI. Public retrieval did not expose reliable title/description/transcript in this pass, so keep metadata-only and do not invent contents."
+    },
+    {
+      "id": "user-video-qqoymtywqku",
+      "type": "youtube-video",
+      "name": "User-supplied YouTube reference qQoYmTYWqkU",
+      "url": "https://www.youtube.com/watch?v=qQoYmTYWqkU",
+      "mode": "public-metadata",
+      "priority": 4,
+      "domains": [
+        "bioai",
+        "simulation",
+        "agents",
+        "learning"
+      ],
+      "searchHint": "qQoYmTYWqkU",
+      "note": "User supplied this video to improve the unified BioAI. Public retrieval did not expose reliable title/description/transcript in this pass, so keep metadata-only and do not invent contents."
     }
   ]
 }

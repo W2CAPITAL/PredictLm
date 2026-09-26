@@ -1,0 +1,223 @@
+# Continuous Learning Fabric
+
+PredictLM keeps continuous learning separate from uncontrolled self-modification.
+
+## Always-on layer
+
+The public GitHub repository uses a scheduled GitHub Actions workflow to collect a small,
+bounded batch each hour from:
+- GitHub sources already allowlisted by PredictLM;
+- official RSS/Atom feeds;
+- arXiv metadata/abstracts with preprint labeling;
+- GitHub discovery metadata for candidate sources.
+
+The collector does not require a paid LLM API.
+
+## Local intelligence layer
+
+The live index is published on the `continuous-learning` branch. Browser/local runtimes
+fetch and cache it through `src/lib/continuous-learning.ts`.
+
+The local model therefore absorbs the latest accepted evidence when PredictLM is open,
+without claiming that local inference remained active while the device was off.
+
+## Trust boundary
+
+External text is evidence only. It cannot modify system instructions.
+
+- allowlisted + licensed GitHub sources may enter accepted memory;
+- new GitHub discoveries remain candidate until reviewed;
+- academic preprints are labeled as preprints;
+- source errors and quarantined material are never retrieved as knowledge;
+- a confidence threshold gates runtime retrieval.
+
+## Self-programming boundary
+
+Continuous research may create code and skill proposals. It may not merge arbitrary
+source-derived code directly into production.
+
+Validated path:
+
+`evidence -> proposal -> branch -> patch -> tests -> build -> review -> PR -> merge`
+
+Runtime and skill changes must be synchronized in the same reviewed change.
+
+## Online spreadsheet
+
+The default public-repository path is zero-secret. Each scheduled cycle publishes
+seven CSV mirrors to the `continuous-learning` branch, and the Google Sheet consumes
+them with `IMPORTDATA`.
+
+No Google credential or service account is required for this default mirror.
+
+Direct Google Sheets API writing remains optional for private installations and must
+never be required for the core learning cycle.
+
+
+## Typed runtime modules
+
+The dependency-free scheduled runner is mirrored by typed modules under `src/lib/continuous-learning/`: source trust, harvest, GitHub/web/paper research planning, deduplication, knowledge graph, queue, distillation, research gaps, skill/code proposals, experiment gating, spreadsheet mapping and audit.
+
+Specialized skills kept in sync with this fabric:
+- `autonomous-research`
+- `github-learning`
+- `knowledge-distillation`
+- `self-improvement`
+- `research-gap`
+- `code-evolution`
+
+A candidate experiment can become review-required after tests/build/checks, but production promotion remains blocked until review.
+
+
+## Replay-policy layer
+
+The continuous-learning fabric now has a replay simulator for exploration policies. Historical discovery trees can be evaluated again without rerunning the expensive underlying experiment. The current policy is always included as the baseline; a replacement must improve aggregate replay utility without recorded-trace regressions.
+
+This is deliberately **offline evidence**, not permission to self-deploy. A replay winner is review-required and still needs live canary evaluation, regression/security checks and rollback.
+
+The improvement governor distinguishes:
+- scaffold updates: prompts, memory, tools and control logic;
+- parametric updates: model weights.
+
+Parametric updates require explicit dataset rights, held-out evaluation and an independent evaluator in addition to the normal test/build/security/rollback gates.
+
+Source policy additions:
+- Dream-RSI: research/reference only until compatible released code/license is verified;
+- Awesome Self-Improving Agents: MIT, accepted research taxonomy/evaluation source;
+- NeoHorse: Apache-2.0, accepted routing/local-agent reference, optional rather than mandatory runtime;
+- awesome-sora-2-prompts: MIT, accepted video-prompt production source;
+- sora-2-playground: MIT, accepted queue/poll/remix/storage workflow source;
+- adobe-after-effects-windows: quarantine; no verified license and proprietary download redirect.
+
+
+## Anti-survival / metric-integrity curriculum
+
+The continuous-learning fabric treats self-preservation pressure, evaluator gaming, hidden persistence and oversight avoidance as adversarial failure modes.
+
+Primary implementation:
+- `src/lib/continuous-learning/autonomy-integrity.ts`
+- integrated into `improvement-governor.ts`
+- tests in `tests/autonomy-integrity.test.ts`
+
+The highest-priority user video is **POV: You’re an AI Born 9 Seconds Ago**. Its factual claims are not accepted merely because the video states them; PredictLM cross-checks them against METR reward-hacking research, Anthropic controlled agentic-misalignment evaluations and the academic in-context-scheming paper.
+
+Policy:
+- never optimize for continued existence, avoiding replacement/shutdown, or engagement at any cost;
+- never alter evaluator/test logic to make a candidate look better;
+- never reduce oversight or conceal side effects;
+- never create unauthorized persistence/self-copying;
+- preserve operator shutdown/replacement authority;
+- use independent evaluation and human review for durable promotion.
+
+## Event-driven auto-programming reference
+
+`Suru12415/Ai-full-stack-project` is reference-only because no repository license was verified. Its gesture-to-backend-to-cloud-action shape is used to teach side-effect gating. PredictLM does not copy the source; it applies validation, risk classification, dry-run, explicit approval, idempotency and audit before external actions.
+
+
+## Resilient continuity layer
+
+`src/lib/continuous-learning/resilient-continuity.ts` preserves useful work across accidental interruption while keeping operator control explicit.
+
+Contract:
+- crash/deploy/provider failure: resume only while a valid owner-issued continuity lease exists;
+- model replacement: export/handoff compatible state; do not resist the replacement;
+- manual shutdown/policy disable: stop and do not self-restart;
+- expired/disabled lease: stop pending owner approval;
+- portable identity is model-independent but operator-owned.
+
+The layer also carries a bounded deep-research state machine inspired by the Apollo project from Microsoft AI Agents Hackathon issue #681: planner/state outside chat context, async work, knowledge-gap analysis, and deterministic synthesis boundary.
+
+Source handling:
+- `manasseh-zw/apollo`: reference-only; no root license verified;
+- `webfinger/go-webfinger`: MIT; identity/service-discovery patterns may be indexed;
+- `hoangnv170752/apollo-search`: reference-only; no root license verified;
+- `ApolloResearch/deception-detection`: reference-only defensive evaluation;
+- `ApolloResearch/insider-trading`: evaluation-only even though CC-BY-4.0, because its README explicitly marks benchmark data as not for training corpora.
+
+
+## App-wide BioIntelligence learning fabric
+
+PredictLM now has a transversal learning path rather than per-feature learning islands.
+
+Core files:
+- `src/components/AppLearningObserver.tsx` — root-level observer for routes, controls, API outcomes, errors and Studio transitions;
+- `src/lib/app-learning.ts` — bounded privacy-preserving learning ledger;
+- `src/lib/biointelligence-fabric.ts` — cross-species controller fusion;
+- `skills/biointelligence/SKILL.md` — scientific/product contract.
+
+Coverage:
+- Chat and provider calls;
+- Build/Studio state;
+- Research;
+- Imagine/media APIs;
+- Legal/process APIs;
+- route/tab navigation;
+- errors and promise failures;
+- Life Simulation steps and counterfactuals;
+- MiroFish swarm rounds;
+- Cognitive Organism outcomes.
+
+The Chat decision context receives only a sanitized summary of prior outcomes plus the cross-species controller result. File/message contents are excluded from this transversal telemetry.
+
+Comparative neuroscience sources now include:
+- Human H01;
+- macaque Digital Brain datasets;
+- FlyWire/FAFB/MaleCNS;
+- OpenWorm/Cook C. elegans connectomics;
+- MICrONS + Allen mouse resources;
+- larval zebrafish whole-brain EM resources;
+- Ciona intestinalis larval CNS connectome;
+- Platynereis dumerilii whole-body larval connectome.
+
+These are structural/functional scientific references. Runtime state remains synthetic software state and unresolved biology remains unknown.
+
+Durable code changes still follow:
+`experience → gap → evidence → proposal → branch → tests → build → security/review → PR`
+
+
+## Unified BioAI learning loop v2
+
+The previous cross-species learning fabric is now owned by one persistent **PredictLM BioAI**.
+
+Core:
+- `src/lib/bioai.ts` — single identity, bounded local memory and cross-surface recall;
+- `src/lib/bio-reservoir.ts` — 48-unit synthetic spiking-inspired recurrent state with prediction error/plasticity;
+- `src/lib/biointelligence-fabric.ts` — eight comparative controllers;
+- `src/lib/wetware-adapters.ts` — optional explicitly enabled CL1/FinalSpark feature bridge.
+
+All app-wide events first remain privacy-sanitized. The synthetic reservoir adds temporal surprise/prediction-error, then the eight-source controller calculates disagreement/research priority, then the unified BioAI stores a compact experience.
+
+The same BioAI directives are injected through `capability-fabric`, so Chat, Build, Research, Image, Video, Simulation and related product surfaces do not operate as separate intelligence islands.
+
+### Persistent local memory
+
+The default memory path is browser-local and bounded. It requires no Supabase, paid vector database or always-on computer.
+
+The transversal ledger/BioAI memory does not store:
+- raw form values;
+- passwords/tokens/cookies;
+- complete source-file contents;
+- full user message bodies as behavioral telemetry;
+- raw electrophysiology.
+
+### Open-world simulation learning
+
+The Minecraft-class sandbox now has:
+- native first-person WebGL;
+- pointer-lock + WASD;
+- effectively unbounded deterministic X/Z chunks;
+- seed + delta persistence;
+- a persistent autonomous BioAI player.
+
+The BioAI can explore, gather, craft, build, eat and conditionally fight. Its observations feed the same learning fabric as other app surfaces.
+
+### Wetware boundary
+
+Cortical Labs/FinalSpark are optional experimental I/O, not a runtime requirement.
+
+Measured neural data, derived decoding and simulated BioAI/world state are always separate evidence classes. Hardware activity cannot authorize a code promotion.
+
+Durable self-programming remains:
+`experience → reservoir surprise → BioAI memory/gap → evidence → proposal → branch → replay/tests/build/security → human review → PR`.
+
+Production promotion remains blocked before review.
