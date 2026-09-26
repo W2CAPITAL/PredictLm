@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import JSZip from 'jszip';
 import { Activity, AlertTriangle, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
@@ -24,8 +25,6 @@ import { looksLikeOperationalMonologue } from '@/lib/human-presence';
 import { cancelWebLLMLoad, loadBestWebLLMModel, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
 import { useStudio } from '@/lib/store';
-import { GrokBuildPanel } from '@/components/GrokBuildPanel';
-import { GrokResearchPanel } from '@/components/GrokResearchPanel';
 import { AnimalVisionPanel } from '@/components/AnimalVisionPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
@@ -35,14 +34,30 @@ import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html
 import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserText } from '@/lib/voice/browser-voice';
+import { resolveBuildTurn } from '@/lib/build-turn';
+import { runLocalSmokeTest } from '@/lib/local-tools';
+import { runLocalCouncil } from '@/lib/council';
+import { runBuildDiffReview } from '@/lib/build-diff-review';
+import { repairWorkspaceFiles } from '@/lib/workspace-repair';
+import { buildRunnableProject } from '@/lib/project-packager';
+import { loadCognitiveState, saveCognitiveState } from '@/lib/cognitive/cognitive-memory';
+import { advanceCognitiveWorkspace, cognitivePromptContext } from '@/lib/cognitive/cognitive-workspace';
 
 interface Props{
   onOpenLegal?:()=>void;
 }
 
-type GrokScreen='chat'|'library'|'build'|'research'|'imagine'|'simulation'|'vision'|'plugins';
+type GrokScreen='chat'|'library'|'imagine'|'simulation'|'vision'|'plugins';
 
 type ChatMediaKind='image'|'video';
+
+function detectBuildRequest(prompt:string){
+  const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
+  const object=/\b(app|aplicativo|site|sistema|dashboard|crm|api|backend|frontend|codigo|code|projeto|repositorio|repo|build)\b/.test(p);
+  const action=/\b(crie|criar|construa|construir|implemente|implementar|desenvolva|desenvolver|corrija|corrigir|conserte|refatore|refatorar|adicione|remova|altere|mude|continue|prossiga|termine|finalize|exporte|gere o zip|faça funcionar|faca funcionar)\b/.test(p);
+  const explanation=/^(como|explique|o que e|o que é|por que|porque)\b/.test(p);
+  return object&&action&&!explanation;
+}
 
 function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
   const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
