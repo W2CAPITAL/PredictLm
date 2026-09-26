@@ -130,12 +130,13 @@ export function syncLifeToVoxel(world:LifeVoxelWorldState,life:LifeSimulationSta
 }
 
 export function syncVoxelToLife(world:LifeVoxelWorldState,voxel:VoxelWorldState):LifeVoxelWorldState{
+  const seed=Number(voxel.seed)||world.seed;
   const life=world.life;
   const latestAction=voxel.bioAI?.lastAction||'';
   const actionChanged=latestAction&&latestAction!==life.lastEvent;
   const nextLife:LifeSimulationState={
     ...life,
-    seed:world.seed,
+    seed,
     day:Math.max(1,voxel.day||life.day),
     minute:voxelTimeToMinute(voxel.timeOfDay),
     needs:{
@@ -145,7 +146,14 @@ export function syncVoxelToLife(world:LifeVoxelWorldState,voxel:VoxelWorldState)
     },
     lastEvent:actionChanged?'LifeVoxel · '+latestAction:life.lastEvent
   };
-  return {...world,life:nextLife,voxel:{...voxel,seed:world.seed},updatedAt:Date.now()};
+  return {
+    ...world,
+    seed,
+    worldId:seed===world.seed?world.worldId:stableWorldId(seed),
+    life:nextLife,
+    voxel:{...voxel,seed},
+    updatedAt:Date.now()
+  };
 }
 
 export function updateLifeVoxelLife(world:LifeVoxelWorldState,life:LifeSimulationState){
