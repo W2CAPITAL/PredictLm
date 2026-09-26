@@ -122,7 +122,7 @@ export interface VoxelChunkSnapshot{
   mobs:VoxelMob[];
 }
 
-export type VoxelActionType='move'|'mine'|'place'|'craft'|'smelt'|'attack'|'raid'|'eat'|'farm'|'dimension'|'wait'|'set_mode';
+export type VoxelActionType='move'|'mine'|'place'|'craft'|'smelt'|'attack'|'trade'|'raid'|'eat'|'farm'|'dimension'|'wait'|'set_mode';
 
 export interface VoxelAction{
   id:string;
@@ -426,11 +426,29 @@ export function chunksAroundPlayer(state:VoxelWorldState,radius=1){
   return out;
 }
 
+function syncVoxelProgression(state:VoxelWorldState){
+  const unlocked=new Set(state.achievements);
+  const unlock=(id:string,condition:boolean)=>{if(condition)unlocked.add(id)};
+  unlock('primeiro-bloco',state.stats.mined>=1);
+  unlock('construtor',state.stats.placed>=16);
+  unlock('artesao',state.stats.crafted>=5);
+  unlock('explorador-10',state.stats.chunksVisited>=10);
+  unlock('explorador-100',state.stats.chunksVisited>=100);
+  unlock('cacador',state.stats.mobsDefeated>=10);
+  unlock('saqueador',state.stats.dungeonsCleared>=1);
+  unlock('veterano-dungeons',state.stats.dungeonsCleared>=10);
+  unlock('diamantes',(state.inventory.diamond||0)>=1);
+  unlock('sobrevivente-10-dias',state.day>=10);
+  unlock('viajante-dimensional',state.player.dimension!=='overworld');
+  const level=Math.max(state.player.level,Math.floor(state.player.experience/20));
+  return{...state,achievements:[...unlocked],player:{...state.player,level}};
+}
+
 function withEvent(state:VoxelWorldState,kind:string,text:string){
-  return{
+  return syncVoxelProgression({
     ...state,
     events:[...state.events,{id:state.tick+':'+kind+':'+state.events.length,tick:state.tick,kind,text}].slice(-120)
-  };
+  });
 }
 
 function addItem(inventory:Record<string,number>,item:string,count=1){
@@ -557,6 +575,21 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
   next={...next,player:{...next.player,health:clamp(next.player.health-(mob.hostile?3:1),0,20)}};
   next=withEvent(next,'combat','Atacou '+mob.label+'; o combate continua.');
   return{state:next,ok:true,message:'Causou '+damage+' de dano.'};
+}
+
+export function tradeVoxelVillager(state:VoxelWorldState,villager?:VoxelMob){
+  const target=villager?.kind==='villager'?villager:currentVoxelContext(state).snapshot.mobs.find(x=>x.kind==='villager');
+  if(!target)return{state,ok:false,message:'Nenhum aldeão próximo para negociar.'};
+  if((state.inventory.emerald||0)<1)return{state,ok:false,message:'Você precisa de ao menos 1 esmeralda.'};
+  const roll=hash2(state.seed,Math.floor(target.x),Math.floor(target.z),state.tick+930);
+  let item='food',count=3;
+  if(roll>.82){item='iron_ingot';count=2}
+  else if(roll>.58){item='torch';count=8}
+  else if(roll>.34){item='wheat_seed';count=6}
+  let inventory=addItem(state.inventory,'emerald',-1);
+  inventory=addItem(inventory,item,count);
+  const next=withEvent({...state,inventory},'trade','Trocou 1 esmeralda com '+target.label+' por '+count+'× '+item+'.');
+  return{state:next,ok:true,message:'Troca concluída: '+count+'× '+item+'.'};
 }
 
 export function raidVoxelDungeon(state:VoxelWorldState,structure:VoxelStructure){
@@ -694,6 +727,7 @@ export function localVoxelPlan(instruction:string,state:VoxelWorldState):VoxelPl
   if(/comer|eat|fome/.test(q))add('eat',{item:(state.inventory.bread||0)>0?'bread':'food'});
   if(/arar|plantar|farm|fazenda/.test(q)){add('farm',{plant:false});if(/plantar/.test(q))add('farm',{plant:true})}
   if(/atacar|lutar|combate|mob/.test(q))add('attack');
+  if(/trocar|trade|aldeao|aldeão|villager/.test(q))add('trade');
   if(/masmorra|dungeon|boss|saque/.test(q))add('raid');
   if(!actions.length)add('move',{dx:1,dz:0,steps:3,reason:'exploração segura padrão'});
 
@@ -755,8 +789,12 @@ export function executeVoxelAction(state:VoxelWorldState,action:VoxelAction){
   if(action.type==='wait')return{state:tickVoxelWorld(state,Math.max(1,action.steps||1)),ok:true,message:'O mundo avançou no tempo.'};
   if(action.type==='attack'){
     const {snapshot}=currentVoxelContext(state);
-    const target=snapshot.mobs.find(x=>x.hostile)||snapshot.mobs[0];
-    return target?attackVoxelMob(state,target):{state,ok:false,message:'Nenhum mob próximo para atacar.'};
+    const target=snapshot.mobs.find(x=>x.hostile)||snapshot.mobs.find(x=>x.kind!=='villager');
+    return target?attackVoxelMob(state,target):{state,ok:false,message:'Nenhum mob apropriado próximo para atacar.'};
+  }
+  if(action.type==='trade'){
+    const {snapshot}=currentVoxelContext(state);
+    return tradeVoxelVillager(state,snapshot.mobs.find(x=>x.kind==='villager'));
   }
   if(action.type==='raid'){
     const {snapshot}=currentVoxelContext(state);
