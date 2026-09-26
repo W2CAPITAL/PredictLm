@@ -3733,7 +3733,7 @@
       "repo": "FinalSpark-np/LiveMEA_ts",
       "branch": "main",
       "license": "MIT",
-      "mode": "optional-adapter",
+      "mode": "allow",
       "include": [
         "README.md",
         "src"
