@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.15.3"
+  version: "3.16.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.15.3
+# PredictLM Master v3.16.0
 
 ## Regra soberana
 
@@ -1041,3 +1041,26 @@ Rules:
 - transformations/avatars such as Susanoo remain form/scene queries when they are not catalog characters;
 - do not ingest streaming/torrent/mirror logic from anime apps used as architectural references;
 - show catalog-resolved identities in Imagine diagnostics.
+
+
+# Capability Fusion v3.16
+
+A ingestão de referências externas agora obedece ao mapa em `references/CAPABILITY-FUSION.md`.
+
+O runtime deve combinar padrões por capacidade, não copiar produtos inteiros:
+
+- **Memory Fabric** — registrar episódios, decisões, restrições, erros e preferências; recuperar apenas contexto relevante; manter relações e flags de contradição.
+- **Agent Run Ledger** — todo Build complexo mantém checkpoints de explore → architect → implement → review → repair → verify, com arquivos e providers associados.
+- **Evidence Graph** — Research relaciona fontes por corroboração, conflito possível, domínio, qualidade, relevância e gaps.
+- **Document Intelligence** — documentos devem virar blocos estruturados com proveniência; OCR pesado entra por adapter explícito.
+- **Media Quality Stack** — imagem/vídeo usam semantic lock, revisão de artefatos, continuidade temporal, stylization opcional e upscale sem afirmar provider não executado.
+- **Emergent Simulation** — agentes simulados podem ter percepção local e políticas emergentes; o estado principal continua auditável e contrafactuais nunca são apresentados como previsão real.
+- **Browser/Build Evidence** — console, rede, DOM, performance e screenshots são evidência de debugging quando o host fornecer essas ferramentas.
+- **Change-aware Research** — monitorar diferenças significativas e evitar repetir trabalho quando a fonte não mudou.
+
+Gate de licença:
+- MIT/Apache/BSD podem inspirar/adaptar implementações compatíveis;
+- GPL/LGPL/AGPL ficam como referência/adapter isolado salvo decisão explícita de licenciamento;
+- licença customizada/ausente fica reference-only até revisão;
+- nunca declarar uma integração externa “ativa” sem configuração e teste real.
+
