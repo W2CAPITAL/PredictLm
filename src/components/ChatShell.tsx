@@ -60,6 +60,13 @@ function detectBuildRequest(prompt:string){
   return object&&action&&!explanation;
 }
 
+function detectBuildContinuation(prompt:string,hasActiveProject:boolean){
+  if(!hasActiveProject)return false;
+  const p=prompt.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
+  if(p.length>500)return false;
+  return /^(continue|continua|prossiga|segue|termine|finalize|corrija|arrume|conserte|melhore|adicione|inclua|remova|tire|altere|mude|troque|deixe|faca|faça|exporte|gere o zip|rosa|azul|verde|vermelho|escuro|claro|maior|menor|responsivo|mobile)\b/.test(p);
+}
+
 function detectLegalSearchRequest(prompt:string){
   const raw=String(prompt||'');
   const normalized=raw.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
@@ -654,7 +661,9 @@ export function ChatShell({onOpenLegal}:Props){
     const mediaKind=detectChatMediaRequest(prompt);
     const simulationLaunch=detectSimulationLaunchRequest(prompt);
     const reportIntent=detectReportIntent(prompt);
-    const buildIntent=detectBuildRequest(prompt);
+    const buildState=useStudio.getState();
+    const hasActiveProject=buildState.messages.length>0||!!buildState.files['predict.spec.json']||buildState.projectName!=='Untitled App';
+    const buildIntent=detectBuildRequest(prompt)||detectBuildContinuation(prompt,hasActiveProject);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
     let cognitiveMeshContext='';
