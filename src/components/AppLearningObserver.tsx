@@ -2,6 +2,7 @@
 
 import {useEffect} from 'react';
 import {emitAppLearningEvent,recordAppLearningEvent} from '@/lib/app-learning';
+import {useStudio} from '@/lib/store';
 
 function pathOnly(input:string){
   try{
@@ -36,6 +37,21 @@ export function AppLearningObserver(){
       kind:'navigation',
       success:true,
       salience:.35
+    });
+
+    const unsubscribeStudio=useStudio.subscribe((state,previous)=>{
+      if(state.mode!==previous.mode)emitAppLearningEvent({surface:'studio',action:'mode-changed',kind:'interaction',success:true,salience:.52,metadata:{mode:state.mode}});
+      if(state.activePanel!==previous.activePanel)emitAppLearningEvent({surface:'studio',action:'panel-changed',kind:'navigation',success:true,salience:.34,metadata:{panel:state.activePanel}});
+      if(state.provider!==previous.provider)emitAppLearningEvent({surface:'studio',action:'provider-changed',kind:'interaction',success:true,salience:.58,metadata:{provider:state.provider}});
+      if(state.isRunning!==previous.isRunning)emitAppLearningEvent({surface:'studio',action:state.isRunning?'run-started':'run-finished',kind:'build',success:state.isRunning?undefined:true,salience:.64});
+      if(state.activeFile!==previous.activeFile)emitAppLearningEvent({surface:'studio',action:'active-file-changed',kind:'navigation',success:true,salience:.26,metadata:{extension:(state.activeFile.split('.').pop()||'').slice(0,12)}});
+      const filesNow=Object.keys(state.files||{}).length;
+      const filesBefore=Object.keys(previous.files||{}).length;
+      if(filesNow!==filesBefore)emitAppLearningEvent({surface:'studio',action:filesNow>filesBefore?'file-added':'file-removed',kind:'build',success:true,novelty:.62,salience:.56,metadata:{fileCount:filesNow}});
+      if(state.runs.length!==previous.runs.length)emitAppLearningEvent({surface:'studio',action:'run-ledger-changed',kind:'build',success:true,salience:.62,metadata:{runCount:state.runs.length}});
+      if(state.messages.length!==previous.messages.length)emitAppLearningEvent({surface:'studio',action:'conversation-ledger-changed',kind:'memory',success:true,salience:.38,metadata:{messageCount:state.messages.length}});
+      if(state.snapshots.length!==previous.snapshots.length)emitAppLearningEvent({surface:'studio',action:'snapshot-ledger-changed',kind:'memory',success:true,salience:.62,metadata:{snapshotCount:state.snapshots.length}});
+      if(state.builds.length!==previous.builds.length)emitAppLearningEvent({surface:'studio',action:'build-ledger-changed',kind:'build',success:true,novelty:.7,salience:.62,metadata:{buildCount:state.builds.length}});
     });
 
     const onClick=(event:MouseEvent)=>{
@@ -193,6 +209,7 @@ export function AppLearningObserver(){
       window.removeEventListener('unhandledrejection',onRejection);
       window.removeEventListener('popstate',onPop);
       window.removeEventListener('predictlm:learning-event',onSemantic as EventListener);
+      unsubscribeStudio();
       window.fetch=nativeFetch;
       history.pushState=originalPush;
       history.replaceState=originalReplace;
