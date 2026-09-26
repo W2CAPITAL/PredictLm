@@ -5,7 +5,7 @@ import { languageSystemInstruction, type ConversationLanguage } from './language
 import { publicAnswerGate } from './public-answer-gate';
 import { classifyDomainEngines } from './domain-engine-fabric';
 import { trainingContext } from './training/context';
-import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';
+import { githubKnowledgeContext, retrieveGitHubKnowledge } from './github-knowledge-engine';\nimport { continuousLearningContext } from './continuous-learning';
 import { optimizePromptPackage, type TokenBudgetStats } from './token-budget';
 import { tutorSystemContext } from './tutor-mode';
 import { globalLearningContext } from './global-learning';
@@ -314,7 +314,7 @@ export async function answerViaLocalRuntime(
     mode:runtime.kind==='lowram'?'ultra':(deepMode?'lite':'full'),
     sections:[
       {label:'Pesquisa web verificada',text:String(options?.researchContext||'').slice(0,12000),priority:9},
-      {label:'GitHub Knowledge',text:github,priority:5},
+      {label:'GitHub Knowledge',text:github,priority:5},\n      {label:'Aprendizado contínuo verificado',text:continuous,priority:7},
       {label:'Knowledge',text:knowledge,priority:5},
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
