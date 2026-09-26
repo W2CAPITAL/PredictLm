@@ -5,6 +5,7 @@ import {
   v3,
   type UnitySceneSnapshot
 } from '@/lib/unity-fabric';
+import {chooseBioAIVoxelGoal} from '@/lib/bioai';
 
 export const VOXEL_CHUNK_SIZE=16;
 export const VOXEL_WORLD_HEIGHT=128;
@@ -91,6 +92,23 @@ export interface VoxelEvent{
   text:string;
 }
 
+export interface VoxelBioAI{
+  x:number;y:number;z:number;
+  health:number;
+  hunger:number;
+  dimension:VoxelDimension;
+  inventory:Record<string,number>;
+  goal:string;
+  lastAction:string;
+  autonomous:boolean;
+  tick:number;
+  distance:number;
+  blocksMined:number;
+  blocksPlaced:number;
+  discoveries:number;
+  memory:string[];
+}
+
 export interface VoxelWorldState{
   version:1;
   seed:number;
@@ -99,6 +117,7 @@ export interface VoxelWorldState{
   day:number;
   weather:VoxelWeather;
   player:VoxelPlayer;
+  bioAI:VoxelBioAI;
   inventory:Record<string,number>;
   modifications:Record<string,VoxelBlockId>;
   discoveries:Record<string,true>;
@@ -251,7 +270,7 @@ export function terrainHeight(seed:number,x:number,z:number,dimension:VoxelDimen
 
 function treeMask(seed:number,x:number,z:number,biome:VoxelBiome){
   if(!['forest','plains','taiga','swamp'].includes(biome))return false;
-  const chance=biome==='forest'?.075:biome==='taiga'?.06:.022;
+  const chance=biome==='forest' ? .075 : biome==='taiga' ? .06 : .022;
   return hash2(seed,x,z,61)<chance&&hash2(seed,x>>1,z>>1,62)>.25;
 }
 
@@ -315,6 +334,16 @@ export function createVoxelWorld(seed=Math.floor(Math.random()*2_000_000_000)):V
     day:1,
     weather:'clear',
     player:{x,y,z,yaw:0,pitch:0,health:20,hunger:20,armor:0,experience:0,level:0,mode:'survival',dimension:'overworld',selected:'dirt'},
+    bioAI:{
+      x:x+3,y:terrainHeight(seed,x+3,z+2)+2,z:z+2,
+      health:20,hunger:20,dimension:'overworld',
+      inventory:{wood_pickaxe:1,torch:4},
+      goal:'explorar e aprender o mundo',
+      lastAction:'spawn',
+      autonomous:true,
+      tick:0,distance:0,blocksMined:0,blocksPlaced:0,discoveries:0,
+      memory:['BioAI entrou no mundo voxel.']
+    },
     inventory:{wood_pickaxe:1,torch:8},
     modifications:{},
     discoveries:{},
@@ -331,6 +360,7 @@ export function normalizeVoxelWorld(input:any):VoxelWorldState{
     ...fresh,
     ...input,
     player:{...fresh.player,...input.player},
+    bioAI:{...fresh.bioAI,...input.bioAI,inventory:{...fresh.bioAI.inventory,...(input.bioAI?.inventory||{})},memory:Array.isArray(input.bioAI?.memory)?input.bioAI.memory.slice(-64):fresh.bioAI.memory},
     inventory:{...fresh.inventory,...input.inventory},
     modifications:{...input.modifications},
     discoveries:{...input.discoveries},
@@ -651,7 +681,7 @@ export function tickVoxelWorld(state:VoxelWorldState,steps=1){
     const time=(next.timeOfDay+90)%24000;
     const wrapped=time<next.timeOfDay;
     const day=next.day+(wrapped?1:0);
-    const hunger=next.player.mode==='creative'?20:clamp(next.player.hunger-(next.tick%22===0?.25:0),0,20);
+    const hunger=next.player.mode==='creative'?20:clamp(next.player.hunger-(next.tick%22===0 ? .25 : 0),0,20);
     let health=next.player.health;
     if(hunger<=0&&next.tick%8===0)health=clamp(health-1,0,20);
     if(hunger>17&&health<20&&next.tick%12===0)health=clamp(health+1,0,20);
