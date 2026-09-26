@@ -118,9 +118,12 @@ Abas:
 - PENDENCIAS
 - AUDITORIA
 
-Não é necessário colocar credenciais do Google no GitHub para esse espelho. O writer
-direto por service account existe apenas como opção para instalações que quiserem
-gravação direta em vez do espelho CSV.
+Não é necessário colocar credenciais do Google no GitHub para esse espelho. O Google
+atualiza `IMPORTDATA` periodicamente enquanto a planilha está aberta; o branch de dados
+continua sendo atualizado 24/7 mesmo com a planilha fechada.
+
+O writer direto por service account gratuita continua disponível como opção para quem
+quiser atualização escrita no Sheets mesmo quando ele estiver fechado.
 
 ## Auditoria
 
