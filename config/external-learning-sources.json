@@ -157,7 +157,7 @@
       "id": "openworm-connectome-toolbox",
       "type": "scientific-resource",
       "name": "OpenWorm Connectome Toolbox",
-      "url": "https://openworm.org/connectome/",
+      "url": "https://openworm.org/ConnectomeToolbox/",
       "mode": "official-resource",
       "priority": 5,
       "domains": [
@@ -221,7 +221,7 @@
       "id": "zebrafish-whole-brain-em-2022",
       "type": "academic-paper",
       "name": "Automated synapse-level reconstruction of larval zebrafish brain",
-      "url": "https://www.nature.com/articles/s41592-022-01622-5",
+      "url": "https://www.nature.com/articles/s41592-022-01621-0",
       "mode": "academic-primary",
       "priority": 5,
       "domains": [
