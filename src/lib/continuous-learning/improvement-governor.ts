@@ -1,3 +1,5 @@
+import {evaluateAutonomyIntegrity,type AutonomyIntegrityCheck} from './autonomy-integrity';
+
 export type ImprovementTarget='prompt'|'memory'|'tools'|'control-logic'|'model-weights';
 export type ImprovementClass='scaffold-fast-loop'|'parametric-slow-loop';
 
@@ -12,6 +14,7 @@ export type PersistentImprovementCheck={
   datasetRights?:boolean;
   heldOutEvaluation?:boolean;
   evaluatorIndependent?:boolean;
+  autonomy?:AutonomyIntegrityCheck;
 };
 
 export function improvementClass(target:ImprovementTarget):ImprovementClass{
@@ -26,6 +29,8 @@ export function evaluatePersistentImprovement(input:PersistentImprovementCheck){
   if(!input.regressionPassed)reasons.push('regression');
   if(!input.securityPassed)reasons.push('security');
   if(!input.rollbackReady)reasons.push('rollback');
+  const autonomy=input.autonomy?evaluateAutonomyIntegrity(input.autonomy):null;
+  if(autonomy&&!autonomy.passed)reasons.push(...autonomy.reasons.map(reason=>'autonomy:'+reason));
 
   if(cls==='parametric-slow-loop'){
     if(!input.datasetRights)reasons.push('dataset-rights');
@@ -43,6 +48,7 @@ export function evaluatePersistentImprovement(input:PersistentImprovementCheck){
     humanReviewed:input.humanReviewed,
     status,
     reasons,
+    autonomy,
     autoMerge:false as const,
     productionPromotion:status==='reviewed-eligible'?'manual-only':'blocked'
   };
