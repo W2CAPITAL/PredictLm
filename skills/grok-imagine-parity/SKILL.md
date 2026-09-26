@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -461,3 +461,33 @@ Character grounding order for anime:
 For ambiguous names, franchise context must affect ranking. Example: "Kurama" inside a Naruto request must prefer the Naruto/Nine-Tails character over another anime character with the same name.
 
 UI should expose resolved catalog identities (e.g. Naruto Uzumaki · Sasuke Uchiha · Kurama).
+
+
+## PredictLM pixel runtime v2.3
+
+No PredictLM atual, a skill não termina no prompt: a rota `/api/media/generate` possui cascade real de pixels.
+
+Ordem/capacidades:
+- **ComfyUI** quando workflow + endpoint estão configurados;
+- **Gemini image multimodal** quando a chave está configurada, incluindo referências inline;
+- **Nano/compatible image provider** quando configurado;
+- **provider HTTP configurado** por `MEDIA_IMAGE_BASE_URL`;
+- **fallback público/proxy** quando disponível, sempre marcado `fidelityLimited` quando não há garantia forte de identidade.
+
+Para personagem/entidade específica:
+1. decompor identidade/formas;
+2. buscar referências automaticamente;
+3. baixar e, quando possível, revisar referências;
+4. passar imagens reais ao provider multimodal/reference-capable;
+5. gerar;
+6. fazer revisão semântica independente;
+7. reparar no máximo de forma bounded;
+8. rejeitar/preservar como session-only se a identidade não estiver verificada.
+
+A ausência de um provider forte não autoriza fingir sucesso. O runtime deve distinguir:
+- **pixel gerado**;
+- **pixel gerado com fidelidade limitada**;
+- **candidato rejeitado**;
+- **nenhum backend de pixel alcançável**.
+
+O Cognitive Lab pode fornecer direção de composição/novidade ao Imagine, mas sinais neurais simulados não são evidência visual e nunca substituem o semantic fidelity gate.
