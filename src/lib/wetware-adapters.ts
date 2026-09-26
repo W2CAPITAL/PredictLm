@@ -140,7 +140,7 @@ export function wetwareLearningEvent(summary:WetwareFrameSummary):BioLearningEve
     success:summary.channels>0&&summary.samplesPerChannel>0,
     novelty,
     uncertainty,
-    salience:clamp(.42+summary.activity*.36+(summary.measured?.12:0)),
+    salience:clamp(.42+summary.activity*.36+(summary.measured ? .12 : 0)),
     metadata:{
       adapter:summary.adapter,
       measured:summary.measured,
