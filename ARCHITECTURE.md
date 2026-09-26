@@ -1,35 +1,48 @@
-# PredictLM architecture — v7
+# PredictLM architecture — v8
 
-## Product surfaces
+## Product surface — one Chat AI
 
-### 1. Chat surface
+The public product has one primary conversational entrypoint.
 
-The default route is a conversational assistant, not an always-open IDE.
+Chat detects intent and invokes internal capabilities:
 
-Components:
+```
+Chat
+  -> general answer
+  -> Research when freshness/evidence is needed
+  -> Processos/DataJud/DJEN when CNJ/legal intent is detected
+  -> Build when project/code modification is requested
+  -> Cognitive Mesh on every turn
+  -> Imagine/Simulation/other explicit visual tools when appropriate
+```
 
-- session/history store
-- normal composer
-- DeepThink knowledge retrieval
-- optional web research
-- browser-native model detection
-- optional Transformers.js/WebGPU local inference
-- direct switch into Build
+Legacy `/processos` and `/cognitive/*` pages redirect to Chat. Build and Research are no longer required as separate public tabs.
 
-### 2. Build surface
+Build state, files, snapshots and validation remain persistent internal capabilities. Consolidating the UI does not delete those runtimes.
 
-Developer mode is an explicit workspace inspired by the strongest patterns from Bolt, Firebase Studio-like workflows, Kiro and code agents:
+## JEV-style routing and context selection
 
-- agent conversation
-- project files
-- editor
-- sandbox preview
-- visual inspect
-- project graph
-- memory
-- Council/Security
-- import/export
-- runnable packaging
+PredictLM uses a deterministic JEV-inspired policy for `fast | balanced | strong | long` routing.
+
+- policy/control flow stays in code;
+- difficult build/deep/research/legal work is not downgraded to a tiny/free model merely for cost;
+- retained history/file content remains verbatim;
+- stale or irrelevant context is dropped instead of lossy rewriting;
+- Build keeps relevant source files intact up to the context budget;
+- low-confidence routing fails open to the stronger/current path rather than blocking the turn.
+
+The configured Vercel AI Gateway quality floor currently defaults to a Gemini-class model. Provider identity remains internal.
+
+## Unified cognitive mesh
+
+Normal Chat advances one persistent multi-species workspace:
+
+- FlyWire Fly Core;
+- H01 Human Core;
+- Macaque cortical/projectome proxy;
+- MICrONS + Allen Mouse Core.
+
+The mesh is a derived software controller. Dataset provenance stays separate and no mapped dataset is relabeled as a complete biological brain.
 
 ## Intelligence layers
 
