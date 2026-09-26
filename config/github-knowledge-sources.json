@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "policy": {
     "maxFileBytes": 140000,
     "maxFilesPerRepo": 120,
@@ -17,6 +17,63 @@
     "maxChunksPerRepo": 260
   },
   "sources": [
+    {
+      "repo": "dbreunig/building-with-jev-skill",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "skills/jev/SKILL.md"
+      ],
+      "domains": [
+        "jev",
+        "judgment",
+        "confidence-routing",
+        "question-design",
+        "context"
+      ],
+      "reason": "Public Jev skill has no verified root license in repository metadata. Use only as a high-level design reference: atomic judgments, confidence gates, policy in code, and minimal relevant state."
+    },
+    {
+      "repo": "tamaratran/fast-jev-compaction",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/"
+      ],
+      "domains": [
+        "context-compaction",
+        "token-efficiency",
+        "tool-results",
+        "verbatim-context",
+        "agents"
+      ],
+      "weight": 1.28,
+      "reason": "MIT context compaction. Prefer dropping stale/irrelevant tool context while preserving retained content verbatim; never treat probabilistic deletion as proof that data is safe to discard."
+    },
+    {
+      "repo": "gargpratyush/jev-router",
+      "branch": "master",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "src/policy.mjs",
+        "src/config.mjs"
+      ],
+      "domains": [
+        "model-router",
+        "complexity-routing",
+        "confidence-routing",
+        "coding-agents",
+        "cost-quality"
+      ],
+      "weight": 1.26,
+      "reason": "MIT Jev router. Learn per-turn complexity/confidence routing, fail-open behavior and tier policy. PredictLM keeps routing policy in code and does not require Jev/TypeSafe credentials."
+    },
     {
       "repo": "krusemediallc/arcads-claude-code",
       "branch": "main",
