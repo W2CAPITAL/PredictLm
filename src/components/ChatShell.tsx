@@ -35,6 +35,8 @@ import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html
 import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserText } from '@/lib/voice/browser-voice';
+import { appLearningContext } from '@/lib/app-learning';
+import { bioIntelligenceContext } from '@/lib/biointelligence-fabric';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -505,7 +507,9 @@ export function ChatShell({onOpenLegal}:Props){
     const brainContext=[
       advanceBrowserDigitalBrainContext(prompt).context,
       browserKnowledgeContext(prompt),
-      capabilityFusionContext(prompt,'chat')
+      capabilityFusionContext(prompt,'chat'),
+      appLearningContext(undefined,5),
+      bioIntelligenceContext({surface:'chat',action:'prepare-answer',kind:'cognitive',success:undefined,novelty:Math.min(1,.3+prompt.length/1800),uncertainty:kind==='current'||needsWeb?.62:.34,salience:s.deepThink?.76:.52})
     ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
