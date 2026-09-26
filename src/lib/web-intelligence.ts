@@ -36,7 +36,7 @@ function strip(value:string){
 }
 
 function attr(tag:string,name:string){
-  const pattern=new RegExp("\\\\b"+name+"\\\\s*=\\\\s*[\\"']([^\\"']*)[\\"']","i");
+  const pattern=new RegExp(`\\b${name}\\s*=\\s*["']([^"']*)["']`,'i');
   const match=tag.match(pattern);
   return match?.[1]?decode(match[1].trim()):'';
 }
