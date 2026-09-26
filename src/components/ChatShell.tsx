@@ -24,6 +24,7 @@ import { hasInternalReasoningLeak, publicAnswerGate, sanitizePublicAnswer } from
 import { looksLikeOperationalMonologue } from '@/lib/human-presence';
 import { cancelWebLLMLoad, loadBestWebLLMModel, loadWebLLMModel, unloadWebLLMModel, webLLMStatus, type WebLLMTier } from '@/lib/webllm-runtime';
 import type { LegalProcessBundle } from '@/lib/legal/types';
+import { LEGAL_TRIBUNALS } from '@/lib/legal/tribunals';
 import { useStudio } from '@/lib/store';
 import { AnimalVisionPanel } from '@/components/AnimalVisionPanel';
 import { GrokImaginePanel } from '@/components/GrokImaginePanel';
@@ -57,6 +58,26 @@ function detectBuildRequest(prompt:string){
   const action=/\b(crie|criar|construa|construir|implemente|implementar|desenvolva|desenvolver|corrija|corrigir|conserte|refatore|refatorar|adicione|remova|altere|mude|continue|prossiga|termine|finalize|exporte|gere o zip|faça funcionar|faca funcionar)\b/.test(p);
   const explanation=/^(como|explique|o que e|o que é|por que|porque)\b/.test(p);
   return object&&action&&!explanation;
+}
+
+function detectLegalSearchRequest(prompt:string){
+  const raw=String(prompt||'');
+  const normalized=raw.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
+  const wants=/\b(BUSQUE|PESQUISE|ENCONTRE|LISTE|PROCURE|CONSULTE|MOSTRE)\b[\s\S]{0,80}\bPROCESS(?:O|OS|UAL|UAIS)\b/.test(normalized)
+    ||/\bPROCESS(?:O|OS|UAL|UAIS)\b[\s\S]{0,80}\b(DATAJUD|TRIBUNAL)\b/.test(normalized);
+  if(!wants)return null;
+  const tribunal=LEGAL_TRIBUNALS.find(t=>new RegExp('\\b'+t.sigla+'\\b','i').test(raw));
+  if(!tribunal)return null;
+  const degree=normalized.match(/\b(G1|G2|JE|TR|SUP)\b/)?.[1]||'';
+  return {tribunal:tribunal.sigla,degree,size:20};
+}
+
+function detectDjenOabRequest(prompt:string){
+  const normalized=String(prompt||'').toUpperCase();
+  if(!/\b(DJEN|PUBLICA(?:CAO|ÇÃO|COES|ÇÕES)|OAB)\b/.test(normalized))return null;
+  const match=normalized.match(/\bOAB\s*(?:N[º°.]?\s*)?(\d{3,8})\s*[-\/]?\s*([A-Z]{2})\b/);
+  if(!match)return null;
+  return {oab:match[1],uf:match[2],size:30,page:1};
 }
 
 function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
