@@ -53,3 +53,35 @@ test('Game Studio plan validates the Life Simulation loop',()=>{
   assert.ok(plan.gates.some(x=>/memory/i.test(x)));
   assert.ok(plan.roles.includes('simulation-producer'));
 });
+
+
+test('Minecraft and Unity sources map to the Simulation runtime they actually improve',()=>{
+  const audit=fusionImplementationAudit();
+  const byRepo=new Map(audit.rows.map(row=>[row.repo,row]));
+  const minecraftRepos=[
+    'fogleman/Craft',
+    'dgreenheck/minecraft-threejs-clone',
+    '0xfabian/mc',
+    'pquiring/jfcraft',
+    'obiwac/python-minecraft-clone',
+    'Aidanhouk/Minecraft-Clone',
+    'zardoy/minecraft-web-client',
+    'zardoy/mcraft-arwes',
+    'JEFFY1234599/block-craft-browser-edition',
+    'TheDoctor200/MinecraftDungeonsLauncher',
+    'GuyRoosevelt/Minecraft-Dungeons-The-Awakening'
+  ];
+  for(const repo of minecraftRepos){
+    const row=byRepo.get(repo);
+    assert.ok(row,repo+' missing from audit');
+    assert.ok(row!.surfaces.includes('simulation'),repo+' must affect Simulation');
+    assert.ok(row!.modules.includes('src/lib/simulation/minecraft-sandbox.ts'),repo+' must map to voxel runtime');
+  }
+  const unity=byRepo.get('jbruening/UnEngine');
+  assert.ok(unity);
+  assert.ok(unity!.surfaces.includes('simulation'));
+  assert.ok(unity!.surfaces.includes('build'));
+  assert.ok(unity!.surfaces.includes('media'));
+  assert.ok(unity!.surfaces.includes('video'));
+  assert.ok(unity!.modules.includes('src/lib/unity-fabric.ts'));
+});
