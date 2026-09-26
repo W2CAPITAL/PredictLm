@@ -3804,6 +3804,24 @@
         "LLM"
       ],
       "reason": "User-supplied repository could not be resolved through GitHub during this pass. Do not ingest or execute until identity/license are verified."
+    },
+    {
+      "repo": "JekelyLab/Platynereis_3D_connectome_2024",
+      "branch": "main",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "CITATION.cff"
+      ],
+      "domains": [
+        "neuroscience",
+        "connectome",
+        "platynereis",
+        "whole-body",
+        "comparative-connectomics"
+      ],
+      "reason": "GPL-3.0 research repository for the published Platynereis connectome; keep implementation/data reference-only in the commercial core."
     }
   ]
 }
