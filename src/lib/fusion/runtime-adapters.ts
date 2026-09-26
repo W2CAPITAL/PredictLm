@@ -12,7 +12,8 @@ export type RuntimeAdapterId=
   |'scrapling'
   |'changedetection'
   |'chrome-devtools'
-  |'trackstudio';
+  |'trackstudio'
+  |'unity-webgl';
 
 export interface RuntimeAdapterState{
   id:RuntimeAdapterId;
@@ -154,6 +155,16 @@ export function runtimeAdapterStates():RuntimeAdapterState[]{
       required:['TRACKSTUDIO_BASE_URL'],
       optional:['TRACKSTUDIO_API_KEY'],
       notes:'Optional temporal/object tracking bridge for identity and scene continuity.'
+    },
+    {
+      id:'unity-webgl',
+      label:'Unity WebGL Simulation Host',
+      surfaces:['simulation','build','media','video'],
+      configured:has('NEXT_PUBLIC_UNITY_SIMULATION_URL'),
+      mode:'self-hosted',
+      required:['NEXT_PUBLIC_UNITY_SIMULATION_URL'],
+      optional:[],
+      notes:'Real Unity runtime is used only when a WebGL build URL is configured. Otherwise PredictLM keeps the UnEngine-inspired native scene fabric and canvas renderer.'
     }
   ];
 }
