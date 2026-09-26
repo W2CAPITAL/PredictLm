@@ -135,7 +135,7 @@ function providerList(prompt=''):Provider[]{
   return out.sort((a,b)=>rank(a)-rank(b));
 }
 
-function systemPrompt(language:string,autoLearning=''){
+function systemPrompt(language:string,autoLearning='',brainContext=''){
   return [
     'Você é o PredictLM, uma IA geral de conversa.',
     language==='en'
@@ -146,11 +146,12 @@ function systemPrompt(language:string,autoLearning=''){
     'Não despeje README, repositórios, notas internas, seções "Relacionado:" ou contexto técnico que o usuário não pediu.',
     'Se a mensagem for casual, converse naturalmente. Se for uma pergunta, responda. Se for um pedido, execute o pedido em texto.',
     'Não invente fatos atuais. Quando o usuário pedir informação atual e nenhuma ferramenta atual tiver sido usada, deixe claro o limite em vez de fabricar.',
-    autoLearning?'Lições operacionais autoaprendidas e promovidas:\n'+autoLearning:''
+    autoLearning?'Lições operacionais autoaprendidas e promovidas:\n'+autoLearning:'',
+    brainContext?'COGNITIVE MESH / CONTEXTO INTERNO DE ALTO NÍVEL:\n'+brainContext:''
   ].join(' ');
 }
 
-function safeMessages(input:any,language:string,autoLearning=''):Msg[]{
+function safeMessages(input:any,language:string,autoLearning='',brainContext=''):Msg[]{
   const rows=(Array.isArray(input)?input:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-12)
@@ -158,7 +159,7 @@ function safeMessages(input:any,language:string,autoLearning=''):Msg[]{
       role:x.role as 'user'|'assistant',
       content:String(x.content).replace(/\u0000/g,'').slice(0,5000)
     }));
-  return [{role:'system',content:systemPrompt(language,autoLearning)},...rows];
+  return [{role:'system',content:systemPrompt(language,autoLearning,brainContext)},...rows];
 }
 
 function sse(data:any){
@@ -258,7 +259,8 @@ export async function POST(req:NextRequest){
   }
 
   const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
-  const messages=safeMessages(body?.messages,language,autoLearning);
+  const brainContext=String(body?.brainContext||'').slice(0,10000);
+  const messages=safeMessages(body?.messages,language,autoLearning,brainContext);
 
   const encoder=new TextEncoder();
   const requestSignal=req.signal;
