@@ -1,4 +1,4 @@
-# PredictLM architecture — v6
+# PredictLM architecture — v7
 
 ## Product surfaces
 
@@ -149,6 +149,43 @@ Patterns are informed by:
 - ASI Alliance material for self-audit/failure-mode references.
 
 Repositories that make stronger sentience/consciousness claims are treated as engineering/research references; their labels are not imported as evidence.
+
+## Autonomous operational learning
+
+Runtime feedback now closes a bounded learning loop in Supabase:
+
+```
+predict_feedback_events
+  -> private trigger classifier
+  -> predict_auto_lessons
+  -> evidence/confidence threshold
+  -> promoted lesson
+  -> Chat / Stream / Browser Brain context
+```
+
+The trigger can emit only fixed operational templates. It cannot convert arbitrary user text, model output or repository text into executable code or unrestricted global instructions.
+
+Current promoted categories include:
+- media reliability;
+- chat failure recovery;
+- chat relevance / retrieval contamination.
+
+The public runtime sees only promoted aggregate lessons through RLS. Raw feedback remains private. The GitHub snapshot exposes aggregate counts/confidence only.
+
+Code and model-weight self-modification remain benchmark-gated; operational memory promotion and executable-code promotion are intentionally different trust levels.
+
+## Browser neural scaling
+
+Predict Auto treats browser inference as hardware-adaptive:
+
+```
+strong WebGPU -> Qwen3 8B
+ordinary WebGPU -> Qwen3.5 4B
+limited WebGPU -> Qwen3 1.7B
+no usable WebGPU -> web/provider mesh
+```
+
+Small ONNX CPU/WASM models remain compatibility fallbacks rather than the primary intelligence path. Hardware hints choose an attempt order; the real WebLLM load/self-test decides whether a tier fits.
 
 ## Chat semantic firewall
 
