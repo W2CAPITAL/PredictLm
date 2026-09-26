@@ -7,6 +7,7 @@ import { mediaPostprocessPlan, mediaQualityDirectives } from '@/lib/media/postpr
 import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
 import {comfyImageConfig,runComfyImageWorkflow} from '@/lib/media/comfy-image';
+import {unityFabricContext} from '@/lib/unity-fabric';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -214,11 +215,14 @@ export async function POST(req:Request){
       identitySensitive:needsStrongIdentity,
       hasReferences:inlineReferences.length>0||referencePlan.references.length>0
     });
+    const unityImageGuidance=/\b(unity|unity3d|game environment|game scene|voxel|3d scene|level design|game asset)\b/i.test(sourcePrompt)
+      ? '\n\n3D SCENE CONTRACT:\n'+unityFabricContext()
+      : '';
     const providerPrompt=groundedPrompt+(userInline.length
       ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
       : searchedInline.length
         ? '\n\nAUTOMATIC VISUAL GROUNDING: '+searchedInline.length+' downloaded reference image(s) passed the automatic usefulness filter and should control canonical identity/forms more strongly than textual style expansion.'
-        : '')+'\n\n'+mediaQualityDirectives({
+        : '')+unityImageGuidance+'\n\n'+mediaQualityDirectives({
           kind:'image',
           prompt:sourcePrompt,
           style,
