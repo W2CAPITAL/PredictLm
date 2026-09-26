@@ -79,5 +79,32 @@ O mapa conectômico da Drosophila é usado como referência estrutural. Ele não
 - Uso: brain-wide sensorimotor architecture, circuit reconstruction e comparative connectomics.
 - Limite: whole-brain EM volume não significa que toda célula/sinapse foi completamente proofread nem funcionalmente caracterizada.
 
+### Ciona intestinalis
+- Ryan, Lu & Meinertzhagen, eLife 2016 — *The CNS connectome of a tadpole larva of Ciona intestinalis*.
+  - `https://elifesciences.org/articles/16962`
+- Escopo: conectoma sináptico completo do SNC de um espécime larval mapeado, com 177 neurônios do SNC e saídas neuromusculares.
+- Uso: cordado compacto para assimetria, relay sensorial, integração e cérebro→motor.
+- Limite: um espécime/estágio larval não é um “cérebro universal” da espécie.
+
+### Platynereis dumerilii
+- eLife 2025 — *Whole-body connectome of a segmented annelid larva*.
+  - `https://elifesciences.org/articles/97964`
+- Repositório público JekelyLab: `JekelyLab/Platynereis_3D_connectome_2024`, GPL-3.0, portanto reference-only no core.
+- Uso: coordenação distribuída corpo inteiro, segmentos, multimodalidade e efetores.
+- Limite: conectoma larval publicado não implica mente digital, memória biográfica ou equivalência dinâmica perfeita.
+
+### Wetware / biocomputing references
+- Cortical Labs CL1 Developer Guide + `Cortical-Labs/cl-sdk`.
+  - O SDK público inspecionado usa CC BY-NC; conceitos de API/simulator entram como **reference-only** no produto comercial.
+  - O CL simulator é útil para API parity/testes, mas não deve ser descrito como reprodução da aprendizagem real do tecido.
+- FinalSpark Neuroplatform + `FinalSpark-np/LiveMEA_ts`.
+  - LiveMEA_ts: MIT; referência permitida para adapter opcional de leitura MEA.
+  - Acesso remoto a organoides continua externo, autorizado e não obrigatório.
+- `4R7I5T/flyloop` — MIT.
+  - Padrão explícito: sinal biológico medido → decoder declarado → modelo conectômico → corpo simulado.
+  - MaleCNS e componentes terceiros preservam licenças próprias.
+- `danielathome19/pyorganoid` — BSD-3-Clause.
+  - Referência para simulação de organoid intelligence/learning e scheduling; não prova equivalência com organoide real.
+
 ### Product rule
-Essas três novas espécies entram em `src/lib/biointelligence-fabric.ts` como controladores derivados, não como cópias digitais de indivíduos biológicos.
+As oito referências entram em `src/lib/biointelligence-fabric.ts` como fontes estruturais/funcionais para controladores derivados. `src/lib/bio-reservoir.ts` é software spiking-inspired sintético. `src/lib/wetware-adapters.ts` é apenas bridge opcional. Nenhuma dessas camadas é descrita como cópia de uma mente biológica.
