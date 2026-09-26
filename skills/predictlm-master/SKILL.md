@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.18.0"
+  version: "3.19.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.18.0
+# PredictLM Master v3.19.0
 
 ## Regra soberana
 
@@ -174,6 +174,34 @@ Regras:
 - não converter simulação em jogo sem pedido;
 - instrução de atividade dentro do Studio pode ser acompanhada por Scenario Lab antes de executar uma ação de impacto;
 - eventos e decisões podem comparar trajetórias alternativas antes da escolha final.
+
+## Voxel World + Unity na Life Simulation Studio
+
+A Simulação possui dois espaços complementares:
+1. **Life World** — cotidiano, relações, memória, necessidades e agentes.
+2. **Voxel World** — sandbox procedural Minecraft-class, persistente e praticamente sem fronteira de gameplay em X/Z.
+
+Voxel World deve preservar:
+- chunks determinísticos por seed;
+- biomas/recursos;
+- mineração/construção;
+- delta persistence;
+- inventário/crafting/fundição/comida/farming;
+- sobrevivência/criativo;
+- mobs/combate;
+- estruturas, cavernas, minas, vilas e dungeons;
+- dia/noite, clima, dimensões;
+- Dungeons apenas como segunda referência para loot, bosses e dungeon loops.
+
+Referências Minecraft registradas são mantidas em
+`src/lib/simulation/minecraft-reference-fabric.ts`; fontes sem licença verificada são reference-only.
+
+Unity:
+- `jbruening/UnEngine` (MIT) orienta GameObject/Component/Transform/Camera/Physics;
+- `src/lib/unity-fabric.ts` é o contrato compartilhado do app;
+- `unity/PredictLMSimulation` contém o companion WebGL;
+- `NEXT_PUBLIC_UNITY_SIMULATION_URL` ativa um runtime Unity WebGL real quando disponível;
+- sem essa URL, usar renderer nativo e não declarar que Unity foi executado.
 
 # CENTUM 100 — revisão completa de decisões
 
