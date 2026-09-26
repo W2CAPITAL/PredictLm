@@ -83,6 +83,17 @@ const PATTERNS:BuildReferencePattern[]=[
       'treat local/self-hosted ComfyUI as an optional adapter so Vercel remains functional without GPU infrastructure'
     ],
     licenseMode:'reference'
+  },
+  {
+    id:'unity-engine',
+    source:'jbruening/UnEngine',
+    when:['unity','unity3d','c#','csharp','gameobject','monobehaviour','rigidbody','collider','unity webgl'],
+    guidance:[
+      'structure Unity-targeted code around explicit GameObject/Component/Transform boundaries and keep pure logic testable outside scene objects',
+      'treat Vector/Quaternion, Physics, Input, Time and PlayerPrefs as replaceable runtime contracts instead of scattering engine globals everywhere',
+      'for browser delivery, keep the Next.js shell independent and connect a real Unity WebGL build through the PredictLM scene/command bridge'
+    ],
+    licenseMode:'adapt'
   }
 ];
 
