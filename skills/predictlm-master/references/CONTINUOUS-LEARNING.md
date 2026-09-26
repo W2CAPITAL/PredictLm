@@ -162,12 +162,62 @@ The Chat decision context receives only a sanitized summary of prior outcomes pl
 Comparative neuroscience sources now include:
 - Human H01;
 - macaque Digital Brain datasets;
-- FlyWire/FAFB;
+- FlyWire/FAFB/MaleCNS;
 - OpenWorm/Cook C. elegans connectomics;
 - MICrONS + Allen mouse resources;
-- larval zebrafish whole-brain EM resources.
+- larval zebrafish whole-brain EM resources;
+- Ciona intestinalis larval CNS connectome;
+- Platynereis dumerilii whole-body larval connectome.
 
 These are structural/functional scientific references. Runtime state remains synthetic software state and unresolved biology remains unknown.
 
 Durable code changes still follow:
 `experience → gap → evidence → proposal → branch → tests → build → security/review → PR`
+
+
+## Unified BioAI learning loop v2
+
+The previous cross-species learning fabric is now owned by one persistent **PredictLM BioAI**.
+
+Core:
+- `src/lib/bioai.ts` — single identity, bounded local memory and cross-surface recall;
+- `src/lib/bio-reservoir.ts` — 48-unit synthetic spiking-inspired recurrent state with prediction error/plasticity;
+- `src/lib/biointelligence-fabric.ts` — eight comparative controllers;
+- `src/lib/wetware-adapters.ts` — optional explicitly enabled CL1/FinalSpark feature bridge.
+
+All app-wide events first remain privacy-sanitized. The synthetic reservoir adds temporal surprise/prediction-error, then the eight-source controller calculates disagreement/research priority, then the unified BioAI stores a compact experience.
+
+The same BioAI directives are injected through `capability-fabric`, so Chat, Build, Research, Image, Video, Simulation and related product surfaces do not operate as separate intelligence islands.
+
+### Persistent local memory
+
+The default memory path is browser-local and bounded. It requires no Supabase, paid vector database or always-on computer.
+
+The transversal ledger/BioAI memory does not store:
+- raw form values;
+- passwords/tokens/cookies;
+- complete source-file contents;
+- full user message bodies as behavioral telemetry;
+- raw electrophysiology.
+
+### Open-world simulation learning
+
+The Minecraft-class sandbox now has:
+- native first-person WebGL;
+- pointer-lock + WASD;
+- effectively unbounded deterministic X/Z chunks;
+- seed + delta persistence;
+- a persistent autonomous BioAI player.
+
+The BioAI can explore, gather, craft, build, eat and conditionally fight. Its observations feed the same learning fabric as other app surfaces.
+
+### Wetware boundary
+
+Cortical Labs/FinalSpark are optional experimental I/O, not a runtime requirement.
+
+Measured neural data, derived decoding and simulated BioAI/world state are always separate evidence classes. Hardware activity cannot authorize a code promotion.
+
+Durable self-programming remains:
+`experience → reservoir surprise → BioAI memory/gap → evidence → proposal → branch → replay/tests/build/security → human review → PR`.
+
+Production promotion remains blocked before review.
