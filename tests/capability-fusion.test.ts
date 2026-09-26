@@ -85,3 +85,14 @@ test('Minecraft and Unity sources map to the Simulation runtime they actually im
   assert.ok(unity!.surfaces.includes('video'));
   assert.ok(unity!.modules.includes('src/lib/unity-fabric.ts'));
 });
+
+
+test('official MiroFish is a first-class reference for Simulation with a native clean-room runtime',()=>{
+  const audit=fusionImplementationAudit();
+  const row=audit.rows.find(item=>item.repo==='666ghj/MiroFish');
+  assert.ok(row);
+  assert.equal(row!.mode,'reference');
+  assert.ok(row!.surfaces.includes('simulation'));
+  assert.ok(row!.surfaces.includes('memory'));
+  assert.ok(row!.modules.includes('src/lib/simulation/mirofish-fabric.ts'));
+});
