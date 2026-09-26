@@ -50,7 +50,8 @@ export function buildBioAIOrchestration(input:{
   roles:AgenticRole[];
   maxPasses:number;
 }):BioAIOrchestrationPlan{
-  const roles=[...new Set(input.roles.length?input.roles:['verifier'])];
+  const seedRoles:AgenticRole[]=input.roles.length?input.roles:['verifier'];
+  const roles:AgenticRole[]=[...new Set<AgenticRole>(seedRoles)];
   const nodes:BioAIOrchestrationNode[]=roles.map((role,index)=>{
     const previous=index?roles[index-1]:null;
     const canParallel=role==='security-reviewer'||role==='test-analyst'||role==='identity-reviewer';
