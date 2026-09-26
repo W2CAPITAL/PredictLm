@@ -21,6 +21,7 @@ import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { gameStudioContext } from '@/lib/game-studio-fabric';
 import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
+import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -174,13 +175,13 @@ function providerTaskClass(prompt:string,deep:boolean):ProviderTask{
 }
 
 const TASK_PROVIDER_BONUS:Record<ProviderTask,Record<string,number>>={
-  code:{freellmapi:120,'vercel-gateway':58,openai:52,xai:50,opencode:48,deepseek:44,anthropic:42,gemini:36,nvidia:28,openrouter:24,kimi:18,zai:16,groq:14,server:10,minimax:6,ark:6,ollama:2},
-  legal:{freellmapi:120,'vercel-gateway':56,anthropic:54,openai:48,gemini:44,xai:38,deepseek:34,openrouter:28,kimi:23,zai:20,nvidia:16,server:12,groq:8,minimax:8,opencode:4,ark:4,ollama:2},
-  research:{freellmapi:120,'vercel-gateway':54,gemini:50,anthropic:48,openai:46,xai:44,deepseek:34,openrouter:28,kimi:24,zai:20,nvidia:18,groq:14,server:12,minimax:8,opencode:5,ark:4,ollama:2},
-  creative:{freellmapi:120,'vercel-gateway':58,anthropic:50,xai:48,openai:46,minimax:38,gemini:36,openrouter:30,kimi:28,zai:22,deepseek:18,server:14,groq:12,nvidia:10,opencode:8,ark:6,ollama:2},
-  reasoning:{freellmapi:120,'vercel-gateway':58,openai:54,anthropic:52,xai:50,deepseek:44,gemini:42,nvidia:34,openrouter:30,kimi:26,zai:24,server:14,groq:12,minimax:10,opencode:8,ark:6,ollama:2},
-  quick:{freellmapi:120,'vercel-gateway':52,openai:48,xai:46,groq:42,gemini:38,nvidia:32,deepseek:28,kimi:24,zai:22,openrouter:20,server:18,anthropic:16,minimax:14,opencode:12,ark:8,ollama:4},
-  general:{freellmapi:120,'vercel-gateway':58,anthropic:52,openai:50,xai:48,gemini:42,deepseek:36,kimi:30,openrouter:28,zai:26,nvidia:24,groq:18,minimax:16,server:14,opencode:10,ark:8,ollama:3}
+  code:{'vercel-gateway':62,openai:58,anthropic:56,xai:50,deepseek:48,gemini:46,nvidia:34,openrouter:28,groq:24,freellmapi:12,server:10,opencode:8,kimi:8,zai:8,minimax:4,ark:4,ollama:2},
+  legal:{'vercel-gateway':62,anthropic:58,openai:54,gemini:52,xai:46,deepseek:38,openrouter:30,nvidia:22,groq:16,freellmapi:10,kimi:10,zai:10,server:8,minimax:5,opencode:4,ark:4,ollama:2},
+  research:{'vercel-gateway':64,gemini:60,anthropic:54,openai:52,xai:48,deepseek:38,openrouter:32,nvidia:24,groq:22,freellmapi:10,kimi:12,zai:10,server:8,minimax:4,opencode:4,ark:4,ollama:2},
+  creative:{'vercel-gateway':62,anthropic:58,xai:52,openai:50,gemini:48,minimax:38,openrouter:32,deepseek:24,groq:18,freellmapi:10,kimi:12,zai:8,nvidia:8,server:8,opencode:4,ark:4,ollama:2},
+  reasoning:{'vercel-gateway':66,openai:62,anthropic:60,gemini:56,xai:54,deepseek:50,nvidia:38,openrouter:34,groq:22,freellmapi:8,kimi:10,zai:10,server:8,minimax:6,opencode:4,ark:4,ollama:2},
+  quick:{groq:54,'vercel-gateway':52,gemini:48,openai:46,xai:44,nvidia:40,deepseek:36,freellmapi:32,openrouter:28,anthropic:24,kimi:18,zai:16,server:12,minimax:10,opencode:8,ark:6,ollama:4},
+  general:{'vercel-gateway':62,gemini:56,anthropic:54,openai:54,xai:50,deepseek:42,nvidia:32,openrouter:30,groq:28,freellmapi:16,kimi:14,zai:12,server:10,minimax:8,opencode:6,ark:4,ollama:3}
 };
 
 function modelBonus(model:string,task:ProviderTask){
@@ -201,14 +202,27 @@ function modelBonus(model:string,task:ProviderTask){
 function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
   const primary=rankHealthyProviders(primaryProviders(configured));
   const task=providerTaskClass(prompt,deep);
-  const manual=new Map(primary.map((p,i)=>[p.name,i]));
-  const ranked=[...primary].sort((a,b)=>{
-    const sa=(TASK_PROVIDER_BONUS[task][a.name]||0)+modelBonus(a.model,task)-(manual.get(a.name)||0)*0.15;
-    const sb=(TASK_PROVIDER_BONUS[task][b.name]||0)+modelBonus(b.model,task)-(manual.get(b.name)||0)*0.15;
-    return sb-sa;
+  const route=jevRouteDecision(prompt,{
+    deep,
+    hasTools:task==='code'||task==='research'||task==='legal',
+    research:task==='research',
+    legal:task==='legal'
   });
-  const free=ranked.find(x=>x.name==='freellmapi');
-  return free?[free,...ranked.filter(x=>x!==free)]:ranked;
+  const manual=new Map(primary.map((p,i)=>[p.name,i]));
+  return [...primary].sort((a,b)=>{
+    const score=(provider:Provider)=>{
+      const m=provider.model.toLowerCase();
+      let value=(TASK_PROVIDER_BONUS[task][provider.name]||0)+modelBonus(provider.model,task)-(manual.get(provider.name)||0)*0.12;
+      if(route.tier==='strong'||route.tier==='long'){
+        if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))value+=28;
+        if(provider.name==='freellmapi'||/mini|lite|free|haiku|luna/.test(m))value-=18;
+      }else if(route.tier==='fast'){
+        if(provider.name==='groq'||/flash|mini|lite|luna|haiku/.test(m))value+=8;
+      }
+      return value;
+    };
+    return score(b)-score(a);
+  });
 }
 
 function normalize(input:string){
@@ -852,6 +866,10 @@ export async function POST(req:Request){
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
       .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
     const deep=Boolean(body?.deep)||isScenarioSimulationRequest(prompt);
+    const compactedHistory=jevCompactHistory(rawHistory,prompt,{
+      maxChars:deep?48000:28000,
+      preserveRecent:deep?12:8
+    });
     const language=(body?.language==='en'||body?.language==='pt-BR')
       ? body.language as ConversationLanguage
       : resolveConversationLanguage(prompt,rawHistory);
@@ -875,7 +893,7 @@ export async function POST(req:Request){
     const simpleTurn=!deep&&(isSimpleStableFactual(prompt)||isSimpleProcedural(prompt));
     const responseGuard=simpleTurnGuard(prompt,researchContext);
     const packed=optimizePromptPackage({
-      messages:rawHistory,
+      messages:compactedHistory.messages,
       mode:simpleTurn?'ultra':(deep?'lite':'full'),
       sections:[
         {label:'Instruções persistentes do usuário',text:localInstructions,priority:8},
