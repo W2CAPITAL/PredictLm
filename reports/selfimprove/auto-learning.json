@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-09-26T19:37:42.199509Z",
+  "source": "public.predict_auto_lessons",
+  "policy": "Only aggregated, fixed-template operational lessons are exposed. Raw feedback and personal data are not included.",
+  "totals": {
+    "lessons": 3,
+    "promoted": 3,
+    "evidence": 33
+  },
+  "lessons": [
+    {
+      "id": "media-reliability",
+      "category": "media-reliability",
+      "surface": "media",
+      "instruction": "Quando geração de mídia falhar ou for rejeitada, preserve o pedido original, não substitua por conteúdo desconexo e só apresente resultado quando houver artefato real validado.",
+      "tags": [
+        "imagem",
+        "video",
+        "media",
+        "imagine",
+        "geracao",
+        "personagem",
+        "artefato",
+        "provider"
+      ],
+      "evidenceCount": 20,
+      "negativeCount": 0,
+      "errorCount": 20,
+      "confidence": 0.9153,
+      "firstSeen": "2026-09-23T18:23:23.358487Z",
+      "lastSeen": "2026-09-26T10:12:51.945524Z",
+      "updatedAt": "2026-09-26T19:37:42.199509Z"
+    },
+    {
+      "id": "chat-negative-relevance",
+      "category": "chat-negative-relevance",
+      "surface": "chat",
+      "instruction": "Feedback negativo em chat exige mais aderência ao pedido: prefira resposta direta, valide sobreposição temática e suprima README, blocos Relacionado, corpus ou conhecimento recuperado que não responda à pergunta.",
+      "tags": [
+        "chat",
+        "relevancia",
+        "rag",
+        "github",
+        "readme",
+        "relacionado",
+        "resposta",
+        "direta"
+      ],
+      "evidenceCount": 9,
+      "negativeCount": 9,
+      "errorCount": 0,
+      "confidence": 0.8263,
+      "firstSeen": "2026-09-24T16:52:44.135635Z",
+      "lastSeen": "2026-09-26T18:49:19.385549Z",
+      "updatedAt": "2026-09-26T19:37:42.199509Z"
+    },
+    {
+      "id": "chat-failure-recovery",
+      "category": "chat-failure-recovery",
+      "surface": "chat",
+      "instruction": "Quando uma rota de chat falhar, preserve a intenção exata do usuário, tente outra rota compatível e rejeite qualquer fallback que mude de assunto ou despeje contexto interno.",
+      "tags": [
+        "chat",
+        "erro",
+        "falha",
+        "provider",
+        "fallback",
+        "relevancia",
+        "roteamento"
+      ],
+      "evidenceCount": 4,
+      "negativeCount": 0,
+      "errorCount": 4,
+      "confidence": 0.7431,
+      "firstSeen": "2026-09-24T22:35:43.258818Z",
+      "lastSeen": "2026-09-24T23:56:08.524106Z",
+      "updatedAt": "2026-09-26T19:37:42.199509Z"
+    }
+  ]
+}
