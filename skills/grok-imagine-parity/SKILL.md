@@ -512,3 +512,26 @@ Architecture references are license-aware:
 - Humanizer (MIT): natural caption quality patterns.
 
 Do not make proprietary desktop editors, premium entitlements, or external cloud renderers a requirement for the Imagine editor. External adapters remain optional.
+
+
+## Production prompt director v2.5
+
+Video prompting is now provider-agnostic and compiled before the temporal provider call.
+
+Contract:
+- exact subject/request first;
+- one coherent dramatic idea per clip;
+- visible **setup → causal change/action → resolution/end state**;
+- identity anchors, wardrobe/materials, scale, environment, screen direction and light direction persist;
+- camera moves/cuts must be motivated and preserve geography;
+- motion/physics, anatomy and effects must remain temporally coherent;
+- dialogue is short/explicit when requested; otherwise synchronized ambience/SFX;
+- exact UI/signage/long typography is flagged for post-production when model precision is unreliable;
+- semantic review checks the actual final clip, not prompt similarity.
+
+Iteration uses a one-variable ladder: baseline → camera → pace → light/material → finish/audio. Do not change every variable at once.
+
+References:
+- Reviral-ai/awesome-sora-2-prompts (MIT): prompt structure, continuity card, one-variable iteration and edit handoff;
+- alasano/sora-2-playground (MIT): queued jobs, persisted job IDs, refresh-safe polling, remix and IndexedDB/serverless history;
+- Sora remains optional. The same production contract applies to Veo, Seedance, ComfyUI/LTX and other configured temporal providers.
