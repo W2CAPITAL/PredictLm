@@ -823,6 +823,19 @@ export function ChatShell({onOpenLegal}:Props){
 
       const messages=history.slice(-12).map(m=>({role:m.role,content:safeHistoricalContent(m.content)}));
 
+      // Deterministic conversational guards win before any provider stream.
+      // This prevents social/identity/action turns from being replaced by
+      // unrelated repository, README or learned-context fragments.
+      if(direct&&!s.deepThink&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport){
+        s.addMessage({
+          role:'assistant',
+          content:direct,
+          engine:'Predict Auto',
+          status:'done'
+        });
+        return;
+      }
+
       // Normal Chat follows the proven direct streaming architecture:
       // history -> API -> SSE tokens. No RAG/skills/gates are inserted before
       // the model for ordinary conversation. Specialized/deep/current turns
