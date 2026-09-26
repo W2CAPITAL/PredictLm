@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.4.0"
+  version: "4.0.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.4
+# PredictLM Digital Brain / NeuroCore v4.0
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -235,3 +235,45 @@ A UI e respostas do Cognitive Lab devem distinguir:
 - estado sintético do runtime.
 
 Isso torna o sistema brain-inspired e data-grounded sem vender simulação como observação biológica.
+
+
+## BioIntelligence Fabric / Cross-Species v4.0
+
+O NeuroCore agora usa um ensemble comparativo de **seis referências biológicas**, mantendo proveniência e escopo separados:
+
+- **Human H01** — fragmento cortical humano medido em resolução sináptica; não é conectoma humano inteiro.
+- **Macaque** — atlas cortical, spatial transcriptomics, projectomes PFC e priors de claustro; proxy de primata, não medição humana.
+- **Drosophila / FlyWire** — motifs de conectoma brain-wide, sensorimotor e action-selection.
+- **C. elegans** — conectoma anatômico de animal inteiro para circuitos compactos recorrentes e sensor→interneuron→motor.
+- **Mouse / MICrONS + Allen** — conectômica estrutural+funcional densa em volume do córtex visual, com atlas anatômico como framework; não é cérebro inteiro do camundongo.
+- **Larval zebrafish** — volume EM de cérebro inteiro com sinapses detectáveis e circuitos reconstruídos/validados; isso não implica que todas as células/sinapses estejam completamente proofread ou funcionalmente caracterizadas.
+
+Implementação central: `src/lib/biointelligence-fabric.ts`.
+
+Cada experiência produz sinais separados por espécie — atenção, novidade, memória, inibição, ação, sensório, social e prediction — e depois uma fusão ponderada. Divergência entre os controladores aumenta a utilidade de pesquisa/replay; nunca é descrita como votação de mentes biológicas.
+
+### App inteiro como ambiente de aprendizado
+
+`src/components/AppLearningObserver.tsx` está montado no root layout e observa transversalmente:
+- rotas e abas;
+- clicks/controles;
+- submit/change sem armazenar valores;
+- chamadas API, status e latência;
+- erros de runtime/promises;
+- estado interno do Studio;
+- Build, Research, Media e Legal via rotas/API;
+- Life Simulation, MiroFish e Organism Engine via eventos semânticos.
+
+Fluxo:
+
+`evento sanitizado → App Learning Ledger → BioIntelligence ensemble → Digital Brain → research gap / experiência → continuous-learning → proposta/testes/review`
+
+O ledger local **não** armazena valores de formulário, senhas, tokens, cookies, authorization headers, conteúdo de mensagens ou conteúdo de arquivos.
+
+### Relação com biocomputação
+
+Este módulo é **bio-inspired computation**: modelos de software derivados de dados neurocientíficos. Ele pode servir como laboratório computacional comparativo e como controlador para autoaprendizado, mas não deve ser chamado de tecido neural vivo, organoide, wetware ou biocomputador físico.
+
+A diferença deve permanecer explícita:
+- biocomputação física usa substrato biológico real;
+- BioIntelligence do PredictLM usa software + dados/priors biológicos publicados.
