@@ -59,7 +59,7 @@ function surfaceBoost(surface:AgenticSurface,id:string){
     },
     build:{
       'predictlm-master':30,'agent-fabric':28,'capability-fusion':27,'saas-builder-fabric':24,'build-review':24,
-      'testing':22,'vibe-security':20,'design-system':18,'impeccable':16,'node-stack':13,'token-budget':10
+      'testing':22,'vibe-security':20,'design-system':18,'impeccable':16,'node-stack':13,'token-budget':10,'continuous-learning':7
     },
     media:{
       'predictlm-master':26,'grok-imagine-parity':30,'visual-reference-grounding':28,'capability-fusion':24,
