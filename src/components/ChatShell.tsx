@@ -1238,12 +1238,15 @@ export function ChatShell({onOpenLegal}:Props){
           return;
         }catch{
           await unloadWebLLMModel();
-          setLoadState({tier:'lite',progress:null,status:'WebGPU/modelo grande indisponível · usando compatibilidade CPU/WASM'});
+          setLoadState(null);
+          setModelTick(x=>x+1);
+          setModelError('Nenhum modelo WebLLM de qualidade coube nesta GPU. O Predict Auto continuará pela inteligência web; não vou substituir silenciosamente por um 0,5B/1,5B.');
+          return;
         }
       }
-      await loadNeuralModel('lite',p=>setLoadState({tier:'lite',progress:p.progress,status:'Compatibilidade offline · '+p.status}),{persistPreference:true});
       setLoadState(null);
       setModelTick(x=>x+1);
+      setModelError('Este navegador/PC não expõe WebGPU. O Predict Auto continuará pela inteligência web; o modelo ONNX minúsculo fica somente como modo de compatibilidade/offline explícito.');
     }catch(err:any){
       setLoadState(null);
       setModelTick(x=>x+1);
