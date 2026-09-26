@@ -202,6 +202,55 @@ async function firecrawlSearch(query:string,limit:number,key:string){
   };
 }
 
+async function scraplingExtract(url:string){
+  const base=String(process.env.SCRAPLING_BASE_URL||'').trim().replace(/\/$/,'');
+  if(!base||!/^https?:\/\//i.test(url))return '';
+  const key=String(process.env.SCRAPLING_API_KEY||'').trim();
+  const headers:Record<string,string>={'Content-Type':'application/json','Accept':'application/json'};
+  if(key)headers.Authorization='Bearer '+key;
+  try{
+    const r=await fetch(base,{
+      method:'POST',
+      headers,
+      body:JSON.stringify({url,formats:['markdown','text'],onlyMainContent:true}),
+      cache:'no-store',
+      signal:AbortSignal.timeout(12000)
+    });
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)return '';
+    return String(
+      data?.markdown||
+      data?.text||
+      data?.content||
+      data?.data?.markdown||
+      data?.data?.text||
+      data?.data?.content||
+      ''
+    ).replace(/\s+/g,' ').trim().slice(0,5000);
+  }catch{return ''}
+}
+
+async function scraplingEnrich(items:any[],limit=3){
+  if(!process.env.SCRAPLING_BASE_URL)return items;
+  const out=[...items];
+  const candidates=out
+    .map((item,index)=>({item,index}))
+    .filter(x=>/^https?:\/\//i.test(String(x.item?.url||'')))
+    .slice(0,Math.max(1,Math.min(4,limit)));
+  const results=await Promise.allSettled(candidates.map(x=>scraplingExtract(String(x.item.url))));
+  results.forEach((result,i)=>{
+    if(result.status!=='fulfilled'||!result.value)return;
+    const target=candidates[i];
+    out[target.index]={
+      ...out[target.index],
+      description:String(out[target.index]?.description||result.value.slice(0,1200)),
+      extractedText:result.value,
+      extractor:'scrapling'
+    };
+  });
+  return out;
+}
+
 async function apifyItems(limit:number){
   const token=String(process.env.APIFY_API_TOKEN||'').trim();
   if(!token)return [] as any[];
@@ -375,8 +424,17 @@ async function freeSearch(query:string,limit:number){
   if(academic.status==='fulfilled')web.push(...academic.value);
   else warnings.push('Índice acadêmico indisponível');
 
-  const ranked=enrichAndRank(query,web,limit);
-  return {provider:'free-search',web:ranked,news:[],images:[],warnings,coverage:coverage(ranked)};
+  const enriched=await scraplingEnrich(web,3);
+  const ranked=enrichAndRank(query,enriched,limit);
+  return {
+    provider:'free-search',
+    web:ranked,
+    news:[],
+    images:[],
+    warnings,
+    coverage:coverage(ranked),
+    extractor:process.env.SCRAPLING_BASE_URL?'scrapling+native':'native'
+  };
 }
 
 export async function POST(req:Request){
