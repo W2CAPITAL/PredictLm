@@ -14,3 +14,6 @@ export * from './code-improvement';
 export * from './experiment-runner';
 export * from './spreadsheet-sync';
 export * from './audit';
+
+export * from './replay-simulator';
+export * from './improvement-governor';
