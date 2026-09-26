@@ -1130,3 +1130,20 @@ Gate de licença:
 - nunca declarar uma integração externa “ativa” sem configuração e teste real.
 
 \n\n## Continuous Learning Fabric\n\nPesquisa contínua e autoaperfeiçoamento seguem o contrato em `references/CONTINUOUS-LEARNING.md`. O coletor 24/7 pode pesquisar, verificar, versionar evidência e criar filas de código/skills sem API paga obrigatória; o motor local absorve o índice quando estiver ativo. Nunca alegar inferência local com o dispositivo desligado e nunca promover código externo diretamente para produção sem branch, testes, build, review e PR.\n
+
+## OpenAI GPT-5.6 Sol adapter
+
+OpenAI is an optional internal engine of **PredictLM BioAI**, never a second public identity.
+
+When `OPENAI_API_KEY` is configured:
+- default direct model: `gpt-5.6-sol`;
+- transport: OpenAI Responses API through `src/lib/server/openai-responses.ts`;
+- reasoning effort: `OPENAI_REASONING_EFFORT`, with deep turns defaulting to high;
+- applicable surfaces include Chat, Build/agents, media direction and simulation planning through their provider paths;
+- provider/model names may appear only in technical diagnostics, not as the assistant identity.
+
+Security:
+- key is server-only;
+- never persist it into BioAI memory/localStorage/Supabase;
+- never copy the current ChatGPT conversation/account state into the app;
+- local-first fallbacks remain available without OpenAI.
