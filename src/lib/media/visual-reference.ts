@@ -431,6 +431,15 @@ export function inlineImageFromDataUrl(input:string):InlineImageData|null{
   return {mimeType:m[1].toLowerCase(),data:m[2]};
 }
 
+function sniffImageMime(bytes:Uint8Array,header=''){
+  const h=String(header||'').split(';')[0].toLowerCase();
+  if(['image/png','image/jpeg','image/webp'].includes(h))return h;
+  if(bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47)return 'image/png';
+  if(bytes.length>=3&&bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)return 'image/jpeg';
+  if(bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')return 'image/webp';
+  return '';
+}
+
 export async function fetchReferenceInlineData(ref:VisualReference):Promise<InlineImageData|null>{
   if(!isSafePublicUrl(ref.imageUrl))return null;
   try{
@@ -441,12 +450,12 @@ export async function fetchReferenceInlineData(ref:VisualReference):Promise<Inli
       signal:AbortSignal.timeout(6500)
     });
     if(!r.ok)return null;
-    const mime=String(r.headers.get('content-type')||'').split(';')[0].toLowerCase();
-    if(!['image/png','image/jpeg','image/webp'].includes(mime))return null;
     const len=Number(r.headers.get('content-length')||0);
     if(len>4_500_000)return null;
     const bytes=new Uint8Array(await r.arrayBuffer());
     if(bytes.byteLength>4_500_000)return null;
+    const mime=sniffImageMime(bytes,String(r.headers.get('content-type')||''));
+    if(!mime)return null;
     return {mimeType:mime,data:Buffer.from(bytes).toString('base64')};
   }catch{return null}
 }
