@@ -136,8 +136,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
       gl.clearColor(sky[0],sky[1],sky[2],1);
       gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
       gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
-      gl.cullFace(gl.BACK);
+      gl.disable(gl.CULL_FACE);
 
       const vs=compile(gl,gl.VERTEX_SHADER,
         'attribute vec3 aPosition;attribute vec3 aColor;uniform mat4 uMvp;varying vec3 vColor;void main(){vColor=aColor;gl_Position=uMvp*vec4(aPosition,1.0);}');
@@ -188,9 +187,6 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
         pushBox(vertices,agent.x,agent.y+.35,agent.z,.55,1.45,.55,BRAIN_RGB[id]);
       }
 
-      if(viewTarget!=='player'&&world.player.dimension===world.player.dimension&&Math.hypot(world.player.x-pose.x,world.player.z-pose.z)<=radius+4){
-        pushBox(vertices,world.player.x,world.player.y+.35,world.player.z,.55,1.5,.55,[.22,.9,.8]);
-      }
 
       const data=new Float32Array(vertices);
       const buffer=gl.createBuffer();
