@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {resolveVisualReferences} from '../src/lib/media/visual-reference';
+import {animeCharacterSearchTerms} from '../src/lib/media/anime-character-catalog';
 
 test('specific characters use automatic no-key image search instead of requiring manual upload',async()=>{
   const originalFetch=globalThis.fetch;
@@ -63,4 +64,15 @@ test('Naruto matchup expands separate identity and scene searches',async()=>{
   assert.ok(queries.some(q=>/Sasuke Uchiha Perfect Susanoo/i.test(q)));
   assert.ok(queries.some(q=>/vs Sasuke Susanoo|final battle/i.test(q)));
   assert.ok(queries.length>=5);
+});
+
+
+test('Kurama Chakra Mode searches Naruto identity instead of standalone Kurama entity',()=>{
+  const mode=animeCharacterSearchTerms('Naruto Uzumaki no modo Kurama lutando contra Sasuke com Susanoo Perfeito');
+  assert.ok(mode.includes('Naruto Uzumaki'));
+  assert.ok(mode.includes('Sasuke Uchiha'));
+  assert.ok(!mode.includes('Kurama'));
+
+  const full=animeCharacterSearchTerms('Naruto com avatar completo da Kurama, raposa gigante de nove caudas, contra Sasuke');
+  assert.ok(full.includes('Kurama'));
 });
