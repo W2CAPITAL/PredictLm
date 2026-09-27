@@ -13,6 +13,8 @@ import { buildDisplayTitle, buildSafeCaptionPtBr, mediaOriginalPrompt, recommend
 import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaLibrary, saveBrowserMediaItem } from '@/lib/media/browser-media-library';
 import { loadCognitiveState } from '@/lib/cognitive/cognitive-memory';
 import { buildCreativeMediaControl } from '@/lib/cognitive/creative-media';
+import { bestCandidateIndex, buildBestImagePlan, buildTargetedEditRepair, scoreImageCandidate } from '@/lib/media/best-image-orchestrator';
+import { imageUrlToReferenceDataUrl, loadVisualIdentityMemory, saveVisualIdentityMemory } from '@/lib/media/visual-identity-memory';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -429,7 +431,7 @@ export function GrokImaginePanel(){
     return saved as MediaItem|null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false,semanticRepairHints='',apiDirectorBrief=''){
+  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false,semanticRepairHints='',apiDirectorBrief='',candidateIndex=0,candidateCount=1,identityReferenceImages:string[]=[]){
     setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
@@ -450,7 +452,10 @@ export function GrokImaginePanel(){
         seed:renderSeed,
         model:'flux',
         referenceMode:'auto',
-        referenceImages:referenceImages.map(x=>x.data)
+        candidateIndex,
+        candidateCount,
+        referenceImages:referenceImages.map(x=>x.data),
+        identityReferenceImages
       })
     });
     const data=await r.json();
