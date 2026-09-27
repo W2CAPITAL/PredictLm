@@ -112,3 +112,8 @@ Quando houver Unity WebGL configurado, o estado da simulação pode ser projetad
 - nenhuma dependência pesada é obrigatória;
 - nenhum asset/código proprietário de Minecraft entra no repositório;
 - saídas de swarm são cenários sintéticos, não fatos nem previsões garantidas sobre pessoas reais.
+
+
+## Surface única: Minecraft
+
+MiroFish permanece apenas como motor interno de sociedade/memória/agentes. Ele **não** cria um segundo modo de Simulação. Toda atividade coletiva deve ser projetada no mesmo Minecraft Cognitive World, onde Humano, Macaque, Mouse e Fly compartilham consequências, descobertas e alterações físicas do mundo voxel.
