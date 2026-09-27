@@ -17,7 +17,8 @@ export type VoxelWeather='clear'|'rain'|'storm';
 export type VoxelBlockId=
   |'air'|'bedrock'|'stone'|'cobblestone'|'dirt'|'grass'|'sand'|'water'|'lava'
   |'wood'|'leaves'|'planks'|'glass'|'coal_ore'|'iron_ore'|'gold_ore'|'diamond_ore'
-  |'crafting_table'|'furnace'|'torch'|'chest'|'farmland'|'wheat'|'bricks'|'obsidian';
+  |'crafting_table'|'furnace'|'torch'|'chest'|'farmland'|'wheat'|'bricks'|'obsidian'
+  |'bed'|'table'|'chair'|'bookshelf'|'door'|'ladder'|'lantern'|'nether_bricks'|'end_stone';
 
 export interface VoxelBlockDef{
   id:VoxelBlockId;
@@ -54,7 +55,16 @@ export const VOXEL_BLOCKS:Record<VoxelBlockId,VoxelBlockDef>={
   farmland:{id:'farmland',label:'Terra arada',solid:true,transparent:false,hardness:.6,drop:'dirt',light:0},
   wheat:{id:'wheat',label:'Trigo',solid:false,transparent:true,hardness:.15,drop:'wheat',light:0},
   bricks:{id:'bricks',label:'Tijolos',solid:true,transparent:false,hardness:2,drop:'bricks',light:0},
-  obsidian:{id:'obsidian',label:'Obsidiana',solid:true,transparent:false,hardness:8,drop:'obsidian',light:0}
+  obsidian:{id:'obsidian',label:'Obsidiana',solid:true,transparent:false,hardness:8,drop:'obsidian',light:0},
+  bed:{id:'bed',label:'Cama',solid:true,transparent:false,hardness:.4,drop:'bed',light:0},
+  table:{id:'table',label:'Mesa',solid:true,transparent:false,hardness:1.1,drop:'table',light:0},
+  chair:{id:'chair',label:'Cadeira',solid:true,transparent:false,hardness:.9,drop:'chair',light:0},
+  bookshelf:{id:'bookshelf',label:'Estante',solid:true,transparent:false,hardness:1.4,drop:'bookshelf',light:0},
+  door:{id:'door',label:'Porta',solid:true,transparent:false,hardness:1,drop:'door',light:0},
+  ladder:{id:'ladder',label:'Escada',solid:false,transparent:true,hardness:.5,drop:'ladder',light:0},
+  lantern:{id:'lantern',label:'Lanterna',solid:false,transparent:true,hardness:.3,drop:'lantern',light:14},
+  nether_bricks:{id:'nether_bricks',label:'Tijolos do Nether',solid:true,transparent:false,hardness:2.2,drop:'nether_bricks',light:0},
+  end_stone:{id:'end_stone',label:'Pedra do End',solid:true,transparent:false,hardness:3,drop:'end_stone',light:0}
 };
 
 export interface VoxelPlayer{
@@ -69,7 +79,7 @@ export interface VoxelPlayer{
 
 export interface VoxelMob{
   id:string;
-  kind:'sheep'|'pig'|'cow'|'zombie'|'skeleton'|'spider'|'villager'|'dungeon_guard'|'boss';
+  kind:'sheep'|'pig'|'cow'|'chicken'|'zombie'|'skeleton'|'spider'|'creeper'|'enderman'|'villager'|'dungeon_guard'|'boss'|'blaze'|'ghast'|'end_guard';
   x:number;y:number;z:number;
   health:number;
   hostile:boolean;
@@ -78,7 +88,7 @@ export interface VoxelMob{
 
 export interface VoxelStructure{
   id:string;
-  kind:'village'|'ruin'|'cave'|'dungeon'|'mineshaft'|'tower';
+  kind:'village'|'ruin'|'cave'|'dungeon'|'mineshaft'|'tower'|'nether_fortress'|'stronghold'|'end_city';
   x:number;z:number;
   label:string;
   discovered:boolean;
@@ -171,13 +181,26 @@ export const CRAFT_RECIPES:CraftRecipe[]=[
   {id:'torch',label:'Tochas',input:{coal:1,stick:1},output:{torch:4}},
   {id:'chest',label:'Baú',input:{planks:8},output:{chest:1},table:true},
   {id:'bricks',label:'Tijolos',input:{cobblestone:4},output:{bricks:4},table:true},
-  {id:'bread',label:'Pão',input:{wheat:3},output:{bread:1},table:false}
+  {id:'bread',label:'Pão',input:{wheat:3},output:{bread:1},table:false},
+  {id:'bed',label:'Cama',input:{planks:3,wool:3},output:{bed:1},table:true},
+  {id:'table',label:'Mesa',input:{planks:4,stick:2},output:{table:1},table:true},
+  {id:'chair',label:'Cadeira',input:{planks:3,stick:2},output:{chair:1},table:true},
+  {id:'bookshelf',label:'Estante',input:{planks:6,book:3},output:{bookshelf:1},table:true},
+  {id:'door',label:'Porta',input:{planks:6},output:{door:3},table:true},
+  {id:'ladder',label:'Escadas',input:{stick:7},output:{ladder:3},table:true},
+  {id:'lantern',label:'Lanterna',input:{iron_ingot:1,torch:1},output:{lantern:1},table:true},
+  {id:'iron_helmet',label:'Capacete de ferro',input:{iron_ingot:5},output:{iron_helmet:1},table:true},
+  {id:'iron_chestplate',label:'Peitoral de ferro',input:{iron_ingot:8},output:{iron_chestplate:1},table:true},
+  {id:'bow',label:'Arco',input:{stick:3,string:3},output:{bow:1},table:true},
+  {id:'shield',label:'Escudo',input:{planks:6,iron_ingot:1},output:{shield:1},table:true},
+  {id:'golden_apple',label:'Maçã dourada',input:{apple:1,gold_ingot:8},output:{golden_apple:1},table:true}
 ];
 
 export const SMELT_RECIPES:Record<string,{fuel:number;output:string}>={
   raw_iron:{fuel:1,output:'iron_ingot'},
   raw_gold:{fuel:1,output:'gold_ingot'},
-  sand:{fuel:1,output:'glass'}
+  sand:{fuel:1,output:'glass'},
+  raw_meat:{fuel:1,output:'cooked_meat'}
 };
 
 function clamp(v:number,min:number,max:number){return Math.max(min,Math.min(max,v))}
@@ -263,14 +286,14 @@ function naturalBlockAt(seed:number,x:number,y:number,z:number,dimension:VoxelDi
 
   if(dimension==='infernal'){
     if(y>h)return y<20?'lava':'air';
-    if(y===h)return hash2(seed,x,z,102)>.9?'obsidian':'stone';
+    if(y===h)return hash2(seed,x,z,102)>.92?'obsidian':'nether_bricks';
     if(y<h-12&&hash2(seed,x+y,z,103)>.982)return'gold_ore';
-    return'stone';
+    return hash2(seed,x+y,z,104)>.985?'coal_ore':'stone';
   }
   if(dimension==='void'){
     if(h<=4||y>h)return'air';
-    if(y===h)return hash2(seed,x,z,110)>.85?'obsidian':'stone';
-    return y<h-4?'stone':'dirt';
+    if(y===h)return hash2(seed,x,z,110)>.9?'obsidian':'end_stone';
+    return'end_stone';
   }
 
   if(y>h){
@@ -367,15 +390,27 @@ export function structureForChunk(state:VoxelWorldState,cx:number,cz:number):Vox
   const baseX=cx*VOXEL_CHUNK_SIZE+Math.floor(hash2(seed,cx,cz,201)*VOXEL_CHUNK_SIZE);
   const baseZ=cz*VOXEL_CHUNK_SIZE+Math.floor(hash2(seed,cx,cz,202)*VOXEL_CHUNK_SIZE);
   let kind:VoxelStructure['kind']|null=null;
-  if(r>.986)kind='dungeon';
-  else if(r>.97)kind='village';
-  else if(r>.945)kind='mineshaft';
-  else if(r>.92)kind='ruin';
-  else if(r>.885)kind='cave';
-  else if(r>.872)kind='tower';
+  if(state.player.dimension==='infernal'){
+    if(r>.955)kind='nether_fortress';
+    else if(r>.9)kind='cave';
+  }else if(state.player.dimension==='void'){
+    if(r>.968)kind='end_city';
+    else if(r>.925)kind='stronghold';
+  }else{
+    if(r>.986)kind='dungeon';
+    else if(r>.97)kind='village';
+    else if(r>.945)kind='mineshaft';
+    else if(r>.92)kind='ruin';
+    else if(r>.885)kind='cave';
+    else if(r>.872)kind='tower';
+  }
   if(!kind)return[];
   const id=chunkKey(cx,cz,state.player.dimension)+':'+kind;
-  return[{id,kind,x:baseX,z:baseZ,label:kind==='dungeon'?'Masmorra procedural':kind[0].toUpperCase()+kind.slice(1),discovered:!!state.discoveries[id]}];
+  const labels:Record<VoxelStructure['kind'],string>={
+    dungeon:'Masmorra procedural',village:'Vila',mineshaft:'Mina abandonada',ruin:'Ruína',
+    cave:'Caverna',tower:'Torre',nether_fortress:'Fortaleza do Nether',stronghold:'Fortaleza do End',end_city:'Cidade do End'
+  };
+  return[{id,kind,x:baseX,z:baseZ,label:labels[kind],discovered:!!state.discoveries[id]}];
 }
 
 export function mobsForChunk(state:VoxelWorldState,cx:number,cz:number):VoxelMob[]{
@@ -388,9 +423,16 @@ export function mobsForChunk(state:VoxelWorldState,cx:number,cz:number):VoxelMob
     const y=terrainHeight(state.seed,x,z,state.player.dimension)+1;
     const r=hash2(state.seed+i,cx,cz,323);
     let kind:VoxelMob['kind'];
-    if(daylight)kind=r>.88?'villager':r>.58?'cow':r>.28?'pig':'sheep';
-    else kind=r>.82?'spider':r>.45?'skeleton':'zombie';
-    const hostile=!daylight&&kind!=='villager';
+    if(state.player.dimension==='infernal'){
+      kind=r>.72?'ghast':'blaze';
+    }else if(state.player.dimension==='void'){
+      kind=r>.78?'end_guard':'enderman';
+    }else if(daylight){
+      kind=r>.91?'villager':r>.68?'cow':r>.46?'pig':r>.22?'sheep':'chicken';
+    }else{
+      kind=r>.86?'enderman':r>.68?'creeper':r>.48?'spider':r>.25?'skeleton':'zombie';
+    }
+    const hostile=state.player.dimension!=='overworld'||!daylight||['creeper','enderman','blaze','ghast','end_guard'].includes(kind);
     const id=chunkKey(cx,cz,state.player.dimension)+':mob:'+i;
     if(!state.discoveries[id+':defeated'])out.push({id,kind,x,y,z,health:hostile?20:10,hostile,label:kind.replace('_',' ')});
   }
@@ -558,7 +600,12 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     if(mob.kind==='zombie')inventory=addItem(inventory,'rotten_flesh',1);
     if(mob.kind==='skeleton')inventory=addItem(inventory,'bone',2);
     if(mob.kind==='spider')inventory=addItem(inventory,'string',1);
-    if(['cow','pig','sheep'].includes(mob.kind))inventory=addItem(inventory,'food',1);
+    if(['cow','pig','sheep','chicken'].includes(mob.kind))inventory=addItem(inventory,'raw_meat',1);
+    if(mob.kind==='creeper')inventory=addItem(inventory,'gunpowder',2);
+    if(mob.kind==='enderman')inventory=addItem(inventory,'ender_pearl',1);
+    if(mob.kind==='blaze')inventory=addItem(inventory,'blaze_rod',1);
+    if(mob.kind==='ghast')inventory=addItem(inventory,'ghast_tear',1);
+    if(mob.kind==='end_guard')inventory=addItem(inventory,'ender_pearl',2);
     if(mob.kind==='dungeon_guard'||mob.kind==='boss')inventory=addItem(inventory,'emerald',2+Math.floor(hash2(state.seed,state.tick,mob.id.length,520)*5));
     const experience=next.player.experience+5;
     const level=Math.max(next.player.level,Math.floor(experience/20));
@@ -613,7 +660,7 @@ export function raidVoxelDungeon(state:VoxelWorldState,structure:VoxelStructure)
 }
 
 export function eatVoxelFood(state:VoxelWorldState,item='food'){
-  const value=item==='bread'?6:item==='food'?5:item==='rotten_flesh'?2:0;
+  const value=item==='golden_apple'?10:item==='cooked_meat'?8:item==='bread'?6:item==='food'?5:item==='apple'?4:item==='rotten_flesh'?2:0;
   if(value<=0)return{state,ok:false,message:'Esse item não é comida.'};
   if((state.inventory[item]||0)<1)return{state,ok:false,message:'Comida indisponível.'};
   const inventory=addItem(state.inventory,item,-1);
