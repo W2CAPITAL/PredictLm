@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.27.0"
+  version: "3.28.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.27.0
+# PredictLM Master v3.28.0
 
 ## Regra soberana
 
@@ -1260,3 +1260,10 @@ Users do not need to author a negative prompt for ordinary image generation. The
 For Naruto Kurama Chakra Mode, automatic negatives must protect Naruto identity and the golden chakra cloak on Naruto's own body without demanding a separate full Kurama fox. Full Kurama-avatar negatives are enabled only when the user explicitly requests the complete Nine-Tails/avatar.
 
 If the selected provider returns no usable image payload or the returned URL cannot be loaded as an image, the user-facing error is exactly: `O provider não entregou uma imagem válida`. Internal retries/provider failover occur before this terminal message.
+
+
+## Image provider validity v3.28
+
+Image generation treats HTTP success as insufficient. The provider/fallback result must decode as real image bytes; invalid 200 responses (JSON/HTML/text or undersized payloads) trigger automatic model retry. Only after the bounded retry chain is exhausted may Imagine surface `O provider não entregou uma imagem válida`.
+
+Negative quality constraints are generated automatically from identity/form semantics. The manual negative field is an advanced optional override and must not be presented as required workflow.
