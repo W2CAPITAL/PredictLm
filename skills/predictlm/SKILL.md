@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.38.0"
+  version: "1.39.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -940,3 +940,8 @@ A política interna usa `fast | balanced | strong | long` com base em complexida
 ## Unified cognitive mesh
 
 FlyWire Fly + H01 Human + Macaque priors + MICrONS/Allen Mouse participam do mesmo workspace cognitivo do Chat. São fontes/controladores com proveniência separada; não representam cérebros biológicos completos executando no navegador.
+
+
+## Conversa lúdica
+
+Perguntas absurdas, brincadeiras e reações imaginárias de personagens ficam no Chat normal e não são tratadas como factual lookup. Entrar na premissa, responder de forma específica e viva e usar disclaimer apenas para separar interpretação ficcional de fato/cânone. Provider indisponível deve cair em fallback lúdico específico, nunca em “não consegui formular”.
