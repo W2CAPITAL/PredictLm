@@ -42,9 +42,18 @@ import {
   unityWebGLConfigured
 } from '@/lib/unity-fabric';
 import {minecraftReferenceAudit} from '@/lib/simulation/minecraft-reference-fabric';
+import {
+  createMinecraftBrainState,
+  minecraftBrainSummary,
+  normalizeMinecraftBrainState,
+  stepMinecraftBrains,
+  type MinecraftBrainId,
+  type MinecraftBrainState
+} from '@/lib/simulation/minecraft-brain-agents';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
+const BRAIN_STORAGE='predictlm-minecraft-brains-v1';
 
 const BLOCK_COLORS:Record<VoxelBlockId,string>={
   air:'#000000',
@@ -71,7 +80,16 @@ const BLOCK_COLORS:Record<VoxelBlockId,string>={
   farmland:'#5d3d2b',
   wheat:'#c4a840',
   bricks:'#9a4d3f',
-  obsidian:'#2c2142'
+  obsidian:'#2c2142',
+  bed:'#b85d68',
+  table:'#8a623f',
+  chair:'#765236',
+  bookshelf:'#69492f',
+  door:'#7b5132',
+  ladder:'#9b744a',
+  lantern:'#e8bd55',
+  nether_bricks:'#4d2430',
+  end_stone:'#d7d69b'
 };
 
 type ToolMode='mine'|'place'|'inspect';
@@ -82,6 +100,14 @@ function loadWorld(){
     const raw=JSON.parse(localStorage.getItem(STORAGE)||'null');
     return normalizeVoxelWorld(raw);
   }catch{return createVoxelWorld(827361)}
+}
+
+function loadBrains(world:VoxelWorldState){
+  if(typeof window==='undefined')return createMinecraftBrainState(world);
+  try{
+    const raw=JSON.parse(localStorage.getItem(BRAIN_STORAGE)||'null');
+    return normalizeMinecraftBrainState(raw,world);
+  }catch{return createMinecraftBrainState(world)}
 }
 
 function shade(hex:string,amount:number){
@@ -97,6 +123,7 @@ export function MinecraftSimulationPanel(){
   const [world,setWorld]=useState<VoxelWorldState>(()=>createVoxelWorld(827361));
   const [hydrated,setHydrated]=useState(false);
   const [running,setRunning]=useState(false);
+  const [brains,setBrains]=useState<MinecraftBrainState>(()=>createMinecraftBrainState(createVoxelWorld(827361)));
   const [tool,setTool]=useState<ToolMode>('mine');
   const [selected,setSelected]=useState<VoxelBlockId>('dirt');
   const [message,setMessage]=useState('Mundo procedural pronto.');
@@ -110,22 +137,48 @@ export function MinecraftSimulationPanel(){
   const saveInput=useRef<HTMLInputElement>(null);
   const hitCells=useRef<Array<{x:number;z:number;points:[number,number][];depth:number}>>([]);
   const audit=useMemo(()=>minecraftReferenceAudit(),[]);
+  const worldRef=useRef(world);
+  const brainsRef=useRef(brains);
 
   useEffect(()=>{
-    setWorld(loadWorld());
+    const loaded=loadWorld();
+    const loadedBrains=loadBrains(loaded);
+    setWorld(loaded);
+    setBrains(loadedBrains);
+    worldRef.current=loaded;
+    brainsRef.current=loadedBrains;
     setHydrated(true);
   },[]);
 
   useEffect(()=>{
+    worldRef.current=world;
     if(!hydrated)return;
     try{localStorage.setItem(STORAGE,JSON.stringify(world))}catch{}
   },[world,hydrated]);
+
+  useEffect(()=>{
+    brainsRef.current=brains;
+    if(!hydrated)return;
+    try{localStorage.setItem(BRAIN_STORAGE,JSON.stringify(brains))}catch{}
+  },[brains,hydrated]);
 
   useEffect(()=>{
     if(!running)return;
     const timer=window.setInterval(()=>setWorld(prev=>tickVoxelWorld(prev,1)),450);
     return()=>window.clearInterval(timer);
   },[running]);
+
+  useEffect(()=>{
+    if(!running||!hydrated)return;
+    const timer=window.setInterval(()=>{
+      const result=stepMinecraftBrains(worldRef.current,brainsRef.current);
+      worldRef.current=result.world;
+      brainsRef.current=result.brains;
+      setWorld(result.world);
+      setBrains(result.brains);
+    },1050);
+    return()=>window.clearInterval(timer);
+  },[running,hydrated]);
 
   useEffect(()=>{
     if(renderMode!=='unity'||!unityWebGLConfigured())return;
@@ -234,6 +287,21 @@ export function MinecraftSimulationPanel(){
       ctx.font='10px system-ui';ctx.fillStyle='#eaf5f6';ctx.fillText(structure.label,sx+8,sy+3);
     }
 
+    const brainColors:Record<MinecraftBrainId,string>={human:'#64e6d2',macaque:'#f3a85c',mouse:'#d5c7ff',fly:'#f4e76e'};
+    for(const id of Object.keys(brains.agents) as MinecraftBrainId[]){
+      const agent=brains.agents[id];
+      if(agent.dimension!==world.player.dimension)continue;
+      const dx=agent.x-world.player.x,dz=agent.z-world.player.z;
+      if(Math.abs(dx)>viewRadius||Math.abs(dz)>viewRadius)continue;
+      const cell=surfaceAt(world,agent.x,agent.z);
+      const sx=centerX+(dx-dz)*(tile*.5);
+      const sy=centerY+(dx+dz)*(tile*.25)-(cell.y-baseY)*3-15;
+      ctx.fillStyle=brainColors[id];
+      ctx.beginPath();ctx.arc(sx,sy,id==='fly'?4:6,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1;ctx.stroke();
+      ctx.font='9px system-ui';ctx.fillStyle=brainColors[id];ctx.fillText(agent.label.replace('Cérebro ',''),sx+8,sy+3);
+    }
+
     const px=centerX,py=centerY-16;
     ctx.fillStyle='#55ead1';
     ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();
@@ -247,7 +315,7 @@ export function MinecraftSimulationPanel(){
     ctx.fillText('Chunk '+context.cx+','+context.cz+' · '+chunk.biome,22,32);
     ctx.fillStyle='#91aaa7';
     ctx.fillText('Dia '+world.day+' · '+Math.floor(world.timeOfDay)+' · '+world.weather,22,50);
-  },[world,viewRadius,renderMode,currentStructures,context.cx,context.cz,chunk.biome]);
+  },[world,brains,viewRadius,renderMode,currentStructures,context.cx,context.cz,chunk.biome]);
 
   useEffect(()=>{
     const onKey=(e:KeyboardEvent)=>{
@@ -330,18 +398,23 @@ export function MinecraftSimulationPanel(){
   function move(dx:number,dz:number){setWorld(prev=>moveVoxelPlayer(prev,dx,dz))}
   function reset(){
     const seed=world.seed;
-    setWorld(createVoxelWorld(seed));
-    setMessage('Mundo reiniciado com a mesma seed.');
+    const fresh=createVoxelWorld(seed);
+    setWorld(fresh);
+    setBrains(createMinecraftBrainState(fresh));
+    setMessage('Mundo Minecraft reiniciado com a mesma seed e os quatro cérebros reposicionados.');
   }
   function newWorld(){
-    setWorld(createVoxelWorld());
-    setMessage('Novo mundo procedural criado.');
+    const fresh=createVoxelWorld();
+    setWorld(fresh);
+    setBrains(createMinecraftBrainState(fresh));
+    setMessage('Novo mundo Minecraft procedural criado para os quatro cérebros.');
   }
   function exportWorld(){
     const payload=JSON.stringify({
       format:'predictlm-voxel-save',
       exportedAt:new Date().toISOString(),
-      world
+      world,
+      brains
     },null,2);
     const url=URL.createObjectURL(new Blob([payload],{type:'application/json'}));
     const a=document.createElement('a');
@@ -357,8 +430,10 @@ export function MinecraftSimulationPanel(){
       const raw=JSON.parse(await file.text());
       const candidate=raw?.format==='predictlm-voxel-save'?raw.world:raw;
       const restored=normalizeVoxelWorld(candidate);
+      const restoredBrains=normalizeMinecraftBrainState(raw?.brains,restored);
       setWorld(restored);
-      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+'.');
+      setBrains(restoredBrains);
+      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+', quatro cérebros sincronizados.');
     }catch{
       setMessage('Save inválido; nenhum dado do mundo foi alterado.');
     }finally{
@@ -399,9 +474,9 @@ export function MinecraftSimulationPanel(){
   return <section className={styles.shell}>
     <header className={styles.header}>
       <div>
-        <span><Activity size={13}/> VOXEL WORLD · MINECRAFT-CLASS SANDBOX</span>
-        <h2>Mundo quase infinito</h2>
-        <p>Chunks procedurais sem limite prático em X/Z, sobrevivência/criativo, mineração, construção, crafting, mobs, estruturas, masmorras e persistência local.</p>
+        <span><Activity size={13}/> MINECRAFT COGNITIVE WORLD</span>
+        <h2>Minecraft · mundo quase infinito</h2>
+        <p>Camundongo, mosca, macaco e humano jogam no mesmo mundo persistente: árvores, vilas, cavernas, minérios, crafting, móveis, equipamentos, comidas, monstros, Nether, End, dungeons e construção.</p>
       </div>
       <div className={styles.badges}>
         <b>{world.player.mode}</b>
@@ -469,6 +544,20 @@ export function MinecraftSimulationPanel(){
 
       <aside className={styles.side}>
         <section>
+          <header><b>Cérebros jogando</b><span>{running?'autônomos':'pausados'}</span></header>
+          <div className={styles.list}>
+            {(Object.keys(brains.agents) as MinecraftBrainId[]).map(id=>{
+              const brain=brains.agents[id];
+              return <button key={id} onClick={()=>setMessage(brain.label+' · '+brain.publicThought)}>
+                <b>{brain.label}</b>
+                <span>{brain.dimension==='infernal'?'Nether':brain.dimension==='void'?'End':'Overworld'} · {brain.x},{brain.z} · {brain.lastAction}</span>
+              </button>;
+            })}
+          </div>
+          <small>Os quatro usam o Cognitive Workspace mapeado (FlyWire, H01, macaque e mouse) para decidir ações no mesmo estado físico do mundo.</small>
+        </section>
+
+        <section>
           <header><b>Sobrevivência</b><span>{world.player.dimension}</span></header>
           <div className={styles.vitals}>
             <label>Vida <b>{Math.round(world.player.health)}/20</b><i><em style={{width:(world.player.health/20*100)+'%'}}/></i></label>
@@ -476,7 +565,7 @@ export function MinecraftSimulationPanel(){
             <label>XP <b>{world.player.experience}</b><i><em style={{width:Math.min(100,world.player.experience%100)+'%'}}/></i></label>
           </div>
           <div className={styles.dimensionButtons}>
-            {(['overworld','infernal','void'] as const).map(dim=><button key={dim} className={world.player.dimension===dim?styles.active:''} onClick={()=>setWorld(prev=>travelVoxelDimension(prev,dim))}>{dim}</button>)}
+            {(['overworld','infernal','void'] as const).map(dim=><button key={dim} className={world.player.dimension===dim?styles.active:''} onClick={()=>setWorld(prev=>travelVoxelDimension(prev,dim))}>{dim==='infernal'?'Nether':dim==='void'?'End':'Overworld'}</button>)}
           </div>
           <div className={styles.dimensionButtons}>
             <button onClick={()=>eat(world.inventory.bread>0?'bread':'food')}>Comer</button>
@@ -530,7 +619,7 @@ export function MinecraftSimulationPanel(){
 
     <details className={styles.details}>
       <summary>Estado e implementação do mundo</summary>
-      <pre>{voxelWorldSummary(world)}</pre>
+      <pre>{voxelWorldSummary(world)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
       <p>Referências registradas: {audit.registered}/{audit.expected}. As referências sem licença verificada são usadas somente como inspiração arquitetural; nenhum asset proprietário do Minecraft é incorporado.</p>
       <p>Unity: {unityReady?'WebGL configurado e sincronizado por scene snapshots.':'fabric de GameObject/Transform/Component ativo; falta uma URL de build Unity WebGL para executar o runtime Unity real no navegador.'}</p>
     </details>
