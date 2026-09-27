@@ -5,7 +5,7 @@ import { BrainCircuit, Download, Film, Image as ImageIcon, Loader2, Play, Refres
 import { useStudio } from '@/lib/store';
 import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
 import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames, formatMediaResearchContext, mediaResearchQuery } from '@/lib/media/video-pipelines';
-import { mediaErrorText } from '@/lib/media/media-errors';
+import { INVALID_IMAGE_PROVIDER_MESSAGE, mediaErrorText } from '@/lib/media/media-errors';
 import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { isNarutoKuramaVsSasukeSusanooPrompt, recommendedMatchupAspect } from '@/lib/media/canonical-matchup';
 import { preloadGeneratedImage, reviewSemanticImage, reviewImageQuality, type ImageQualityReview } from '@/lib/media/image-review';
@@ -475,11 +475,15 @@ export function GrokImaginePanel(){
         strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
       })
     });
-    const data=await r.json();
-    if(!r.ok||!data?.url)throw new Error(mediaErrorText(data?.error,'A geração não retornou imagem.'));
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data?.url)throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE);
     const url=String(data.url);
     setImageStage('Finalizando imagem…');
-    await preloadGeneratedImage(url);
+    try{
+      await preloadGeneratedImage(url);
+    }catch{
+      throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE);
+    }
     const referenceReview=data?.referenceReview||{};
     setGroundingTrace({
       query:String(data.referenceQuery||''),
@@ -1393,8 +1397,12 @@ export function GrokImaginePanel(){
             <button className={promptMode==='literal'?'active':''} onClick={()=>setPromptMode('literal')} type="button"><b>Literal</b><small>Zero reescrita criativa. Mantém pedido, identidade, referências e negative.</small></button>
             <button className={promptMode==='imagine'?'active':''} onClick={()=>setPromptMode('imagine')} type="button"><b>Imagine</b><small>Expansão cinematográfica Grok-like antes do provider real.</small></button>
           </div>
-          <label><span>Evitar · negative opcional</span><input value={negativePrompt} onChange={e=>setNegativePrompt(e.target.value)} placeholder="ex.: cabelo branco, personagens fundidos, texto, watermark"/></label>
-          {literalUiMode?<small className="gmedia-literal-note">Modo literal ativo: Deep Think/Research não reescrevem a imagem; busca visual automática + identity lock continuam ativos.</small>:null}
+          <small className="gmedia-literal-note">Qualidade automática ativada: identidade, anatomia, coerência de estilo, artefatos e substituições genéricas são bloqueados internamente. Você não precisa escrever negative prompt.</small>
+          <details style={{marginTop:6}}>
+            <summary style={{cursor:'pointer',fontSize:9,color:'#7f8c9d'}}>Avançado</summary>
+            <label style={{marginTop:7}}><span>Negative manual · opcional</span><input value={negativePrompt} onChange={e=>setNegativePrompt(e.target.value)} placeholder="Só use se quiser acrescentar uma restrição específica"/></label>
+          </details>
+          {literalUiMode?<small className="gmedia-literal-note">Modo literal ativo: o pedido é preservado; busca visual automática + identity lock continuam ativos.</small>:null}
         </div>:null}
 
         {mode==='video'?<div className="gmedia-video-options">
