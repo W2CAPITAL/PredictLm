@@ -8,6 +8,7 @@ import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldF
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
 import {comfyImageConfig,runComfyImageWorkflow} from '@/lib/media/comfy-image';
 import {unityFabricContext} from '@/lib/unity-fabric';
+import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/best-image-orchestrator';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -130,6 +131,10 @@ export async function POST(req:Request){
     const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
     const styleLocked=!!body?.styleLocked;
     const style=styleLocked?requestedStyle:recommendedImageStyle(sourcePrompt,requestedStyle);
+    const bestImagePlan=buildBestImagePlan(sourcePrompt,style);
+    const candidateIndex=Math.max(0,Math.min(4,Math.floor(Number(body?.candidateIndex)||0)));
+    const candidateCount=Math.max(1,Math.min(4,Math.floor(Number(body?.candidateCount)||bestImagePlan.candidateCount)));
+    const candidateDirective=candidateVariationDirective(candidateIndex,candidateCount);
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
@@ -168,10 +173,14 @@ export async function POST(req:Request){
       ? 'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.'
       : '';
     const correction=genericRepair||canonicalRepair;
-    const groundedPrompt=compiledPrompt+(correction?'\n\nSEMANTIC REPAIR — correct the visible mismatch without changing the requested subject: '+correction:'');
+    const groundedPrompt=[compiledPrompt,bestImagePlan.promptContract,candidateDirective,correction?'SEMANTIC REPAIR — correct the visible mismatch without changing the requested subject: '+correction:''].filter(Boolean).join('\n\n');
 
     const userInline=(Array.isArray(body?.referenceImages)?body.referenceImages:[])
       .slice(0,3)
+      .map((x:any)=>inlineImageFromDataUrl(String(x||'')))
+      .filter(Boolean) as {mimeType:string;data:string}[];
+    const identityMemoryInline=(Array.isArray(body?.identityReferenceImages)?body.identityReferenceImages:[])
+      .slice(0,1)
       .map((x:any)=>inlineImageFromDataUrl(String(x||'')))
       .filter(Boolean) as {mimeType:string;data:string}[];
 
@@ -192,11 +201,11 @@ export async function POST(req:Request){
     const approvedDownloaded=reviewable
       .filter(item=>item.review.useful!==false)
       .sort((a,b)=>(b.review.confidence||0)-(a.review.confidence||0))
-      .slice(0,Math.max(0,3-userInline.length));
+      .slice(0,Math.max(0,3-userInline.length-identityMemoryInline.length));
 
     const searchedInline=approvedDownloaded.map(x=>x.inline);
     const searchedReferenceUrls=approvedDownloaded.map(x=>x.ref.imageUrl);
-    const inlineReferences=[...userInline,...searchedInline].slice(0,3);
+    const inlineReferences=[...userInline,...identityMemoryInline,...searchedInline].slice(0,3);
     const referenceReview={
       candidatesFound:Number(referencePlan.candidatesFound||referencePlan.references.length),
       urlsDownloaded:downloadCandidates.length,
@@ -218,11 +227,17 @@ export async function POST(req:Request){
     const unityImageGuidance=/\b(unity|unity3d|game environment|game scene|voxel|3d scene|level design|game asset)\b/i.test(sourcePrompt)
       ? '\n\n3D SCENE CONTRACT:\n'+unityFabricContext()
       : '';
-    const providerPrompt=groundedPrompt+(userInline.length
-      ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form. Search references are secondary. Preserve the requested action/composition but do not drift away from the uploaded subject.'
-      : searchedInline.length
+    const providerPrompt=groundedPrompt+
+      (userInline.length
+        ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form.'
+        : '')+
+      (identityMemoryInline.length
+        ? '\n\nPERSISTENT VISUAL ID MEMORY: '+identityMemoryInline.length+' previously approved PredictLM generation is attached. Preserve the same identity/form traits across the new scene while obeying the new action/composition.'
+        : '')+
+      (searchedInline.length
         ? '\n\nAUTOMATIC VISUAL GROUNDING: '+searchedInline.length+' downloaded reference image(s) passed the automatic usefulness filter and should control canonical identity/forms more strongly than textual style expansion.'
-        : '')+unityImageGuidance+'\n\n'+mediaQualityDirectives({
+        : '')+
+      unityImageGuidance+'\n\n'+mediaQualityDirectives({
           kind:'image',
           prompt:sourcePrompt,
           style,
@@ -279,7 +294,9 @@ export async function POST(req:Request){
           referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
           referenceImagesPassed:comfyReferenceTransport?inlineReferences.length:0,
           userReferenceCount:userInline.length,
+          identityMemoryReferenceCount:identityMemoryInline.length,
           searchedReferenceCount:searchedInline.length,
+          bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
           referenceReview,
           referenceWarnings:referencePlan.warnings,
           originalPrompt:sourcePrompt,
@@ -375,7 +392,9 @@ export async function POST(req:Request){
             referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
             referenceImagesPassed,
             userReferenceCount:userInline.length,
+            identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
+            bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
