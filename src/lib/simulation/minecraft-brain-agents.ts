@@ -185,7 +185,11 @@ function executeAgent(world:VoxelWorldState,agent:MinecraftBrainAgent,intent:str
     inventory:agent.inventory
   });
   const plan=localVoxelPlan(instruction,shadow);
-  const executed=executeVoxelPlan(shadow,plan);
+  const directedPlan={
+    ...plan,
+    actions:plan.actions.map(action=>action.type==='move'?{...action,dx,dz}:action)
+  };
+  const executed=executeVoxelPlan(shadow,directedPlan);
   const result=executed.state;
   const nextAgent:MinecraftBrainAgent={
     ...agent,
