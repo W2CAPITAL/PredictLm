@@ -50,6 +50,7 @@ import {
   type MinecraftBrainId,
   type MinecraftBrainState
 } from '@/lib/simulation/minecraft-brain-agents';
+import {MinecraftFirstPerson3D} from '@/components/MinecraftFirstPerson3D';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
@@ -139,7 +140,7 @@ export function MinecraftSimulationPanel(){
   const [planning,setPlanning]=useState(false);
   const [lastPlan,setLastPlan]=useState('');
   const [viewRadius,setViewRadius]=useState(10);
-  const [renderMode,setRenderMode]=useState<'native'|'unity'>('native');
+  const [renderMode,setRenderMode]=useState<'first-person'|'map'|'unity'>('first-person');
   const [viewTarget,setViewTarget]=useState<ViewTarget>('human');
   const canvas=useRef<HTMLCanvasElement>(null);
   const unityFrame=useRef<HTMLIFrameElement>(null);
@@ -226,7 +227,7 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     const el=canvas.current;
-    if(!el||renderMode!=='native')return;
+    if(!el||renderMode!=='map')return;
     const ctx=el.getContext('2d');
     if(!ctx)return;
 
@@ -377,6 +378,7 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     const onKey=(e:KeyboardEvent)=>{
+      if(viewTarget!=='player')return;
       if(['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement)?.tagName))return;
       const key=e.key.toLowerCase();
       let dx=0,dz=0;
@@ -390,7 +392,7 @@ export function MinecraftSimulationPanel(){
     };
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
-  },[]);
+  },[viewTarget]);
 
   function pointInPoly(x:number,y:number,points:[number,number][]){
     let inside=false;
@@ -592,7 +594,9 @@ export function MinecraftSimulationPanel(){
       <select value={viewRadius} onChange={e=>setViewRadius(Number(e.target.value))}>
         <option value={7}>Visão 15×15</option><option value={10}>Visão 21×21</option><option value={12}>Visão 25×25</option>
       </select>
-      <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode(v=>v==='native'?'unity':'native')}>Unity {unityReady?'WebGL':'bridge'}</button>
+      <button className={renderMode==='first-person'?styles.active:''} onClick={()=>setRenderMode('first-person')}>3D · 1ª pessoa</button>
+      <button className={renderMode==='map'?styles.active:''} onClick={()=>setRenderMode('map')}>Mapa 2D</button>
+      <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode('unity')}>Unity {unityReady?'3D':'bridge'}</button>
       <button onClick={reset}><RotateCcw size={13}/>Reset</button>
       <button onClick={newWorld}><Sparkles size={13}/>Nova seed</button>
       <button onClick={exportWorld}><Download size={13}/>Exportar save</button>
@@ -602,9 +606,17 @@ export function MinecraftSimulationPanel(){
 
     <div className={styles.layout}>
       <main className={styles.world}>
-        {renderMode==='unity'&&unityReady?
-          <iframe ref={unityFrame} className={styles.unityFrame} src={UNITY_WEBGL_URL} title="PredictLM Unity WebGL Simulation" onLoad={()=>postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene:voxelUnityScene(viewWorld,Math.min(10,viewRadius))})}/>:
-          <canvas ref={canvas} onClick={handleCanvasClick} className={styles.canvas} aria-label="Mundo voxel procedural interativo"/>
+        {renderMode==='first-person'?
+          <MinecraftFirstPerson3D
+            world={viewWorld}
+            brains={brains}
+            viewTarget={viewTarget}
+            viewRadius={viewRadius}
+            onLook={viewTarget==='player'?(yaw,pitch)=>setWorld(prev=>({...prev,player:{...prev.player,yaw,pitch}})):undefined}
+          />:
+          renderMode==='unity'&&unityReady?
+            <iframe ref={unityFrame} className={styles.unityFrame} src={UNITY_WEBGL_URL} title="PredictLM Unity WebGL Simulation" onLoad={()=>postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene:voxelUnityScene(viewWorld,Math.min(10,viewRadius))})}/>:
+            <canvas ref={canvas} onClick={handleCanvasClick} className={styles.canvas} aria-label="Mapa 2D do Minecraft cognitivo"/>
         }
         <div className={styles.worldFoot}>
           <span><Eye size={12}/>{viewLabel}</span>
@@ -613,6 +625,7 @@ export function MinecraftSimulationPanel(){
           <span>dia {viewWorld.day} · {viewWorld.weather}</span>
           <b>{message}</b>
         </div>
+        {renderMode==='map'?<div className={styles.mapBadge}>MAPA 2D · visão auxiliar</div>:null}
         {viewTarget==='player'?<div className={styles.movePad}>
           <span/>
           <button onClick={()=>move(0,-1)}>W</button>
