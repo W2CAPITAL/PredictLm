@@ -62,6 +62,12 @@ const SURFACE_MODULES:Record<FusionSurface,string[]>={
     'src/app/api/research/route.ts',
     'src/lib/fusion/capability-fabric.ts',
     'src/lib/agent-runtime/agentic-fabric.ts'
+  ],
+  social:[
+    'src/app/api/social/influencer/route.ts',
+    'src/app/api/social/publish/route.ts',
+    'src/lib/social/influencer-studio.ts',
+    'skills/ai-influencer-studio/SKILL.md'
   ]
 };
 
