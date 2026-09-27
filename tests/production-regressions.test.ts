@@ -78,3 +78,16 @@ test('fictional character opinion question stays playful and grounded as interpr
   assert.match(String(fallback),/imagino|interpreta/i);
   assert.doesNotMatch(String(fallback),/Não tem muito o que falar|não consegui formular/i);
 });
+
+
+test('playful gate rejects the flat McQueen response captured in production',()=>{
+  const prompt='O que o McQueen acha de você comendo banana?';
+  const bad='Não tem muito o que falar sobre isso. McQueen é um personagem de corrida, não tem opinião sobre comida, e eu não tenho memória de conversas anteriores.';
+  assert.equal(conversationAnswerIssue(prompt,bad),'flattened-playful-answer');
+});
+
+test('playful gate accepts a scene-specific fictional interpretation',()=>{
+  const prompt='O que o McQueen acha de você comendo banana?';
+  const good='Eu imagino o McQueen olhando a banana como combustível de piloto, fazendo uma piada com pit stop e transformando o lanche numa competição. É uma interpretação divertida da cena, não uma opinião canônica.';
+  assert.equal(conversationAnswerIssue(prompt,good),'');
+});
