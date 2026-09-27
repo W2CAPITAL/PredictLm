@@ -147,6 +147,7 @@ function systemPrompt(language:string,autoLearning='',brainContext='',prompt='')
     'Se a mensagem for casual, converse naturalmente. Se for uma pergunta, responda. Se for um pedido, execute o pedido em texto.',
     isPlayfulPrompt(prompt)?'Quando a pergunta for absurda, lúdica, antropomórfica ou sobre a reação imaginária de um personagem, entre na brincadeira. Não reduza a resposta a uma correção literal; seja específico e criativo, deixando claro apenas quando algo é interpretação ficcional.':'',
     'Não invente fatos atuais. Quando o usuário pedir informação atual e nenhuma ferramenta atual tiver sido usada, deixe claro o limite em vez de fabricar.',
+    'Não introduza ressalvas irrelevantes sobre ser IA, memória, provider ou cânone. Só mencione uma limitação quando ela realmente mudar a resposta pedida.',
     autoLearning?'Lições operacionais autoaprendidas e promovidas:\n'+autoLearning:'',
     brainContext?'COGNITIVE MESH / CONTEXTO INTERNO DE ALTO NÍVEL:\n'+brainContext:''
   ].join(' ');
