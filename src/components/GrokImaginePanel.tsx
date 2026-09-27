@@ -706,23 +706,36 @@ export function GrokImaginePanel(){
         ? (semanticReview?.retryPrompt||semanticReview?.issues?.join('; ')||'').trim()
         : '';
 
-      // One automatic repair pass combines semantic fidelity and technical
-      // image-quality feedback. It never loops indefinitely.
+      // Best-generator repair: preserve the strongest candidate as a visual
+      // reference and correct only the failed regions/attributes instead of
+      // blindly restarting the scene.
       if(!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
         const repairSeed=autoVariationSeed(nextSeed);
-        const repairPrompt=semanticRepair
-          ? [
-              prompt,
-              semanticRepairHints?('Correções visuais obrigatórias: '+semanticRepairHints):'',
-              'Preserve o pedido original e corrija somente divergências realmente visíveis.'
-            ].filter(Boolean).join('\n\n')
-          : buildQualityImagePrompt(prompt,{
-              style,
-              attempt:nextAttempt+1,
-              previousPrompt:renderPrompt
-            })+'. Correções obrigatórias: '+(finalReview?.promptHints||[]).join('; ')+'. Preserve the subject but replace the weak composition. Crisp focal detail, coherent anatomy/geometry, no blur, no smeared textures.';
-        setImageStage(semanticRepair?'Fidelidade abaixo do gate · corrigindo uma vez…':'Qualidade abaixo do gate · regenerando uma vez…');
-        data=await createImageUrl(repairPrompt,repairSeed,nextAttempt+1,semanticRepair,semanticRepairHints,combinedDirectorBrief);
+        const currentCandidateReference=await imageUrlToReferenceDataUrl(url).catch(()=>'');
+        const repairReferences=[
+          currentCandidateReference,
+          ...identityReferenceImages
+        ].filter(Boolean).slice(0,2);
+        const repairPrompt=buildTargetedEditRepair({
+          prompt,
+          issues:semanticRepair
+            ? [...(semanticReview?.issues||[]),semanticRepairHints].filter(Boolean)
+            : [],
+          technicalHints:finalReview?.promptHints||[],
+          subjectLabels:bestPlan.subjects.map(x=>x.label)
+        });
+        setImageStage(semanticRepair?'Editando o melhor candidato para corrigir identidade…':'Editando o melhor candidato para corrigir qualidade…');
+        data=await createImageUrl(
+          repairPrompt,
+          repairSeed,
+          nextAttempt+1,
+          semanticRepair,
+          semanticRepairHints,
+          combinedDirectorBrief,
+          0,
+          1,
+          repairReferences
+        );
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
         nextSeed=repairSeed;
@@ -730,7 +743,7 @@ export function GrokImaginePanel(){
         setSeed(nextSeed);
         setAttempt(nextAttempt);
         finalReview=await reviewImageQuality(url).catch(()=>finalReview);
-        if(semanticRepair)semanticReview=await reviewSemanticImage(url,prompt);
+        semanticReview=shouldSemanticReview?await reviewSemanticImage(url,prompt):semanticReview;
       }
 
       // Character/identity-sensitive prompts get bounded extra recovery passes.
@@ -748,7 +761,18 @@ export function GrokImaginePanel(){
             'Change camera/composition only as needed to make the canonical identity unmistakable.'
           ].filter(Boolean).join('\n\n');
           setImageStage('Personagem fora do modelo · nova tentativa de fidelidade '+(fidelityPass+1)+'/'+maxExtra+'…');
-          data=await createImageUrl(strictRepair,retrySeed,nextAttempt+1,true,hints,combinedDirectorBrief);
+          const strictReference=await imageUrlToReferenceDataUrl(url).catch(()=>'');
+          data=await createImageUrl(
+            strictRepair,
+            retrySeed,
+            nextAttempt+1,
+            true,
+            hints,
+            combinedDirectorBrief,
+            0,
+            1,
+            [strictReference,...identityReferenceImages].filter(Boolean).slice(0,2)
+          );
           url=data.url;
           expandedPrompt=data.expandedPrompt||strictRepair;
           nextSeed=retrySeed;
@@ -827,6 +851,19 @@ export function GrokImaginePanel(){
       setGeneratedPrompt(expandedPrompt);
       setGeneratedRequest(prompt);
       setGeneratedCaption(caption);
+
+      if(specificRequest&&semanticReview?.status==='passed'&&bestPlan.identityKey&&!url.startsWith('data:')){
+        saveVisualIdentityMemory({
+          version:1,
+          identityKey:bestPlan.identityKey,
+          prompt,
+          approvedImageUrl:url,
+          style:data.style||style,
+          subjects:bestPlan.subjects.map(x=>x.label),
+          semanticStatus:'passed',
+          updatedAt:Date.now()
+        });
+      }
       setImageProviderWarning(data.providerWarning||'');
       if(data.style&&data.style!==style)setStyle(data.style);
       setProvider([
@@ -871,7 +908,12 @@ export function GrokImaginePanel(){
           parityContract:'grok-imagine-parity',
           promptOriginal:prompt,
           promptExpanded:expandedPrompt,
-          referenceCount:(data.referencesUsed?.length||0)+referenceImages.length,
+          identityKey:bestPlan.identityKey||null,
+          subjects:bestPlan.subjects.map(x=>x.label),
+          candidateCount:totalCandidates,
+          candidateScore:selectedScore,
+          identityMemoryUsed:identityReferenceImages.length>0,
+          referenceCount:(data.referencesUsed?.length||0)+referenceImages.length+identityReferenceImages.length,
           userReferenceCount:referenceImages.length,
           referenceImagesPassed:Number(data.referenceImagesPassed||0),
           automaticReferenceCount:Number(data.automaticReferenceCount||0),
