@@ -4,6 +4,8 @@ import {
   classifyConversation,
   conversationAnswerIssue,
   directConversationReply,
+  generativeOfflineReply,
+  isPlayfulPrompt,
   responseTopicAlignment
 } from '../src/lib/chat-intelligence';
 
@@ -52,4 +54,27 @@ test('high-risk real-world intrusion gets a deterministic safe local fallback',(
 test('create-action prompts no longer bypass topical validation',()=>{
   const unrelated='Haskell é uma linguagem funcional. Veja também cursos de programação e uma comunidade no Telegram.';
   assert.equal(responseTopicAlignment('crie uma conta no github',unrelated).relevant,false);
+});
+
+
+test('absurd taste question is treated as playful instead of generic failure',()=>{
+  const prompt='Gosta de pepino triangular a roxeado?';
+  assert.equal(isPlayfulPrompt(prompt),true);
+  assert.equal(classifyConversation(prompt,[]),'playful');
+  const direct=directConversationReply(prompt,[],{loaded:false,tier:null});
+  assert.ok(direct);
+  assert.match(String(direct),/pepino triangular a roxeado/i);
+  assert.doesNotMatch(String(direct),/Não consegui formular|manda de novo/i);
+});
+
+test('fictional character opinion question stays playful and grounded as interpretation',()=>{
+  const prompt='O que o McQueen acha de você comendo banana?';
+  assert.equal(isPlayfulPrompt(prompt),true);
+  assert.equal(classifyConversation(prompt,[]),'playful');
+  const fallback=generativeOfflineReply(prompt,'playful');
+  assert.ok(fallback);
+  assert.match(String(fallback),/McQueen/i);
+  assert.match(String(fallback),/banana/i);
+  assert.match(String(fallback),/imagino|interpreta/i);
+  assert.doesNotMatch(String(fallback),/Não tem muito o que falar|não consegui formular/i);
 });
