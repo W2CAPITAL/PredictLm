@@ -491,3 +491,19 @@ A ausência de um provider forte não autoriza fingir sucesso. O runtime deve di
 - **nenhum backend de pixel alcançável**.
 
 O Cognitive Lab pode fornecer direção de composição/novidade ao Imagine, mas sinais neurais simulados não são evidência visual e nunca substituem o semantic fidelity gate.
+
+
+## Best-of-N + Visual ID Memory
+
+Named-character generation is no longer first-image-wins.
+
+- build a structured scene plan with explicit subject slots;
+- anime/specific-franchise prompts generate a bounded candidate set;
+- score candidates using semantic identity pass first, then technical pixel quality, grounded references and fidelity limitations;
+- select the best candidate before any repair;
+- use the selected image itself as an edit/reference anchor during repair;
+- persist an approved Visual ID key so later scenes can reuse an already verified appearance;
+- user-uploaded references always outrank remembered/generated identity images;
+- semantic failure blocks persistence even when technical quality is high.
+
+OpenAI-style multi-image references/edit flows, xAI image editing and Higgsfield-style persistent identity/continuity are treated as public design patterns only; provider-specific implementation remains optional and capability-detected.
