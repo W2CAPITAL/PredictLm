@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.23.0",
+  "version": "3.24.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -72,7 +72,8 @@
     "persistent-virtual-creator",
     "social-publisher-adapter",
     "authorized-persona-voice",
-    "organic-social-growth"
+    "organic-social-growth",
+    "best-image-orchestration"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
@@ -153,7 +154,8 @@
     "minecraft-sandbox",
     "unity-fabric",
     "ai-influencer-studio",
-    "mouse-core"
+    "mouse-core",
+    "best-image-orchestrator"
   ],
   "legacySkillsAreInternal": true,
   "connectomeCores": {
