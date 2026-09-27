@@ -112,3 +112,27 @@ No Vercel, `localhost` do usuário não é alcançável. ComfyUI local requer de
 - Visão analyzes uploaded animal photos using a pinned quantized MobileNet in a dedicated one-thread CPU worker. Download only on request; support cancellation and model cache. Preserve top-five scores, non-animal classes and inconclusive results. This is whole-image classification, not detection, diagnosis, proof of safety or franchise identity recognition.
 - Three optional inference adapters are in `services/animal-vision/`: HOG/SVM, PyTorch ResNet, Keras ResNet. Show unavailable until real trusted weights load. Do not claim the source README accuracy as app accuracy. Never deserialize HTTP model uploads or infer 150 supported classes from the rt75272 README (its checked-in current mapping has 15).
 - Browser analysis keeps the photo on the device. Server analysis is an explicit user choice. No automatic photo persistence or Supabase upload. See `services/animal-vision/README.md` for model provenance, compatibility and deployment setup.
+
+
+## Best-image orchestration v2.4
+
+Para personagem/anime/franquia específica, o Imagine usa pipeline de qualidade em camadas:
+
+```text
+intent → scene/subject slots → visual references → persistent Visual ID memory
+→ 2–3 candidates → technical review + semantic identity review
+→ rerank → targeted edit/repair of best candidate → final semantic gate
+→ optional stylize/upscale → persist only if approved
+```
+
+Regras:
+- anime/franchise identity-sensitive gera até 3 candidatos; outra identidade específica, até 2; pedido genérico, 1;
+- identidade correta vale mais no score que uma imagem tecnicamente bonita porém semanticamente errada;
+- referência manual > Visual ID Memory aprovada > referência automática/catalogada > texto;
+- Visual ID Memory reutiliza somente gerações anteriormente aprovadas pelo verificador semântico e não persiste blobs/data URLs gigantes;
+- repair deve usar o melhor candidato como referência visual e corrigir somente erros visíveis, preservando regiões/pose/composição já corretas;
+- character slots fixam identidade, forma, paleta, atributos obrigatórios e substituições proibidas;
+- para Naruto/Kurama vs Sasuke/Perfect Susanoo: lados separados, Kurama raposa/nove caudas, Susanoo humanoide blindado completo, ownership de cor ouro/laranja vs roxo/violeta;
+- geração que falha identidade não entra em Recent nem vira memória de identidade.
+
+Esse padrão adota princípios públicos observáveis em geradores de ponta: referências de imagem, edição multi-turn/repair, identity consistency e seleção do melhor resultado. Não presume acesso a pesos ou técnicas proprietárias.
