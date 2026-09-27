@@ -185,7 +185,7 @@ export const CRAFT_RECIPES:CraftRecipe[]=[
   {id:'bed',label:'Cama',input:{planks:3,wool:3},output:{bed:1},table:true},
   {id:'table',label:'Mesa',input:{planks:4,stick:2},output:{table:1},table:true},
   {id:'chair',label:'Cadeira',input:{planks:3,stick:2},output:{chair:1},table:true},
-  {id:'bookshelf',label:'Estante',input:{planks:6,book:3},output:{bookshelf:1},table:true},
+  {id:'bookshelf',label:'Estante',input:{planks:6,leather:1,wheat:2},output:{bookshelf:1},table:true},
   {id:'door',label:'Porta',input:{planks:6},output:{door:3},table:true},
   {id:'ladder',label:'Escadas',input:{stick:7},output:{ladder:3},table:true},
   {id:'lantern',label:'Lanterna',input:{iron_ingot:1,torch:1},output:{lantern:1},table:true},
@@ -546,6 +546,7 @@ export function mineVoxelBlock(state:VoxelWorldState,x:number,y:number,z:number)
   const def=VOXEL_BLOCKS[block];
   let inventory={...state.inventory};
   if(def.drop)inventory=addItem(inventory,def.drop,1);
+  if(block==='leaves'&&hash2(state.seed,ix,iz,990)>.82)inventory=addItem(inventory,'apple',1);
   const modifications={...state.modifications,[key(ix,iy,iz,state.player.dimension)]:'air' as VoxelBlockId};
   let next:VoxelWorldState={...state,inventory,modifications,stats:{...state.stats,mined:state.stats.mined+1}};
   next=withEvent(next,'mine','Minerou '+def.label+' em '+ix+','+iy+','+iz+'.');
@@ -601,6 +602,9 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     if(mob.kind==='skeleton')inventory=addItem(inventory,'bone',2);
     if(mob.kind==='spider')inventory=addItem(inventory,'string',1);
     if(['cow','pig','sheep','chicken'].includes(mob.kind))inventory=addItem(inventory,'raw_meat',1);
+    if(mob.kind==='sheep')inventory=addItem(inventory,'wool',1);
+    if(mob.kind==='cow')inventory=addItem(inventory,'leather',1);
+    if(mob.kind==='chicken')inventory=addItem(inventory,'feather',2);
     if(mob.kind==='creeper')inventory=addItem(inventory,'gunpowder',2);
     if(mob.kind==='enderman')inventory=addItem(inventory,'ender_pearl',1);
     if(mob.kind==='blaze')inventory=addItem(inventory,'blaze_rod',1);
