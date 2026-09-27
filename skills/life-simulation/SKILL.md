@@ -4,7 +4,7 @@ description: >
   Contrato da única Simulação pública do PredictLM: Minecraft Cognitive World,
   com quatro cérebros mapeados jogando no mesmo mundo voxel persistente.
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   type: simulation-specialist
   surface: "Simulation"
 ---
@@ -60,6 +60,19 @@ O runtime deve suportar progressivamente:
 - save/import/export;
 - modo survival e creative;
 - Unity WebGL opcional sem tornar o renderer nativo dependente de Unity.
+
+## Primeira pessoa 3D obrigatória
+
+A visualização principal da Simulação é **3D em primeira pessoa** no navegador, sem depender de uma build Unity externa.
+
+- renderer padrão: `MinecraftFirstPerson3D` sobre WebGL;
+- Humano, Macaco, Camundongo e Mosca possuem câmera/FOV/altura/orientação próprios;
+- ao escolher um cérebro, a câmera usa posição, dimensão e direção daquele agente;
+- o antigo renderer isométrico permanece somente como **Mapa 2D auxiliar**;
+- Unity WebGL continua opcional como renderer alternativo;
+- controles do jogador humano usam mouse-look/drag e WASD relativo à direção da câmera;
+- POV de cérebro é espectador: observar não concede controle manual sobre o agente;
+- diferenças visuais por espécie são aproximações funcionais do simulador, não reprodução biológica literal.
 
 ## Autonomia dos cérebros
 
