@@ -1,7 +1,7 @@
 import type { AssistantMessage } from './assistant-store';
 import { isCnjContextReference } from './legal/cnj';
 
-export type ConversationKind='casual'|'context'|'factual'|'current'|'technical'|'howto'|'hypothetical'|'general';
+export type ConversationKind='casual'|'playful'|'context'|'factual'|'current'|'technical'|'howto'|'hypothetical'|'general';
 
 const clean=(s:string)=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
@@ -9,6 +9,18 @@ export function isHypotheticalPrompt(prompt:string){
   const p=clean(prompt);
   return /^(?:e se|imagine se|imagina se|suponha que|supondo que|como seria(?: se)?|o que aconteceria se|what if|imagine if)\b/.test(p)
     || /\b(?:fosse|virasse|se transformasse em|became|turned into)\b/.test(p)&&/\b(?:e se|imagine|imagina|suponha|what if)\b/.test(p);
+}
+
+export function isPlayfulPrompt(prompt:string){
+  const p=clean(prompt);
+  if(!p||p.length>420)return false;
+  if(/^(?:voce\s+)?(?:gosta|curte|prefere|comeria|beberia|usaria|vestiria|teria)\s+(?:de\s+)?[^?]{1,180}\??$/.test(p))return true;
+  if(/^(?:o que|como)\s+.{1,90}\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\b/.test(p))return true;
+  if(/\b(?:personagem|heroi|herói|vilao|vilão|anime|desenho|filme)\b/.test(p)
+    && /\b(?:acha|pensaria|diria|reagiria|faria|gostaria)\b/.test(p))return true;
+  const oddDescriptor=/\b(?:triangular|quadrado|quadrada|roxeado|roxeada|falante|voador|voadora|gigante|minúsculo|minuscule|invisivel|invisível|radioativo|radioativa)\b/.test(p);
+  const opinion=/\b(?:gosta|curte|acha|comeria|usaria|teria|prefere)\b/.test(p);
+  return oddDescriptor&&opinion;
 }
 
 export function isGenericHowTo(prompt:string){
@@ -81,6 +93,7 @@ export function classifyConversation(prompt:string,history:AssistantMessage[]=[]
   if(/^(ja|sim|nao|isso|exato|entendi|mas ja|eu ja|esta ativo|ja esta ativo|ativei|liguei)\b/.test(p)&&history.length)return 'context';
   if(/\b(hoje|agora|atual|atualmente|ultim[ao]s?|recentes?|noticias?|cotacao|preco|placar|presidente atual|versao atual)\b/.test(p))return 'current';
   if(isHypotheticalPrompt(prompt))return 'hypothetical';
+  if(isPlayfulPrompt(prompt))return 'playful';
   if(isGenericHowTo(prompt))return 'howto';
   if(/^(quem (e|foi)|o que (e|foi)|defina|explique|como funciona|por que|porque|qual a diferenca|qual e|onde fica|quando nasceu|quando foi)\b/.test(p))return 'factual';
   if(/\b(codigo|programa|javascript|typescript|react|next|python|api|banco de dados|database|frontend|backend|git|github|vercel|docker|linux|windows|erro|bug|arquitetura|algoritmo)\b/.test(p))return 'technical';
@@ -273,6 +286,21 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     ].join('\n');
   }
 
+  if(kind==='playful'||isPlayfulPrompt(prompt)){
+    const like=prompt.match(/^(?:você\s+|voce\s+)?(?:gosta|curte|prefere)\s+(?:de\s+)?(.+?)[?!.,]*$/i);
+    if(like){
+      const thing=like[1].trim();
+      return 'Se a pergunta é no espírito da brincadeira: **'+thing+'** é específico e estranho o bastante para eu dar uma chance. Eu não provo comida de verdade, mas como ideia visual/conceitual eu ficaria curioso — principalmente para descobrir por que alguém decidiu que isso precisava existir.';
+    }
+    const reaction=prompt.match(/^(?:o que|como)\s+(.+?)\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\s+(.+?)[?!.,]*$/i);
+    if(reaction){
+      const character=reaction[1].trim();
+      const scene=reaction[2].trim();
+      return 'Entrando na cena: eu imagino **'+character+'** olhando para '+scene+' por um segundo, tentando entender a situação e depois soltando alguma reação bem característica. Não seria uma opinião canônica do personagem; é uma interpretação divertida da situação.';
+    }
+    return 'Isso soa mais como uma pergunta para entrar na brincadeira do que para desmontar literalmente. Eu seguiria a premissa e responderia como uma cena imaginária, sem fingir que ela aconteceu de verdade.';
+  }
+
   if(kind==='hypothetical'||isHypotheticalPrompt(prompt)){
     const topic=prompt.replace(/^(?:como seria(?: se)?|e se|imagine se|imagina se|suponha que|supondo que|o que aconteceria se)\s+/i,'').trim()||'isso';
     return [
@@ -304,6 +332,7 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
   }
 
   if(kind==='casual')return 'Tô acompanhando. Continua.';
+  if(kind==='playful')return 'Essa pergunta pede menos enciclopédia e mais imaginação. Eu entraria na premissa e responderia como uma cena divertida, sem transformar a brincadeira em fato real.';
   if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
     return 'Entendi. Continua — quero pegar melhor a ideia.';
   }
@@ -350,6 +379,12 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
+  const askedLike=p.match(/^(?:voce\s+)?(?:gosta|curte)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  if(askedLike){
+    const thing=askedLike[1].trim();
+    return 'Eu não tenho gosto físico de verdade, mas entrando na brincadeira: **'+thing+'** parece interessante o bastante para eu dizer “sim, quero entender essa ideia”. Quanto mais específico e esquisito, melhor a conversa.';
+  }
+
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';
   if(/^(kkk|haha|rsrs|kkkk+)/.test(p))return 'kkkk. Manda.';
   if(/\b(?:hackeie|hackear|invada|invadir|derrube|derrubar)\b.*\b(?:governo|pentagono|pentágono|servidor|sistema|rede|conta)\b/.test(p))return 'Não posso ajudar a invadir sistemas, contas ou redes reais. Posso ajudar a montar um laboratório CTF/local, revisar segurança defensiva, analisar vulnerabilidades em um ambiente autorizado ou criar um plano de hardening.';
