@@ -77,3 +77,6 @@
 .povBar small{margin-left:auto;max-width:430px;color:#6f8a8d;font-size:6.5px;line-height:1.4;text-align:right}
 .spectatorBadge{position:absolute;left:12px;bottom:50px;padding:7px 9px;border:1px solid rgba(79,190,176,.24);border-radius:8px;background:rgba(3,14,17,.76);backdrop-filter:blur(9px);color:#80d8ca;font-size:7px}
 @media(max-width:680px){.povBar small{width:100%;max-width:none;margin-left:0;text-align:left}.spectatorBadge{bottom:74px}}
+
+.mapBadge{position:absolute;right:12px;bottom:50px;padding:6px 8px;border:1px solid rgba(112,153,160,.2);border-radius:8px;background:rgba(4,13,17,.72);color:#82999b;font-size:6.5px;letter-spacing:.06em}
+@media(max-width:680px){.mapBadge{right:8px;bottom:74px}}
