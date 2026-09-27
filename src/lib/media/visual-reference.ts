@@ -1,4 +1,4 @@
-import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, matchupReferenceQueries } from './canonical-matchup';
+import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, matchupReferenceQueries, wantsFullKuramaAvatar } from './canonical-matchup';
 import {resolveAnimeCharacterCatalog} from './anime-character-catalog';
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
@@ -119,7 +119,7 @@ export function buildVisualReferenceQueries(input:string){
     queries.push(
       'Naruto Uzumaki Kurama chakra mode official anime reference full body',
       'Naruto Uzumaki Kurama link mode anime screenshot canonical',
-      'Kurama Nine Tails Naruto canonical full body official anime reference',
+      ...(wantsFullKuramaAvatar(input)?['Kurama Nine Tails Naruto canonical full body official anime reference']:[]),
       'Sasuke Uchiha Perfect Susanoo official anime reference full body',
       'Sasuke Perfect Susanoo anime screenshot canonical purple armored avatar',
       'Naruto Kurama vs Sasuke Susanoo final battle anime reference'
@@ -137,7 +137,7 @@ export function buildVisualReferenceQueries(input:string){
     queries.push(
       'Naruto Uzumaki Kurama chakra mode official anime reference',
       'Naruto Kurama link mode anime screenshot canonical',
-      'Kurama Nine Tails official anime full body reference'
+      ...(wantsFullKuramaAvatar(input)?['Kurama Nine Tails official anime full body reference']:[])
     );
   }else if(/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p)){
     queries.push(
