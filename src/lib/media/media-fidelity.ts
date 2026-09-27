@@ -1,4 +1,4 @@
-import { isNarutoKuramaVsSasukeSusanooPrompt, matchupNegativeConstraints } from './canonical-matchup';
+import { isNarutoKuramaVsSasukeSusanooPrompt, matchupNegativeConstraints, wantsFullKuramaAvatar, wantsKuramaChakraMode } from './canonical-matchup';
 export { isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
 export type MediaLibraryLike={
   prompt?:string|null;
@@ -150,12 +150,29 @@ export function buildSpecificNegativePrompt(originalPrompt:string,userNegative='
       'Goku from Dragon Ball',
       'Vegeta',
       'Dragon Ball character',
-      'wrong tailed beast',
-      'missing Kurama',
-      'dragon instead of Kurama',
-      'lion instead of Kurama',
-      'generic blond warrior instead of Naruto'
+      'generic blond warrior instead of Naruto',
+      'red-haired Naruto',
+      'wrong Naruto face',
+      'missing whisker cheek marks'
     );
+    if(wantsFullKuramaAvatar(originalPrompt)){
+      values.push(
+        'wrong tailed beast',
+        'missing Kurama',
+        'dragon instead of Kurama',
+        'lion instead of Kurama',
+        'wolf instead of Kurama',
+        'generic orange monster instead of Kurama'
+      );
+    }else if(wantsKuramaChakraMode(originalPrompt)){
+      values.push(
+        'separate giant Kurama fox not requested',
+        'giant dragon behind Naruto',
+        'orange monster replacing Naruto',
+        'red cloak replacing golden Kurama chakra',
+        'missing golden-orange chakra cloak on Naruto body'
+      );
+    }
   }
   if(/\b(sasuke|susanoo|uchiha)\b/.test(p)){
     values.push(
