@@ -1,4 +1,4 @@
-import { isNarutoKuramaVsSasukeSusanooPrompt, MATCHUP_NEGATIVES } from './canonical-matchup';
+import { isNarutoKuramaVsSasukeSusanooPrompt, matchupNegativeConstraints } from './canonical-matchup';
 export { isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
 export type MediaLibraryLike={
   prompt?:string|null;
@@ -92,7 +92,7 @@ export function buildSpecificNegativePrompt(originalPrompt:string,userNegative='
   const p=normalize(originalPrompt);
   const values=[
     userNegative.trim(),
-    ...(isNarutoKuramaVsSasukeSusanooPrompt(originalPrompt)?MATCHUP_NEGATIVES:[]),
+    ...matchupNegativeConstraints(originalPrompt),
     'wrong character identity',
     'generic lookalike',
     'unrequested extra character',
