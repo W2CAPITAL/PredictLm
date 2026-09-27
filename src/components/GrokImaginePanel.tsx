@@ -434,7 +434,18 @@ export function GrokImaginePanel(){
     return saved as MediaItem|null;
   }
 
-  async function createImageUrl(renderPrompt:string,renderSeed:number,renderAttempt=attempt,semanticRepair=false,semanticRepairHints='',apiDirectorBrief='',candidateIndex=0,candidateCount=1,identityReferenceImages:string[]=[]){
+  async function createImageUrl(
+    renderPrompt:string,
+    renderSeed:number,
+    renderAttempt=attempt,
+    semanticRepair=false,
+    semanticRepairHints='',
+    apiDirectorBrief='',
+    candidateIndex=0,
+    candidateCount=1,
+    identityReferenceImages:string[]=[],
+    providerPolicy?:{avoidProviders?:string[];requireReferenceTransport?:boolean;strictIdentityProvider?:boolean}
+  ){
     setImageStage('Preparando referências visuais e identidade…');
     const r=await fetch('/api/media/generate',{
       method:'POST',
@@ -458,7 +469,10 @@ export function GrokImaginePanel(){
         candidateIndex,
         candidateCount,
         referenceImages:referenceImages.map(x=>x.data),
-        identityReferenceImages
+        identityReferenceImages,
+        avoidProviders:providerPolicy?.avoidProviders||[],
+        requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
+        strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
       })
     });
     const data=await r.json();
@@ -580,7 +594,8 @@ export function GrokImaginePanel(){
       const cognitiveState=await loadCognitiveState().catch(()=>null);
       const cognitiveCreativeBrief=cognitiveState?buildCreativeMediaControl(cognitiveState,prompt).publicBrief:'';
       const combinedDirectorBrief=[prepared.brief,cognitiveCreativeBrief].filter(Boolean).join('\n\n');
-      const literalRequest=isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt));
+      const specificRequest=looksSpecificVisualPrompt(prompt);
+      const literalRequest=isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&specificRequest);
       const basePrompt=literalRequest
         ? prepared.prompt
         : regenerate
@@ -740,7 +755,12 @@ export function GrokImaginePanel(){
           combinedDirectorBrief,
           0,
           1,
-          repairReferences
+          repairReferences,
+          {
+            avoidProviders:semanticRepair&&data.provider?[String(data.provider)]:[],
+            requireReferenceTransport:specificRequest,
+            strictIdentityProvider:specificRequest
+          }
         );
         url=data.url;
         expandedPrompt=data.expandedPrompt||repairPrompt;
@@ -777,7 +797,12 @@ export function GrokImaginePanel(){
             combinedDirectorBrief,
             0,
             1,
-            [strictReference,...identityReferenceImages].filter(Boolean).slice(0,2)
+            [strictReference,...identityReferenceImages].filter(Boolean).slice(0,2),
+            {
+              avoidProviders:data.provider?[String(data.provider)]:[],
+              requireReferenceTransport:true,
+              strictIdentityProvider:true
+            }
           );
           url=data.url;
           expandedPrompt=data.expandedPrompt||strictRepair;
@@ -812,7 +837,6 @@ export function GrokImaginePanel(){
       data.providerWarning=[data.providerWarning,semanticWarning].filter(Boolean).join(' ');
       setReview(finalReview);
       const caption=await generateSceneCaption(expandedPrompt,data.caption);
-      const specificRequest=looksSpecificVisualPrompt(prompt);
       const semanticFailedSpecific=specificRequest&&semanticReview?.status==='failed';
       const unverifiedSpecific=specificRequest&&semanticReview?.status!=='passed';
       const referencesPassed=Number(data.referenceImagesPassed||0);
