@@ -99,7 +99,7 @@ function detectChatMediaRequest(prompt:string):ChatMediaKind|null{
 
 function detectSimulationLaunchRequest(prompt:string){
   const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-  const simulation=/\b(simulacao|simulacao de vida|simulacao ativa|life simulation|life simulator|mundo vivo|personagem ativa)\b/.test(p);
+  const simulation=/\b(simulacao|simulacao minecraft|minecraft|minecraft cognitivo|minecraft cognitive world|simulacao de vida|simulacao ativa|life simulation|life simulator|mundo vivo|personagem ativa)\b/.test(p);
   const launch=/\b(ative|ativar|ativa|abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|ligue|ligar|quero ver|quero uma)\b/.test(p);
   const appBuild=/\b(app|aplicativo|site|sistema|codigo|export|zip|build)\b/.test(p);
   return simulation&&launch&&!appBuild;
@@ -108,7 +108,7 @@ function detectSimulationLaunchRequest(prompt:string){
 function simulationCommandHandoff(prompt:string){
   const cleaned=prompt
     .replace(/\b(ative|ativar|ativa|abra|abrir|inicie|iniciar|rode|rodar|execute|executar|comece|comecar|ligue|ligar)\b/gi,' ')
-    .replace(/\b(a|o|uma|um)?\s*(simulação|simulacao|simulação de vida|simulacao de vida|life simulation|life simulator|studio)\b/gi,' ')
+    .replace(/\b(a|o|uma|um)?\s*(simulação|simulacao|simulação minecraft|simulacao minecraft|minecraft cognitivo|minecraft cognitive world|simulação de vida|simulacao de vida|life simulation|life simulator|studio)\b/gi,' ')
     .replace(/^[\s,;:.\-]+|[\s,;:.\-]+$/g,'')
     .replace(/\s+/g,' ')
     .trim();
@@ -721,9 +721,9 @@ export function ChatShell({onOpenLegal}:Props){
       setScreen('simulation');
       s.addMessage({
         role:'assistant',
-        content:'Simulação ativada. Se sua frase também continha uma ação, ela foi entregue ao agente executor; caso contrário, o mundo segue em modo normal até você dar uma ordem.',
+        content:'Minecraft Cognitive World ativado. O único modo de Simulação é o mundo Minecraft persistente, com os cérebros Humano, Macaco, Camundongo e Mosca jogando no mesmo mundo e com POV individual.',
         engine:'Predict Auto',
-        actions:['Life Simulation Studio aberto','Estado local preservado','Digital Brain conectado ao ciclo observar → priorizar → agir → memorizar'],
+        actions:['Minecraft Cognitive World aberto','Quatro cérebros autônomos ativos','POV individual conectado ao ciclo observar → decidir → agir → memorizar'],
         status:'done'
       });
       setActivity([]);
@@ -1617,9 +1617,9 @@ export function ChatShell({onOpenLegal}:Props){
             <div className="grok-home-cards">
               <button className="grok-home-card violet" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}>
                 <span className="grok-home-card-icon"><Activity size={22}/></span>
-                <b>Simulação de Vida</b>
-                <p>Rode uma simulação persistente com personagem, rotina, relações, memória e NeuroCore.</p>
-                <strong>Abrir simulador <ChevronDown size={14}/></strong>
+                <b>Minecraft Cognitivo</b>
+                <p>Humano, macaco, camundongo e mosca jogam o mesmo Minecraft persistente, com visão individual, exploração, crafting, combate, Nether e End.</p>
+                <strong>Abrir Minecraft <ChevronDown size={14}/></strong>
               </button>
             </div>
 
@@ -1686,7 +1686,7 @@ function Composer(props:any){
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa"/>
     <div className="grok-composer-actions">
-      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Criar / editar projeto</b><small>Build executado dentro do Chat</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Simulação ativa</b><small>Personagem, mundo, memória e NeuroCore</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
+      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Criar / editar projeto</b><small>Build executado dentro do Chat</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Minecraft cognitivo</b><small>4 cérebros · POV individual · mundo persistente</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
