@@ -341,7 +341,6 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
   }
 
   if(kind==='casual')return 'Tô acompanhando. Continua.';
-  if(kind==='playful')return 'Essa pergunta pede menos enciclopédia e mais imaginação. Eu entraria na premissa e responderia como uma cena divertida, sem transformar a brincadeira em fato real.';
   if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
     return 'Entendi. Continua — quero pegar melhor a ideia.';
   }
