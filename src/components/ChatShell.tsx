@@ -1132,7 +1132,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
       const cleanEligible=!needsWeb&&prompt.length<=900&&(
-        kind==='hypothetical'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
+        kind==='hypothetical'||kind==='playful'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
       );
 
       const deliverProviderCandidate=(result:any)=>{
