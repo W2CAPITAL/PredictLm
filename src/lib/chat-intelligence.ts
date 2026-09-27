@@ -296,7 +296,11 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     if(reaction){
       const character=reaction[1].trim();
       const scene=reaction[2].trim();
-      return 'Entrando na cena: eu imagino **'+character+'** olhando para '+scene+' por um segundo, tentando entender a situação e depois soltando alguma reação bem característica. Não seria uma opinião canônica do personagem; é uma interpretação divertida da situação.';
+      const c=clean(character);
+      if(/\bmcqueen\b/.test(c)){
+        return 'Se eu estivesse **'+scene+'** na frente do **'+character+'**, eu imagino ele encarando a banana como “combustível de piloto”: primeiro uma zoada sobre velocidade, depois alguma comparação com pit stop e, no fim, aquele ar competitivo de quem transformaria até lanche em corrida. Não é uma opinião canônica do McQueen — é a versão da cena que combina com o universo dele.';
+      }
+      return 'Entrando na cena: eu imagino **'+character+'** vendo **'+scene+'** e reagindo em três tempos — estranhamento, uma observação ligada ao jeito/universo do personagem e alguma conclusão exagerada para fechar a piada. Não seria uma opinião canônica; é uma interpretação ficcional da situação, não um fato da obra.';
     }
     return 'Isso soa mais como uma pergunta para entrar na brincadeira do que para desmontar literalmente. Eu seguiria a premissa e responderia como uma cena imaginária, sem fingir que ela aconteceu de verdade.';
   }
