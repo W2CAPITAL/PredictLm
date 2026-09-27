@@ -49,6 +49,9 @@ type GroundingTrace={
   semanticStatus:'passed'|'failed'|'unavailable'|'';
   issues:string[];
   catalogCharacters:Array<{id:number;name:string;siteUrl?:string}>;
+  candidateCount:number;
+  candidateScore:number;
+  identityMemoryUsed:boolean;
 };
 
 type RejectedCandidate={
@@ -480,7 +483,10 @@ export function GrokImaginePanel(){
       issues:[],
       catalogCharacters:Array.isArray(referenceReview.catalogCharacters)
         ? referenceReview.catalogCharacters.map((x:any)=>({id:Number(x?.id)||0,name:String(x?.name||''),siteUrl:String(x?.siteUrl||'')})).filter((x:any)=>x.id&&x.name).slice(0,5)
-        : []
+        : [],
+      candidateCount:Number(data?.bestImagePlan?.candidateCount||candidateCount||1),
+      candidateScore:0,
+      identityMemoryUsed:Number(data?.identityMemoryReferenceCount||0)>0
     });
     return {
       url,
@@ -792,7 +798,10 @@ export function GrokImaginePanel(){
         reviewProvider:String(semanticReview?.reviewProvider||''),
         reviewModel:String(semanticReview?.reviewModel||''),
         semanticStatus:semanticReview?.status||'',
-        issues:Array.isArray(semanticReview?.issues)?semanticReview.issues:[]
+        issues:Array.isArray(semanticReview?.issues)?semanticReview.issues:[],
+        candidateCount:totalCandidates,
+        candidateScore:selectedScore,
+        identityMemoryUsed:identityReferenceImages.length>0
       }:prev);
 
       const semanticWarning=semanticReview?.status==='failed'
@@ -1335,15 +1344,17 @@ export function GrokImaginePanel(){
             <b style={{color:'#dce5ef'}}>Grounding automático</b>
             <span style={{color:groundingTrace.semanticStatus==='passed'?'#71d7ae':groundingTrace.semanticStatus==='failed'?'#ff8b94':'#8fa1b5'}}>{groundingTrace.semanticStatus==='passed'?'identidade aprovada':groundingTrace.semanticStatus==='failed'?'identidade reprovada':'verificação pendente/indisponível'}</span>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:5}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5}}>
             {[
               ['encontrados',groundingTrace.candidatesFound],
               ['baixados',groundingTrace.urlsDownloaded],
               ['aprovados',groundingTrace.visuallyApproved],
-              ['enviados',groundingTrace.referencesPassed]
+              ['enviados',groundingTrace.referencesPassed],
+              ['candidatos',groundingTrace.candidateCount],
+              ['score',groundingTrace.candidateScore||'—']
             ].map(([label,value])=><span key={String(label)} style={{border:'1px solid #232a35',borderRadius:8,padding:6,color:'#7e8b9d',fontSize:8}}><b style={{display:'block',color:'#bcaeff',fontSize:13}}>{value}</b>{label}</span>)}
           </div>
-          <small style={{color:'#657184',fontSize:8}}>Gerador: {groundingTrace.provider||'—'} / {groundingTrace.model||'—'} · Revisor: {groundingTrace.reviewProvider||'—'} / {groundingTrace.reviewModel||'—'}</small>
+          <small style={{color:'#657184',fontSize:8}}>Gerador: {groundingTrace.provider||'—'} / {groundingTrace.model||'—'} · Revisor: {groundingTrace.reviewProvider||'—'} / {groundingTrace.reviewModel||'—'}{groundingTrace.identityMemoryUsed?' · Visual ID Memory ativa':''}</small>
           {groundingTrace.catalogCharacters.length?<div style={{fontSize:8,color:'#9faec0'}}>Catálogo AniList: {groundingTrace.catalogCharacters.map((x,i)=><React.Fragment key={x.id}>{i?' · ':''}{x.siteUrl?<a href={x.siteUrl} target="_blank" rel="noreferrer" style={{color:'#bcaeff'}}>{x.name}</a>:x.name}</React.Fragment>)}</div>:null}
           {groundingTrace.queries.length?<details style={{fontSize:8,color:'#7f8c9d'}}><summary>Buscas automáticas ({groundingTrace.queries.length})</summary>{groundingTrace.queries.map((q,i)=><em key={q+'-'+i} style={{display:'block',fontStyle:'normal',padding:'3px 0',borderTop:'1px solid #1c232d'}}>{q}</em>)}</details>:null}
           {groundingTrace.issues.length?<ul style={{margin:0,paddingLeft:17,color:'#eaa6ab',fontSize:8}}>{groundingTrace.issues.map((issue,i)=><li key={issue+'-'+i}>{issue}</li>)}</ul>:null}
