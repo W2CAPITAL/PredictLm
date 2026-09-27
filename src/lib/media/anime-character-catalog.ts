@@ -1,5 +1,6 @@
 import {compactText} from '@/lib/token-budget';
 import {extractRequestedNamedSubject,isAnimeFranchisePrompt} from '@/lib/media/media-fidelity';
+import {wantsFullKuramaAvatar} from '@/lib/media/canonical-matchup';
 
 export interface AnimeCharacterCatalogHit{
   provider:'anilist';
@@ -31,7 +32,7 @@ export function animeCharacterSearchTerms(input:string){
 
   if(/\bnaruto\b/.test(p))push('Naruto Uzumaki');
   if(/\bsasuke\b/.test(p))push('Sasuke Uchiha');
-  if(/\bkurama\b|\bkyuubi\b|\bkyubi\b|\bnine tails\b|\bnove caudas\b/.test(p))push('Kurama');
+  if(/\bkurama\b|\bkyuubi\b|\bkyubi\b|\bnine tails\b|\bnove caudas\b/.test(p)&&(!/\bnaruto\b/.test(p)||wantsFullKuramaAvatar(input)))push('Kurama');
   if(/\b(freeza|frieza)\b/.test(p))push('Frieza');
   if(/\bvegeta\b/.test(p))push('Vegeta');
   if(/\bbroly\b/.test(p))push('Broly');
