@@ -71,6 +71,27 @@ The web product intentionally does **not** expose 7B as a browser button. A larg
 
 The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
 
+## Imagine — Best-of-N character pipeline
+
+Named characters and anime/franchise requests no longer use first-image-wins.
+
+```text
+prompt
+→ subject/form scene plan
+→ user refs / approved Visual ID Memory / auto refs
+→ 2–3 bounded candidates
+→ technical + semantic identity review
+→ rerank
+→ targeted edit/repair of the best candidate
+→ final identity gate
+→ optional stylize/upscale
+→ persist approved result
+```
+
+For anime/specific-franchise requests, semantic identity outranks isolated pixel polish. A beautiful wrong character loses to a slightly less polished candidate that actually matches the requested identity/form. An approved remote image may become the lightweight Visual ID reference for the same canonical identity in later scenes.
+
+The pipeline borrows public design patterns from modern image systems—multi-image grounding/editing, image-input repair, and persistent identity consistency—without claiming access to proprietary model internals.
+
 ## Autonomous operational learning
 
 Feedback no longer stops at collection. `predict_feedback_events` now feeds a bounded Supabase trigger that aggregates repeated failures into `predict_auto_lessons`.
