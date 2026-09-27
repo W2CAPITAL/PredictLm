@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.23.0"
+  version: "3.24.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.23.0
+# PredictLM Master v3.24.0
 
 ## Regra soberana
 
@@ -1226,3 +1226,10 @@ Regras:
 - fallback offline deve continuar a brincadeira de forma específica quando providers falharem.
 
 Esse modo continua sujeito ao semantic firewall: criatividade não autoriza conteúdo de RAG fora do assunto.
+
+
+## Imagine best-generator pipeline v3.24
+
+O Imagine usa scene planning + subject slots + reference grounding + Visual ID Memory + bounded Best-of-N + semantic/technical rerank + targeted repair + final gate. Para personagem/anime, identidade tem peso maior que estética isolada. Uma imagem bonita porém com personagem errado perde para uma candidata semanticamente correta.
+
+Provider é detalhe de execução: a mesma política deve envolver Gemini, OpenAI-compatible, xAI-compatible, ComfyUI e adapters configurados quando as capacidades correspondentes existirem.
