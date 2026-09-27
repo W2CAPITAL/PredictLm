@@ -1486,8 +1486,8 @@ export function GrokImaginePanel(){
             <img src={rejectedCandidate.url} alt="Candidato rejeitado pelo gate de identidade" style={{width:'100%',maxHeight:'58vh',objectFit:'contain',borderRadius:10,background:'#08090b'}}/>
             <ul style={{margin:0,paddingLeft:18,color:'#d8a4a9',fontSize:9}}>{rejectedCandidate.reasons.map((reason,i)=><li key={reason+'-'+i}>{reason}</li>)}</ul>
           </div>
-          <button type="button" onClick={()=>{setRejectedCandidate(null);void requestImage({regenerate:false})}} disabled={mainBusy} style={{justifySelf:'start',border:'1px solid #5e3438',background:'#241216',color:'#ffd4d8',borderRadius:8,padding:'7px 9px',display:'flex',alignItems:'center',gap:5,fontSize:9}}><RefreshCw size={13}/>Buscar referências e tentar de novo</button>
-        </div>:null}
+          <button type="button" onClick={()=>{setRejectedCandidate(null);void requestImage({regenerate:false})}} disabled={mainBusy} style={{marginTop:9,border:'1px solid #5e3438',background:'#241216',color:'#ffd4d8',borderRadius:8,padding:'7px 9px',display:'flex',alignItems:'center',gap:5,fontSize:9}}><RefreshCw size={13}/>Buscar referências e tentar de novo</button>
+        </details>:null}
         {mainBusy?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>{mode==='video'?'O vídeo aparece quando o provider concluir o arquivo real.':'A imagem aparece assim que o arquivo estiver realmente carregado.'}</span></div>:null}
         {generated&&!loading?<div className="gimagine-result">
           <img src={generated} alt={prompt} onError={imageFailed}/>
