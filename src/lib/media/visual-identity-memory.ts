@@ -28,6 +28,7 @@ function writeAll(items:VisualIdentityMemoryItem[]){
 
 export function saveVisualIdentityMemory(item:VisualIdentityMemoryItem){
   if(typeof window==='undefined'||!item.identityKey||!item.approvedImageUrl)return;
+  if(item.approvedImageUrl.startsWith('data:')||item.approvedImageUrl.startsWith('blob:'))return;
   const rows=readAll().filter(x=>x.identityKey!==item.identityKey);
   rows.unshift({...item,updatedAt:Date.now()});
   writeAll(rows);
