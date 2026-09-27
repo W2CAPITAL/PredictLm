@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.29.0",
+  "version": "3.30.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -78,7 +78,9 @@
     "visual-transformation-semantics",
     "automatic-visual-quality",
     "valid-image-provider-retry",
-    "hosted-image-gateway-recovery"
+    "hosted-image-gateway-recovery",
+    "minecraft-only-simulation",
+    "four-brain-minecraft-agents"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
