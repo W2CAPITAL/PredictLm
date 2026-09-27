@@ -21,6 +21,8 @@ export interface MinecraftBrainAgent{
   x:number;
   y:number;
   z:number;
+  yaw:number;
+  pitch:number;
   dimension:VoxelDimension;
   health:number;
   hunger:number;
@@ -53,6 +55,8 @@ function spawn(world:VoxelWorldState,id:MinecraftBrainId,dx:number,dz:number):Mi
     x,
     y:surfaceAt(world,x,z).y+1,
     z,
+    yaw:id==='human'?0:id==='macaque'?Math.PI*.5:id==='mouse'?Math.PI:id==='fly'?-Math.PI*.5:0,
+    pitch:0,
     dimension:'overworld',
     health:20,
     hunger:20,
@@ -191,11 +195,14 @@ function executeAgent(world:VoxelWorldState,agent:MinecraftBrainAgent,intent:str
   };
   const executed=executeVoxelPlan(shadow,directedPlan);
   const result=executed.state;
+  const facingYaw=Math.atan2(dx,dz);
   const nextAgent:MinecraftBrainAgent={
     ...agent,
     x:result.player.x,
-    y:result.player.y,
+    y:agent.id==='fly'?surfaceAt(result,result.player.x,result.player.z).y+2.6:result.player.y,
     z:result.player.z,
+    yaw:facingYaw,
+    pitch:agent.id==='fly'?Math.sin((tick+agent.decisions)*.55)*.16:agent.id==='mouse'?-0.08:0,
     dimension:result.player.dimension,
     health:result.player.health,
     hunger:result.player.hunger,
