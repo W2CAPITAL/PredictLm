@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.29.0"
+  version: "3.30.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.29.0
+# PredictLM Master v3.30.0
 
 ## Regra soberana
 
@@ -1272,3 +1272,8 @@ Negative quality constraints are generated automatically from identity/form sema
 ## Hosted image provider recovery v3.29
 
 Vercel deployments use `VERCEL_OIDC_TOKEN` as a zero-static-secret AI Gateway credential for image generation. Provider adapters must use the correct endpoint contract: Gemini/Nano Banana multimodal image output through Chat Completions, image-only models through Images Generations, and supported identity/reference repair through Images Edits. Pollinations legacy keyless host is not a production dependency.
+
+
+## Minecraft-only simulation v3.30
+
+Simulation has one public mode only: **Minecraft Cognitive World**. Remove/avoid any Life/Vida vs Voxel mode toggle. Human, macaque, mouse and fly cognitive controllers must act in the same persistent voxel world and mutate real state rather than narrating pretend actions. The world includes procedural chunks, trees, villages, caves/mineshafts, ores, furniture, equipment, food, mobs, dungeons, Nether, End, crafting/smelting, farming, survival/creative and save persistence. Legacy life-simulation engines may remain as internal/reference code during migration but must not surface as a second Simulation mode.
