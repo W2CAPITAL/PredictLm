@@ -1,7 +1,7 @@
 {
   "name": "predictlm-master",
   "displayName": "PredictLM Master",
-  "version": "3.24.0",
+  "version": "3.25.0",
   "entry": "SKILL.md",
   "publicIdentity": "PredictLM",
   "languageDefault": "pt-BR",
@@ -73,7 +73,8 @@
     "social-publisher-adapter",
     "authorized-persona-voice",
     "organic-social-growth",
-    "best-image-orchestration"
+    "best-image-orchestration",
+    "strict-visual-identity-recovery"
   ],
   "install": {
     "grok": "Install this folder as one skill. Do not install legacy PredictLM skills in parallel.",
