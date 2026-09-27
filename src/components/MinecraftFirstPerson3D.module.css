@@ -1,0 +1,25 @@
+.viewport{position:relative;width:100%;height:540px;overflow:hidden;background:#071017;touch-action:none;user-select:none}
+.canvas{display:block;width:100%;height:100%;background:#071017;cursor:crosshair;outline:0}
+.filter{pointer-events:none;position:absolute;inset:0}
+.viewport[data-vision="mouse"] .filter{background:radial-gradient(circle at 50% 52%,transparent 0 36%,rgba(0,0,0,.14) 62%,rgba(0,0,0,.58) 100%)}
+.viewport[data-vision="macaque"] .filter{background:linear-gradient(180deg,rgba(255,164,83,.05),rgba(94,60,26,.025))}
+.viewport[data-vision="fly"] .filter{
+  opacity:.34;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 20px,rgba(255,245,140,.07) 21px),
+    repeating-linear-gradient(60deg,transparent 0 24px,rgba(255,245,140,.055) 25px),
+    repeating-linear-gradient(120deg,transparent 0 24px,rgba(255,245,140,.045) 25px);
+  mix-blend-mode:screen
+}
+.crosshair{pointer-events:none;position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);opacity:.86}
+.crosshair i{position:absolute;left:50%;top:50%;display:block;background:rgba(235,255,251,.9);box-shadow:0 0 4px rgba(0,0,0,.7)}
+.crosshair i:first-child{width:16px;height:1px;transform:translate(-50%,-50%)}
+.crosshair i:last-child{width:1px;height:16px;transform:translate(-50%,-50%)}
+.hud{pointer-events:none;position:absolute;left:12px;top:12px;display:flex;flex-direction:column;gap:3px;max-width:420px;padding:9px 11px;border:1px solid rgba(91,229,204,.2);border-radius:9px;background:rgba(3,13,17,.68);backdrop-filter:blur(9px)}
+.hud b{font-size:8px;color:#d9f7f1;letter-spacing:.07em}
+.hud span{font-size:7px;color:#78d9ca}
+.hud small{font-size:6.5px;line-height:1.35;color:#86a1a0}
+.hint{pointer-events:none;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);max-width:90%;padding:6px 9px;border-radius:999px;background:rgba(3,13,17,.7);color:#90aaa9;font-size:6.5px;white-space:nowrap}
+.error{position:absolute;inset:0;display:grid;place-items:center;padding:24px;background:#071319;color:#d6e4e3;font-size:10px;text-align:center}
+@media(max-width:1050px){.viewport{height:480px}}
+@media(max-width:680px){.viewport{height:400px}.hud{left:8px;top:8px;right:8px;max-width:none}.hint{bottom:8px;white-space:normal;text-align:center}}
