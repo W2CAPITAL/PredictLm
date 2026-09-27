@@ -5,6 +5,17 @@ export function isNarutoKuramaVsSasukeSusanooPrompt(input:string){
   return /\bnaruto\b/.test(p)&&/\b(kurama|kyuubi|kyubi|nove caudas|nine[- ]tails)\b/.test(p)
     &&/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p);
 }
+
+export function wantsKuramaChakraMode(input:string){
+  const p=normalize(input);
+  return /\b(modo kurama|kurama chakra mode|chakra mode|manto da kurama|kurama cloak|chakra da kurama|aura dourada[^.]{0,80}kurama)\b/.test(p);
+}
+
+export function wantsFullKuramaAvatar(input:string){
+  const p=normalize(input);
+  if(wantsKuramaChakraMode(input)&&!/\b(avatar (?:completo|gigante)|full kurama avatar|complete kurama avatar|kurama inteira|kurama inteiro|raposa gigante|nine[- ]tails fox|nove caudas completa|nove caudas completo)\b/.test(p))return false;
+  return /\b(full kurama avatar|complete kurama avatar|avatar (?:completo|gigante) da kurama|kurama (?:inteira|inteiro|completa|completo)|raposa gigante[^.]{0,50}(?:kurama|nove caudas)|nine[- ]tails fox)\b/.test(p);
+}
 export function wantsTechData(input:string){
   return /\b(binario|binary|neural|dados|tech[- ]data|drone|circuitos?|holograma|cyberpunk)\b/.test(normalize(input));
 }
@@ -13,13 +24,17 @@ export function requestsValleyOfTheEnd(input:string){
 }
 export function canonicalMatchupLock(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return '';
+  const fullKurama=wantsFullKuramaAvatar(input);
+  const narutoLock=fullKurama
+    ? 'LEFT: Naruto Uzumaki must remain visibly Naruto — spiky BLOND hair, whisker cheek marks and requested shinobi cues — while associated with a gigantic complete golden-orange Kurama/Nine-Tails fox avatar. Kurama must read as a fox with multiple distinct tails, never a dragon, wolf, flame monster or humanoid clone.'
+    : 'LEFT: Naruto Uzumaki himself is in Kurama Chakra Mode: spiky BLOND hair, visible whisker cheek marks, requested Leaf/shinobi cues and a bright GOLDEN-ORANGE chakra cloak/aura wrapped around HIS BODY. A subtle fox/chakra silhouette may support the scene, but do NOT invent a separate giant Kurama beast unless the user explicitly asks for the full Kurama avatar.';
   return [
-    'CANONICAL MATCHUP MASTER LOCK: Naruto/Kurama versus Sasuke/Perfect Susanoo. Render a premium anime battle key visual with a wide readable left-vs-right composition, strong silhouette separation and one clear central clash.',
-    'LEFT: Naruto Uzumaki is visibly associated with a gigantic complete golden-orange Kurama chakra fox avatar. Kurama must read as a fox/beast with a clear draconic-NOT-allowed fox head, powerful torso, canonical black chakra markings and nine distinct tails, all individually readable and flowing. Keep Naruto recognizable and separate from Kurama rather than turning Kurama into a humanoid Naruto clone.',
-    'RIGHT: Sasuke Uchiha is visibly associated with a gigantic complete violet Perfect Susanoo. Susanoo must be a full armored winged humanoid chakra avatar with recognizable helmet/face structure, broad armor plates, BOTH wings visible when framing permits and a luminous sword. Never reduce it to purple smoke, a generic demon, mecha or cropped torso.',
-    'CENTER: one controlled energy collision between the two sides. The clash is a focal connector, not the subject itself: it must occupy a minority of the frame and may not obscure Kurama, Naruto, Sasuke or Susanoo.',
-    'DEPTH: foreground debris/terrain, full combatants in the midground, environment/background behind them. Avoid thumbnail-like close crops, duplicated characters, random third fighters and unreadable energy clutter.',
-    'COLOR DISCIPLINE: Naruto/Kurama side is gold/orange/fire; Sasuke/Susanoo side is violet/purple/electric blue. Preserve clean color ownership instead of mixing both palettes over every subject.',
+    'CANONICAL MATCHUP MASTER LOCK: Naruto in the requested Kurama form versus Sasuke with Perfect Susanoo. Render a premium anime battle key visual with a wide readable left-vs-right composition, strong silhouette separation and one clear central clash.',
+    narutoLock,
+    'RIGHT: Sasuke Uchiha must remain visibly Sasuke — BLACK hair and recognizable Uchiha/Sasuke face-silhouette — and is surrounded/associated with a gigantic complete VIOLET/PURPLE Perfect Susanoo. Susanoo must be a full armored humanoid chakra avatar, winged when framing permits, not purple smoke, generic demon, dragon, mecha or ordinary aura.',
+    'CENTER: one controlled energy collision between the two sides. The clash is a focal connector, not the subject itself: it must occupy a minority of the frame and may not obscure Naruto, Sasuke or Perfect Susanoo.',
+    'DEPTH: foreground debris/terrain, full readable combatants in the midground, environment/background behind them. Avoid thumbnail-like close crops, duplicated characters, random third fighters and unreadable energy clutter.',
+    'COLOR DISCIPLINE: Naruto/Kurama mode is gold/orange; Sasuke/Perfect Susanoo is violet/purple/electric blue. Preserve clean color ownership instead of recoloring both fighters red/orange.',
     requestsValleyOfTheEnd(input)?'SETTING LOCK: Valley of the End, waterfall canyon, dramatic sky and the monumental Hashirama and Madara statues clearly readable behind the battle, without replacing the combatants.':''
   ].filter(Boolean).join('\n');
 }
@@ -38,7 +53,8 @@ export function matchupReferenceQueries(input:string){
 }
 export type SemanticImageReview={status:'passed'|'failed'|'unavailable';issues:string[];retryPrompt:string;reviewProvider?:string;reviewModel?:string};
 const ISSUE_REPAIRS:Record<string,string>={
-  'missing-kurama':'Show the complete golden nine-tailed Kurama avatar clearly on the Naruto side.',
+  'missing-kurama':'Show the complete golden nine-tailed Kurama avatar clearly on the Naruto side only when a full Kurama avatar was requested.',
+  'wrong-kurama-mode':'Correct Naruto into Kurama Chakra Mode: preserve his blond hair and whisker marks and wrap his own body in a bright golden-orange chakra cloak/aura. Do not replace this with red clothing or a generic orange monster.',
   'missing-susanoo':'Show the complete purple armored winged Perfect Susanoo clearly on the Sasuke side.',
   'wrong-naruto-identity':'Correct Naruto Uzumaki: spiky blond hair, visible whisker cheek marks, Leaf shinobi identity cues and the requested golden Kurama chakra form. Do not recolor his hair red or replace him with a generic anime fighter.',
   'wrong-sasuke-identity':'Correct Sasuke Uchiha: black hair, recognizable Sasuke face/silhouette and requested Sasuke-era clothing cues. Keep him visually distinct from Naruto and generic red-cloaked fighters.',
