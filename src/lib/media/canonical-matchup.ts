@@ -38,10 +38,15 @@ export function matchupReferenceQueries(input:string){
 }
 export type SemanticImageReview={status:'passed'|'failed'|'unavailable';issues:string[];retryPrompt:string;reviewProvider?:string;reviewModel?:string};
 const ISSUE_REPAIRS:Record<string,string>={
-  'missing-kurama':'Show the complete golden nine-tailed Kurama avatar clearly on the left.',
-  'missing-susanoo':'Show the complete purple armored winged Perfect Susanoo clearly on the right.',
-  'low-character-readability':'Increase separation and readability of both full avatars.',
-  'central-explosion':'Reduce the central explosion so it does not cover either avatar.',
+  'missing-kurama':'Show the complete golden nine-tailed Kurama avatar clearly on the Naruto side.',
+  'missing-susanoo':'Show the complete purple armored winged Perfect Susanoo clearly on the Sasuke side.',
+  'wrong-naruto-identity':'Correct Naruto Uzumaki: spiky blond hair, visible whisker cheek marks, Leaf shinobi identity cues and the requested golden Kurama chakra form. Do not recolor his hair red or replace him with a generic anime fighter.',
+  'wrong-sasuke-identity':'Correct Sasuke Uchiha: black hair, recognizable Sasuke face/silhouette and requested Sasuke-era clothing cues. Keep him visually distinct from Naruto and generic red-cloaked fighters.',
+  'wrong-kurama-form':'Correct Kurama into a recognizable fox/Nine-Tails chakra avatar with fox anatomy and multiple distinct tails. Do not use a dragon, wolf, flame monster or humanoid clone.',
+  'wrong-susanoo-form':'Correct Perfect Susanoo into a gigantic complete violet/purple armored winged humanoid chakra avatar. Do not use smoke, ordinary aura, dragon, generic demon or mecha.',
+  'wrong-color-ownership':'Restore color ownership: Naruto/Kurama = gold/orange; Sasuke/Perfect Susanoo = violet/purple/electric-blue accents. Do not make both sides orange/red.',
+  'low-character-readability':'Increase separation and readability of Naruto, Sasuke, Kurama and Perfect Susanoo.',
+  'central-explosion':'Reduce the central explosion so it does not cover either avatar or the two human characters.',
   'missing-statues':'Show the Valley of the End waterfall canyon and both Hashirama and Madara statues.'
 };
 export function parseSemanticImageReview(value:unknown,originalPrompt:string):SemanticImageReview{
