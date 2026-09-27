@@ -1,8 +1,8 @@
 ---
 name: predictlm-master
-description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
+description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.30.0"
+  version: "3.31.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.30.0
+# PredictLM Master v3.31.0
 
 ## Regra soberana
 
@@ -82,7 +82,7 @@ Rotas internas possíveis:
 - segurança/fraude;
 - runtime/diagnóstico;
 - simulação de cenários;
-- simulação visual de vida;
+- simulação Minecraft cognitiva;
 - self-improve.
 
 Uma rota é dona da resposta final.
@@ -160,48 +160,88 @@ Não inventar porcentagens sem base estatística. Simulação é contrafactual, 
 
 Se o host permitir raciocínio adicional, usar o tempo de raciocínio disponível até convergir ou chegar ao limite de evidência. Nunca usar espera artificial.
 
-# Life Simulation Studio — mundo visual 2D
+# Minecraft Cognitive World — única superfície de Simulação
 
-A simulação visual de vida é outra capacidade e só abre quando o usuário mandar explicitamente abrir/iniciar/rodar a simulação visual.
+A Simulação visual do PredictLM possui **um único modo público: Minecraft Cognitive World**.
 
-Regras:
-- começa pausada;
-- F5 volta pausado;
-- 2D leve;
-- personagem, necessidades, relações, memória, economia, eventos, NeuroCore;
-- self-model visual apenas dentro da simulação ou quando explicitamente pedido;
-- não gerar mídia automaticamente;
-- não converter simulação em jogo sem pedido;
-- instrução de atividade dentro do Studio pode ser acompanhada por Scenario Lab antes de executar uma ação de impacto;
-- eventos e decisões podem comparar trajetórias alternativas antes da escolha final.
+Não expor, restaurar ou oferecer em paralelo:
+- Life World / cidade / Sims;
+- modo Vida;
+- seletor Vida ↔ Voxel;
+- outro sandbox visual concorrente.
 
-## Voxel World + Unity na Life Simulation Studio
+Compatibilidade antiga pode redirecionar comandos como “simulação de vida” para o Minecraft Cognitive World, mas não cria outro modo.
 
-A Simulação possui dois espaços complementares:
-1. **Life World** — cotidiano, relações, memória, necessidades e agentes.
-2. **Voxel World** — sandbox procedural Minecraft-class, persistente e praticamente sem fronteira de gameplay em X/Z.
+## Mundo compartilhado e quatro cérebros
 
-Voxel World deve preservar:
-- chunks determinísticos por seed;
-- biomas/recursos;
-- mineração/construção;
-- delta persistence;
-- inventário/crafting/fundição/comida/farming;
-- sobrevivência/criativo;
-- mobs/combate;
-- estruturas, cavernas, minas, vilas e dungeons;
-- dia/noite, clima, dimensões;
-- Dungeons apenas como segunda referência para loot, bosses e dungeon loops.
+O mesmo save físico é jogado simultaneamente por:
+- **Humano** — Human Core / H01-derived functional controller;
+- **Macaco** — Macaque Core;
+- **Camundongo** — Mouse Core;
+- **Mosca** — Fly Core / FlyWire-derived functional controller.
 
-Referências Minecraft registradas são mantidas em
-`src/lib/simulation/minecraft-reference-fabric.ts`; fontes sem licença verificada são reference-only.
+Cada cérebro possui:
+- posição e dimensão próprias;
+- saúde/fome/inventário próprios;
+- objetivo, última ação e memória operacional;
+- percepção local, sem onisciência;
+- **POV selecionável na UI**, acompanhando o agente em Overworld, Nether ou End.
 
-Unity:
-- `jbruening/UnEngine` (MIT) orienta GameObject/Component/Transform/Camera/Physics;
-- `src/lib/unity-fabric.ts` é o contrato compartilhado do app;
+Pensamento exibido é um resumo público do estado/objetivo do agente, nunca chain-of-thought privado nem “leitura de mente”.
+
+## Ciclo obrigatório
+
+**PERCEBER → DECIDIR → AGIR → ALTERAR O MUNDO → VERIFICAR → MEMORIZAR**
+
+Se o agente diz que minerou, construiu, lutou, comeu, viajou ou coletou algo, o estado físico precisa refletir isso. Narrativa não substitui transição de estado.
+
+## Conteúdo mínimo do mundo
+
+Preservar e expandir:
+- chunks procedurais amplos por seed;
+- árvores, madeira e biomas;
+- vilas/villagers;
+- cavernas, minas, ruínas, torres, dungeons e strongholds;
+- carvão, ferro, ouro, diamante e recursos dimensionais;
+- inventário, crafting e fundição;
+- ferramentas, armas, armaduras e escudo;
+- móveis colocáveis: cama, mesa, cadeira, estante, porta, escada, baú e iluminação;
+- comidas, agricultura, fome e sobrevivência;
+- animais, monstros e combate;
+- ciclo dia/noite e clima;
+- Overworld, Nether e End;
+- construção/destruição persistentes;
+- save/import/export;
+- survival e creative.
+
+## POV cognitivo
+
+A câmera pode alternar entre Você, Humano, Macaco, Camundongo e Mosca.
+
+Quando um cérebro é selecionado:
+- o viewport usa sua posição e dimensão;
+- estruturas/mobs visíveis são calculados a partir daquele ponto;
+- a câmera entra em modo espectador para impedir que o usuário altere o mundo usando indevidamente o inventário do cérebro;
+- perfis visuais podem variar como aproximações funcionais de campo/contraste/prioridade perceptual, sem afirmar reprodução biológica literal.
+
+## Unity
+
+- `src/lib/unity-fabric.ts` continua sendo a ponte compartilhada;
 - `unity/PredictLMSimulation` contém o companion WebGL;
-- `NEXT_PUBLIC_UNITY_SIMULATION_URL` ativa um runtime Unity WebGL real quando disponível;
-- sem essa URL, usar renderer nativo e não declarar que Unity foi executado.
+- `NEXT_PUBLIC_UNITY_SIMULATION_URL` ativa runtime Unity WebGL quando configurado;
+- sem URL válida, usar renderer nativo e não fingir execução Unity.
+
+## Arquivos canônicos
+
+- `src/components/GrokSimulationPanel.tsx`
+- `src/components/MinecraftSimulationPanel.tsx`
+- `src/lib/simulation/minecraft-sandbox.ts`
+- `src/lib/simulation/minecraft-brain-agents.ts`
+- `src/lib/simulation/minecraft-reference-fabric.ts`
+- `src/lib/cognitive/*`
+- `skills/life-simulation/SKILL.md` como contrato de compatibilidade Minecraft-only.
+
+Referências externas sem licença verificada permanecem reference-only. Não incorporar assets proprietários do Minecraft.
 
 # CENTUM 100 — revisão completa de decisões
 
@@ -374,7 +414,7 @@ Regras:
 
 ## Game Studio Fabric — somente na Simulação
 
-A Game Studio Fabric pertence à **Life Simulation Studio**, não ao Build genérico.
+A Game Studio Fabric pertence ao **Minecraft Cognitive World**, não ao Build genérico.
 
 Ela coordena o mundo persistente como um estúdio interno:
 - Simulation Producer;
