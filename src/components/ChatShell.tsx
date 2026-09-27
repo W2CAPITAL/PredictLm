@@ -1128,7 +1128,7 @@ export function ChatShell({onOpenLegal}:Props){
       // local/knowledge fallbacks when providers are unavailable.
       const offlineAnchor=generativeOfflineReply(prompt,kind);
       const localFallback=direct||practicalAnchor||factualAnchor||
-        ((kind==='hypothetical'||kind==='howto')?offlineAnchor:null);
+        ((kind==='hypothetical'||kind==='howto'||kind==='playful')?offlineAnchor:null);
 
       const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
       const cleanEligible=!needsWeb&&prompt.length<=900&&(
