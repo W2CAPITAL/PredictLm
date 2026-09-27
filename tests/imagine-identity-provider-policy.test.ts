@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { identityProviderDecision } from '../src/lib/media/identity-provider-policy';
-import { parseSemanticImageReview } from '../src/lib/media/canonical-matchup';
+import { matchupNegativeConstraints, parseSemanticImageReview } from '../src/lib/media/canonical-matchup';
 
 test('strict identity routing blocks text-only nano-banana for named anime characters',()=>{
   const decision=identityProviderDecision({
@@ -63,4 +63,14 @@ test('Kurama Chakra Mode does not require a separate full Kurama fox avatar',()=
   assert.deepEqual(review.issues,['wrong-kurama-mode','wrong-naruto-identity']);
   assert.doesNotMatch(review.retryPrompt,/complete golden nine-tailed Kurama avatar/i);
   assert.match(review.retryPrompt,/golden-orange chakra cloak/i);
+});
+
+
+test('Kurama-mode negatives reject the red/dragon failure without demanding a giant fox',()=>{
+  const prompt='Naruto Uzumaki no modo Kurama com aura dourada no corpo lutando contra Sasuke com Susanoo Perfeito';
+  const negatives=matchupNegativeConstraints(prompt).join(' | ');
+  assert.match(negatives,/red-haired Naruto/i);
+  assert.match(negatives,/separate giant dragon/i);
+  assert.doesNotMatch(negatives,/missing Kurama/i);
+  assert.doesNotMatch(negatives,/dragon instead of Kurama/i);
 });
