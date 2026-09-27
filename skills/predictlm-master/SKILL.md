@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.25.0"
+  version: "3.26.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.25.0
+# PredictLM Master v3.26.0
 
 ## Regra soberana
 
@@ -1246,3 +1246,8 @@ Rules:
 - remote reference URLs remain usable by reference-aware fallbacks even if inline CDN download fails;
 - Naruto/Kurama vs Sasuke/Perfect Susanoo reference selection must cover both sides and the canonical verifier checks Naruto identity, Sasuke identity, Kurama form, Perfect Susanoo form and color ownership;
 - rejected candidates remain diagnostics-only and never become Recent/Visual ID memory/final output.
+
+
+## Visual transformation semantics v3.26
+
+Character-form parsing distinguishes a mode on the character from a separate avatar/entity. `Naruto no modo Kurama` means Naruto remains Naruto with blond hair, whisker marks and a golden-orange Kurama chakra cloak/aura on his own body. A separate giant Kurama fox is required only when the prompt explicitly asks for the full Kurama avatar/Nine-Tails. `Sasuke com Susanoo Perfeito` still requires the surrounding separate Perfect Susanoo avatar. Scene planning, verification and repair must share this interpretation.
