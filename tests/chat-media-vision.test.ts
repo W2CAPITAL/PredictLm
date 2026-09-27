@@ -33,7 +33,7 @@ for(const prompt of ['quem é naruto','quem é elon musk'])test(prompt,()=>{
   assert.equal(shouldSearchConversation(classifyConversation(prompt),true,prompt),false);
 });
 test('factual identity does not accept unsolicited rankings',()=>assert.equal(publicAnswerGate('Elon Musk é o mais rico, com fortuna de trilhões.','pt-BR','quem é elon musk').ok,false));
-const scene='naruto kurama lutando contra sasuke susanoo perfeito no vale do fim';
+const scene='naruto com avatar completo da kurama, raposa gigante de nove caudas, lutando contra sasuke susanoo perfeito no vale do fim';
 test('canonical lock survives compilation with reference notes and negatives',()=>{
   assert.equal(isNarutoKuramaVsSasukeSusanooPrompt(scene),true);
   assert.equal(recommendedImageStyle(scene),'Anime');
