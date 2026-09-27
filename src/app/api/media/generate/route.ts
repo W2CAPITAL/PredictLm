@@ -296,6 +296,10 @@ export async function POST(req:Request){
 
     const mediaBase=String(process.env.MEDIA_IMAGE_BASE_URL||'').trim();
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
+    const gatewayKey=String(process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN||'').trim();
+    const gatewayBase=String(process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1').trim().replace(/\/$/,'');
+    const gatewayImageModels=String(process.env.PREDICTLM_GATEWAY_IMAGE_MODELS||'google/gemini-3.1-flash-image,xai/grok-imagine-image-2.0')
+      .split(',').map(x=>x.trim()).filter(Boolean);
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
     const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
     const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
@@ -305,9 +309,72 @@ export async function POST(req:Request){
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
     const requestedModel=String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
     const nanoModel=String(process.env.NANO_BANANA_MODEL||'nano-banana').trim();
-    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,comfyui,nano,configured')
+    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,vercel-gateway,comfyui,nano,configured')
       .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
     if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
+
+    // Vercel-hosted PredictLM can use the automatically injected OIDC token
+    // for AI Gateway image generation. This avoids treating an obsolete
+    // unauthenticated public image endpoint as the primary hosted fallback.
+    if(order.includes('vercel-gateway')&&gatewayKey&&!avoidProviders.has('vercel-gateway-image')){
+      for(const gatewayModel of gatewayImageModels){
+        try{
+          const upstream=await fetch(gatewayBase+'/images/generations',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer '+gatewayKey
+            },
+            body:JSON.stringify({
+              model:gatewayModel,
+              prompt:providerPrompt,
+              n:1,
+              size:providerImageSize(width,height,false)
+            }),
+            signal:AbortSignal.timeout(90000)
+          });
+          const data=await upstream.json().catch(()=>({}));
+          if(!upstream.ok)continue;
+          const first=data?.data?.[0]||{};
+          const remoteUrl=first?.url||data?.url||null;
+          const b64=first?.b64_json||data?.b64_json||null;
+          if(!remoteUrl&&!b64)continue;
+          const imageUrl=b64?'data:image/png;base64,'+b64:String(remoteUrl);
+          return Response.json({
+            url:imageUrl,
+            provider:'vercel-gateway-image',
+            model:gatewayModel,
+            width,height,seed,
+            identityLocked:true,
+            referenceQuery:referencePlan.query||null,
+            referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
+            referenceImagesPassed:0,
+            userReferenceCount:userInline.length,
+            identityMemoryReferenceCount:identityMemoryInline.length,
+            searchedReferenceCount:searchedInline.length,
+            bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+            referenceReview,
+            referenceWarnings:referencePlan.warnings,
+            originalPrompt:sourcePrompt,
+            expandedPrompt:providerPrompt,
+            caption:buildSafeCaptionPtBr(sourcePrompt),
+            displayTitle:buildDisplayTitle(sourcePrompt),
+            parityContract:'grok-imagine-parity',
+            promptMode:effectivePromptMode,
+            negativePrompt,
+            style,
+            styleLocked,
+            fidelityLimited:needsStrongIdentity,
+            providerWarning:needsStrongIdentity
+              ? 'AI Gateway gerou a imagem por prompt estruturado; a revisão semântica continua obrigatória para identidade de personagem.'
+              : null,
+            postprocessPlan
+          });
+        }catch{
+          // Try the next Gateway image model, then the remaining providers.
+        }
+      }
+    }
 
     const comfy=comfyImageConfig();
     const comfyReferenceTransportPotential=inlineReferences.length>0&&(
