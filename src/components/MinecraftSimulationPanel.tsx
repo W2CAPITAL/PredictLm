@@ -381,14 +381,19 @@ export function MinecraftSimulationPanel(){
       if(viewTarget!=='player')return;
       if(['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement)?.tagName))return;
       const key=e.key.toLowerCase();
-      let dx=0,dz=0;
-      if(key==='w'||key==='arrowup')dz=-1;
-      if(key==='s'||key==='arrowdown')dz=1;
-      if(key==='a'||key==='arrowleft')dx=-1;
-      if(key==='d'||key==='arrowright')dx=1;
-      if(!dx&&!dz)return;
+      let forward=0,strafe=0;
+      if(key==='w'||key==='arrowup')forward=1;
+      if(key==='s'||key==='arrowdown')forward=-1;
+      if(key==='a'||key==='arrowleft')strafe=-1;
+      if(key==='d'||key==='arrowright')strafe=1;
+      if(!forward&&!strafe)return;
       e.preventDefault();
-      setWorld(prev=>moveVoxelPlayer(prev,dx,dz));
+      setWorld(prev=>{
+        const yaw=prev.player.yaw||0;
+        const dx=Math.round(Math.sin(yaw)*forward+Math.cos(yaw)*strafe);
+        const dz=Math.round(Math.cos(yaw)*forward-Math.sin(yaw)*strafe);
+        return moveVoxelPlayer(prev,dx,dz);
+      });
     };
     window.addEventListener('keydown',onKey);
     return()=>window.removeEventListener('keydown',onKey);
@@ -459,7 +464,14 @@ export function MinecraftSimulationPanel(){
     }
   }
 
-  function move(dx:number,dz:number){setWorld(prev=>moveVoxelPlayer(prev,dx,dz))}
+  function moveRelative(forward:number,strafe:number){
+    setWorld(prev=>{
+      const yaw=prev.player.yaw||0;
+      const dx=Math.round(Math.sin(yaw)*forward+Math.cos(yaw)*strafe);
+      const dz=Math.round(Math.cos(yaw)*forward-Math.sin(yaw)*strafe);
+      return moveVoxelPlayer(prev,dx,dz);
+    });
+  }
   function selectView(target:ViewTarget){
     setViewTarget(target);
     if(target==='player'){
@@ -628,11 +640,11 @@ export function MinecraftSimulationPanel(){
         {renderMode==='map'?<div className={styles.mapBadge}>MAPA 2D · visão auxiliar</div>:null}
         {viewTarget==='player'?<div className={styles.movePad}>
           <span/>
-          <button onClick={()=>move(0,-1)}>W</button>
+          <button onClick={()=>moveRelative(1,0)}>W</button>
           <span/>
-          <button onClick={()=>move(-1,0)}>A</button>
-          <button onClick={()=>move(0,1)}>S</button>
-          <button onClick={()=>move(1,0)}>D</button>
+          <button onClick={()=>moveRelative(0,-1)}>A</button>
+          <button onClick={()=>moveRelative(-1,0)}>S</button>
+          <button onClick={()=>moveRelative(0,1)}>D</button>
         </div>:<div className={styles.spectatorBadge}>POV autônomo · acompanhando {viewLabel}</div>}
       </main>
 
