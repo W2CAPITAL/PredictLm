@@ -170,3 +170,13 @@ The user should not need to write a negative prompt for normal generation. Chara
 Provider success means **usable image bytes**, not merely HTTP 200. The render fallback validates PNG/JPEG/WebP/AVIF bytes, retries alternate configured fallback models after an invalid 200/JSON/HTML response, and only after exhausting those attempts returns the terminal user-facing message: `O provider não entregou uma imagem válida`.
 
 For Naruto Kurama Chakra Mode, automatic negatives protect Naruto's blond hair, whisker identity and golden chakra cloak on Naruto's body. Full-Kurama-avatar negatives are activated only by an explicit full-avatar request.
+
+
+## Hosted image gateway recovery
+
+On Vercel, Imagine may authenticate to Vercel AI Gateway with the deployment's `VERCEL_OIDC_TOKEN` before public fallbacks. Endpoint selection follows the model contract:
+- Gemini/Nano Banana multimodal text-to-image → `/v1/chat/completions`, image read from `message.images`;
+- image-only Grok/Flux/GPT Image → `/v1/images/generations`;
+- reference-aware repair/edit for supported models → `/v1/images/edits` with JSON image URLs/data URLs.
+
+The hosted route therefore does not depend on the obsolete unauthenticated `image.pollinations.ai` host. Pollinations fallback uses the current `gen.pollinations.ai/image/` endpoint and requires current authentication/configuration.
