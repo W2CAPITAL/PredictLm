@@ -135,6 +135,8 @@ export async function POST(req:Request){
     const candidateIndex=Math.max(0,Math.min(4,Math.floor(Number(body?.candidateIndex)||0)));
     const candidateCount=Math.max(1,Math.min(4,Math.floor(Number(body?.candidateCount)||bestImagePlan.candidateCount)));
     const candidateDirective=candidateVariationDirective(candidateIndex,candidateCount);
+    const avoidProviders=new Set((Array.isArray(body?.avoidProviders)?body.avoidProviders:[]).map((x:any)=>String(x||'').trim().toLowerCase()).filter(Boolean));
+    const strictIdentityProvider=body?.strictIdentityProvider!==false;
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
@@ -206,6 +208,8 @@ export async function POST(req:Request){
     const searchedInline=approvedDownloaded.map(x=>x.inline);
     const searchedReferenceUrls=approvedDownloaded.map(x=>x.ref.imageUrl);
     const inlineReferences=[...userInline,...identityMemoryInline,...searchedInline].slice(0,3);
+    const referenceEvidenceAvailable=inlineReferences.length>0||referencePlan.references.length>0;
+    const requireReferenceTransport=body?.requireReferenceTransport===true||(needsStrongIdentity&&strictIdentityProvider&&referenceEvidenceAvailable);
     const referenceReview={
       candidatesFound:Number(referencePlan.candidatesFound||referencePlan.references.length),
       urlsDownloaded:downloadCandidates.length,
@@ -261,7 +265,14 @@ export async function POST(req:Request){
     if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
 
     const comfy=comfyImageConfig();
-    if(order.includes('comfyui')&&comfy.enabled){
+    const comfyReferenceTransportPotential=inlineReferences.length>0&&(
+      comfy.workflow.includes('{{REFERENCE_1_FILENAME}}')||
+      comfy.workflow.includes('{{IMAGE_FILENAME}}')
+    );
+    const comfyBlockedByIdentity=avoidProviders.has('comfyui')||(
+      requireReferenceTransport&&referenceEvidenceAvailable&&!comfyReferenceTransportPotential
+    );
+    if(order.includes('comfyui')&&comfy.enabled&&!comfyBlockedByIdentity){
       try{
         const comfyResult=await runComfyImageWorkflow({
           prompt:providerPrompt,
@@ -272,10 +283,7 @@ export async function POST(req:Request){
           references:inlineReferences,
           timeoutMs:42000
         });
-        const comfyReferenceTransport=inlineReferences.length>0&&(
-          comfy.workflow.includes('{{REFERENCE_1_FILENAME}}')||
-          comfy.workflow.includes('{{IMAGE_FILENAME}}')
-        );
+        const comfyReferenceTransport=comfyReferenceTransportPotential;
         const fidelityWarning=needsStrongIdentity
           ? referencePlan.references.length===0&&userInline.length===0
             ? 'Pedido de alta fidelidade sem referência visual disponível; o workflow ComfyUI depende do modelo e do prompt.'
@@ -321,7 +329,7 @@ export async function POST(req:Request){
       ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
       ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
       ...(order.includes('configured')&&mediaBase?[{id:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false}]:[])
-    ];
+    ].filter(provider=>!avoidProviders.has(provider.id));
 
     for(const provider of providers){
       try{
@@ -333,6 +341,12 @@ export async function POST(req:Request){
           ...userInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
           ...referencePlan.references.map(x=>x.imageUrl)
         ].slice(0,4);
+        const canTransportReferences=provider.gemini
+          ? inlineReferences.length>0
+          : provider.id==='configured-image'&&!!mediaReferenceField&&configuredReferenceValues.length>0;
+        const textOnlyIdentityBlocked=needsStrongIdentity&&strictIdentityProvider&&provider.id==='nano-banana';
+        if(textOnlyIdentityBlocked)continue;
+        if(requireReferenceTransport&&referenceEvidenceAvailable&&!canTransportReferences)continue;
 
         const providerBody=provider.gemini?{
           contents:[{
@@ -418,7 +432,10 @@ export async function POST(req:Request){
 
     // O fallback textual continua recebendo o identity lock. Referências visuais reais
     // exigem Gemini multimodal ou um provider configurado com MEDIA_IMAGE_REFERENCE_FIELD.
-    const automaticReferenceUrls=searchedReferenceUrls.slice(0,3);
+    const automaticReferenceUrls=[...new Set([
+      ...searchedReferenceUrls,
+      ...referencePlan.references.map(x=>x.imageUrl).filter(Boolean)
+    ])].slice(0,3);
     const wantsReferenceFallback=needsStrongIdentity&&automaticReferenceUrls.length>0;
     const fallbackModel=wantsReferenceFallback
       ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
@@ -441,6 +458,9 @@ export async function POST(req:Request){
       referenceImagesPassed:referenceCapableFallback?automaticReferenceUrls.length:0,
       automaticReferenceCount:automaticReferenceUrls.length,
       userReferenceCount:userInline.length,
+      identityMemoryReferenceCount:identityMemoryInline.length,
+      bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+      identityProviderPolicy:{requireReferenceTransport,strictIdentityProvider,blockedTextOnlyNano:needsStrongIdentity&&strictIdentityProvider},
       searchedReferenceCount:searchedInline.length,
       referenceReview,
       referenceWarnings:referencePlan.warnings,
