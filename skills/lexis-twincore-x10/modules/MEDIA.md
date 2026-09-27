@@ -136,3 +136,16 @@ Regras:
 - geração que falha identidade não entra em Recent nem vira memória de identidade.
 
 Esse padrão adota princípios públicos observáveis em geradores de ponta: referências de imagem, edição multi-turn/repair, identity consistency e seleção do melhor resultado. Não presume acesso a pesos ou técnicas proprietárias.
+
+
+## Strict identity provider policy
+
+Para personagem/franquia específica, um provider text-only não pode vencer o roteamento apenas por responder primeiro.
+
+- `nano-banana` textual é bloqueado no modo de identidade rígida;
+- quando referências existem, a rota escolhida deve conseguir transportar pixels de referência ou o sistema deve cair para um fallback image-to-image/reference-aware;
+- em repair, o provider que acabou de falhar a identidade entra em `avoidProviders` para forçar failover;
+- referências remotas válidas continuam disponíveis para o fallback mesmo quando o CDN não pôde ser convertido em inline base64;
+- JPEG/PNG/WebP podem ser reconhecidos pelos bytes quando o CDN devolve MIME incorreto;
+- para Naruto/Kurama vs Sasuke/Susanoo, as referências são diversificadas para cobrir os dois lados do confronto, evitando três imagens do mesmo personagem;
+- candidato rejeitado fica recolhido em diagnóstico e nunca aparece como se fosse a geração aceita.
