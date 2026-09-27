@@ -179,7 +179,7 @@ export async function POST(req:Request){
     const candidateIndex=Math.max(0,Math.min(4,Math.floor(Number(body?.candidateIndex)||0)));
     const candidateCount=Math.max(1,Math.min(4,Math.floor(Number(body?.candidateCount)||bestImagePlan.candidateCount)));
     const candidateDirective=candidateVariationDirective(candidateIndex,candidateCount);
-    const avoidProviders=new Set((Array.isArray(body?.avoidProviders)?body.avoidProviders:[]).map((x:any)=>String(x||'').trim().toLowerCase()).filter(Boolean));
+    const avoidProviders=new Set<string>((Array.isArray(body?.avoidProviders)?body.avoidProviders:[]).map((x:any)=>String(x||'').trim().toLowerCase()).filter(Boolean));
     const strictIdentityProvider=body?.strictIdentityProvider!==false;
     const attempt=Math.max(0,Math.min(20,Math.floor(Number(body?.attempt)||0)));
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
