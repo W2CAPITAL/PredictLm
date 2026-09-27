@@ -2,7 +2,7 @@ import { isNarutoKuramaVsSasukeSusanooPrompt } from '@/lib/media/canonical-match
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
-import { mediaErrorText } from '@/lib/media/media-errors';
+import { INVALID_IMAGE_PROVIDER_MESSAGE, mediaErrorText } from '@/lib/media/media-errors';
 import { mediaPostprocessPlan, mediaQualityDirectives } from '@/lib/media/postprocess-pipeline';
 import { buildDisplayTitle, buildSafeCaptionPtBr, recommendedImageStyle, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
@@ -541,6 +541,9 @@ export async function POST(req:Request){
           : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
     });
   }catch(error:any){
-    return Response.json({error:mediaErrorText(error,'Falha ao gerar imagem.')},{status:500});
+    return Response.json({
+      error:INVALID_IMAGE_PROVIDER_MESSAGE,
+      detail:mediaErrorText(error,'Falha ao gerar imagem.')
+    },{status:500});
   }
 }
