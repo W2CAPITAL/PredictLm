@@ -26,9 +26,10 @@ test('anime character prompts use multi-candidate best-image planning',()=>{
   assert.match(plan.promptContract,/violet|purple/i);
 });
 
-test('specific franchise prompts get at least two candidates',()=>{
-  assert.equal(candidateCountForImage('Faça o Freeza olhando para a câmera'),2);
+test('specific franchise prompts get bounded best-of-N candidates',()=>{
+  assert.equal(candidateCountForImage('Faça o Freeza olhando para a câmera'),3);
   assert.equal(candidateCountForImage(naruto),3);
+  assert.equal(candidateCountForImage('Retrato cinematográfico de uma pessoa anônima sob chuva'),1);
 });
 
 test('candidate ranking prioritizes semantic identity pass over prettier wrong image',()=>{
