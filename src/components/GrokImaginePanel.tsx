@@ -596,11 +596,83 @@ export function GrokImaginePanel(){
         : '';
       const renderPrompt=basePrompt+reviewHints+uniqueness;
 
+      const bestPlan=buildBestImagePlan(prompt,style);
+      const priorIdentity=!regenerate&&bestPlan.identityKey?loadVisualIdentityMemory(bestPlan.identityKey):null;
+      const identityReferenceImages:string[]=[];
+      if(priorIdentity?.approvedImageUrl&&!referenceImages.length){
+        setImageStage('Recuperando identidade visual aprovada…');
+        const remembered=await imageUrlToReferenceDataUrl(priorIdentity.approvedImageUrl).catch(()=>'');
+        if(remembered)identityReferenceImages.push(remembered);
+      }
+
+      const shouldSemanticReview=deepThink||looksSpecificVisualPrompt(prompt)||prompt.length>80;
+      const totalCandidates=regenerate?1:bestPlan.candidateCount;
+      const candidates:any[]=[];
+      let candidateSeed=nextSeed;
+
+      for(let candidateIndex=0;candidateIndex<totalCandidates;candidateIndex++){
+        setImageStage(totalCandidates>1
+          ? 'Gerando e avaliando candidato '+(candidateIndex+1)+'/'+totalCandidates+'…'
+          : (regenerate?'Criando uma composição diferente e melhor…':'Gerando imagem em alta qualidade…'));
+        const candidateAttempt=nextAttempt+candidateIndex;
+        const candidateData=await createImageUrl(
+          renderPrompt,
+          candidateSeed,
+          candidateAttempt,
+          false,
+          '',
+          combinedDirectorBrief,
+          candidateIndex,
+          totalCandidates,
+          identityReferenceImages
+        );
+        const candidateUrl=candidateData.url;
+        const candidateExpanded=candidateData.expandedPrompt||renderPrompt;
+
+        if(candidateData.provider==='entity-self-reference'){
+          candidates.push({
+            data:candidateData,url:candidateUrl,expandedPrompt:candidateExpanded,
+            finalReview:null,semanticReview:null,seed:candidateSeed,attempt:candidateAttempt,
+            semanticStatus:'passed',technicalScore:100,referencesPassed:1,fidelityLimited:false,issues:[]
+          });
+          break;
+        }
+
+        setImageStage(totalCandidates>1
+          ? 'Revisando candidato '+(candidateIndex+1)+'/'+totalCandidates+'…'
+          : 'Revisando nitidez, composição e identidade…');
+        const technical=await reviewImageQuality(candidateUrl).catch(()=>null);
+        const semantic=shouldSemanticReview?await reviewSemanticImage(candidateUrl,prompt):null;
+        const semanticStatus=semantic?.status||'';
+        candidates.push({
+          data:candidateData,
+          url:candidateUrl,
+          expandedPrompt:candidateExpanded,
+          finalReview:technical,
+          semanticReview:semantic,
+          seed:candidateSeed,
+          attempt:candidateAttempt,
+          semanticStatus,
+          technicalScore:technical?.score??0,
+          referencesPassed:Number(candidateData.referenceImagesPassed||0),
+          fidelityLimited:!!candidateData.fidelityLimited,
+          issues:Array.isArray(semantic?.issues)?semantic.issues:[]
+        });
+        candidateSeed=autoVariationSeed(candidateSeed);
+      }
+
+      const selectedIndex=bestCandidateIndex(candidates);
+      if(selectedIndex<0)throw new Error('Nenhum candidato de imagem foi produzido.');
+      const selected=candidates[selectedIndex];
+      let data=selected.data;
+      let url=selected.url;
+      let expandedPrompt=selected.expandedPrompt;
+      let finalReview=selected.finalReview as ImageQualityReview|null;
+      let semanticReview=selected.semanticReview as Awaited<ReturnType<typeof reviewSemanticImage>>|null;
+      nextSeed=selected.seed;
+      nextAttempt=selected.attempt;
       setSeed(nextSeed);
       setAttempt(nextAttempt);
-      let data=await createImageUrl(renderPrompt,nextSeed,nextAttempt,false,'',combinedDirectorBrief);
-      let url=data.url;
-      let expandedPrompt=data.expandedPrompt||renderPrompt;
 
       if(data.provider==='entity-self-reference'){
         const caption=await generateSceneCaption(expandedPrompt,data.caption);
@@ -624,11 +696,11 @@ export function GrokImaginePanel(){
         return url;
       }
 
-      setImageStage('Revisando nitidez e exposição…');
-      let finalReview=await reviewImageQuality(url).catch(()=>null);
+      const selectedScore=scoreImageCandidate(selected);
+      setImageStage(totalCandidates>1
+        ? 'Melhor candidato selecionado · '+selectedScore+'/100'
+        : 'Candidato avaliado · '+selectedScore+'/100');
 
-      const shouldSemanticReview=deepThink||looksSpecificVisualPrompt(prompt)||prompt.length>80;
-      let semanticReview=shouldSemanticReview?await reviewSemanticImage(url,prompt):null;
       const semanticRepair=semanticReview?.status==='failed';
       const semanticRepairHints=semanticRepair
         ? (semanticReview?.retryPrompt||semanticReview?.issues?.join('; ')||'').trim()
