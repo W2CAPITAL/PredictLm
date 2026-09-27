@@ -1,3 +1,5 @@
+export const INVALID_IMAGE_PROVIDER_MESSAGE='O provider não entregou uma imagem válida';
+
 export function mediaErrorText(value:any,fallback='Falha de mídia.'):string{
   if(value==null)return fallback;
   if(typeof value==='string')return value.trim()||fallback;
