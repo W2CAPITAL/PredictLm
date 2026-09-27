@@ -225,3 +225,40 @@ test('stream chat injects playful-premise guidance for absurd and fictional ques
     clearProviders();
   }
 });
+
+
+test('stream chat rejects a flat literal McQueen answer and tries another provider',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  process.env.VERCEL_OIDC_TOKEN='oidc-test';
+  process.env.PREDICTLM_STREAM_PROVIDER_ORDER='groq,vercel-gateway';
+  const original=globalThis.fetch;
+  const calls:string[]=[];
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    const url=String(input);
+    if(isAutoLearningFetch(input))return autoLearningResponse();
+    calls.push(url);
+    if(url.includes('api.groq.com')){
+      return upstream(['Não tem muito o que falar sobre isso. McQueen é um personagem de corrida, não tem opinião sobre comida.']);
+    }
+    const body=JSON.parse(String(init?.body||'{}'));
+    const system=String(body.messages?.[0]?.content||'');
+    assert.match(system,/entre na brincadeira/i);
+    return upstream(['Eu imagino o McQueen tratando a banana como combustível de piloto, fazendo uma piada de pit stop e transformando o lanche numa competição. É uma interpretação divertida, não uma opinião canônica.']);
+  };
+  try{
+    const response=await POST(request([{role:'user',content:'O que o McQueen acha de você comendo banana?'}]));
+    const text=await response.text();
+    assert.equal(response.status,200);
+    assert.match(text,/"provider":"vercel-gateway"/);
+    assert.match(text,/banana/i);
+    assert.doesNotMatch(text,/Não tem muito o que falar/);
+    assert.deepEqual(calls,[
+      'https://api.groq.com/openai/v1/chat/completions',
+      'https://ai-gateway.vercel.sh/v1/chat/completions'
+    ]);
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
