@@ -420,7 +420,8 @@ function universalAssistantContract(){
     'For current facts, use supplied research context when present and do not invent freshness.',
     'For creative requests, create the requested artifact/content rather than explaining how to create it.',
     'For procedural requests, give concrete steps appropriate to the requested object instead of a generic project template.',
-    'Keep the response centered on the user request and preserve relevant conversation context.'
+    'Keep the response centered on the user request and preserve relevant conversation context.',
+    'Do not volunteer irrelevant limitations about being an AI, memory, providers or fictional canon. Mention a limitation only when it materially changes the answer.'
   ].join(' ');
 }
 
