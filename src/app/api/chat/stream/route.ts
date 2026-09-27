@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { conversationAnswerIssue, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { conversationAnswerIssue, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevRouteDecision } from '@/lib/jev-policy';
 
@@ -135,7 +135,7 @@ function providerList(prompt=''):Provider[]{
   return out.sort((a,b)=>rank(a)-rank(b));
 }
 
-function systemPrompt(language:string,autoLearning='',brainContext=''){
+function systemPrompt(language:string,autoLearning='',brainContext='',prompt=''){
   return [
     'Você é o PredictLM, uma IA geral de conversa.',
     language==='en'
@@ -145,13 +145,14 @@ function systemPrompt(language:string,autoLearning='',brainContext=''){
     'Não mencione provider, API, roteamento, runtime, RAG, skill, knowledge pack ou implementação interna.',
     'Não despeje README, repositórios, notas internas, seções "Relacionado:" ou contexto técnico que o usuário não pediu.',
     'Se a mensagem for casual, converse naturalmente. Se for uma pergunta, responda. Se for um pedido, execute o pedido em texto.',
+    isPlayfulPrompt(prompt)?'Quando a pergunta for absurda, lúdica, antropomórfica ou sobre a reação imaginária de um personagem, entre na brincadeira. Não reduza a resposta a uma correção literal; seja específico e criativo, deixando claro apenas quando algo é interpretação ficcional.':'',
     'Não invente fatos atuais. Quando o usuário pedir informação atual e nenhuma ferramenta atual tiver sido usada, deixe claro o limite em vez de fabricar.',
     autoLearning?'Lições operacionais autoaprendidas e promovidas:\n'+autoLearning:'',
     brainContext?'COGNITIVE MESH / CONTEXTO INTERNO DE ALTO NÍVEL:\n'+brainContext:''
   ].join(' ');
 }
 
-function safeMessages(input:any,language:string,autoLearning='',brainContext=''):Msg[]{
+function safeMessages(input:any,language:string,autoLearning='',brainContext='',prompt=''):Msg[]{
   const rows=(Array.isArray(input)?input:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-12)
@@ -159,7 +160,7 @@ function safeMessages(input:any,language:string,autoLearning='',brainContext='')
       role:x.role as 'user'|'assistant',
       content:String(x.content).replace(/\u0000/g,'').slice(0,5000)
     }));
-  return [{role:'system',content:systemPrompt(language,autoLearning,brainContext)},...rows];
+  return [{role:'system',content:systemPrompt(language,autoLearning,brainContext,prompt)},...rows];
 }
 
 function sse(data:any){
@@ -260,7 +261,7 @@ export async function POST(req:NextRequest){
 
   const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
   const brainContext=String(body?.brainContext||'').slice(0,10000);
-  const messages=safeMessages(body?.messages,language,autoLearning,brainContext);
+  const messages=safeMessages(body?.messages,language,autoLearning,brainContext,String(prompt));
 
   const encoder=new TextEncoder();
   const requestSignal=req.signal;
