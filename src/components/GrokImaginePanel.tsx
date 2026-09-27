@@ -862,7 +862,7 @@ export function GrokImaginePanel(){
         setGeneratedCaption('');
         setProvider(String(data.provider||''));
         setPersisted(false);
-        const rejectMessage='Candidato rejeitado pelo gate de identidade. Ele continua visível para inspeção e não foi salvo como geração válida.';
+        const rejectMessage='Nenhum candidato atingiu o gate de identidade após as tentativas automáticas. O melhor candidato rejeitado foi arquivado apenas no diagnóstico e não foi salvo como geração válida.';
         setImageProviderWarning(rejectMessage);
         setError(rejectMessage);
         return '';
@@ -1362,7 +1362,7 @@ export function GrokImaginePanel(){
               <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
             </div>)}
           </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.</small>}
-        </div>:null}
+        </details>:null}
         {mode==='image'&&groundingTrace?<div style={{border:'1px solid #292d39',background:'#0b1017',borderRadius:11,padding:9,display:'grid',gap:7}}>
           <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9}}>
             <b style={{color:'#dce5ef'}}>Grounding automático</b>
@@ -1480,10 +1480,12 @@ export function GrokImaginePanel(){
       </div>
 
       <div className="gimagine-canvas">
-        {rejectedCandidate&&!mainBusy?<div style={{margin:12,border:'1px solid #6f3338',background:'#160d10',borderRadius:14,padding:10,display:'grid',gap:9}}>
-          <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9,color:'#ff9da5'}}><b>Candidato rejeitado · não salvo</b><span>{rejectedCandidate.provider} / {rejectedCandidate.model}</span></div>
-          <img src={rejectedCandidate.url} alt="Candidato rejeitado pelo gate de identidade" style={{width:'100%',maxHeight:'58vh',objectFit:'contain',borderRadius:10,background:'#08090b'}}/>
-          <ul style={{margin:0,paddingLeft:18,color:'#d8a4a9',fontSize:9}}>{rejectedCandidate.reasons.map((reason,i)=><li key={reason+'-'+i}>{reason}</li>)}</ul>
+        {rejectedCandidate&&!mainBusy?<details style={{margin:12,border:'1px solid #6f3338',background:'#160d10',borderRadius:14,padding:10}}>
+          <summary style={{cursor:'pointer',fontSize:9,color:'#ff9da5',display:'flex',justifyContent:'space-between',gap:8}}><b>Diagnóstico · candidato rejeitado</b><span>{rejectedCandidate.provider} / {rejectedCandidate.model}</span></summary>
+          <div style={{display:'grid',gap:9,marginTop:9}}>
+            <img src={rejectedCandidate.url} alt="Candidato rejeitado pelo gate de identidade" style={{width:'100%',maxHeight:'58vh',objectFit:'contain',borderRadius:10,background:'#08090b'}}/>
+            <ul style={{margin:0,paddingLeft:18,color:'#d8a4a9',fontSize:9}}>{rejectedCandidate.reasons.map((reason,i)=><li key={reason+'-'+i}>{reason}</li>)}</ul>
+          </div>
           <button type="button" onClick={()=>{setRejectedCandidate(null);void requestImage({regenerate:false})}} disabled={mainBusy} style={{justifySelf:'start',border:'1px solid #5e3438',background:'#241216',color:'#ffd4d8',borderRadius:8,padding:'7px 9px',display:'flex',alignItems:'center',gap:5,fontSize:9}}><RefreshCw size={13}/>Buscar referências e tentar de novo</button>
         </div>:null}
         {mainBusy?<div className="gmedia-loading-stage"><div className="gmedia-loading-orb"/><div className="gmedia-loading-lines"><i/><i/><i/></div><b>{imageStage||videoStage||'Gerando…'}</b><span>{mode==='video'?'O vídeo aparece quando o provider concluir o arquivo real.':'A imagem aparece assim que o arquivo estiver realmente carregado.'}</span></div>:null}
