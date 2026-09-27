@@ -52,3 +52,15 @@ test('Naruto matchup semantic review accepts concrete identity mismatch codes',(
   assert.match(review.retryPrompt,/violet\/purple armored winged humanoid/i);
   assert.match(review.retryPrompt,/color ownership/i);
 });
+
+
+test('Kurama Chakra Mode does not require a separate full Kurama fox avatar',()=>{
+  const prompt='Naruto Uzumaki no modo Kurama com aura dourada envolvendo o corpo lutando contra Sasuke com Susanoo Perfeito';
+  const review=parseSemanticImageReview({
+    issues:['missing-kurama','wrong-kurama-form','wrong-kurama-mode','wrong-naruto-identity']
+  },prompt);
+  assert.equal(review.status,'failed');
+  assert.deepEqual(review.issues,['wrong-kurama-mode','wrong-naruto-identity']);
+  assert.doesNotMatch(review.retryPrompt,/complete golden nine-tailed Kurama avatar/i);
+  assert.match(review.retryPrompt,/golden-orange chakra cloak/i);
+});
