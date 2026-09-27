@@ -188,3 +188,40 @@ test('stream chat receives unified cognitive mesh in the system context',async()
     clearProviders();
   }
 });
+
+
+test('stream chat injects playful-premise guidance for absurd and fictional questions',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  process.env.GROQ_MODEL='openai/gpt-oss-120b';
+  const original=globalThis.fetch;
+  const seen:any[]=[];
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
+    const body=JSON.parse(String(init?.body||'{}'));
+    seen.push(body);
+    const prompt=[...body.messages].reverse().find((x:any)=>x.role==='user')?.content||'';
+    if(/pepino/i.test(prompt))return upstream(['Um pepino triangular arroxeado parece um artefato culinário de outro planeta. Eu não provo comida, mas a ideia é estranha o bastante para eu querer ver a receita.']);
+    return upstream(['Se entrarmos na brincadeira, o McQueen provavelmente trataria a banana como combustível de corrida e faria piada com um pit stop. É uma interpretação divertida, não uma opinião canônica do personagem.']);
+  };
+  try{
+    const a=await POST(request([{role:'user',content:'Gosta de pepino triangular a roxeado?'}]));
+    const aText=await a.text();
+    assert.match(aText,/pepino triangular/i);
+
+    const b=await POST(request([{role:'user',content:'O que o McQueen acha de você comendo banana?'}]));
+    const bText=await b.text();
+    assert.match(bText,/McQueen/i);
+    assert.match(bText,/banana/i);
+
+    assert.equal(seen.length,2);
+    for(const body of seen){
+      const system=String(body.messages?.[0]?.content||'');
+      assert.match(system,/absurda|lúdica|personagem/i);
+      assert.match(system,/entre na brincadeira/i);
+    }
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
