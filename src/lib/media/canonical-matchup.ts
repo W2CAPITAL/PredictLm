@@ -66,8 +66,13 @@ export function matchupNegativeConstraints(input:string){
 }
 export function matchupReferenceQueries(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return [];
-  return ['Naruto Kurama full chakra avatar reference','Sasuke Perfect Susanoo full body reference',
-    ...(requestsValleyOfTheEnd(input)?['Valley of the End Hashirama Madara statues reference']:[])];
+  return [
+    wantsFullKuramaAvatar(input)
+      ? 'Naruto Uzumaki with complete Kurama Nine-Tails fox avatar official anime reference'
+      : 'Naruto Uzumaki Kurama Chakra Mode golden chakra cloak official anime reference',
+    'Sasuke Uchiha Perfect Susanoo full body purple armored avatar official anime reference',
+    ...(requestsValleyOfTheEnd(input)?['Valley of the End Hashirama Madara statues reference']:[])
+  ];
 }
 export type SemanticImageReview={status:'passed'|'failed'|'unavailable';issues:string[];retryPrompt:string;reviewProvider?:string;reviewModel?:string};
 const ISSUE_REPAIRS:Record<string,string>={
