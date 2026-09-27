@@ -9,6 +9,7 @@ import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider'
 import {comfyImageConfig,runComfyImageWorkflow} from '@/lib/media/comfy-image';
 import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/best-image-orchestrator';
+import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -269,9 +270,16 @@ export async function POST(req:Request){
       comfy.workflow.includes('{{REFERENCE_1_FILENAME}}')||
       comfy.workflow.includes('{{IMAGE_FILENAME}}')
     );
-    const comfyBlockedByIdentity=avoidProviders.has('comfyui')||(
-      requireReferenceTransport&&referenceEvidenceAvailable&&!comfyReferenceTransportPotential
-    );
+    const comfyDecision=identityProviderDecision({
+      providerId:'comfyui',
+      identitySensitive:needsStrongIdentity,
+      strictIdentityProvider,
+      requireReferenceTransport,
+      referenceEvidenceAvailable,
+      canTransportReferences:comfyReferenceTransportPotential,
+      avoidProviders
+    });
+    const comfyBlockedByIdentity=!comfyDecision.allowed;
     if(order.includes('comfyui')&&comfy.enabled&&!comfyBlockedByIdentity){
       try{
         const comfyResult=await runComfyImageWorkflow({
@@ -344,9 +352,16 @@ export async function POST(req:Request){
         const canTransportReferences=provider.gemini
           ? inlineReferences.length>0
           : provider.id==='configured-image'&&!!mediaReferenceField&&configuredReferenceValues.length>0;
-        const textOnlyIdentityBlocked=needsStrongIdentity&&strictIdentityProvider&&provider.id==='nano-banana';
-        if(textOnlyIdentityBlocked)continue;
-        if(requireReferenceTransport&&referenceEvidenceAvailable&&!canTransportReferences)continue;
+        const providerDecision=identityProviderDecision({
+          providerId:provider.id,
+          identitySensitive:needsStrongIdentity,
+          strictIdentityProvider,
+          requireReferenceTransport,
+          referenceEvidenceAvailable,
+          canTransportReferences,
+          avoidProviders
+        });
+        if(!providerDecision.allowed)continue;
 
         const providerBody=provider.gemini?{
           contents:[{
