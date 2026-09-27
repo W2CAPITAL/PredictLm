@@ -456,6 +456,15 @@ function simpleAnswerIssue(prompt:string,content:string){
 }
 
 function simpleTurnGuard(prompt:string,researchContext:string){
+  if(isPlayfulPrompt(prompt)){
+    return [
+      'MODO LÚDICO: trate a pergunta como convite para imaginação e conversa, não como prova factual.',
+      'Entre na premissa e produza uma reação concreta de 2 a 5 frases.',
+      'Se houver personagem fictício, faça uma interpretação compatível com a personalidade geral dele sem fingir que é fala/opinião canônica.',
+      'Se a pergunta atribuir gosto, comida ou sensação ao PredictLM, pode brincar com a ideia, mas não finja experiência física real.',
+      'Evite respostas secas como “não tem muito o que falar”, “é só um personagem” ou disclaimers que matem a brincadeira.'
+    ].join(' ');
+  }
   if(isSimpleStableFactual(prompt)){
     return [
       'MODO FACTUAL ESTÁVEL: responda primeiro quem/o que é, de forma curta e correta.',
@@ -900,7 +909,7 @@ export async function POST(req:Request){
     const reportIntent=detectReportIntent(prompt);
     const reportContract=reportIntent.wantsReport?REPORT_DOSSIER_CONTRACT:'';
     const localInstructions=String(body?.instructions||'').slice(0,2200);
-    const simpleTurn=!deep&&(isSimpleStableFactual(prompt)||isSimpleProcedural(prompt));
+    const simpleTurn=!deep&&(isSimpleStableFactual(prompt)||isSimpleProcedural(prompt)||isPlayfulPrompt(prompt));
     const responseGuard=simpleTurnGuard(prompt,researchContext);
     const packed=optimizePromptPackage({
       messages:compactedHistory.messages,
