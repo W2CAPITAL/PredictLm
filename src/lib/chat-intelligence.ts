@@ -68,6 +68,11 @@ export function conversationAnswerIssue(prompt:string,content:string){
     const topical=responseTopicAlignment(prompt,content);
     if(!topical.relevant)return 'off-topic-hypothetical';
   }
+  if(isPlayfulPrompt(prompt)){
+    if(/\b(?:nao tem muito o que falar|não tem muito o que falar|nao consegui formular|não consegui formular|e apenas um personagem|é apenas um personagem|personagem (?:nao|não) tem opiniao|personagem (?:nao|não) tem opinião)\b/i.test(String(content||'')))return 'flattened-playful-answer';
+    const topical=responseTopicAlignment(prompt,content);
+    if(!topical.relevant)return 'off-topic-playful';
+  }
   if(/^(quem (e|foi)|o que (e|foi)|defina|qual e)\b/.test(p)
     && !/\b(hoje|agora|atual|atualmente|fortuna|patrimonio|ranking|mais rico)\b/.test(p)
     && /\b(mais rico|fortuna|patrimonio liquido|bilhao|bilhoes|trilhao|trilhoes)\b/.test(out))return 'unsolicited-volatile-claims';
