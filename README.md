@@ -92,6 +92,14 @@ For anime/specific-franchise requests, semantic identity outranks isolated pixel
 
 The pipeline borrows public design patterns from modern image systems—multi-image grounding/editing, image-input repair, and persistent identity consistency—without claiming access to proprietary model internals.
 
+## Minecraft Cognitive World
+
+Simulation has one public mode only: **Minecraft Cognitive World**. The previous Life/Vida mode is no longer exposed.
+
+Human, macaque, mouse and fly cognitive controllers share the same persistent voxel save. When the world is running, each controller observes the current world, selects an executable goal, acts on the real voxel state and persists its own position, inventory, health/hunger and public simulation thought.
+
+The world currently includes procedural chunks, trees, villages, caves/mineshafts/dungeons, ores, crafting/smelting, placeable furniture, equipment, food, passive/hostile mobs, weather/day-night, Overworld, Nether, End, structures unique to those dimensions, save import/export, survival/creative and optional Unity WebGL rendering.
+
 ## Autonomous operational learning
 
 Feedback no longer stops at collection. `predict_feedback_events` now feeds a bounded Supabase trigger that aggregates repeated failures into `predict_auto_lessons`.
