@@ -161,3 +161,12 @@ Canonical example:
 - `Sasuke com Susanoo Perfeito` → Perfect Susanoo is a separate surrounding gigantic violet/purple armored humanoid chakra avatar.
 
 The subject graph, verifier and repair code must use the same interpretation. A verifier may not fail a Kurama-mode image merely because a separate fox avatar is absent.
+
+
+## Automatic negatives and valid-image retry
+
+The user should not need to write a negative prompt for normal generation. Character/form-specific negatives are compiled automatically from the original request and transformation semantics; manual negative input is an advanced optional override only.
+
+Provider success means **usable image bytes**, not merely HTTP 200. The render fallback validates PNG/JPEG/WebP/AVIF bytes, retries alternate configured fallback models after an invalid 200/JSON/HTML response, and only after exhausting those attempts returns the terminal user-facing message: `O provider não entregou uma imagem válida`.
+
+For Naruto Kurama Chakra Mode, automatic negatives protect Naruto's blond hair, whisker identity and golden chakra cloak on Naruto's body. Full-Kurama-avatar negatives are activated only by an explicit full-avatar request.
