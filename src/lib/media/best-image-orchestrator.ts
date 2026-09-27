@@ -1,5 +1,5 @@
 import { isAnimeFranchisePrompt, isSpecificFranchisePrompt, shouldForceLiteralMode, extractRequestedNamedSubject } from './media-fidelity';
-import { isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
+import { isNarutoKuramaVsSasukeSusanooPrompt, wantsFullKuramaAvatar, wantsKuramaChakraMode } from './canonical-matchup';
 
 export type CandidateSemanticStatus='passed'|'failed'|'unavailable'|''
 
@@ -45,20 +45,23 @@ function knownSubjects(prompt:string):VisualSubjectSlot[]{
   };
 
   if(/\bnaruto\b/.test(p)){
+    const kuramaMode=wantsKuramaChakraMode(prompt)||/\b(kurama|kyuubi|kyubi|chakra mode|modo kurama)\b/.test(p);
     push({
       id:'naruto-uzumaki',label:'Naruto Uzumaki',role:'character',
-      form:/\b(kurama|kyuubi|kyubi|chakra mode|modo kurama)\b/.test(p)?'Kurama Chakra Mode':'requested Naruto form',
-      palette:['gold','orange','black accents'],
-      mustShow:['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','requested Naruto costume/form cues'],
-      reject:['generic blond shonen hero','Goku','Vegeta','wrong franchise costume','Naruto duplicated as another subject']
+      form:kuramaMode?'Kurama Chakra Mode':'requested Naruto form',
+      palette:kuramaMode?['gold','orange','black accents']:['canonical Naruto palette'],
+      mustShow:kuramaMode
+        ? ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','golden-orange chakra cloak/aura wrapped around Naruto body','requested Naruto costume/form cues']
+        : ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','requested Naruto costume/form cues'],
+      reject:['red-haired Naruto','generic shonen hero','Goku','Vegeta','wrong franchise costume','Naruto duplicated as another subject']
     });
   }
-  if(/\bkurama\b|\bkyuubi\b|\bkyubi\b|\bnine tails\b|\bnove caudas\b/.test(p)){
+  if(wantsFullKuramaAvatar(prompt)){
     push({
       id:'kurama-nine-tails',label:'Kurama / Nine-Tails',role:'creature',
-      form:'complete nine-tailed fox / chakra avatar when requested',
+      form:'complete nine-tailed fox / chakra avatar',
       palette:['gold','orange','black markings'],
-      mustShow:['fox anatomy','recognizable Nine-Tails head/body','nine distinct tails when full avatar is requested'],
+      mustShow:['fox anatomy','recognizable Nine-Tails head/body','multiple distinct tails with full nine-tail readability when framing permits'],
       reject:['dragon','wolf','lion','humanoid Naruto clone','generic spirit beast']
     });
   }
@@ -167,9 +170,11 @@ export function buildBestImagePlan(prompt:string,style='Cinematic'):BestImagePla
 
   const matchup=isNarutoKuramaVsSasukeSusanooPrompt(prompt)
     ? [
-        'MATCHUP RELATIONSHIP: Naruto/Kurama and Sasuke/Perfect Susanoo are two distinct sides. Never merge them.',
-        'Kurama remains fox/beast anatomy and Perfect Susanoo remains a complete armored humanoid chakra avatar.',
-        'Gold/orange belongs to Naruto/Kurama; violet/purple belongs to Sasuke/Susanoo. Keep ownership readable.'
+        'MATCHUP RELATIONSHIP: Naruto in the requested Kurama form and Sasuke/Perfect Susanoo are two distinct sides. Never merge them.',
+        wantsFullKuramaAvatar(prompt)
+          ? 'Kurama is a separate fox/Nine-Tails avatar because the user explicitly requested the full avatar; Perfect Susanoo remains a complete armored humanoid chakra avatar.'
+          : 'Kurama is a chakra MODE on Naruto for this request: keep the golden chakra cloak on Naruto himself and do not invent a separate giant fox/dragon. Perfect Susanoo remains a complete armored humanoid chakra avatar.',
+        'Gold/orange belongs to Naruto/Kurama mode; violet/purple belongs to Sasuke/Susanoo. Keep ownership readable.'
       ]
     : [];
 
