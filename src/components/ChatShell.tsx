@@ -210,6 +210,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [legalHealthBusy,setLegalHealthBusy]=useState(false);
   const bottom=useRef<HTMLDivElement>(null);
   const turnAbort=useRef<AbortController|null>(null);
+  const pendingTurnPrompt=useRef('');
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
   const webllm=useMemo(()=>webLLMStatus(),[modelTick,loadState]);
@@ -733,6 +734,7 @@ export function ChatShell({onOpenLegal}:Props){
     if(instructionLearned)setModelTick(x=>x+1);
     const turnController=new AbortController();
     turnAbort.current=turnController;
+    pendingTurnPrompt.current=prompt;
     setBusy(true);
     setActivity(
       buildIntent
@@ -1397,6 +1399,7 @@ export function ChatShell({onOpenLegal}:Props){
       fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
     }finally{
       if(turnAbort.current===turnController)turnAbort.current=null;
+      if(!turnController.signal.aborted)pendingTurnPrompt.current='';
       setBusy(false);
       setActivity([]);
       setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
@@ -1406,6 +1409,9 @@ export function ChatShell({onOpenLegal}:Props){
   function cancelCurrentTurn(){
     turnAbort.current?.abort();
     turnAbort.current=null;
+    const interruptedPrompt=pendingTurnPrompt.current;
+    pendingTurnPrompt.current='';
+    if(interruptedPrompt)setInput(current=>current||interruptedPrompt);
     cancelNeuralWork();
     setBusy(false);
     setActivity([]);
@@ -1703,7 +1709,8 @@ function Composer(props:any){
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua por knowledge, pesquisa e providers configurados.</span></button>}
           </div>}
         </div>
-        <button className="grok-send" onClick={busy?cancelTurn:send} disabled={!busy&&!value.trim()} title={busy?'Parar execução':'Enviar'}>{busy?<X size={17}/>:<Send size={17}/>}</button>
+        {busy&&<button type="button" onClick={cancelTurn} title="Parar execução" aria-label="Parar execução"><X size={17}/></button>}
+        <button type="button" className="grok-send" onClick={send} disabled={busy||!value.trim()} title="Enviar" aria-label="Enviar mensagem"><Send size={17}/></button>
       </div>
     </div>
   </div>
