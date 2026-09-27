@@ -46,13 +46,11 @@ async function fetchImage(url:string){
   }finally{clearTimeout(timer)}
 }
 
-function sniffImageType(bytes:Uint8Array,header=''){
-  const type=String(header||'').split(';')[0].trim().toLowerCase();
-  if(type==='image/png'||type==='image/jpeg'||type==='image/webp'||type==='image/avif')return type;
-  if(bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47)return 'image/png';
+function sniffImageType(bytes:Uint8Array,_header=''){
+  if(bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47&&bytes[4]===0x0d&&bytes[5]===0x0a&&bytes[6]===0x1a&&bytes[7]===0x0a)return 'image/png';
   if(bytes.length>=3&&bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)return 'image/jpeg';
   if(bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')return 'image/webp';
-  if(bytes.length>=12&&String.fromCharCode(...bytes.slice(4,12)).includes('ftypavif'))return 'image/avif';
+  if(bytes.length>=12&&String.fromCharCode(...bytes.slice(4,12))==='ftypavif')return 'image/avif';
   return '';
 }
 
