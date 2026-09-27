@@ -3,6 +3,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import { BrainCircuit, Download, Film, Image as ImageIcon, Loader2, Play, RefreshCw, Search, Sparkles, Trash2, Upload, WandSparkles, X } from 'lucide-react';
 import { useStudio } from '@/lib/store';
+import { puter } from '@heyputer/puter.js';
 import { animateImageToWebm, animateStoryboardToWebm, downloadBlob, type LocalMotionStyle } from '@/lib/media/local-motion';
 import { buildGenerativeVideoPrompt, buildLocalMotionPlan, buildStoryboardFrames, formatMediaResearchContext, mediaResearchQuery } from '@/lib/media/video-pipelines';
 import { mediaErrorText } from '@/lib/media/media-errors';
@@ -97,7 +98,7 @@ export function GrokImaginePanel(){
   const [duration,setDuration]=useState(6000);
   const [motion,setMotion]=useState<LocalMotionStyle>('push-in');
   const [videoVariant,setVideoVariant]=useState<'storyboard'|'single'>('storyboard');
-  const [videoProvider,setVideoProvider]=useState<'auto'|'local'|'gemini'|'veo'|'sora'|'seedance'|'comfyui'>('auto');
+  const [videoProvider,setVideoProvider]=useState<'auto'|'local'|'puter'|'gemini'|'veo'|'sora'|'seedance'|'comfyui'>('auto');
   const [videoProviders,setVideoProviders]=useState<Record<string,{enabled:boolean;label:string;requiresExternalCredits?:boolean}>>({});
   const [recommendedVideoProvider,setRecommendedVideoProvider]=useState<string>('');
   const [remoteVideoUrl,setRemoteVideoUrl]=useState('');
@@ -238,7 +239,7 @@ export function GrokImaginePanel(){
         setVideoProviders(video?.providers||{local:{enabled:true,label:'Motion local · fallback'}});
         setRecommendedVideoProvider(String(video?.recommended||''));
         if(video?.recommended)setVideoProvider('auto');
-        else setVideoProvider('local');
+        else setVideoProvider('puter');
       });
     return()=>{live=false};
   },[]);
@@ -277,6 +278,26 @@ export function GrokImaginePanel(){
       const nextRatio=ratios.find(x=>x.label===wanted);
       if(nextRatio&&nextRatio.label!==ratio.label)setRatio(nextRatio);
       if(wanted==='1:1'&&ratio.label!=='1:1')setRatio(ratios[0]);
+    }
+  }
+
+  async function loadVesperStory(){
+    try{
+      const response=await fetch('/vesper-noire-selfie.jpg');
+      if(!response.ok)throw new Error('Selfie de referência indisponível.');
+      const file=new File([await response.blob()],'vesper-noire-selfie.jpg',{type:'image/jpeg'});
+      const data=await referenceDataUrl(file);
+      setMode('video');
+      setVideoProvider('puter');
+      setStyle('Photoreal');
+      setRatio(ratios[2]);
+      setReferenceImages([{name:file.name,data}]);
+      setPrompt('Selfie vertical gravada pela própria Vesper Noire, mulher adulta fictícia de cabelo preto longo com franja reta, pequena pinta abaixo do olho esquerdo e brinco de lua crescente. No quarto escuro à noite, ela olha para uma live de jogo fora do enquadramento, afasta a mão da boca, tem um susto breve e sorri de forma contida. Movimento visível e natural dos olhos, rosto, mão, ombros e fios de cabelo; leve tremor e ruído de câmera frontal de celular, luz baixa comum, pele com textura real. Um único plano contínuo. Notebook e tela completamente fora do quadro. Sem texto, logotipo ou cortes.');
+      setDeepThink(false);
+      setDeepResearch(false);
+      setError('');
+    }catch(e:any){
+      setError(mediaErrorText(e,'Não foi possível carregar a selfie da Vesper.'));
     }
   }
 
@@ -1059,9 +1080,62 @@ export function GrokImaginePanel(){
     }
   }
 
+  async function generatePuterVideo(){
+    setMotionBusy(true);
+    setMotionProgress(.08);
+    setVideoStage('Preparando vídeo com Puter…');
+    setError('');
+    setVideoProviderWarning('');
+    setRemoteVideoUrl('');
+    try{
+      const prepared=await prepareMediaPrompt('video');
+      const startFrame=referenceImages[0]?.data||(generated&&generatedRequest===prompt?generated:'');
+      const vertical=ratio.label==='9:16';
+      if(!vertical&&ratio.label!=='16:9'){
+        setVideoProviderWarning('Veo gera em 9:16 ou 16:9; a proporção foi ajustada para 16:9.');
+      }else if(referenceImages.length>1){
+        setVideoProviderWarning('A primeira referência manual foi usada como quadro inicial. As demais não entram nesta geração.');
+      }
+      setVideoStage('Gerando movimento real · a sessão Puter pode solicitar acesso…');
+      setMotionProgress(.2);
+      const puterPath='videos/predictlm-'+Date.now()+'.mp4';
+      const video=await puter.ai.txt2vid(prepared.prompt,{
+        model:'veo-3.1-lite',
+        seconds:Math.max(4,Math.min(8,Math.round(duration/1000))),
+        size:vertical?'720x1280':'1280x720',
+        ...(startFrame?{input_reference:startFrame}:{}),
+        puter_output_path:puterPath
+      });
+      const videoUrl=await puter.fs.getReadURL(puterPath,'24h').catch(()=>video.currentSrc||video.src);
+      if(!videoUrl)throw new Error('Puter concluiu sem endereço de vídeo reproduzível.');
+      setRemoteVideoUrl(videoUrl);
+      setProvider('Puter · Veo 3.1 Lite');
+      setMotionProgress(1);
+      await saveLibrary({
+        kind:'video',provider:'puter',model:'veo-3.1-lite',url:videoUrl.startsWith('data:')?null:videoUrl,
+        meta:{durationMs:duration,variant:'remote-generative-video',realGenerative:true,
+          sourceImage:startFrame?'manual-or-approved-still':null,
+          userReferenceCount:referenceImages.length,aspectRatio:vertical?'9:16':'16:9',puterPath}
+      }).catch(()=>setVideoProviderWarning('Vídeo gerado; o registro na biblioteca do PredictLM falhou. Baixe o vídeo agora.'));
+      return videoUrl;
+    }catch(e:any){
+      const message=mediaErrorText(e,'Não foi possível gerar o vídeo no Puter. Verifique a sessão e os créditos Puter.');
+      setError(message);
+      reportMediaError(message,{stage:'puter-video'});
+      return null;
+    }finally{
+      setVideoStage('');
+      setMotionBusy(false);
+    }
+  }
+
   async function generateVideo(){
     if(!enhanced||loading||motionBusy)return;
     setError('');
+    if(videoProvider==='puter'){
+      await generatePuterVideo();
+      return;
+    }
     if(videoProvider!=='local'){
       await generateRemoteVideo();
       return;
@@ -1155,6 +1229,9 @@ export function GrokImaginePanel(){
     if(item.kind==='video'){
       setMode('video');
       if(item.remote_url)setRemoteVideoUrl(item.remote_url);
+      if(item.provider==='puter'&&typeof item.meta?.puterPath==='string'){
+        puter.fs.getReadURL(item.meta.puterPath,'24h').then(setRemoteVideoUrl).catch(()=>{});
+      }
     }else{
       setMode('image');
       setRemoteVideoUrl('');
@@ -1194,11 +1271,12 @@ export function GrokImaginePanel(){
           <button className={mode==='image'?'active':''} onClick={()=>switchMediaMode('image')}><ImageIcon size={13}/>Imagem</button>
           <button className={mode==='video'?'active':''} onClick={()=>switchMediaMode('video')}><Film size={13}/>Vídeo</button>
         </div>
+        <button type="button" onClick={()=>{void loadVesperStory()}} disabled={mainBusy} style={{border:'1px solid #52445d',borderRadius:9,padding:'8px 10px',background:'#17121d',color:'#e5d8ed',cursor:'pointer'}}>Preparar Story Vesper · selfie com reação</button>
 
         <label><span>Prompt</span><textarea value={prompt} onChange={e=>updatePrompt(e.target.value)} placeholder={mode==='video'?'Descreva a cena do vídeo…':'Descreva a imagem que você quer criar…'}/></label>
-        {mode==='image'?<div style={{border:'1px solid #252a34',borderRadius:12,padding:10,display:'grid',gap:8}}>
+        <div style={{border:'1px solid #252a34',borderRadius:12,padding:10,display:'grid',gap:8}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-            <span style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.08em',color:'#8e99aa'}}>Referências manuais opcionais · {referenceImages.length}/3</span>
+            <span style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.08em',color:'#8e99aa'}}>{mode==='video'?'Quadro inicial · ':'Referências manuais opcionais · '}{referenceImages.length}/3</span>
             <label style={{display:'inline-flex',alignItems:'center',gap:5,border:'1px solid #303744',borderRadius:8,padding:'6px 8px',cursor:referenceImages.length>=3?'not-allowed':'pointer',fontSize:9,color:'#cbd3df'}}>
               <Upload size={12}/>Adicionar
               <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={referenceImages.length>=3} onChange={e=>{void addReferenceFiles(e.target.files);e.currentTarget.value=''}} style={{display:'none'}}/>
@@ -1209,8 +1287,8 @@ export function GrokImaginePanel(){
               <img src={ref.data} alt={'Referência '+(index+1)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
               <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
             </div>)}
-          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.</small>}
-        </div>:null}
+          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>{mode==='video'?'Envie a selfie que deve iniciar o vídeo. Puter usa a primeira imagem deste quadro.':'Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.'}</small>}
+        </div>
         {mode==='image'&&groundingTrace?<div style={{border:'1px solid #292d39',background:'#0b1017',borderRadius:11,padding:9,display:'grid',gap:7}}>
           <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9}}>
             <b style={{color:'#dce5ef'}}>Grounding automático</b>
@@ -1248,6 +1326,7 @@ export function GrokImaginePanel(){
           <div className="gmedia-provider-row">
             {([
               ['auto','Auto · IA generativa'],
+              ['puter','Puter · Veo 3.1 Lite'],
               ['gemini','Gemini Veo 3.1'],
               ['comfyui','ComfyUI · LTX/Custom'],
               ['veo','Veo 3'],
@@ -1255,15 +1334,17 @@ export function GrokImaginePanel(){
               ['sora','Sora 2'],
               ['local','Motion fallback']
             ] as const).map(([id,label])=>{
-              const enabled=id==='local'||!!videoProviders[id]?.enabled;
+              const enabled=id==='local'||id==='puter'||!!videoProviders[id]?.enabled;
               return <button
                 key={id}
                 className={videoProvider===id?'active':''}
                 disabled={!enabled}
                 title={!enabled
                   ?'Configure o motor no servidor para habilitar este provider.'
-                  :id==='local'
+                    :id==='local'
                     ?'Fallback local: movimento/transição de imagens, não é vídeo generativo.'
+                    :id==='puter'
+                    ?'Imagem→vídeo real no navegador. Usa a sessão e os créditos Puter do usuário.'
                     :videoProviders[id]?.requiresExternalCredits
                       ?'Vídeo generativo real; o provider externo pode consumir créditos.'
                       :'Vídeo neural real via motor local/self-hosted configurado.'}
@@ -1284,7 +1365,7 @@ export function GrokImaginePanel(){
           </>:<>
           <span>Duração alvo</span>
           <div>{durations.map(ms=><button className={duration===ms?'active':''} key={ms} onClick={()=>setDuration(ms)}>{ms/1000}s</button>)}</div>
-          <small className="gmedia-provider-note">Auto prioriza o primeiro provider generativo configurado no servidor. O fallback local só é usado quando nenhuma API de vídeo está disponível ou quando você o seleciona manualmente.</small>
+          <small className="gmedia-provider-note">Puter gera vídeo real com a primeira referência manual como quadro inicial e usa os créditos da sua sessão Puter. Auto usa um motor configurado no servidor.</small>
           </>}
         </div>:null}
 
@@ -1341,7 +1422,7 @@ export function GrokImaginePanel(){
           </div>
           {imageProviderWarning?<div className="gmedia-provider-warning"><b>Fidelidade limitada</b><span>{imageProviderWarning}</span></div>:null}
           {generatedCaption?<div className="gmedia-result-caption"><b>Cena gerada</b><p>{generatedCaption}</p></div>:null}
-        </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Auto usa um motor temporal real configurado (Veo/ComfyUI/Veo 3/Seedance/Sora); motion local é somente fallback explícito.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
+        </div>:<div className="gimagine-empty">{mode==='video'?<Film size={34}/>:<ImageIcon size={33}/>}<h2>{mode==='video'?'Seu vídeo aparece aqui':'Sua imagem aparece aqui'}</h2><p>{mode==='video'?'Envie a selfie como primeira referência e selecione Puter para gerar movimento real.':'Escolha o estilo, proporção e descreva a cena.'}</p></div>}
 
         {videoProviderWarning?<div className="gmedia-provider-warning"><b>Compatibilidade do vídeo</b><span>{videoProviderWarning}</span></div>:null}
         {motionUrl||remoteVideoUrl?<div className="gmedia-video-preview"><video src={remoteVideoUrl||motionUrl} controls loop playsInline autoPlay/><span>{remoteVideoUrl?'Vídeo generativo retornado pelo provider configurado.':'Vídeo renderizado localmente. Use “Baixar vídeo” para salvar o arquivo.'}</span></div>:null}
