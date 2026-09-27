@@ -14,7 +14,7 @@ function upstreamUrl(
 ){
   const key=String(process.env.POLLINATIONS_API_KEY||'').trim();
   const configured=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
-  const base=configured||(key?'https://gen.pollinations.ai/image/':'https://image.pollinations.ai/prompt/');
+  const base=configured||'https://gen.pollinations.ai/image/';
   const root=base.endsWith('/')?base:base+'/';
   const q=new URLSearchParams({
     width:String(width),
