@@ -1,3 +1,5 @@
+import { INVALID_IMAGE_PROVIDER_MESSAGE } from '@/lib/media/media-errors';
+
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
@@ -44,6 +46,16 @@ async function fetchImage(url:string){
   }finally{clearTimeout(timer)}
 }
 
+function sniffImageType(bytes:Uint8Array,header=''){
+  const type=String(header||'').split(';')[0].trim().toLowerCase();
+  if(type==='image/png'||type==='image/jpeg'||type==='image/webp'||type==='image/avif')return type;
+  if(bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47)return 'image/png';
+  if(bytes.length>=3&&bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)return 'image/jpeg';
+  if(bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')return 'image/webp';
+  if(bytes.length>=12&&String.fromCharCode(...bytes.slice(4,12)).includes('ftypavif'))return 'image/avif';
+  return '';
+}
+
 export async function GET(req:Request){
   const url=new URL(req.url);
   const prompt=String(url.searchParams.get('prompt')||'').trim();
@@ -64,48 +76,60 @@ export async function GET(req:Request){
     })
     .slice(0,3);
 
-  try{
-    const referenceModels=references.length
-      ? [model,'kontext','nanobanana-2-lite','p-image-edit'].filter((x,i,a)=>x&&a.indexOf(x)===i)
-      : [model,'turbo'].filter((x,i,a)=>x&&a.indexOf(x)===i);
-    let upstream:Response|null=null;
-    let usedModel=model;
-    for(let i=0;i<referenceModels.length;i++){
-      usedModel=referenceModels[i];
-      upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,usedModel,enhance,references));
-      if(upstream.ok)break;
-      if(i<referenceModels.length-1)await new Promise(r=>setTimeout(r,650));
-    }
+  const referenceModels=references.length
+    ? [model,'kontext','nanobanana-2-lite','p-image-edit','flux'].filter((x,i,a)=>x&&a.indexOf(x)===i)
+    : [model,'flux','turbo'].filter((x,i,a)=>x&&a.indexOf(x)===i);
 
-    if(!upstream||!upstream.ok){
-      const status=upstream?.status||502;
-      const detail=upstream
-        ? (await upstream.text().catch(()=>'')).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,220)
-        : 'Nenhum modelo de imagem respondeu.';
-      return Response.json({error:'Provider de imagem respondeu '+status,detail},{status:502});
-    }
-
-    const type=String(upstream.headers.get('content-type')||'');
-    if(!type.startsWith('image/')){
-      return Response.json({error:'Provider não retornou uma imagem válida.',contentType:type},{status:502});
-    }
-
-    const body=await upstream.arrayBuffer();
-    if(body.byteLength<1024)return Response.json({error:'Imagem recebida vazia ou incompleta.'},{status:502});
-
-    return new Response(body,{
-      status:200,
-      headers:{
-        'Content-Type':type,
-        'Content-Length':String(body.byteLength),
-        'Cache-Control':'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400',
-        'X-Predict-Media':'pollinations-proxy',
-        'X-Predict-Reference-Count':String(references.length),
-        'X-Predict-Image-Model':usedModel
+  const failures:Array<{model:string;status:number;contentType:string;detail:string}>=[];
+  for(let i=0;i<referenceModels.length;i++){
+    const usedModel=referenceModels[i];
+    try{
+      const upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,usedModel,enhance,references));
+      if(!upstream.ok){
+        failures.push({
+          model:usedModel,
+          status:upstream.status,
+          contentType:String(upstream.headers.get('content-type')||''),
+          detail:(await upstream.text().catch(()=>'')).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180)
+        });
+      }else{
+        const bytes=new Uint8Array(await upstream.arrayBuffer());
+        const type=sniffImageType(bytes,String(upstream.headers.get('content-type')||''));
+        if(type&&bytes.byteLength>=1024){
+          return new Response(bytes,{
+            status:200,
+            headers:{
+              'Content-Type':type,
+              'Content-Length':String(bytes.byteLength),
+              'Cache-Control':'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400',
+              'X-Predict-Media':'pollinations-proxy',
+              'X-Predict-Reference-Count':String(references.length),
+              'X-Predict-Image-Model':usedModel,
+              'X-Predict-Render-Attempt':String(i+1)
+            }
+          });
+        }
+        failures.push({
+          model:usedModel,
+          status:upstream.status,
+          contentType:String(upstream.headers.get('content-type')||''),
+          detail:bytes.byteLength<1024?'payload-too-small':'payload-not-an-image'
+        });
       }
-    });
-  }catch(error:any){
-    const timeout=error?.name==='AbortError';
-    return Response.json({error:timeout?'A geração de imagem excedeu 55 segundos.':String(error?.message||'Falha no provider de imagem.')},{status:504});
+    }catch(error:any){
+      failures.push({
+        model:usedModel,
+        status:error?.name==='AbortError'?504:502,
+        contentType:'',
+        detail:error?.name==='AbortError'?'timeout':String(error?.message||'provider-error').slice(0,180)
+      });
+    }
+    if(i<referenceModels.length-1)await new Promise(r=>setTimeout(r,450));
   }
+
+  return Response.json({
+    error:INVALID_IMAGE_PROVIDER_MESSAGE,
+    attempts:failures.length,
+    diagnostics:failures.slice(-4)
+  },{status:502});
 }
