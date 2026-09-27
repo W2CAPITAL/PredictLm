@@ -1,7 +1,7 @@
 ---
 name: mirofish-simulation
 description: >
-  Camada nativa de swarm/knowledge-graph da Life Simulation Studio do PredictLM,
+  Camada interna de swarm/knowledge-graph do Minecraft Cognitive World do PredictLM,
   inspirada no MiroFish oficial e no fork Offline sem copiar código AGPL.
 metadata:
   version: "1.0.0"
@@ -60,9 +60,9 @@ O PredictLM implementa esse contrato de forma própria. O código AGPL upstream 
    - a UI pode inspecionar agentes, memórias, relações, rodadas e relatório;
    - a interação nunca é apresentada como leitura de mente de pessoas reais.
 
-## Integração com Game Studio
+## Integração com Minecraft Cognitive World
 
-Game Studio é o coordenador visual/sistêmico da Simulação. MiroFish Fabric é um dos motores internos.
+Game Studio coordena o único mundo Minecraft da Simulação. MiroFish Fabric é apenas um motor interno de memória/coletivo e nunca cria outra superfície.
 
 O ciclo conjunto é:
 
