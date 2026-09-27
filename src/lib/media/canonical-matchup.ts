@@ -39,13 +39,31 @@ export function canonicalMatchupLock(input:string){
   ].filter(Boolean).join('\n');
 }
 export const MATCHUP_NEGATIVES=[
-  'generic anime explosion poster','two Narutos','duplicate Sasuke','missing Kurama','missing Perfect Susanoo',
-  'abstract purple energy instead of Susanoo','fox only in the background','robotic armor unrelated to Susanoo',
-  'dragon instead of Kurama','cropped giant avatar','only close-up faces','chaotic unreadable composition',
-  'photorealistic live action','central explosion hiding both avatars','humanoid Kurama','Naruto clone used as Kurama',
+  'generic anime explosion poster','two Narutos','duplicate Sasuke','missing Perfect Susanoo',
+  'abstract purple energy instead of Susanoo','robotic armor unrelated to Susanoo',
+  'cropped giant Susanoo','only close-up faces','chaotic unreadable composition',
+  'photorealistic live action','central explosion hiding Naruto Sasuke or Susanoo',
   'Susanoo torso only','missing Susanoo wings','purple smoke instead of Susanoo','third random fighter',
-  'mixed orange and purple palette on both sides','close-up crop hiding full avatars','energy effect larger than both combatants'
+  'mixed orange and purple palette on both sides','close-up crop hiding the requested combatants','energy effect larger than both combatants'
 ];
+
+const FULL_KURAMA_NEGATIVES=[
+  'missing Kurama','fox only in the background','dragon instead of Kurama','humanoid Kurama',
+  'Naruto clone used as Kurama','wolf instead of Kurama','generic spirit beast instead of Kurama'
+];
+
+const KURAMA_MODE_NEGATIVES=[
+  'red-haired Naruto','red cloak replacing golden Kurama chakra','generic red fighter instead of Naruto',
+  'separate giant dragon behind Naruto','separate giant fox avatar not requested','orange monster replacing Naruto Kurama mode'
+];
+
+export function matchupNegativeConstraints(input:string){
+  if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return [];
+  return [
+    ...MATCHUP_NEGATIVES,
+    ...(wantsFullKuramaAvatar(input)?FULL_KURAMA_NEGATIVES:KURAMA_MODE_NEGATIVES)
+  ];
+}
 export function matchupReferenceQueries(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return [];
   return ['Naruto Kurama full chakra avatar reference','Sasuke Perfect Susanoo full body reference',
