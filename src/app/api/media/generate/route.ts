@@ -298,7 +298,7 @@ export async function POST(req:Request){
     const mediaKey=String(process.env.MEDIA_IMAGE_API_KEY||'').trim();
     const gatewayKey=String(process.env.AI_GATEWAY_API_KEY||process.env.VERCEL_OIDC_TOKEN||'').trim();
     const gatewayBase=String(process.env.AI_GATEWAY_BASE_URL||'https://ai-gateway.vercel.sh/v1').trim().replace(/\/$/,'');
-    const gatewayImageModels=String(process.env.PREDICTLM_GATEWAY_IMAGE_MODELS||'google/gemini-3.1-flash-image,xai/grok-imagine-image-2.0')
+    const gatewayImageModels=String(process.env.PREDICTLM_GATEWAY_IMAGE_MODELS||'google/gemini-3.1-flash-image,spacexai/grok-imagine-image')
       .split(',').map(x=>x.trim()).filter(Boolean);
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
     const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
@@ -314,32 +314,66 @@ export async function POST(req:Request){
     if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
 
     // Vercel-hosted PredictLM can use the automatically injected OIDC token
-    // for AI Gateway image generation. This avoids treating an obsolete
-    // unauthenticated public image endpoint as the primary hosted fallback.
+    // for AI Gateway image generation. Multimodal Gemini uses Chat Completions
+    // for text-to-image; image-only models use Images; both can use /images/edits
+    // when visual references are available.
     if(order.includes('vercel-gateway')&&gatewayKey&&!avoidProviders.has('vercel-gateway-image')){
+      const gatewayReferenceValues=[
+        ...userInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
+        ...identityMemoryInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
+        ...referencePlan.references.map(x=>x.imageUrl)
+      ].filter(Boolean).slice(0,4);
+
       for(const gatewayModel of gatewayImageModels){
         try{
-          const upstream=await fetch(gatewayBase+'/images/generations',{
+          const isGeminiMultimodal=/^google\/gemini-3\.1-flash-image(?:$|[-/])/i.test(gatewayModel);
+          const canEdit=/^(?:google\/gemini-3\.1-flash-image|spacexai\/grok-imagine-image|openai\/gpt-image-2|bfl\/flux-kontext)/i.test(gatewayModel);
+          let endpoint='/images/generations';
+          let requestBody:any={
+            model:gatewayModel,
+            prompt:providerPrompt,
+            n:1,
+            response_format:'b64_json'
+          };
+
+          if(gatewayReferenceValues.length&&canEdit){
+            endpoint='/images/edits';
+            requestBody={
+              model:gatewayModel,
+              prompt:providerPrompt,
+              images:gatewayReferenceValues.map(image_url=>({image_url}))
+            };
+          }else if(isGeminiMultimodal){
+            endpoint='/chat/completions';
+            requestBody={
+              model:gatewayModel,
+              messages:[{role:'user',content:providerPrompt}]
+            };
+          }
+
+          const upstream=await fetch(gatewayBase+endpoint,{
             method:'POST',
             headers:{
               'Content-Type':'application/json',
               'Authorization':'Bearer '+gatewayKey
             },
-            body:JSON.stringify({
-              model:gatewayModel,
-              prompt:providerPrompt,
-              n:1,
-              size:providerImageSize(width,height,false)
-            }),
+            body:JSON.stringify(requestBody),
             signal:AbortSignal.timeout(90000)
           });
           const data=await upstream.json().catch(()=>({}));
           if(!upstream.ok)continue;
-          const first=data?.data?.[0]||{};
-          const remoteUrl=first?.url||data?.url||null;
-          const b64=first?.b64_json||data?.b64_json||null;
-          if(!remoteUrl&&!b64)continue;
-          const imageUrl=b64?'data:image/png;base64,'+b64:String(remoteUrl);
+
+          let imageUrl='';
+          if(endpoint==='/chat/completions'){
+            const images=Array.isArray(data?.choices?.[0]?.message?.images)?data.choices[0].message.images:[];
+            imageUrl=String(images?.[0]?.image_url?.url||images?.[0]?.url||'');
+          }else{
+            const first=data?.data?.[0]||{};
+            imageUrl=first?.b64_json?'data:image/png;base64,'+first.b64_json:String(first?.url||data?.url||'');
+          }
+          if(!imageUrl)continue;
+
+          const referenceImagesPassed=endpoint==='/images/edits'?gatewayReferenceValues.length:0;
           return Response.json({
             url:imageUrl,
             provider:'vercel-gateway-image',
@@ -348,7 +382,7 @@ export async function POST(req:Request){
             identityLocked:true,
             referenceQuery:referencePlan.query||null,
             referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
-            referenceImagesPassed:0,
+            referenceImagesPassed,
             userReferenceCount:userInline.length,
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
@@ -364,9 +398,9 @@ export async function POST(req:Request){
             negativePrompt,
             style,
             styleLocked,
-            fidelityLimited:needsStrongIdentity,
-            providerWarning:needsStrongIdentity
-              ? 'AI Gateway gerou a imagem por prompt estruturado; a revisão semântica continua obrigatória para identidade de personagem.'
+            fidelityLimited:needsStrongIdentity&&referenceImagesPassed===0,
+            providerWarning:needsStrongIdentity&&referenceImagesPassed===0
+              ? 'AI Gateway gerou a imagem sem consumir pixels de referência nesta tentativa; a revisão semântica decide a identidade.'
               : null,
             postprocessPlan
           });
