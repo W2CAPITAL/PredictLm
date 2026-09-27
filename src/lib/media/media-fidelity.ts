@@ -1,4 +1,5 @@
 import { isNarutoKuramaVsSasukeSusanooPrompt, matchupNegativeConstraints, wantsFullKuramaAvatar, wantsKuramaChakraMode } from './canonical-matchup';
+import {analyzeImageIntent} from './image-intent';
 export { isNarutoKuramaVsSasukeSusanooPrompt } from './canonical-matchup';
 export type MediaLibraryLike={
   prompt?:string|null;
@@ -54,10 +55,12 @@ export function extractRequestedNamedSubject(input:string){
 export function isLikelyNamedPersonPrompt(input:string){
   const raw=String(input||'').trim();
   const p=normalize(raw);
-  if(/\b(elon musk|taylor swift|cristiano ronaldo|lionel messi|beyonce|rihanna|lady gaga|brad pitt|tom cruise|zendaya|keanu reeves)\b/.test(p))return true;
+  if(/\b(elon musk|taylor swift|cristiano ronaldo|lionel messi|beyonce|rihanna|lady gaga|brad pitt|tom cruise|zendaya|keanu reeves|alanzoka)\b/.test(p))return true;
+  const intent=analyzeImageIntent(raw);
+  if(intent.entities.some(x=>x.kind==='person'))return true;
   const subject=extractRequestedNamedSubject(raw);
-  if(!subject)return false;
-  return /^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+$/u.test(subject);
+  if(subject&&/^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’-]+$/u.test(subject))return true;
+  return /\b(?:pessoa|celebridade|famos[oa]|ator|atriz|cantor|cantora|streamer|youtuber|influenciador|influenciadora)\b/.test(p)&&intent.identitySensitive;
 }
 
 export function isConcreteCreaturePrompt(input:string){
@@ -73,7 +76,8 @@ export function isSpecificFranchisePrompt(input:string){
 }
 
 export function shouldForceLiteralMode(input:string){
-  return isSpecificFranchisePrompt(input)||isLikelyNamedPersonPrompt(input)||isConcreteCreaturePrompt(input);
+  const intent=analyzeImageIntent(input);
+  return intent.requiresLiteral||isSpecificFranchisePrompt(input)||isLikelyNamedPersonPrompt(input)||isConcreteCreaturePrompt(input);
 }
 
 export function isAnimeFranchisePrompt(input:string){
@@ -126,6 +130,28 @@ export function buildSpecificNegativePrompt(originalPrompt:string,userNegative='
       'altered facial identity',
       'different person'
     );
+  }
+  const intent=analyzeImageIntent(originalPrompt);
+  if(intent.identitySensitive){
+    for(const entity of intent.entities.filter(x=>x.kind!=='style'&&x.kind!=='franchise')){
+      values.push(
+        'wrong '+entity.label+' identity',
+        'generic substitute for '+entity.label,
+        'unrecognizable '+entity.label,
+        'missing requested '+entity.label
+      );
+      if(entity.form)values.push('wrong '+entity.form,'missing '+entity.form);
+    }
+    if(intent.continuation)values.push(
+      'different face from previous approved image',
+      'identity drift',
+      'changed hairstyle without request',
+      'changed body design without request',
+      'changed signature clothing without request'
+    );
+  }
+  if(intent.styleSensitive){
+    values.push('wrong requested visual style','generic style drift','unrequested aesthetic substitution');
   }
 
   if(/\b(dragao|dragon)\b/.test(p)){
