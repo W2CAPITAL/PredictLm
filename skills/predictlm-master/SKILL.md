@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve e simulações de cenários/vida sob um único contrato de comportamento.
 metadata:
-  version: "3.28.0"
+  version: "3.29.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.28.0
+# PredictLM Master v3.29.0
 
 ## Regra soberana
 
@@ -1267,3 +1267,8 @@ If the selected provider returns no usable image payload or the returned URL can
 Image generation treats HTTP success as insufficient. The provider/fallback result must decode as real image bytes; invalid 200 responses (JSON/HTML/text or undersized payloads) trigger automatic model retry. Only after the bounded retry chain is exhausted may Imagine surface `O provider não entregou uma imagem válida`.
 
 Negative quality constraints are generated automatically from identity/form semantics. The manual negative field is an advanced optional override and must not be presented as required workflow.
+
+
+## Hosted image provider recovery v3.29
+
+Vercel deployments use `VERCEL_OIDC_TOKEN` as a zero-static-secret AI Gateway credential for image generation. Provider adapters must use the correct endpoint contract: Gemini/Nano Banana multimodal image output through Chat Completions, image-only models through Images Generations, and supported identity/reference repair through Images Edits. Pollinations legacy keyless host is not a production dependency.
