@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {Activity,Download,MapPin,Play,Pause,RotateCcw,Sparkles,StepForward,Upload} from 'lucide-react';
+import {Activity,Download,Eye,MapPin,Play,Pause,RotateCcw,Sparkles,StepForward,Upload} from 'lucide-react';
 import {
   CRAFT_RECIPES,
   VOXEL_BLOCKS,
@@ -93,6 +93,14 @@ const BLOCK_COLORS:Record<VoxelBlockId,string>={
 };
 
 type ToolMode='mine'|'place'|'inspect';
+type ViewTarget='player'|MinecraftBrainId;
+
+const BRAIN_VISION:Record<MinecraftBrainId,{label:string;radius:number;description:string}>={
+  human:{label:'Humano',radius:10,description:'visão binocular detalhada, leitura de estruturas e planejamento de longo alcance'},
+  macaque:{label:'Macaco',radius:11,description:'visão frontal ampla, contraste de terreno, recursos e ameaças próximas'},
+  mouse:{label:'Camundongo',radius:7,description:'campo baixo e compacto, foco em abrigo, comida, túneis e ameaças próximas'},
+  fly:{label:'Mosca',radius:12,description:'campo muito amplo e rápido, priorizando movimento, rotas, estruturas e exploração'}
+};
 
 function loadWorld(){
   if(typeof window==='undefined')return createVoxelWorld(827361);
@@ -132,6 +140,7 @@ export function MinecraftSimulationPanel(){
   const [lastPlan,setLastPlan]=useState('');
   const [viewRadius,setViewRadius]=useState(10);
   const [renderMode,setRenderMode]=useState<'native'|'unity'>('native');
+  const [viewTarget,setViewTarget]=useState<ViewTarget>('human');
   const canvas=useRef<HTMLCanvasElement>(null);
   const unityFrame=useRef<HTMLIFrameElement>(null);
   const saveInput=useRef<HTMLInputElement>(null);
@@ -139,6 +148,24 @@ export function MinecraftSimulationPanel(){
   const audit=useMemo(()=>minecraftReferenceAudit(),[]);
   const worldRef=useRef(world);
   const brainsRef=useRef(brains);
+  const viewAgent=viewTarget==='player'?null:brains.agents[viewTarget];
+  const viewLabel=viewTarget==='player'?'Você':viewAgent?.label||'Cérebro';
+  const viewWorld=useMemo(()=>{
+    if(!viewAgent)return world;
+    return normalizeVoxelWorld({
+      ...world,
+      player:{
+        ...world.player,
+        x:viewAgent.x,
+        y:viewAgent.y,
+        z:viewAgent.z,
+        dimension:viewAgent.dimension,
+        health:viewAgent.health,
+        hunger:viewAgent.hunger
+      },
+      inventory:viewAgent.inventory
+    });
+  },[world,viewAgent]);
 
   useEffect(()=>{
     const loaded=loadWorld();
@@ -182,11 +209,11 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     if(renderMode!=='unity'||!unityWebGLConfigured())return;
-    const scene=voxelUnityScene(world,Math.min(10,viewRadius));
+    const scene=voxelUnityScene(viewWorld,Math.min(10,viewRadius));
     postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene});
-  },[world,renderMode,viewRadius]);
+  },[viewWorld,renderMode,viewRadius]);
 
-  const context=useMemo(()=>currentVoxelContext(world),[world]);
+  const context=useMemo(()=>currentVoxelContext(viewWorld),[viewWorld]);
   const chunk=context.snapshot;
   const currentStructures=chunk.structures;
   const currentMobs=chunk.mobs;
@@ -211,7 +238,7 @@ export function MinecraftSimulationPanel(){
 
     ctx.clearRect(0,0,width,height);
     const gradient=ctx.createLinearGradient(0,0,0,height);
-    const night=world.timeOfDay>=12000;
+    const night=viewWorld.timeOfDay>=12000;
     gradient.addColorStop(0,night?'#06101e':'#17384a');
     gradient.addColorStop(1,night?'#0c1419':'#1b2a27');
     ctx.fillStyle=gradient;
@@ -220,18 +247,18 @@ export function MinecraftSimulationPanel(){
     const tile=Math.max(18,Math.min(34,Math.floor(width/(viewRadius*2.5))));
     const centerX=width*.5;
     const centerY=height*.28;
-    const baseY=surfaceAt(world,world.player.x,world.player.z).y;
+    const baseY=surfaceAt(viewWorld,viewWorld.player.x,viewWorld.player.z).y;
     const cells:Array<{x:number;z:number;y:number;block:VoxelBlockId;depth:number}>=[];
     for(let dx=-viewRadius;dx<=viewRadius;dx++)for(let dz=-viewRadius;dz<=viewRadius;dz++){
-      const x=world.player.x+dx,z=world.player.z+dz;
-      const cell=surfaceAt(world,x,z);
+      const x=viewWorld.player.x+dx,z=viewWorld.player.z+dz;
+      const cell=surfaceAt(viewWorld,x,z);
       cells.push({...cell,depth:dx+dz});
     }
     cells.sort((a,b)=>a.depth-b.depth||a.y-b.y);
     const hits:Array<{x:number;z:number;points:[number,number][];depth:number}>=[];
 
     for(const cell of cells){
-      const dx=cell.x-world.player.x,dz=cell.z-world.player.z;
+      const dx=cell.x-viewWorld.player.x,dz=cell.z-viewWorld.player.z;
       const sx=centerX+(dx-dz)*(tile*.5);
       const sy=centerY+(dx+dz)*(tile*.25)-(cell.y-baseY)*3;
       const top:[number,number][]=[
@@ -277,9 +304,9 @@ export function MinecraftSimulationPanel(){
     hitCells.current=hits.reverse();
 
     for(const structure of currentStructures){
-      const dx=structure.x-world.player.x,dz=structure.z-world.player.z;
+      const dx=structure.x-viewWorld.player.x,dz=structure.z-viewWorld.player.z;
       if(Math.abs(dx)>viewRadius||Math.abs(dz)>viewRadius)continue;
-      const cell=surfaceAt(world,structure.x,structure.z);
+      const cell=surfaceAt(viewWorld,structure.x,structure.z);
       const sx=centerX+(dx-dz)*(tile*.5);
       const sy=centerY+(dx+dz)*(tile*.25)-(cell.y-baseY)*3-18;
       ctx.fillStyle=structure.kind==='dungeon'?'#b36dff':'#f0c66a';
@@ -290,10 +317,10 @@ export function MinecraftSimulationPanel(){
     const brainColors:Record<MinecraftBrainId,string>={human:'#64e6d2',macaque:'#f3a85c',mouse:'#d5c7ff',fly:'#f4e76e'};
     for(const id of Object.keys(brains.agents) as MinecraftBrainId[]){
       const agent=brains.agents[id];
-      if(agent.dimension!==world.player.dimension)continue;
-      const dx=agent.x-world.player.x,dz=agent.z-world.player.z;
+      if(agent.dimension!==viewWorld.player.dimension)continue;
+      const dx=agent.x-viewWorld.player.x,dz=agent.z-viewWorld.player.z;
       if(Math.abs(dx)>viewRadius||Math.abs(dz)>viewRadius)continue;
-      const cell=surfaceAt(world,agent.x,agent.z);
+      const cell=surfaceAt(viewWorld,agent.x,agent.z);
       const sx=centerX+(dx-dz)*(tile*.5);
       const sy=centerY+(dx+dz)*(tile*.25)-(cell.y-baseY)*3-15;
       ctx.fillStyle=brainColors[id];
@@ -302,11 +329,42 @@ export function MinecraftSimulationPanel(){
       ctx.font='9px system-ui';ctx.fillStyle=brainColors[id];ctx.fillText(agent.label.replace('Cérebro ',''),sx+8,sy+3);
     }
 
-    const px=centerX,py=centerY-16;
-    ctx.fillStyle='#55ead1';
-    ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#d8fff8';ctx.lineWidth=2;ctx.stroke();
-    ctx.font='10px system-ui';ctx.fillStyle='#d8fff8';ctx.fillText('Você',px+11,py+3);
+    if(world.player.dimension===viewWorld.player.dimension){
+      const dx=world.player.x-viewWorld.player.x,dz=world.player.z-viewWorld.player.z;
+      if(Math.abs(dx)<=viewRadius&&Math.abs(dz)<=viewRadius){
+        const cell=surfaceAt(viewWorld,world.player.x,world.player.z);
+        const sx=centerX+(dx-dz)*(tile*.5);
+        const sy=centerY+(dx+dz)*(tile*.25)-(cell.y-baseY)*3-15;
+        ctx.fillStyle='#55ead1';
+        ctx.beginPath();ctx.arc(sx,sy,6,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#d8fff8';ctx.lineWidth=1.5;ctx.stroke();
+        ctx.font='9px system-ui';ctx.fillStyle='#d8fff8';ctx.fillText('Você',sx+8,sy+3);
+      }
+    }
+
+    if(viewTarget==='fly'){
+      ctx.strokeStyle='rgba(244,231,110,.12)';
+      ctx.lineWidth=1;
+      for(let x=0;x<width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke()}
+      for(let y=0;y<height;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}
+    }else if(viewTarget==='mouse'){
+      const grad=ctx.createRadialGradient(centerX,centerY,70,centerX,centerY,Math.max(width,height)*.62);
+      grad.addColorStop(0,'rgba(0,0,0,0)');
+      grad.addColorStop(1,'rgba(0,0,0,.42)');
+      ctx.fillStyle=grad;ctx.fillRect(0,0,width,height);
+    }else if(viewTarget==='macaque'){
+      ctx.fillStyle='rgba(242,157,74,.035)';ctx.fillRect(0,0,width,height);
+    }
+
+    ctx.fillStyle='rgba(3,10,14,.74)';
+    ctx.fillRect(12,12,330,68);
+    ctx.fillStyle='#d8e9e7';
+    ctx.font='12px system-ui';
+    ctx.fillText('POV · '+viewLabel,22,30);
+    ctx.fillStyle='#91aaa7';
+    ctx.font='10px system-ui';
+    ctx.fillText('Chunk '+context.cx+','+context.cz+' · '+chunk.biome+' · '+viewWorld.player.dimension,22,48);
+    ctx.fillText(viewTarget==='player'?'controle manual':BRAIN_VISION[viewTarget].description,22,65);
 
     ctx.fillStyle='rgba(3,10,14,.66)';
     ctx.fillRect(12,12,250,52);
@@ -314,8 +372,8 @@ export function MinecraftSimulationPanel(){
     ctx.font='12px system-ui';
     ctx.fillText('Chunk '+context.cx+','+context.cz+' · '+chunk.biome,22,32);
     ctx.fillStyle='#91aaa7';
-    ctx.fillText('Dia '+world.day+' · '+Math.floor(world.timeOfDay)+' · '+world.weather,22,50);
-  },[world,brains,viewRadius,renderMode,currentStructures,context.cx,context.cz,chunk.biome]);
+    ctx.fillText('Dia '+viewWorld.day+' · '+Math.floor(viewWorld.timeOfDay)+' · '+viewWorld.weather,22,50);
+  },[viewWorld,world,brains,viewTarget,viewLabel,viewRadius,renderMode,currentStructures,context.cx,context.cz,chunk.biome]);
 
   useEffect(()=>{
     const onKey=(e:KeyboardEvent)=>{
@@ -351,7 +409,11 @@ export function MinecraftSimulationPanel(){
     const y=(e.clientY-rect.top)*(el.height/rect.height);
     const hit=hitCells.current.find(cell=>pointInPoly(x,y,cell.points));
     if(!hit)return;
-    const surface=surfaceAt(world,hit.x,hit.z);
+    const surface=surfaceAt(viewWorld,hit.x,hit.z);
+    if(viewTarget!=='player'){
+      setMessage(viewLabel+' percebe '+VOXEL_BLOCKS[surface.block].label+' em '+hit.x+','+surface.y+','+hit.z+' · '+surface.biome+'.');
+      return;
+    }
     if(tool==='mine'){
       const result=mineVoxelBlock(world,hit.x,surface.y,hit.z);
       setWorld(result.state);setMessage(result.message);
@@ -396,6 +458,17 @@ export function MinecraftSimulationPanel(){
   }
 
   function move(dx:number,dz:number){setWorld(prev=>moveVoxelPlayer(prev,dx,dz))}
+  function selectView(target:ViewTarget){
+    setViewTarget(target);
+    if(target==='player'){
+      setViewRadius(10);
+      setMessage('POV manual: você controla e altera o mundo.');
+      return;
+    }
+    const brain=brains.agents[target];
+    setViewRadius(BRAIN_VISION[target].radius);
+    setMessage(brain.label+' · '+BRAIN_VISION[target].description+' · pensamento atual: '+brain.publicThought);
+  }
   function reset(){
     const seed=world.seed;
     const fresh=createVoxelWorld(seed);
@@ -485,6 +558,13 @@ export function MinecraftSimulationPanel(){
       </div>
     </header>
 
+    <div className={styles.povBar}>
+      <span><Eye size={14}/> Visão no cérebro</span>
+      <button className={viewTarget==='player'?styles.active:''} onClick={()=>selectView('player')}>Você</button>
+      {(Object.keys(BRAIN_VISION) as MinecraftBrainId[]).map(id=><button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>{BRAIN_VISION[id].label}</button>)}
+      <small>{viewTarget==='player'?'Câmera e controles manuais.':BRAIN_VISION[viewTarget].description}</small>
+    </div>
+
     <div className={styles.commandBar}>
       <div>
         <Sparkles size={15}/>
@@ -523,23 +603,24 @@ export function MinecraftSimulationPanel(){
     <div className={styles.layout}>
       <main className={styles.world}>
         {renderMode==='unity'&&unityReady?
-          <iframe ref={unityFrame} className={styles.unityFrame} src={UNITY_WEBGL_URL} title="PredictLM Unity WebGL Simulation" onLoad={()=>postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene:voxelUnityScene(world,Math.min(10,viewRadius))})}/>:
+          <iframe ref={unityFrame} className={styles.unityFrame} src={UNITY_WEBGL_URL} title="PredictLM Unity WebGL Simulation" onLoad={()=>postUnityMessage(unityFrame.current?.contentWindow||null,{type:'predictlm:scene',scene:voxelUnityScene(viewWorld,Math.min(10,viewRadius))})}/>:
           <canvas ref={canvas} onClick={handleCanvasClick} className={styles.canvas} aria-label="Mundo voxel procedural interativo"/>
         }
         <div className={styles.worldFoot}>
-          <span><MapPin size={12}/>{world.player.x},{world.player.y},{world.player.z}</span>
+          <span><Eye size={12}/>{viewLabel}</span>
+          <span><MapPin size={12}/>{viewWorld.player.x},{viewWorld.player.y},{viewWorld.player.z}</span>
           <span>chunk {context.cx},{context.cz} · {chunk.biome}</span>
-          <span>dia {world.day} · {world.weather}</span>
+          <span>dia {viewWorld.day} · {viewWorld.weather}</span>
           <b>{message}</b>
         </div>
-        <div className={styles.movePad}>
+        {viewTarget==='player'?<div className={styles.movePad}>
           <span/>
           <button onClick={()=>move(0,-1)}>W</button>
           <span/>
           <button onClick={()=>move(-1,0)}>A</button>
           <button onClick={()=>move(0,1)}>S</button>
           <button onClick={()=>move(1,0)}>D</button>
-        </div>
+        </div>:<div className={styles.spectatorBadge}>POV autônomo · acompanhando {viewLabel}</div>}
       </main>
 
       <aside className={styles.side}>
@@ -548,7 +629,7 @@ export function MinecraftSimulationPanel(){
           <div className={styles.list}>
             {(Object.keys(brains.agents) as MinecraftBrainId[]).map(id=>{
               const brain=brains.agents[id];
-              return <button key={id} onClick={()=>setMessage(brain.label+' · '+brain.publicThought)}>
+              return <button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>
                 <b>{brain.label}</b>
                 <span>{brain.dimension==='infernal'?'Nether':brain.dimension==='void'?'End':'Overworld'} · {brain.x},{brain.z} · {brain.lastAction}</span>
               </button>;
@@ -594,7 +675,7 @@ export function MinecraftSimulationPanel(){
         <section>
           <header><b>Mundo vivo</b><span>{currentMobs.length} mobs</span></header>
           <div className={styles.list}>
-            {currentMobs.map(mob=><button key={mob.id} onClick={()=>mob.kind==='villager'?trade(mob):attack(mob)}><b>{mob.label}</b><span>{mob.kind==='villager'?'trocar · 1 esmeralda':(mob.hostile?'hostil':'passivo')+' · HP '+mob.health}</span></button>)}
+            {currentMobs.map(mob=><button key={mob.id} onClick={()=>viewTarget==='player'?(mob.kind==='villager'?trade(mob):attack(mob)):setMessage(viewLabel+' percebe '+mob.label+' · '+(mob.hostile?'ameaça':'entidade')+' · HP '+mob.health)}><b>{mob.label}</b><span>{viewTarget==='player'?(mob.kind==='villager'?'trocar · 1 esmeralda':(mob.hostile?'hostil':'passivo')+' · HP '+mob.health):'percebido por '+viewLabel}</span></button>)}
             {!currentMobs.length?<small>Nenhum mob neste chunk.</small>:null}
           </div>
         </section>
@@ -610,7 +691,7 @@ export function MinecraftSimulationPanel(){
         <section>
           <header><b>Estruturas / Dungeons</b><span>referência secundária</span></header>
           <div className={styles.list}>
-            {currentStructures.map(s=><button key={s.id} onClick={()=>s.kind==='dungeon'?raid(s):setMessage(s.label+' em '+s.x+','+s.z)}><b>{s.label}</b><span>{s.kind==='dungeon'?'explorar / saquear':'descobrir'}</span></button>)}
+            {currentStructures.map(s=><button key={s.id} onClick={()=>viewTarget==='player'&&s.kind==='dungeon'?raid(s):setMessage(viewLabel+' percebe '+s.label+' em '+s.x+','+s.z)}><b>{s.label}</b><span>{viewTarget==='player'?(s.kind==='dungeon'?'explorar / saquear':'descobrir'):'estrutura no campo visual'}</span></button>)}
             {!currentStructures.length?<small>Continue explorando: estruturas são procedurais e raras.</small>:null}
           </div>
         </section>
@@ -619,7 +700,7 @@ export function MinecraftSimulationPanel(){
 
     <details className={styles.details}>
       <summary>Estado e implementação do mundo</summary>
-      <pre>{voxelWorldSummary(world)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
+      <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
       <p>Referências registradas: {audit.registered}/{audit.expected}. As referências sem licença verificada são usadas somente como inspiração arquitetural; nenhum asset proprietário do Minecraft é incorporado.</p>
       <p>Unity: {unityReady?'WebGL configurado e sincronizado por scene snapshots.':'fabric de GameObject/Transform/Component ativo; falta uma URL de build Unity WebGL para executar o runtime Unity real no navegador.'}</p>
     </details>
