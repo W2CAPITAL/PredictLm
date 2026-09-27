@@ -18,8 +18,9 @@ test('anime character prompts use multi-candidate best-image planning',()=>{
   assert.equal(plan.candidateCount,3);
   assert.match(plan.identityKey,/naruto-uzumaki/);
   assert.match(plan.identityKey,/sasuke-uchiha/);
-  assert.match(plan.identityKey,/kurama-nine-tails/);
+  assert.doesNotMatch(plan.identityKey,/kurama-nine-tails/);
   assert.match(plan.identityKey,/perfect-susanoo/);
+  assert.match(plan.promptContract,/Kurama is a chakra MODE on Naruto/i);
   assert.match(plan.promptContract,/SUBJECT\[1\]/);
   assert.match(plan.promptContract,/Never merge|Never merge them|Never merge/i);
   assert.match(plan.promptContract,/gold|orange/i);
@@ -59,4 +60,16 @@ test('visual identity key is stable for the same canonical characters/forms',()=
   const a=visualIdentityKey(naruto);
   const b=visualIdentityKey('Sasuke com Susanoo Perfeito contra Naruto em modo Kurama');
   assert.equal(a,b);
+});
+
+
+test('full Kurama avatar is a separate subject only when explicitly requested',()=>{
+  const full=buildBestImagePlan('Naruto com o avatar completo da Kurama, raposa gigante de nove caudas, contra Sasuke com Susanoo Perfeito','Anime');
+  assert.match(full.identityKey,/kurama-nine-tails/);
+  assert.ok(full.subjects.some(x=>x.id==='kurama-nine-tails'));
+  assert.match(full.promptContract,/separate fox\/Nine-Tails avatar/i);
+
+  const mode=buildBestImagePlan('Naruto no modo Kurama com aura dourada no corpo contra Sasuke com Susanoo Perfeito','Anime');
+  assert.ok(!mode.subjects.some(x=>x.id==='kurama-nine-tails'));
+  assert.match(mode.promptContract,/chakra MODE on Naruto/i);
 });
