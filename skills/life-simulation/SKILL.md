@@ -332,3 +332,12 @@ The visible world and the action world must be the same world.
    - flower: stem/bloom.
 
 A text log saying an action happened does not satisfy the simulation contract when the action should be physically observable.
+
+
+## Minecraft-only simulation surface
+
+A Simulação pública do PredictLM possui **um único modo**: Minecraft Cognitive World. O antigo modo de vida/cidade não é uma superfície pública e não deve reaparecer como aba, alternância ou modo paralelo.
+
+O mundo Minecraft é a fonte física de verdade. Os quatro controladores cognitivos — Humano/H01-derived, Macaque, Mouse e FlyWire — jogam o mesmo save persistente e executam ações reais no runtime: movimento, exploração, mineração, crafting, construção, combate, alimentação, agricultura, comércio, dungeons e viagens dimensionais. Pensamento público serve apenas para observabilidade; texto não substitui mutação real do mundo.
+
+Conteúdo mínimo obrigatório do mundo: árvores, vilas, cavernas, minas, minérios, estruturas, móveis colocáveis, equipamentos, comidas, animais, monstros hostis, Nether, End, dungeons, inventário, crafting, smelting, clima, ciclo dia/noite, saves, mundo procedural e expansão por chunks.
