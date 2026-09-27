@@ -61,14 +61,21 @@ const ISSUE_REPAIRS:Record<string,string>={
   'wrong-kurama-form':'Correct Kurama into a recognizable fox/Nine-Tails chakra avatar with fox anatomy and multiple distinct tails. Do not use a dragon, wolf, flame monster or humanoid clone.',
   'wrong-susanoo-form':'Correct Perfect Susanoo into a gigantic complete violet/purple armored winged humanoid chakra avatar. Do not use smoke, ordinary aura, dragon, generic demon or mecha.',
   'wrong-color-ownership':'Restore color ownership: Naruto/Kurama = gold/orange; Sasuke/Perfect Susanoo = violet/purple/electric-blue accents. Do not make both sides orange/red.',
-  'low-character-readability':'Increase separation and readability of Naruto, Sasuke, Kurama and Perfect Susanoo.',
-  'central-explosion':'Reduce the central explosion so it does not cover either avatar or the two human characters.',
+  'low-character-readability':'Increase separation and readability of Naruto, Sasuke, the requested Kurama form and Perfect Susanoo.',
+  'central-explosion':'Reduce the central explosion so it does not cover Naruto, Sasuke or Perfect Susanoo.',
   'missing-statues':'Show the Valley of the End waterfall canyon and both Hashirama and Madara statues.'
 };
 export function parseSemanticImageReview(value:unknown,originalPrompt:string):SemanticImageReview{
   const v=value as {issues?:unknown};
   if(!v||!Array.isArray(v.issues)||v.issues.some(x=>typeof x!=='string'||!(x in ISSUE_REPAIRS)))return {status:'unavailable',issues:[],retryPrompt:''};
-  const issues=[...new Set(v.issues as string[])].filter(x=>x!=='missing-statues'||requestsValleyOfTheEnd(originalPrompt));
+  const fullKurama=wantsFullKuramaAvatar(originalPrompt);
+  const kuramaMode=wantsKuramaChakraMode(originalPrompt);
+  const issues=[...new Set(v.issues as string[])].filter(issue=>{
+    if(issue==='missing-statues'&&!requestsValleyOfTheEnd(originalPrompt))return false;
+    if((issue==='missing-kurama'||issue==='wrong-kurama-form')&&!fullKurama)return false;
+    if(issue==='wrong-kurama-mode'&&!kuramaMode)return false;
+    return true;
+  });
   return {status:issues.length?'failed':'passed',issues,retryPrompt:issues.map(x=>ISSUE_REPAIRS[x]).join(' ')};
 }
 
