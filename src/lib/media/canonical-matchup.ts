@@ -26,7 +26,7 @@ export function canonicalMatchupLock(input:string){
   if(!isNarutoKuramaVsSasukeSusanooPrompt(input))return '';
   const fullKurama=wantsFullKuramaAvatar(input);
   const narutoLock=fullKurama
-    ? 'LEFT: Naruto Uzumaki must remain visibly Naruto — spiky BLOND hair, whisker cheek marks and requested shinobi cues — while associated with a gigantic complete golden-orange Kurama/Nine-Tails fox avatar. Kurama must read as a fox with multiple distinct tails, never a dragon, wolf, flame monster or humanoid clone.'
+    ? 'LEFT: Naruto Uzumaki must remain visibly Naruto — spiky BLOND hair, whisker cheek marks and requested shinobi cues — while associated with a gigantic complete golden-orange Kurama/Nine-Tails fox avatar. Kurama must read as a fox with nine distinct tails, never a dragon, wolf, flame monster or humanoid clone.'
     : 'LEFT: Naruto Uzumaki himself is in Kurama Chakra Mode: spiky BLOND hair, visible whisker cheek marks, requested Leaf/shinobi cues and a bright GOLDEN-ORANGE chakra cloak/aura wrapped around HIS BODY. A subtle fox/chakra silhouette may support the scene, but do NOT invent a separate giant Kurama beast unless the user explicitly asks for the full Kurama avatar.';
   return [
     'CANONICAL MATCHUP MASTER LOCK: Naruto in the requested Kurama form versus Sasuke with Perfect Susanoo. Render a premium anime battle key visual with a wide readable left-vs-right composition, strong silhouette separation and one clear central clash.',
