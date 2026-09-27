@@ -80,6 +80,49 @@ async function reviewReferenceUsefulness(
   }
 }
 
+function referenceCoverageBucket(prompt:string,ref:{title:string;query:string;site?:string}){
+  const hay=(String(ref.title||'')+' '+String(ref.query||'')+' '+String(ref.site||''))
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,' ');
+  if(isNarutoKuramaVsSasukeSusanooPrompt(prompt)){
+    if(/susanoo/.test(hay))return 'sasuke-susanoo';
+    if(/kurama|kyuubi|kyubi|nine[- ]?tails|nove caudas/.test(hay))return 'naruto-kurama';
+    if(/sasuke|uchiha/.test(hay))return 'sasuke';
+    if(/naruto|uzumaki/.test(hay))return 'naruto';
+    if(/battle|versus|vs\.?|fight|final/.test(hay))return 'battle';
+  }
+  return hay.split(/\s+/).filter(Boolean).slice(0,3).join('-')||'other';
+}
+
+function selectReferenceCoverage<T extends {ref:{title:string;query:string;site?:string};review:{confidence?:number;useful?:boolean}}>(
+  prompt:string,
+  items:T[],
+  max:number
+){
+  const ranked=[...items].sort((a,b)=>(Number(b.review?.confidence)||0)-(Number(a.review?.confidence)||0));
+  if(!isNarutoKuramaVsSasukeSusanooPrompt(prompt))return ranked.slice(0,max);
+
+  const order=['sasuke-susanoo','naruto-kurama','naruto','sasuke','battle'];
+  const selected:T[]=[];
+  const used=new Set<T>();
+  for(const bucket of order){
+    const item=ranked.find(x=>!used.has(x)&&referenceCoverageBucket(prompt,x.ref)===bucket);
+    if(item){
+      selected.push(item);
+      used.add(item);
+      if(selected.length>=max)return selected;
+    }
+  }
+  for(const item of ranked){
+    if(used.has(item))continue;
+    selected.push(item);
+    if(selected.length>=max)break;
+  }
+  return selected;
+}
+
+
 function localRenderUrl(
   prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean,
   referenceUrls:string[]=[]
@@ -201,10 +244,11 @@ export async function POST(req:Request){
         })))
       : downloadCandidates.map(item=>({...item,review:{status:'skipped' as const,useful:true,confidence:0,subjects:[] as string[],provider:'',model:''}}));
 
-    const approvedDownloaded=reviewable
-      .filter(item=>item.review.useful!==false)
-      .sort((a,b)=>(b.review.confidence||0)-(a.review.confidence||0))
-      .slice(0,Math.max(0,3-userInline.length-identityMemoryInline.length));
+    const approvedDownloaded=selectReferenceCoverage(
+      sourcePrompt,
+      reviewable.filter(item=>item.review.useful!==false),
+      Math.max(0,3-userInline.length-identityMemoryInline.length)
+    );
 
     const searchedInline=approvedDownloaded.map(x=>x.inline);
     const searchedReferenceUrls=approvedDownloaded.map(x=>x.ref.imageUrl);
