@@ -149,3 +149,15 @@ Para personagem/franquia específica, um provider text-only não pode vencer o r
 - JPEG/PNG/WebP podem ser reconhecidos pelos bytes quando o CDN devolve MIME incorreto;
 - para Naruto/Kurama vs Sasuke/Susanoo, as referências são diversificadas para cobrir os dois lados do confronto, evitando três imagens do mesmo personagem;
 - candidato rejeitado fica recolhido em diagnóstico e nunca aparece como se fosse a geração aceita.
+
+
+## Transformation semantics
+
+Named-character forms must distinguish **character transformation/mode** from **separate summoned/avatar entity**.
+
+Canonical example:
+- `Naruto no modo Kurama`, `Kurama Chakra Mode`, `chakra da Kurama envolvendo o corpo` → Naruto remains the subject; require blond hair, whisker marks and golden-orange chakra cloak/aura on Naruto. Do **not** invent a separate giant Kurama fox.
+- `avatar completo da Kurama`, `Kurama inteira`, `raposa gigante de nove caudas` → a separate/full Kurama fox avatar is explicitly required.
+- `Sasuke com Susanoo Perfeito` → Perfect Susanoo is a separate surrounding gigantic violet/purple armored humanoid chakra avatar.
+
+The subject graph, verifier and repair code must use the same interpretation. A verifier may not fail a Kurama-mode image merely because a separate fox avatar is absent.
