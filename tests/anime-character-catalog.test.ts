@@ -2,9 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {animeCharacterSearchTerms,resolveAnimeCharacterCatalog} from '../src/lib/media/anime-character-catalog';
 
-test('anime catalog decomposes Naruto matchup into separate character identities',()=>{
-  const terms=animeCharacterSearchTerms('Naruto modo Kurama vs Sasuke Susanoo perfeito');
-  assert.deepEqual(terms,['Naruto Uzumaki','Sasuke Uchiha','Kurama']);
+test('anime catalog keeps Kurama Chakra Mode attached to Naruto identity',()=>{
+  const mode=animeCharacterSearchTerms('Naruto modo Kurama vs Sasuke Susanoo perfeito');
+  assert.deepEqual(mode,['Naruto Uzumaki','Sasuke Uchiha']);
+  const full=animeCharacterSearchTerms('Naruto com avatar completo da Kurama, raposa gigante de nove caudas, vs Sasuke Susanoo perfeito');
+  assert.deepEqual(full,['Naruto Uzumaki','Sasuke Uchiha','Kurama']);
 });
 
 test('anime catalog canonicalizes Freeza to AniList Frieza search',()=>{
@@ -47,7 +49,7 @@ test('AniList resolver uses franchise context to disambiguate homonymous charact
   }) as typeof fetch;
 
   try{
-    const result=await resolveAnimeCharacterCatalog('Naruto modo Kurama vs Sasuke Susanoo');
+    const result=await resolveAnimeCharacterCatalog('Naruto com avatar completo da Kurama, raposa gigante de nove caudas, vs Sasuke Susanoo');
     assert.equal(result.hits.length,3);
     const kurama=result.hits.find(x=>x.name==='Kurama');
     assert.equal(kurama?.id,2);
