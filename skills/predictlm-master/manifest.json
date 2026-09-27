@@ -40,6 +40,7 @@
     "fly-core",
     "human-core-h01",
     "macaque-core",
+    "mouse-core",
     "report-architect",
     "capability-fusion",
     "game-studio-fabric",
@@ -151,13 +152,15 @@
     "game-studio-fabric",
     "minecraft-sandbox",
     "unity-fabric",
-    "ai-influencer-studio"
+    "ai-influencer-studio",
+    "mouse-core"
   ],
   "legacySkillsAreInternal": true,
   "connectomeCores": {
     "fly": "FlyWire FAFB v783",
     "human": "H01 cortical fragment",
-    "macaque": "Macaca fascicularis cortical atlas Cell 2023"
+    "macaque": "Macaca fascicularis cortical atlas Cell 2023",
+    "mouse": "MICrONS cortical mm3 + Allen Mouse Brain Connectivity Atlas mesoscale projections"
   },
   "noGenericFallbackAsAnswer": true,
   "references": [
