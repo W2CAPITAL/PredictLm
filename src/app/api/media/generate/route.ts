@@ -1,4 +1,4 @@
-import { isNarutoKuramaVsSasukeSusanooPrompt } from '@/lib/media/canonical-matchup';
+import { isNarutoKuramaVsSasukeSusanooPrompt, wantsFullKuramaAvatar } from '@/lib/media/canonical-matchup';
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
@@ -216,7 +216,9 @@ export async function POST(req:Request){
 
     const genericRepair=compactText(String(body?.semanticRepairHints||'').trim(),520);
     const canonicalRepair=body?.semanticRepair===true&&isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)
-      ? 'Reduce central explosion. Increase readability of Kurama and Perfect Susanoo. Show both full avatars clearly. Preserve the requested setting and statues.'
+      ? wantsFullKuramaAvatar(sourcePrompt)
+        ? 'Reduce central explosion. Increase readability of Naruto, the explicit full Kurama avatar, Sasuke and Perfect Susanoo. Show the requested full Kurama fox and the complete Perfect Susanoo clearly. Preserve the requested setting.'
+        : 'Reduce central explosion. Keep Naruto himself clearly readable in Kurama Chakra Mode with blond hair, whisker marks and a golden-orange chakra cloak on his body. Keep Sasuke readable with black hair and show the complete purple Perfect Susanoo. Do not invent a separate giant Kurama fox or dragon.'
       : '';
     const correction=genericRepair||canonicalRepair;
     const groundedPrompt=[compiledPrompt,bestImagePlan.promptContract,candidateDirective,correction?'SEMANTIC REPAIR — correct the visible mismatch without changing the requested subject: '+correction:''].filter(Boolean).join('\n\n');
