@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.31.0"
+  version: "3.32.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.31.0
+# PredictLM Master v3.32.0
 
 ## Regra soberana
 
@@ -214,9 +214,9 @@ Preservar e expandir:
 - save/import/export;
 - survival e creative.
 
-## POV cognitivo
+## POV cognitivo 3D
 
-A câmera pode alternar entre Você, Humano, Macaco, Camundongo e Mosca.
+A câmera pode alternar entre Você, Humano, Macaco, Camundongo e Mosca. O renderer padrão é **WebGL 3D em primeira pessoa** (`MinecraftFirstPerson3D`); o antigo isométrico é apenas Mapa 2D auxiliar.
 
 Quando um cérebro é selecionado:
 - o viewport usa sua posição e dimensão;
