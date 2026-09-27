@@ -1,4 +1,4 @@
-import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -564,9 +564,11 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
 
   const mode=isHypotheticalPrompt(prompt)
     ? 'hypothetical'
-    : isGenericHowTo(prompt)
-      ? 'howto'
-      : 'plain';
+    : isPlayfulPrompt(prompt)
+      ? 'playful'
+      : isGenericHowTo(prompt)
+        ? 'howto'
+        : 'plain';
 
   const guard=mode==='hypothetical'
     ? [
@@ -575,7 +577,15 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
         'Se envolver pessoa real, não invente fatos reais: trate somente a hipótese.',
         'Não pesquise, não peça contexto e não introduza assuntos externos quando a pergunta for autocontida.'
       ].join(' ')
-    : mode==='howto'
+    : mode==='playful'
+      ? [
+          'MODO LÚDICO/IMAGINATIVO: entre na premissa em vez de achatá-la com uma correção literal.',
+          'Se o usuário perguntar o que um personagem acharia, trate interpretação ficcional plausível, não como opinião canônica comprovada.',
+          'Se perguntar se você gosta/comeria/usaria algo estranho, responda com personalidade conversacional sem fingir sensação física real.',
+          'Seja específico ao objeto, personagem e situação; prefira uma reação viva, observação engraçada ou mini-cena curta a um disclaimer longo.',
+          'Não responda apenas “não tem muito o que falar”, “sou uma IA” ou “isso não é real” quando a intenção é claramente brincar.'
+        ].join(' ')
+      : mode==='howto'
       ? [
           'Responda como procedimento prático.',
           'Comece pela ação pedida e dê passos concretos.',
