@@ -256,6 +256,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       runtime=createGLRuntime(gl);
       if(!runtime){setWebglError(true);return}
       runtimeRef.current=runtime;
+      geometryCacheRef.current=null;
     }
     const stableRuntime=runtime;
 
@@ -296,9 +297,11 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       ].join('|');
       let data:Float32Array;
       let geometryMs=0;
+      let uploadGeometry=true;
       const cached=geometryCacheRef.current;
       if(cached?.key===geometryKey){
         data=cached.data;
+        uploadGeometry=false;
       }else{
         const geometryStart=performance.now();
         const vertices:number[]=[];
@@ -399,7 +402,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
         geometryCacheRef.current={key:geometryKey,data,geometryMs};
       }
       gl.bindBuffer(gl.ARRAY_BUFFER,stableRuntime.buffer);
-      gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
+      if(uploadGeometry)gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
       const stride=7*4;
       gl.enableVertexAttribArray(stableRuntime.aPosition);gl.vertexAttribPointer(stableRuntime.aPosition,3,gl.FLOAT,false,stride,0);
       gl.enableVertexAttribArray(stableRuntime.aColor);gl.vertexAttribPointer(stableRuntime.aColor,4,gl.FLOAT,false,stride,3*4);
