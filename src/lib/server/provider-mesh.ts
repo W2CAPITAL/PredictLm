@@ -1,6 +1,7 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { jevRouteDecision } from '@/lib/jev-policy';
 import {allExternalProviderSpecs} from '@/lib/server/external-provider-fabric';
+import {providerBudgetMode,providerCostClass} from '@/lib/server/provider-budget';
 
 export type ProviderProtocol='openai'|'anthropic'|'responses';
 export interface ProviderSpec{
@@ -156,6 +157,17 @@ export function rankProviders(prompt:string,deep=false){
     .map((provider,index)=>{
       let score=modelBonus(provider.model,task)-index*0.12;
       const m=provider.model.toLowerCase();
+      const budgetMode=providerBudgetMode();
+      const costClass=providerCostClass(provider);
+      if(budgetMode==='conservative'){
+        if(costClass==='local-or-free')score+=120;
+        else if(costClass==='free-tier')score+=85;
+        else score-=35;
+      }else if(budgetMode==='balanced'){
+        if(costClass==='local-or-free')score+=45;
+        else if(costClass==='free-tier')score+=28;
+        else score-=8;
+      }
       if(route.tier==='strong'||route.tier==='long'){
         if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))score+=24;
         if(/mini|lite|free|haiku|luna/.test(m))score-=12;
