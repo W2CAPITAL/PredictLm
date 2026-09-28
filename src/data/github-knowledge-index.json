@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "223803959eb71d51",
-  "generatedAt": "2026-09-28T18:33:03.614Z",
+  "knowledgeVersion": "d845a42a4b6d44ee",
+  "generatedAt": "2026-09-28T23:45:29.718Z",
   "sourceCount": 97,
-  "chunkCount": 5056,
+  "chunkCount": 5100,
   "chunks": [
     {
       "id": "758b12118f87a395217b",
@@ -6294,9 +6294,933 @@
       "weight": 1.26
     },
     {
-      "id": "a076a12ea321df553c60",
+      "id": "612a344eac83f987fc96",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent - Development Guide",
+      "text": "Instructions for AI coding assistants and developers working on the hermes-agent codebase.\nThis root file holds only what applies everywhere. Each area has its own `AGENTS.md` (aim for\n~8k chars; `agent/subdirectory_hints.py` delivers up to 32k and truncates head/tail with a warning\npast that); see the **routing table** at the end and read the area file before editing in that area.\n\n**Never give up on the right solution.**",
+      "weight": 1.3
+    },
+    {
+      "id": "a67fb46d53c62486c2f8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What Hermes Is",
+      "text": "Hermes is a personal AI agent that runs the same agent core across a CLI, a messaging\ngateway (Telegram, Discord, Slack, ~20 platforms), a TUI, and an Electron desktop app. It\nlearns across sessions (memory + skills), delegates to subagents, runs scheduled jobs, and\ndrives a real terminal and browser. It is extended primarily through **plugins and skills**,\nnot by growing the core.\n\nTwo invariants shape almost every design decision and are the lens for reviewing any change:\n\n- **Per-conversation prompt caching is sacred.** A long-lived conversation reuses a cached\n  prefix every turn. Anything that mutates past context, swaps toolsets, reloads memories, or\n  rebuilds the system prompt mid-conversation invalidates that cache and multiplies the user's\n  cost. We do not do it; the ONE exception is context compression. Slash commands that mutate\n  system-prompt state (skills, tools, memory) must be **cache-aware**: default to deferred\n  invalidation (takes effect next session) with an opt-in `--now` flag (`/skills install --now`\n  is the canonical pattern).\n- **The core is a narrow waist; capability lives at the edges.** Every model tool is sent on\n  every API call, so the bar for a ne",
+      "weight": 1.3
+    },
+    {
+      "id": "a2e618616ba11c884b0d",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What Hermes Is",
+      "text": "w *core* tool is high. New capability should arrive as a\n  CLI command + skill, a service-gated tool, or a plugin — not as core surface.",
+      "weight": 1.3
+    },
+    {
+      "id": "ea771e7a167cd51a43d4",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Contribution Rubric — What We Want / What We Don't",
+      "text": "The project's intent layer. It serves humans aiming a contribution AND the automated triage\nsweeper, which may only close on `implemented_on_main`, `cannot_reproduce`, or `incoherent`.\nTaste-based \"out of scope\" closes are a human maintainer's call; the sweeper's job is to\nrecognize design intent and *avoid wrongly closing a legitimate contribution*.\n\nRead the balance right: Hermes ships a **lot**. Most merges are bug fixes to reported\nbehavior, and the product surface (platforms, providers, models, desktop/TUI features)\nexpands aggressively on purpose. The restraint below targets the **core agent + model tool\nschema**, the one place where every addition is paid for on every API call. \"Smallest\nfootprint\" governs *how a capability is wired into the core*, not whether the product may\ngrow: expansive at the edges, conservative at the waist.",
+      "weight": 1.3
+    },
+    {
+      "id": "64ddc2333cc658b2b884",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "- **Fix real bugs, well.** Reproduce the symptom on current `main`, point to the exact line\n  where it manifests, and fix the whole bug class — sibling call paths included.\n- **Expand reach at the edges.** New adapters, channels, providers, models, desktop/TUI/\n  dashboard features land routinely, including large ones — as long as they integrate with\n  the existing setup/config UX (`hermes tools`, `hermes setup`, auto-install) rather than\n  bolting on a raw env var.\n- **Refactor god-files into clean modules.** Huge mechanical `+N/-N` extraction PRs are\n  wanted work. \"Every line traces to the request\" applies to *feature* PRs; a declared\n  refactor's request IS the extraction.\n- **Keep the core narrow.** Prefer, in order: extend existing code → CLI command + skill →\n  service-gated tool (`check_fn`) → plugin → MCP server in the catalog → new core tool (last\n  resort). See the Footprint Ladder.\n- **Extend, don't duplicate.** Check whether existing infrastructure covers the use case\n  before adding a module/manager/hook. When 3+ open PRs integrate the same *category*\n  (memory backends, providers, notifiers), design an ABC + orchestrator, wrap the existing\n  built-in as the first pro",
+      "weight": 1.3
+    },
+    {
+      "id": "4ec04915b868fcf3ad5a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "vider, and turn the competing PRs into plugins against it.\n- **Behavior contracts over snapshots.** Tests assert how two pieces of data relate, never\n  freeze a current value (see Testing).\n- **E2E validation, not just green unit mocks.** Anything touching resolution chains, config\n  propagation, security boundaries, remote backends, or file/network I/O must exercise the\n  real path with real imports against a temp `HERMES_HOME` — two of them (A→B→A) when the\n  change touches profile scope. Mocks hide integration bugs.\n- **Cache-, alternation-, and invariant-safe.** Preserve prompt caching, strict role",
+      "weight": 1.3
+    },
+    {
+      "id": "eeb2aea328b761d98db8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "alternation (never two same-role messages in a row; never a synthetic user message injected\n  mid-loop), and a system prompt byte-stable for the life of a conversation.\n- **Contributor credit preserved.** Salvage external work by cherry-picking (rebase-merge) so\n  authorship survives; build on top rather than reimplementing.",
+      "weight": 1.3
+    },
+    {
+      "id": "8a06b38c465c9fa757b2",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "- **Speculative infrastructure.** Hooks/callbacks/extension points with no concrete consumer.\n  Adding a hook is easy; removing one after plugins depend on it is hard. A hook with a real,\n  stated use case is NOT speculative even if the consumer ships separately.\n- **New `HERMES_*` env vars for non-secret config.** `.env` is for secrets only. Behavioral\n  settings (timeouts, thresholds, flags, display prefs) go in `config.yaml`; bridge to an\n  internal env var in code if the mechanism needs one. Reject \"set X in your .env\" docs\n  unless X is a credential.\n- **A new core tool when terminal + file (or a skill) already do the job.** If the only\n  barrier is file visibility on a remote backend, fix the mount, not the toolset.\n- **Lazy-reading escape hatches on instructional tools.** No `offset`/`limit` pagination on\n  tools that load content the agent must read fully (skills, prompts, playbooks) — models\n  read page 1 and skip the rest.\n- **\"Fixes\" that destroy the feature they secure.** Read the original intent\n  (`git log -p -S`) before restricting behavior; find a fix that preserves the feature.\n- **Outbound telemetry / usage attribution without opt-in gating.** No analytics,\n  thir",
+      "weight": 1.3
+    },
+    {
+      "id": "0050d27ab034afe05f82",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "d-party identifier tagging, or attribution tags until a generic user-facing opt-in\n  (config gate + setup prompt + `hermes tools` toggle) exists. Park behind a label.\n- **Change-detector tests, cache-breaking mid-conversation, dead code wired in without E2E\n  proof, plugins that touch core files.** Plugins work within the ABCs/hooks we provide; if\n  one needs more, widen the generic plugin surface, never special-case it in core.\n- **Third-party products integrated into the core tree.** Observability backends, vendor\n  SaaS connectors, analytics dashboards, and other \"someone else's product\" plugins do NOT",
+      "weight": 1.3
+    },
+    {
+      "id": "d584d8f2fbf93fe90372",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "land under `plugins/` — every one becomes our burden against a fast-moving core for a\n  backend we don't own. Ship as a **standalone plugin repo** (`~/.hermes/plugins/` or pip\n  entry point), promoted in the Nous Research Discord `#plugins-skills-and-skins`. This is a\n  coupling decision, not a quality bar; such PRs are closed with a pointer to publish.",
+      "weight": 1.3
+    },
+    {
+      "id": "b650b3a9173cc16307f3",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
+      "text": "The most common reason a well-written PR is closed is a **wrong premise** or treating an\n**intentional design as a gap**. These patterns tell a reviewer what to scrutinize and tell\nthe sweeper when a PR is NOT safe to close (when in doubt, leave it open for a human):\n\n- **\"Intentional design, not a gap.\"** Ask whether the isolation IS the design. Profiles are\n  independent islands on purpose: a PR adding live config inheritance from the default\n  profile was closed because coupling profiles is exactly what the design prevents (`--clone`\n  already covers \"start from my default\"). Read `git log -p -S \"<symbol>\"` before assuming\n  something is unfinished.\n- **\"The premise doesn't hold against how X actually works.\"** Trace the real runtime before\n  accepting a rationale. Real closes: a rate-limit \"re-probe during cooldown\" PR (the breaker\n  trips only on a *confirmed-empty* bucket, so re-probing hammers a bucket proven empty); a\n  usage fix whose new branch **never executes** because an earlier guard already popped the\n  state. If you can't point to the exact line where the bug manifests AND show the fix changes\n  that line's behavior, the premise is unverified.\n- **\"The absence was d",
+      "weight": 1.3
+    },
+    {
+      "id": "e51256e9c3b527ba40c1",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
+      "text": "eliberate.\"** Restoring \"missing\" `__init__.py` files made a test tree\n  importable as a dotted package that shadowed the real plugin and deleted its `register()`\n  at import time. The omission was load-bearing.\n- **\"Overreached / resurrected an approach we moved past.\"** Scope creep beyond the agreed\n  base, or reviving a direction maintainers closed, is rejected even when it works. Offer the\n  rest as a focused follow-up.\n\nThroughline: **verify the claim AND the intent against the codebase before writing or merging\na fix.** A reproduction on current `main` plus a line-level account beats a plausible",
+      "weight": 1.3
+    },
+    {
+      "id": "ac2d76ff08413ad465ca",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "The Footprint Ladder (new capability decision)",
+      "text": "Choose the highest (least-footprint) rung that correctly solves the problem:\n\n1. **Extend existing code** — a variation of something that exists. Zero new surface.\n2. **CLI command + skill** — config/state/infra expressible as shell commands; the agent runs\n   `hermes <subcommand>` guided by a skill. Default for subscriptions, scheduled tasks,\n   service setup (`hermes webhook`, `hermes cron`, `hermes tools`).\n3. **Service-gated tool (`check_fn`)** — needs structured params/returns AND only appears when\n   a prerequisite is configured (Home Assistant tools, memory-provider tools). This rung gates\n   reachability/opt-in process-wide; a capability that varies per SESSION (who is watching) is\n   a named toolset folded in by the toolset resolver, not a `check_fn` — see \"Surface capability\n   is a property of the SESSION\" below.\n4. **Plugin** — third-party/niche/user-specific; lives in `~/.hermes/plugins/` or a pip\n   package, discovered at runtime.\n5. **MCP server (in the catalog)** — genuinely a tool but not core-fundamental. Zero permanent\n   core-schema footprint, reusable by any MCP host, reached via the built-in MCP client.\n6. **New core tool** — only when fundamental, broadly use",
+      "weight": 1.3
+    },
+    {
+      "id": "9f7304622a218745b89f",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "The Footprint Ladder (new capability decision)",
+      "text": "ful to nearly every user, and\n   unreachable via terminal + file or an MCP server (terminal, read_file, web_search,\n   browser_navigate).",
+      "weight": 1.3
+    },
+    {
+      "id": "80233bd1b53e8401025c",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Surface capability is a property of the SESSION, never of the process env",
+      "text": "A tool that works only because of *who is on the other end* (desktop panes, in-app browser,\nmessage reactions, Projects) must resolve availability from the **session's own source**, not\nfrom an env var on the backend. Client and backend are separate machines: the desktop app may\ndrive a locally spawned backend, one over SSH, one behind URL + token, or Hermes Cloud, and\nonly the first two carry `HERMES_DESKTOP=1`. An env-keyed gate is a silent no-op on the other\ntopologies — the tool is stripped from the schema while the platform hint tells the model it\nis \"inside the Hermes desktop app\". The pattern:\n\n- **The toolset is the surface gate.** Keep such tools off `_HERMES_CORE_TOOLS` and in a named\n  toolset (`desktop_ui`, `project`); the GUI gateway's `_load_enabled_toolsets(platform)`\n  folds it in when the session's platform says GUI. One resolver, every topology.\n- **`check_fn` answers reachability or opt-in, not surface.** \"Is the bridge wired?\" — fine.\n  \"Was I spawned by Electron?\" — not. `check_fn` results are TTL-cached process-wide\n  (`tools/registry.py`); a per-session answer does not belong there.\n- **Ask which identity you mean.** `HERMES_DESKTOP=1` legitimately means \"thi",
+      "weight": 1.3
+    },
+    {
+      "id": "9bc88fa7d9997419bf1a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Surface capability is a property of the SESSION, never of the process env",
+      "text": "s backend was\n  spawned by the app\" (cron ticker, web-dist handling). It does NOT mean \"a GUI is watching\";\n  the embedded terminal pane (`hermes --tui` against that backend) is the counterexample.\n\nTest: if the capability still makes sense with the client on another machine, it is\nsession-scoped. Assert the GUI session gets the tool **with the env var absent**.",
+      "weight": 1.3
+    },
+    {
+      "id": "47573986911ef31711e4",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Development Environment",
+      "text": "```bash\nsource ./activate   # provisions/syncs PM tools + dependencies, then activates\n```\nSelect an isolated development `HERMES_HOME` and `HERMES_RUNTIME_DIR` first;\nsee `website/docs/reference/package-management.md#developer-workflow`.\nPowerShell: `. .\\activate.ps1`. `deactivate` restores the prior environment.\nFor tests, use the independent test environment in `CONTRIBUTING.md` (or Nix);\nPM activation's `PYTHONPATH` does not survive the test runner's environment scrub.\n`scripts/run_tests.sh` probes `.venv`, then `venv`, then `$HOME/.hermes/hermes-agent/venv`\n(worktrees sharing the main checkout's venv).",
+      "weight": 1.3
+    },
+    {
+      "id": "495c2d923e13e078b8af",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": "Counts shift constantly; the filesystem is canonical. Load-bearing entry points:\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent facade; the turn loop lives in agent/turn_*.py\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # TOOLSETS dict, _HERMES_CORE_TOOLS\n├── cli.py                # HermesCLI (REPL, slash dispatch) + hermes_cli/cli_*_mixin.py\n├── hermes_state.py       # SessionDB facade; hermes_state_*.py siblings\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # turn_*.py loop phases, providers, memory, compression, prompt builder\n├── hermes_cli/           # CLI subcommands, setup, config, plugins loader, skins, updater\n│   └── web_routers/      # Dashboard FastAPI routers (one per surface); web_server.py mounts them\n├── tools/                # Tool implementations, auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity",
+      "weight": 1.3
+    },
+    {
+      "id": "3ed066044c464f436882",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": ")\n├── gateway/              # run.py facade + run_*.py phases + session*.py + platforms/\n│   ├── platforms/        # One adapter per platform; see platforms/ADDING_A_PLATFORM.md\n│   └── builtin_hooks/    # Always-registered gateway hooks (extension point; none shipped)\n├── plugins/              # memory/, context_engine/, model-providers/, kanban/, image_gen/, ...\n├── skills/               # Built-in skills (by category)   optional-skills/: shipped, not active\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n├── tui_gateway/          # Python JSON-RPC backend for TUI + Desktop — server.py + methods_*.py",
+      "weight": 1.3
+    },
+    {
+      "id": "f46370982761191e66a2",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": "├── apps/desktop/         # Electron desktop app (+ apps/shared JSON-RPC client)   web/: dashboard SPA\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains)\n├── cron/                 # jobs.py + scheduler.py (+ scheduler_*.py)\n├── evals/                # Offline benchmarks (codebase_navigability/, compaction/, ...)\n├── scripts/              # run_tests.sh, release.py, ci/\n├── website/              # Docusaurus docs (developer-guide/ holds the long-form area docs)\n└── tests/                # Pytest suite (~39k tests / ~3.7k files, Sep 2026)\n```\n\n**User state:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (secrets only),\n`~/.hermes/logs/` (`agent.log` INFO+, `errors.log` WARNING+, `gateway.log`); all\nprofile-aware via `get_hermes_home()`. Browse logs with `hermes logs [--follow] [--level] [--session]`.\n\n**Dependency chain:** `tools/registry.py` (no deps) ← `tools/*.py` (register at import) ←\n`model_tools.py` (discovery) ← `run_agent.py`, `cli.py`, `batch_runner.py`, `environments/`.",
+      "weight": 1.3
+    },
+    {
+      "id": "417a97232898502060e2",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "Every former god file is a **facade** (public entry points + the names other packages import)\nplus **siblings** `<stem>_<topic>.py` in the same directory, each owning one topic. Largest\nfamilies: `hermes_state.py` (21), `gateway/run.py` (15), `tools/mcp_tool.py` (15),\n`hermes_cli/kanban.py` (14), `hermes_cli/web_server.py` (13 + 24 routers), `hermes_cli/auth.py`\n(12), `tools/browser_tool.py` (11), `cli.py` (12 `hermes_cli/cli_*_mixin.py`), `run_agent.py`\n(`agent/turn_*.py`, `agent_init.py`, `conversation_loop.py`).\n\n- **Find code by topic, not by facade:** `grep -rn \"def name\" <dir>/<stem>_*.py`. Reading the\n  facade first is the expensive way (`evals/codebase_navigability/`).\n- **Siblings may import each other and late-import the facade** inside functions. A facade\n  never imports a sibling at module level *and* gets imported by that sibling at module level.\n- **Patch where production reads.** Siblings often do `from <facade> import name` inside the\n  function so `monkeypatch.setattr(facade, \"name\", ...)` is the seam; a patch on the defining\n  module passes silently. Check the call site's binding before writing a patch target\n  (blind repointing to defining modules broke 130+ test",
+      "weight": 1.3
+    },
+    {
+      "id": "f839acce9893a423b0c8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "s).\n- **Don't recreate god files.** A file passing ~2,000 lines or a function passing ~300 lines /\n  cyclomatic complexity 30 is the signal to split along `<stem>_<topic>` FIRST, in its own\n  commit. New behaviour goes in a new or topical sibling — never appended to a facade.\n- **No `if/elif` ladders ≥ 4 branches keyed on a name/kind** — use a dict/table → handler\n  (`_SLASH_DISPATCH` in `cli.py`, `_command_handler_table` in the gateway are the shape).\n- **No re-export shims for internal moves** (\"keep the old name importable\"). Internal paths\n  are not API: plugins build on `ctx` and the documented ABCs. The one-time Sep 2026",
+      "weight": 1.3
+    },
+    {
+      "id": "26f935c24061cb850ef5",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "decomposition compat layer for external plugins has been removed; never reintroduce one.\n- **Moving a symbol means fixing its docs in the same PR:** grep `website/docs`,\n  `skills/`, and every `AGENTS.md` for the old `path.py` + symbol (23 doc files went stale\n  after the refactor). `evals/codebase_navigability/static_metrics.py <tree> <label>` measures\n  file/function/CC/elif distributions before/after a large PR in ~2 min.",
+      "weight": 1.3
+    },
+    {
+      "id": "5ef4536fcc92ebe54972",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "- No \"defense-in-depth\" wrappers, `try/except: pass` around code that cannot fail, or flags\n  nobody sets. Docstrings/comments keep the WHY, cut the WHAT.\n- **Never infer process identity from argv substrings** (`\"serve\" in cmdline`) — the bug class\n  behind ~10 fleet-update issues (#90778, #87594, #78089, #76129, #91964). Use the canonical\n  matchers `gateway.status.looks_like_gateway_command_line` and\n  `hermes_cli.update_cmd._hermes_holder_subcommand`; flag sets are DERIVED from the parser\n  (`_holder_value_flags()`), never hand-written; match FULL cmdlines and truncate only for\n  display. Details: `hermes_cli/AGENTS.md`.\n- **Never hardcode `~/.hermes`.** `get_hermes_home()` for code paths, `display_hermes_home()`\n  for user-facing text (both from `hermes_constants`). Hardcoding breaks profiles (5 bugs in\n  PR #3575). Profile operations themselves are HOME-anchored\n  (`_get_profiles_root()` = `Path.home()/.hermes/profiles`) so `hermes -p x profile list`\n  sees all profiles — intentional, not a bug.\n- **One process may serve many profiles; code that runs outside a turn binds the owning\n  profile scope explicitly.** A profile = home + secret scope + terminal scope, bound by\n  `gat",
+      "weight": 1.3
+    },
+    {
+      "id": "64205303dc6e3f70c618",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "eway/run.py::_profile_runtime_scope` (turn), `tui_gateway/server.py::@_profile_scoped` +\n  `model_switch.py::_session_profile_runtime_scope` (RPC, teardown), `cron/scheduler_provider.py::\n  _profile_cron_scope` (ticker), `gateway/run_agent_cache.py::_run_release_in_profile_scope`\n  (eviction). `os.environ`, module globals and import-time values hold the *launch* profile's, so\n  an unbound read is a silent default-profile leak, never an error: home/config/`.env`-derived\n  module constants are a bug class — key slots by `hermes_home_key()` or resolve at call time.\n  Needs a binding: boot probes (`check_fn`, MCP discovery, hooks), session end/eviction, tickers,",
+      "weight": 1.3
+    },
+    {
+      "id": "c207245b93fd2ea29f9c",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "deferred callbacks, RPC methods, config readers, thread hops (`spawn_context_thread`), child\n  spawns (`served_profile_child_env`, never `os.environ.copy()`). Fail-closed reads exist only after\n  `set_multiplex_active(True)`. Prove live with two homes (A→B→A) under multiplex, not one temp\n  `HERMES_HOME`. Advisory lint: `scripts/check_profile_scope_patterns.py`.\n- **Machine facts and resource lookup go through `hermes_platform`.** `hermes_platform.host` is the\n  one answer for OS family, native architecture (`IsWow64Process2` → `platform.machine()`; never\n  `PROCESSOR_ARCHITECTURE` alone, it reads AMD64 under x64-on-ARM64 emulation), CPU identity, and\n  WSL/container/Termux. Facts are cached per process and take **no environment-variable input**, so\n  a hardware recognizer (`host/products.py`) cannot be set from a shell. Distinguish the control\n  host (where this Python runs) from the terminal execution target (SSH/container) and the Desktop\n  client (another machine): `host.*` answers only the first. A new bare `shutil.which` or a\n  hand-written known-path table outside `hermes_platform/` fails\n  `tests/test_managed_runtime_resolution.py` unless allowlisted with a reason; resolver",
+      "weight": 1.3
+    },
+    {
+      "id": "5a257621a8cbcf904f77",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "s land in\n  `hermes_platform/resolver/`. Lookup never installs, downloads, or starts anything.\n- **Argparse alias dispatch:** `add_parser(\"list\", aliases=[\"ls\"])` sets `dest` to the literal\n  the user typed (`\"ls\"`). Dispatch must accept both (caught PTY-testing `hermes webhook ls`).\n- **Don't wire in dead code without E2E validation.** Unshipped code was dead for a reason;\n  E2E the real resolution chain with real imports against a temp `HERMES_HOME` first.",
+      "weight": 1.3
+    },
+    {
+      "id": "35795fb93ec01cd111ac",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "TypeScript style (desktop, TUI, website, future TS packages)",
+      "text": "Small nanostores over component state when state is shared or read by distant UI; each\nfeature owns its atoms (chat near chat, shared in `src/store`); rendering components use\n`useStore`, non-rendering actions read `$atom.get()`; never thread state through three\ncomponents when the leaf can subscribe; persistence sits beside the atom that owns it. Route\nroots stay thin (compose routes + shell, never controllers). No monolithic hooks — one narrow\njob each; colocated action modules over god hooks. Pure side-effect callbacks use the terse\nvoid form `onState={st => void setGatewayState(st)}`; async handlers make intent explicit\n`onClick={() => void save()}`. Interfaces for public props and shared object shapes (not\n`type X = {...}`); extend React primitives (`React.ComponentProps<'button'>`, `Omit`, `Pick`).\nTable-driven beats condition ladders for ids/routes/views. `src/app` owns routes/pages,\n`src/store` shared atoms, `src/lib` pure helpers.",
+      "weight": 1.3
+    },
+    {
+      "id": "676e3bd5fcd59281deb5",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Dependency Pinning Policy",
+      "text": "All dependencies carry upper bounds (litellm compromise #2796/#2810; Mini Shai-Hulud worm,\nMay 2026). PyPI: `>=floor,<next_major` (`\"httpx>=0.28.1,<1\"`); pre-1.0: `<0.(minor+2)`\n(`>=0.29,<0.32`). Git URLs: 40-char commit SHA. GitHub Actions: SHA + `# vN` comment. CI-only\nPython requirements: `==exact`. A bare `>=X.Y.Z` is rejected by CI and reviewers.\nAfter changing `pyproject.toml`, run `hermes pm lock`, re-source `./activate`, and commit\n`pyproject.toml` with `uv.lock`. Reference: #2810 (bounds), #9801 (SHA pinning + audit CI).\n\nPM owns Hermes Python dependency changes. Use `pm.sync_venv(['extra'], explicit=True)`\nfor declared runtime extras, `hermes pm install` for setup/sync, and `hermes pm repair`\nfor damaged dependencies. Do not mutate Hermes environments with raw pip or uv.\nUse `pm.build_environment` for fresh build outputs and `pm.ensure_environment` for\nisolated tool environments. Callers receive an interpreter or tool path, not uv.\nNix's declarative uv2nix builds and unrelated user projects remain independently owned.\n\nThe `[tool.uv] exclude-newer = \"14 days\"` quarantine covers **Hermes's own dependencies only**\n(every registry package in core's `uv.lock`). Plugin `python",
+      "weight": 1.3
+    },
+    {
+      "id": "3d5636dfdf82dbbd94c9",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Dependency Pinning Policy",
+      "text": "_dependencies` follow the plugin's own\npolicy: when PM generates the plugin workspace (`pm/workspace.py::_core_release_quarantine`) the\nglobal cutoff moves onto each core-locked package, so plugin-only packages are not filtered and a\nplugin still cannot drag a core package past the window. Teknium's ruling: \"plugins dont have to\nabide by our 14 day rule … Only hermes' dependencies themselves have to.\" We recommend (not require)\nplugin authors adopt their own quarantine — the developer guide and `plugin-catalog/README.md` carry\nthat guidance.",
+      "weight": 1.3
+    },
+    {
+      "id": "f39b96792aefbacd948b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Commits, Merges, PRs",
+      "text": "- **Squash merges from stale branches silently revert recent fixes.** Before squash-merging,\n  bring the branch to `main` (`git fetch origin main && git reset --hard origin/main`, re-apply\n  the PR's commits). Verify with `git diff HEAD~1..HEAD` after merging — unexpected deletions\n  are a red flag.\n- Salvage by cherry-pick so contributor authorship survives (see rubric).\n- Tests per fix: 1–2 INVARIANT tests (behaviour contract, proven red on base), never\n  change-detectors; ≤ 2 tests is the salvage bar too. Reject/rewrite in salvaged diffs:\n  appendages to facades, new god helpers, compat aliases, wrappers.",
+      "weight": 1.3
+    },
+    {
+      "id": "766af0028ed8e2e9690b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "**ALWAYS use `scripts/run_tests.sh`**, never bare `pytest`. It enforces CI parity: credential\nvars unset, `TZ=UTC`, `LANG=C.UTF-8`, `HERMES_HOME` → temp dir, and per-file subprocess\nisolation via `scripts/run_tests_parallel.py` (no xdist; workers scale with CPU count) so\nmodule-level dicts/ContextVars cannot leak between files. Direct `pytest` on a big machine\nwith API keys set has caused repeated \"works locally, fails in CI\" incidents (and the reverse).\n\nPrepare a test interpreter with the checkout's bootstrapped Python:\n\n```bash\npython -m pm.build_env --source . --out .venv --group dev --group test\n```\n\nThis is a fresh build, not an in-place sync. If the disposable output exists,\nstop its processes and intentionally remove it before regeneration. The runner\nclears `PYTHONPATH`, so PM shell activation alone does not supply pytest. For a\nfresh output outside the checkout, set `HERMES_PYTHON` to its interpreter.\n\n```bash\nscripts/run_tests.sh                                    # full suite\nscripts/run_tests.sh tests/gateway/                     # one directory\nscripts/run_tests.sh tests/agent/test_foo.py -k test_x  # runner is file-granular; -k narrows\nscripts/run_tests.sh -v --tb=lo",
+      "weight": 1.3
+    },
+    {
+      "id": "d6539fa0967fdd44fbf1",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "ng                       # pytest flags pass through\n```\n\n- **Flake policy:** a failing FILE is retried once in a fresh subprocess (`--file-retries`;\n  `HERMES_TEST_FILE_RETRIES=0` disables); a worker killed by signal or the file timeout is never\n  retried (relaunching a runaway doubles the damage). Pass-on-retry is green but printed under `⚠ FLAKY`\n  with both outputs — a bug to fix, not noise. Timing tests must not assume a quiet runner:\n  wall-clock bounds ≥ 2s, event-based sync, no `assert not _wait_until(...)` races.\n- **Placement mirrors the source tree.** A test lives in `tests/<top-level source dir>/` (`tests/hermes_cli/`,",
+      "weight": 1.3
+    },
+    {
+      "id": "509e3249deb9f9cab009",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "`tests/agent/`, `tests/hermes_state/`, `tests/gateway/relay/`, ...); installer/updater script tests\n  under `tests/scripts/{install,desktop_update}/`. Only tests of root-level modules (`batch_runner`,\n  `utils`, `hermes_constants`, packaging) sit directly in `tests/`. No issue numbers in filenames —\n  cite the issue in the module docstring (`test_89315_x.py` → `test_x.py`, \"Regression for #89315\").\n- **Placement (CI lanes):** `scripts/ci/classify_changes.py` picks jobs by changed files. A Python test\n  asserting about `package.json`, `package-lock.json`, `tsconfig.json`, or `.ts/.tsx/.js/\n  .mjs/.cjs` sources will not run on a JS-only PR (green on PR, red on `main` where the\n  classifier fails open). Such tests belong in the vitest suite, not `tests/*.py`.\n- **Tests must not write to `~/.hermes/`.** The autouse `_isolate_hermes_home` fixture in\n  `tests/conftest.py` redirects `HERMES_HOME`; never hardcode `~/.hermes/` in tests. Profile\n  tests also mock `Path.home()` so `_get_profiles_root()` / `_get_default_hermes_home()` stay\n  in the temp dir (pattern: `tests/hermes_cli/test_profiles.py`):\n  ```python\n  @pytest.fixture\n  def profile_env(tmp_path, monkeypatch):\n      home = tmp_p",
+      "weight": 1.3
+    },
+    {
+      "id": "db4ec5637d056ee68f34",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "ath / \".hermes\"; home.mkdir()\n      monkeypatch.setattr(Path, \"home\", lambda: tmp_path)\n      monkeypatch.setenv(\"HERMES_HOME\", str(home))\n      return home\n  ```\n  Tests that `patch.object(Path, \"home\", ...)` must ALSO set `HERMES_HOME` — code reads the\n  env var, not `Path.home()/.hermes`.",
+      "weight": 1.3
+    },
+    {
+      "id": "8eaa87a10a1d7734ada7",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "Behaviour that genuinely differs per host is tested ON that host with `@pytest.mark.platforms(\"linux\")`\n/ `platforms(\"macos\")` / `platforms(\"windows\")`, never by patching `sys.platform`. Host-independent things stay\nunmarked: pure functions that take the platform as data (`hidden_windows_child_options(opts,\nis_windows=True)`) and declaration/packaging invariants (\"pyproject declares `tzdata` with a\n`sys_platform == 'win32'` marker\"). Setting a module-level `IS_WINDOWS` flag and calling\n`windows_detach_flags()` IS a fake. The line: **if the test needs the interpreter to believe it\nis on another OS to pass, it belongs on that OS.** A test that walks several platforms in\nsequence is split — host-native arm on Linux, other arms as their own marked tests.\n\nOne marker per test, with any number of spec strings (any-of semantics) plus\noptional arch filters. To gate on several OSes, pass several specs to ONE\nmarker — never stack several `platforms()` decorators on one test (the\nconftest rejects that at collection):\n\n```python\n@pytest.mark.platforms(\"linux\", \"macos\")  # ONE marker, two specs: runs on either\ndef test_posix_signal_path(): ...\n```\n\nOther single-marker forms (each is a complete",
+      "weight": 1.3
+    },
+    {
+      "id": "6a84446002e4eebdac7a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "marker on its own):\n`platforms(\"windows\")` (native Windows only), `platforms(\"not macos\")`\n(anywhere except macOS), `platforms(\"windows\", arch=\"arm64\")` (native Windows\non arm64), `platforms(\"posix\")` (Linux or macOS).\n\nSpecs: `linux`, `macos`, `windows`, `posix`, `any`, and `not <spec>`.\nThe historic `linux_only` / `macos_only` / `windows_only` markers have been\nfully replaced — `platforms` is the only host-gating marker in the tree.\n\n**Live Windows process-topology E2E: the `wine2e` lane.** For claims about\nreal Windows process behavior that mocks cannot reproduce (venv-holder\nscans, process-tree parentage, launcher/worker chains, detach semantics),",
+      "weight": 1.3
+    },
+    {
+      "id": "7d13525be79d5141d704",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "there is an on-demand workflow `windows-venv-e2e.yml` that runs\n`tests/hermes_cli/test_venv_holder_windows_live.py` on a real\n`windows-latest` runner — spawning actual processes and driving the real\ndetection code, no mocked psutil. It fires ONLY on pushes to `wine2e/**`\nbranches (inert on PRs and main; costs nothing on normal work). The proven\nworkflow: write probes that pin CORRECT behavior, push to a `wine2e/`\nbranch to reproduce the bugs live on unfixed code, build the fix, iterate\nuntil the lane is green, then open the PR — the live receipt on the exact\nhead is the Windows proof reviewers ask for. Extend the live suite when\ntouching that subsystem; assert against the gateway ANCESTOR found by\nargv, not the direct parent (the venv shim makes every spawn a\nlauncher/worker chain).\n\n**Use the marker, never a bare `skipif`.** `scripts/ci/list_os_marked_tests.py`\ndecides which files an OS lane imports by resolving the quoted specs inside\n`platforms(...)` (`\"posix\"` reaches the macOS lane, `\"not linux\"` reaches\nboth others), and the lane then selects with `-m platforms` while the\nconftest's per-test host skips do the actual gating. A test gated with\n`@pytest.mark.skipif(sys.platform",
+      "weight": 1.3
+    },
+    {
+      "id": "d47af2b66ce014edc771",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "!= \"win32\")` therefore runs on no host at\nall, silently — it is never imported by the lane that would run it, and the\nfull-suite lanes skip it. `skipif(sys.platform == \"win32\")` becomes\n`platforms(\"posix\")`; a non-host condition (`os.geteuid() == 0`) stays a\nseparate `skipif` beside the marker. A misspelt spec is a collection error,\nnot a skip. Don't stack a module-level `pytestmark =\nplatforms(...)` on a file whose tests carry their own host marker — the\nconftest hard-rejects tests carrying two `platforms()` markers (a test\nskipped on every host, reported green everywhere).\nEqually, don't `pytest.skip()` the non-host rows of a `@parametrize` over",
+      "weight": 1.3
+    },
+    {
+      "id": "e26fde95df3bb2557b8c",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't write change-detector tests",
+      "text": "A change-detector fails whenever data *expected to change* is updated — model catalogs,\n`_config_version`, enumeration counts, hardcoded model lists. It adds no coverage and taxes\nevery routine update. Don't: `assert \"gemini-2.5-pro\" in _PROVIDER_MODELS[\"gemini\"]`,\n`assert DEFAULT_CONFIG[\"_config_version\"] == 21`, `assert len(models) == 8`. Do: `assert\n\"gemini\" in _PROVIDER_MODELS and len(_PROVIDER_MODELS[\"gemini\"]) >= 1` (plumbing works);\n`assert raw[\"_config_version\"] == DEFAULT_CONFIG[\"_config_version\"]` (migration reaches\nlatest); `assert not (set(moonshot_models) & coding_plan_only_models)` (no leak); every\ncatalog model has a context-length entry (relationship). If it reads like a snapshot, delete\nit; if it reads like a contract between two pieces of data, keep it. Reviewers reject new\nchange-detectors; authors convert them before re-review.",
+      "weight": 1.3
+    },
+    {
+      "id": "67694819f444862ae156",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Never read source code in tests",
+      "text": "A test that reads a `.py`/`.ts`/`.tsx` file's text tests the *shape of the source*, not\nbehavior — banned outright. It passes when the implementation is subtly broken (regex matches\na mis-wired call site) and fails on correct refactors; it can't run against bundled/minified\nartifacts; it blocks structural cleanup; it gives false confidence. Don't\n`fs.readFileSync('main.ts')` + `assert.match(source, /spawn\\(...hiddenWindowsChildOptions/)`.\nDo extract the logic into a pure/DI-testable function and call it:\n```ts\nexport function hiddenWindowsChildOptions(options = {}, isWindows = process.platform === 'win32') {\n  if (!isWindows || 'windowsHide' in options) return options\n  return { ...options, windowsHide: true }\n}\n```\nIf the logic lives inline in a god-file and extraction feels disruptive, that is the signal to\nextract, not to regex around it.",
+      "weight": 1.3
+    },
+    {
+      "id": "fb17e05780c247801c82",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": "| Area | Read | Covers |\n|---|---|---|\n| `run_agent.py`, `agent/` | `agent/AGENTS.md` | AIAgent + mixins, turn phases, caching integrity, message-flow invariants, compression, model/aux resolution |\n| `cli.py`, `hermes_cli/`, `main.py` | `hermes_cli/AGENTS.md` | CLI mixins, `_SLASH_DISPATCH`, slash registry, config system + loaders, skins, `hermes update` pipeline, profiles / multiplex |\n| `gateway/` | `gateway/AGENTS.md` | Adapters, two message guards, streaming contract, background notifications, gateway vs desktop lifecycle, token locks, scoped secrets |\n| `tools/`, `toolsets.py`, `model_tools.py` | `tools/AGENTS.md` | Adding tools, registry, toolsets, delegation, cross-tool references, backends |\n| `plugins/`, `hermes_cli/plugins*.py` | `plugins/AGENTS.md` | Plugin kinds, native compat contract, in-tree policy |\n| `tui_gateway/`, `ui-tui/` | `tui_gateway/AGENTS.md` | Process model, JSON-RPC transport, key surfaces, slash flow, dev commands |\n| `web/`, `hermes_cli/web_routers/` | `web/AGENTS.md` | Dashboard embeds the real TUI; what React may and may not rebuild |\n| `apps/desktop/` | `apps/desktop/AGENTS.md`, `apps/desktop/src/AGENTS.md` | Desktop judgment guide; `serve` backend",
+      "weight": 1.3
+    },
+    {
+      "id": "9653b59dd8f4564c607a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": ", slash palette curation, Bot Mode canonical chat |\n| `skills/`, `optional-skills/`, `agent/curator*.py` | `skills/AGENTS.md` | Frontmatter, HARDLINE authoring standards, curator |\n| `cron/`, kanban (`hermes_cli/kanban*.py`, `tools/kanban_tools.py`, `plugins/kanban/`) | `cron/AGENTS.md` | Scheduler invariants, job fields, kanban board/dispatcher |\n| `gateway/platforms/` new adapter | `gateway/platforms/ADDING_A_PLATFORM.md` | Step-by-step adapter guide |\n| profiles / multiplex / secret scope (any area) | `gateway/AGENTS.md` § Profile scope, `website/docs/user-guide/multi-profile-gateways.md` § What is isolated per profile | which execution points bind scope, what is isolated per profile |",
+      "weight": 1.3
+    },
+    {
+      "id": "34c8e0e0cd989cd88cde",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": "Long-form background lives in `website/docs/developer-guide/` (agent-loop, prompt-assembly,\ncontext-compression-and-caching, gateway-internals, tools-runtime, plugins/, cron-internals,\nsession-storage, ...). Workflow rules (PR/issue/review/salvage process) live in the\n`hermes-agent-dev` skill, not here.",
+      "weight": 1.3
+    },
+    {
+      "id": "fd2741dc4f4f6a36151b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6315,9 +7239,9 @@
       "weight": 1.3
     },
     {
-      "id": "7766945aa4827d3ebe1a",
+      "id": "1c01a81ba982f5282e8c",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6336,9 +7260,9 @@
       "weight": 1.3
     },
     {
-      "id": "a6de9068d2304bbe6817",
+      "id": "2448bec2ba55c7202867",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6357,9 +7281,9 @@
       "weight": 1.3
     },
     {
-      "id": "e0a133b9f3df0f93ebe3",
+      "id": "bbb86d06b5cf00779a2a",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6378,9 +7302,9 @@
       "weight": 1.3
     },
     {
-      "id": "4196cdb3f32302180c53",
+      "id": "c3576b5f977b1e79857c",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6399,9 +7323,9 @@
       "weight": 1.3
     },
     {
-      "id": "81769f0a19acd3af5e29",
+      "id": "7f560c9dfe300389d46f",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6420,9 +7344,9 @@
       "weight": 1.3
     },
     {
-      "id": "cc90c686f627565064ef",
+      "id": "2db642ed93e52109967a",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6441,9 +7365,9 @@
       "weight": 1.3
     },
     {
-      "id": "c573d17a3f9a281bceeb",
+      "id": "130fbc6e708475f84cdf",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6462,9 +7386,9 @@
       "weight": 1.3
     },
     {
-      "id": "de2d807cd6b4f1a4860c",
+      "id": "4e1f7b60946f5d29239a",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6483,9 +7407,9 @@
       "weight": 1.3
     },
     {
-      "id": "eafab50a3a28ee869bd0",
+      "id": "290597a28072bd4c28b9",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6504,9 +7428,9 @@
       "weight": 1.3
     },
     {
-      "id": "8bcd531d3abd8d03d301",
+      "id": "3f54577054b963dda1ad",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6525,9 +7449,9 @@
       "weight": 1.3
     },
     {
-      "id": "606a7099c44d590b7e7c",
+      "id": "05dae9ab738eda65809e",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6546,9 +7470,9 @@
       "weight": 1.3
     },
     {
-      "id": "8d575544902500412473",
+      "id": "a166b6313fa08aa5397c",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6567,9 +7491,9 @@
       "weight": 1.3
     },
     {
-      "id": "81a33b910edeefee4951",
+      "id": "5355f2ff23789d279e86",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6588,9 +7512,9 @@
       "weight": 1.3
     },
     {
-      "id": "2aa1b6503b9b9773aaf2",
+      "id": "15a5827883bc15899ccd",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6609,9 +7533,9 @@
       "weight": 1.3
     },
     {
-      "id": "f8072661e65ac401e75b",
+      "id": "e34c36ace5469f917a80",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6630,9 +7554,9 @@
       "weight": 1.3
     },
     {
-      "id": "b32d48d62c88e2f1022d",
+      "id": "6a21b7f0db7b511c265c",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6651,9 +7575,9 @@
       "weight": 1.3
     },
     {
-      "id": "3216e7d7d693c52b9d6f",
+      "id": "be0e9fc1034fed025d8a",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6672,9 +7596,9 @@
       "weight": 1.3
     },
     {
-      "id": "b20b7e714ee94b08985d",
+      "id": "ba2e29c8a90405d64a8d",
       "source": "NousResearch/hermes-agent",
-      "ref": "6d42313deee6",
+      "ref": "bf84561b9d41",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22257,9 +23181,9 @@
       "weight": 1.2
     },
     {
-      "id": "d1660d4de9d656c687c6",
+      "id": "9bbd6aa86a50ac6a14a9",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22274,9 +23198,9 @@
       "weight": 1.18
     },
     {
-      "id": "960a7642620f90cd7ac2",
+      "id": "235b53b4d808bc4c0ca3",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22291,9 +23215,9 @@
       "weight": 1.18
     },
     {
-      "id": "c9edaf51c3c1a7d01360",
+      "id": "88c4e3192b0125b41975",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22308,9 +23232,9 @@
       "weight": 1.18
     },
     {
-      "id": "282870eb761ba969573b",
+      "id": "40c59e420b7dc2d3e768",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22325,9 +23249,9 @@
       "weight": 1.18
     },
     {
-      "id": "76644fb5a0fee9415a02",
+      "id": "419996417b3aa3858a6b",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22342,9 +23266,9 @@
       "weight": 1.18
     },
     {
-      "id": "9098e561cfccb9e8c076",
+      "id": "15a30140c31077bfcd66",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22359,9 +23283,9 @@
       "weight": 1.18
     },
     {
-      "id": "0271609b166734e8fc0f",
+      "id": "ebb80b97662aec776e77",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22376,9 +23300,9 @@
       "weight": 1.18
     },
     {
-      "id": "2b1e19fd0c3bf9b2576d",
+      "id": "6700b7c0f5c3c813bed9",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22393,9 +23317,9 @@
       "weight": 1.18
     },
     {
-      "id": "66f340798887ea5e1058",
+      "id": "f7d1ee2aeb397a811d6c",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22410,9 +23334,9 @@
       "weight": 1.18
     },
     {
-      "id": "8cb1d7fe0dc078e189a1",
+      "id": "e40ab8bfa50c6866b976",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22427,9 +23351,9 @@
       "weight": 1.18
     },
     {
-      "id": "12784d7d589319543f88",
+      "id": "1f2f776be88554e4a1af",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22444,9 +23368,9 @@
       "weight": 1.18
     },
     {
-      "id": "eaa2b4f491f5bf78ddba",
+      "id": "9f0b31bf221f794f1fb1",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22461,9 +23385,9 @@
       "weight": 1.18
     },
     {
-      "id": "fa4b4664f8a3acd96d2a",
+      "id": "6c76ae732f273bde8a5b",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22478,9 +23402,9 @@
       "weight": 1.18
     },
     {
-      "id": "dfea8d2a6524a7b761d3",
+      "id": "271cf088de91748f001a",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22495,9 +23419,9 @@
       "weight": 1.18
     },
     {
-      "id": "0fb41577200b8983129d",
+      "id": "15a1186928cbced40a7f",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22512,9 +23436,9 @@
       "weight": 1.18
     },
     {
-      "id": "2b5cb0a288502036812e",
+      "id": "88479afdcb836e77ae4c",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22529,9 +23453,9 @@
       "weight": 1.18
     },
     {
-      "id": "1302819849a544d6d874",
+      "id": "e1b405ac0a26bd261c41",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22546,9 +23470,9 @@
       "weight": 1.18
     },
     {
-      "id": "8b873b0508a597e16e38",
+      "id": "d018b02ed25b83d6c0a9",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22563,9 +23487,9 @@
       "weight": 1.18
     },
     {
-      "id": "7d613a0475e84cacedfb",
+      "id": "dade5d8ae79d6e40e829",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22580,9 +23504,9 @@
       "weight": 1.18
     },
     {
-      "id": "0e0e167d2d6351c44841",
+      "id": "4a70028b3c2ad2a7c481",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22597,9 +23521,9 @@
       "weight": 1.18
     },
     {
-      "id": "126eae75556e6dfa21f6",
+      "id": "0b7df696e36cacda4901",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22614,9 +23538,9 @@
       "weight": 1.18
     },
     {
-      "id": "c05ba354a19d1475dcaf",
+      "id": "cc2594c87acf94074c8b",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22631,9 +23555,9 @@
       "weight": 1.18
     },
     {
-      "id": "f0a07c237a9a3954598b",
+      "id": "6724c9d1d1dbda2ca5c5",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22648,9 +23572,9 @@
       "weight": 1.18
     },
     {
-      "id": "d496805a5f0a7fa36f99",
+      "id": "efed85fac31bcd4bd04a",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22665,9 +23589,9 @@
       "weight": 1.18
     },
     {
-      "id": "34d3632d01c5e1bc14f3",
+      "id": "4dadec651deeb73cc271",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22682,9 +23606,9 @@
       "weight": 1.18
     },
     {
-      "id": "b74fa51121f8a882c5d8",
+      "id": "403ff0b1c22a7142db5f",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22699,9 +23623,9 @@
       "weight": 1.18
     },
     {
-      "id": "b7aa3c2dd8f2a3a80af9",
+      "id": "5ffbd78abec7d83960e8",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22716,9 +23640,9 @@
       "weight": 1.18
     },
     {
-      "id": "42d3c0cbc22c28471937",
+      "id": "c61fc67f29c37ad6d517",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22733,9 +23657,9 @@
       "weight": 1.18
     },
     {
-      "id": "7cf8e752c04dba4e2154",
+      "id": "c3660c81d2f26540eab4",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22750,9 +23674,9 @@
       "weight": 1.18
     },
     {
-      "id": "514b5f4fc78dd7a8d99d",
+      "id": "dde091ef2a05a6f0ed85",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22767,9 +23691,9 @@
       "weight": 1.18
     },
     {
-      "id": "59e5b3b392963064694e",
+      "id": "574bb99ba56f0ed4906d",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -22784,9 +23708,9 @@
       "weight": 1.18
     },
     {
-      "id": "1914c726b25626136780",
+      "id": "5294c48d3988774a9f8b",
       "source": "Mintplex-Labs/anything-llm",
-      "ref": "33b5b2377362",
+      "ref": "a355703427c6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -32230,9 +33154,9 @@
       "weight": 1.08
     },
     {
-      "id": "70b7ea1200a798857c54",
+      "id": "a60ae9f75ced76cc45b9",
       "source": "lutzroeder/netron",
-      "ref": "9c6249dad5c3",
+      "ref": "cb26882cf1ed",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -32247,9 +33171,9 @@
       "weight": 1.02
     },
     {
-      "id": "bae129ee339b677eed18",
+      "id": "f50afae4c6a9b6171f36",
       "source": "lutzroeder/netron",
-      "ref": "9c6249dad5c3",
+      "ref": "cb26882cf1ed",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -32264,9 +33188,9 @@
       "weight": 1.02
     },
     {
-      "id": "59d7dc8a78f923b611e6",
+      "id": "2a7f3998613f7ffd6419",
       "source": "lutzroeder/netron",
-      "ref": "9c6249dad5c3",
+      "ref": "cb26882cf1ed",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -32281,9 +33205,9 @@
       "weight": 1.02
     },
     {
-      "id": "6bc0add533b70f85bb84",
+      "id": "9714c30a0c10d9c95c4d",
       "source": "lutzroeder/netron",
-      "ref": "9c6249dad5c3",
+      "ref": "cb26882cf1ed",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -32298,9 +33222,9 @@
       "weight": 1.02
     },
     {
-      "id": "b36382196d9b2125b40f",
+      "id": "893cdb5e65ad65971e70",
       "source": "lutzroeder/netron",
-      "ref": "9c6249dad5c3",
+      "ref": "cb26882cf1ed",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39907,9 +40831,9 @@
       "weight": 1.06
     },
     {
-      "id": "6912dbf71305c90cfe5c",
+      "id": "d72ebcd2a849d67be3ed",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39922,9 +40846,9 @@
       "weight": 1.03
     },
     {
-      "id": "775d4d80528bded80a96",
+      "id": "712524ab442bd61274f9",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39937,9 +40861,9 @@
       "weight": 1.03
     },
     {
-      "id": "e3311a424f3d6e73e514",
+      "id": "aadd42c472f2bf2d0802",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39952,9 +40876,9 @@
       "weight": 1.03
     },
     {
-      "id": "73d948d5b98ae64ca8a1",
+      "id": "e91bf1a2be426051eb21",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39967,9 +40891,9 @@
       "weight": 1.03
     },
     {
-      "id": "faa0950e5b75987aab45",
+      "id": "f9eee3c6297e6b43dd69",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39982,9 +40906,9 @@
       "weight": 1.03
     },
     {
-      "id": "416c2d34a049f9f3c469",
+      "id": "45042b224f57c13c20a0",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -39997,9 +40921,9 @@
       "weight": 1.03
     },
     {
-      "id": "128590d44092476d2c63",
+      "id": "b67b0e629c363efe1715",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40012,9 +40936,9 @@
       "weight": 1.03
     },
     {
-      "id": "e02d4d16eda38723d103",
+      "id": "12bae6a7043bee3c8847",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40027,9 +40951,9 @@
       "weight": 1.03
     },
     {
-      "id": "d505da54c66ec83773a9",
+      "id": "bf4d2b207fedf8d7cf78",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40042,9 +40966,9 @@
       "weight": 1.03
     },
     {
-      "id": "f0ec44822c6ac759da93",
+      "id": "e1174c98c592428e35d4",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40057,9 +40981,9 @@
       "weight": 1.03
     },
     {
-      "id": "5beb65785621fbf5b7ba",
+      "id": "700920923ab8fe6005dc",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40072,9 +40996,9 @@
       "weight": 1.03
     },
     {
-      "id": "629e84d17ac554ed9d8b",
+      "id": "ce0c59e71bbe1890aafd",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40087,9 +41011,9 @@
       "weight": 1.03
     },
     {
-      "id": "2c36cbf0144dd1754522",
+      "id": "42a350e5260c23ee643c",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40102,9 +41026,9 @@
       "weight": 1.03
     },
     {
-      "id": "2ae8c75d90d7df2f765c",
+      "id": "2056d073f1f05f117087",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40117,9 +41041,9 @@
       "weight": 1.03
     },
     {
-      "id": "c976f470f9b8e93ec4b5",
+      "id": "2de9bbb29de7ce0e3609",
       "source": "ComposioHQ/composio",
-      "ref": "5e3378bfd30c",
+      "ref": "132c0e0ea83f",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40724,9 +41648,9 @@
       "weight": 1.02
     },
     {
-      "id": "9984015874b7c985d8c8",
+      "id": "c0324549a0e0739724f0",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40739,9 +41663,9 @@
       "weight": 1.08
     },
     {
-      "id": "48798779ef136ddb3341",
+      "id": "a76e84c008f98f04360f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40754,9 +41678,9 @@
       "weight": 1.08
     },
     {
-      "id": "4719c4c1c1706961770c",
+      "id": "1daa385b08694b2ac8a1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40769,9 +41693,9 @@
       "weight": 1.08
     },
     {
-      "id": "4f23461243fb0bec281d",
+      "id": "a5415f59239412e9f170",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40784,9 +41708,9 @@
       "weight": 1.08
     },
     {
-      "id": "bc008fe208e3d67063b1",
+      "id": "1d1ec2a127fdfab077e8",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40799,9 +41723,9 @@
       "weight": 1.08
     },
     {
-      "id": "45ebdd8d02e06057739f",
+      "id": "c23174d0918d35305299",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40814,9 +41738,9 @@
       "weight": 1.08
     },
     {
-      "id": "aa9763ef49d91dd56c3a",
+      "id": "96a618ccf6e08b291ac6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40829,9 +41753,9 @@
       "weight": 1.08
     },
     {
-      "id": "d55b240f013607a7f571",
+      "id": "47bd7c56bf62aaaa7a38",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40844,9 +41768,9 @@
       "weight": 1.08
     },
     {
-      "id": "0450b7d6b52e6946ce65",
+      "id": "2b9a6be1961377892c0c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40859,9 +41783,9 @@
       "weight": 1.08
     },
     {
-      "id": "7c06aae1ddf2529727c1",
+      "id": "23d9f47ad7ffa0b11313",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40874,9 +41798,9 @@
       "weight": 1.08
     },
     {
-      "id": "cd245a9f2a2e40e90138",
+      "id": "e689fda2198285d7ee87",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40889,9 +41813,9 @@
       "weight": 1.08
     },
     {
-      "id": "804f2fef4dff6e957eaf",
+      "id": "c1b724881ebadbc63189",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40904,9 +41828,9 @@
       "weight": 1.08
     },
     {
-      "id": "b2f027b7cb360fd3a4d9",
+      "id": "9f8bc3f1885e1de3bfae",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40919,9 +41843,9 @@
       "weight": 1.08
     },
     {
-      "id": "f9eee514c786f2153c9f",
+      "id": "8b687fcce2833b0cfc16",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40934,9 +41858,9 @@
       "weight": 1.08
     },
     {
-      "id": "526730a21059aeb5622d",
+      "id": "e5a7652a6d439336f5c2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40949,9 +41873,9 @@
       "weight": 1.08
     },
     {
-      "id": "a37068cad85dd7e4dde2",
+      "id": "8591ce54ac28892d3031",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40964,9 +41888,9 @@
       "weight": 1.08
     },
     {
-      "id": "5d39487d8f7a77f5bb06",
+      "id": "7c7a0df7be8d6513bd0b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40979,9 +41903,9 @@
       "weight": 1.08
     },
     {
-      "id": "097a9cc62cda3b6c495d",
+      "id": "f73decb6e52bf0428514",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -40994,9 +41918,9 @@
       "weight": 1.08
     },
     {
-      "id": "d81e239e899c3853661f",
+      "id": "8047c693a73c85182549",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41009,9 +41933,9 @@
       "weight": 1.08
     },
     {
-      "id": "ee95419faad7710118ba",
+      "id": "92838a04b46333d4c6bc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41024,9 +41948,9 @@
       "weight": 1.08
     },
     {
-      "id": "74b26b3df45913e9dfc2",
+      "id": "1ddede27c78cc7669b3d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41039,9 +41963,9 @@
       "weight": 1.08
     },
     {
-      "id": "9eb9342d097796dd6e32",
+      "id": "8acd14770964a3011ab0",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41054,9 +41978,9 @@
       "weight": 1.08
     },
     {
-      "id": "0ee67bad86bf8e0d4053",
+      "id": "a4c67928c512b31d9266",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41069,9 +41993,9 @@
       "weight": 1.08
     },
     {
-      "id": "6980290408ff9ad708ec",
+      "id": "2a8caecd2fa9c5e936db",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41084,9 +42008,9 @@
       "weight": 1.08
     },
     {
-      "id": "789ff460b635e66393e6",
+      "id": "e38fc71c275b777d20b2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41099,9 +42023,9 @@
       "weight": 1.08
     },
     {
-      "id": "e0ee6f3e3310f7aab340",
+      "id": "ca07fc2aa6786740e1c2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41114,9 +42038,9 @@
       "weight": 1.08
     },
     {
-      "id": "8df4dab5a9346e5aa659",
+      "id": "3bb389069b43b5af4925",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41129,9 +42053,9 @@
       "weight": 1.08
     },
     {
-      "id": "a2fe1770e9e86d0165b2",
+      "id": "59379915f61cf3780111",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41144,9 +42068,9 @@
       "weight": 1.08
     },
     {
-      "id": "0471910a21e15507d868",
+      "id": "adc717c5ea39852b3f11",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41159,9 +42083,9 @@
       "weight": 1.08
     },
     {
-      "id": "d5ec6ac477edec791cd8",
+      "id": "5f5e8556bfee035c68a5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41174,9 +42098,9 @@
       "weight": 1.08
     },
     {
-      "id": "dac65796f00c2fe5b696",
+      "id": "f1ef6da315935243cec5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41189,9 +42113,9 @@
       "weight": 1.08
     },
     {
-      "id": "965f37146d0f3134f0bd",
+      "id": "5d33f473a290e2ef8fdc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41204,9 +42128,9 @@
       "weight": 1.08
     },
     {
-      "id": "add59bac0b624c7024cc",
+      "id": "f199f18fb129c0b83545",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41219,9 +42143,9 @@
       "weight": 1.08
     },
     {
-      "id": "da096e83f45b2788f432",
+      "id": "eff54d6a9f446df8fd7e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41234,9 +42158,9 @@
       "weight": 1.08
     },
     {
-      "id": "5b04526d2d3b3c3ef01b",
+      "id": "f014abcbe3c92cfa1f36",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41249,9 +42173,9 @@
       "weight": 1.08
     },
     {
-      "id": "4a1525be0f63bbc19a0c",
+      "id": "cfb368edd3720aca557d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41264,9 +42188,9 @@
       "weight": 1.08
     },
     {
-      "id": "4f05a7cc9deb5d96bba3",
+      "id": "9a9cd05247cc5a3ff920",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41279,9 +42203,9 @@
       "weight": 1.08
     },
     {
-      "id": "dbbf01e6f791b3ba2628",
+      "id": "c403ca84c39a3b4445ca",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41294,9 +42218,9 @@
       "weight": 1.08
     },
     {
-      "id": "e81b377f878448735294",
+      "id": "39d7814eed10ea366f80",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41309,9 +42233,9 @@
       "weight": 1.08
     },
     {
-      "id": "300a3f07ab8cf0f556be",
+      "id": "8a3ae2b22be5e7226249",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41324,9 +42248,9 @@
       "weight": 1.08
     },
     {
-      "id": "dedcc47925acce4b61dc",
+      "id": "57faac750daeed7f7174",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41339,9 +42263,9 @@
       "weight": 1.08
     },
     {
-      "id": "93d0ae9574f3c07fa734",
+      "id": "d203f5564521d017d42f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41354,9 +42278,9 @@
       "weight": 1.08
     },
     {
-      "id": "3bf82edea8a1e5c68da1",
+      "id": "d5cdef9427da8e2df915",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41369,9 +42293,9 @@
       "weight": 1.08
     },
     {
-      "id": "1cef5621441566948319",
+      "id": "7673bb95db754e36702c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41384,9 +42308,9 @@
       "weight": 1.08
     },
     {
-      "id": "2a1e551f72d3c71b9ba8",
+      "id": "7e91e2d71d6d45a09faf",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41399,9 +42323,9 @@
       "weight": 1.08
     },
     {
-      "id": "cd2f999e133d34af853d",
+      "id": "7a7b17fa6989f235d99b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41414,9 +42338,9 @@
       "weight": 1.08
     },
     {
-      "id": "9d9ef6f0dc9877512620",
+      "id": "56522c62f6f0b74ed4bf",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41429,9 +42353,9 @@
       "weight": 1.08
     },
     {
-      "id": "fdf2080ed057a3e6693a",
+      "id": "ca6f63a66ce0a9307da9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41444,9 +42368,9 @@
       "weight": 1.08
     },
     {
-      "id": "f47eebe5ad9707211280",
+      "id": "761ff33b07357fe341d2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41459,9 +42383,9 @@
       "weight": 1.08
     },
     {
-      "id": "f6b085e6df463d7b790d",
+      "id": "776d2e16a110c99e7e28",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41474,9 +42398,9 @@
       "weight": 1.08
     },
     {
-      "id": "bd53e9485e7d7e2ff664",
+      "id": "e3d102fa7dea779496ce",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41489,9 +42413,9 @@
       "weight": 1.08
     },
     {
-      "id": "e251740c05f7dfea2a2e",
+      "id": "068ea6c8aec9112f603c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41504,9 +42428,9 @@
       "weight": 1.08
     },
     {
-      "id": "04ff696566c2afc70066",
+      "id": "18249632490e8d22219b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41519,9 +42443,9 @@
       "weight": 1.08
     },
     {
-      "id": "f92398879fcb3393c128",
+      "id": "1cdb461c2a4bc0bfee41",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41534,9 +42458,9 @@
       "weight": 1.08
     },
     {
-      "id": "864a310bf07c14c95bfe",
+      "id": "9316c8f843f2a76f6e6b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41549,9 +42473,9 @@
       "weight": 1.08
     },
     {
-      "id": "819689fae7f6d61376d8",
+      "id": "2ff1c27c468a8111c32c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41564,9 +42488,9 @@
       "weight": 1.08
     },
     {
-      "id": "4475782ca6907406e111",
+      "id": "62f8c03d2d1d4b702310",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41579,9 +42503,9 @@
       "weight": 1.08
     },
     {
-      "id": "26f4fb8bf60b9399d97b",
+      "id": "35891a8cbc3bfb292a3f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41594,9 +42518,9 @@
       "weight": 1.08
     },
     {
-      "id": "c202ddfdaeaf4b9d693e",
+      "id": "c0e3a89fdad2a5fff0f3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41609,9 +42533,9 @@
       "weight": 1.08
     },
     {
-      "id": "303f0283e9317e9486d7",
+      "id": "f60b596b48eb05460b84",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41624,9 +42548,9 @@
       "weight": 1.08
     },
     {
-      "id": "004500e7b68c21b4f4f3",
+      "id": "a7de1008a67498bf3a2a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41639,9 +42563,9 @@
       "weight": 1.08
     },
     {
-      "id": "39421da6ce25e7d4f365",
+      "id": "da17ecf53d694f42a2aa",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41654,9 +42578,9 @@
       "weight": 1.08
     },
     {
-      "id": "38748535807a0d3705e8",
+      "id": "deba381b79b2c4996d6e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41669,9 +42593,9 @@
       "weight": 1.08
     },
     {
-      "id": "bf4647b8b7e08b1a5377",
+      "id": "d2e7c6dfd8d6305d44dc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41684,9 +42608,9 @@
       "weight": 1.08
     },
     {
-      "id": "f771969a5dd6bd0adc93",
+      "id": "d410212c4113c9aa021f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41699,9 +42623,9 @@
       "weight": 1.08
     },
     {
-      "id": "28a62f623b4967389f53",
+      "id": "793e3a8867bd5e0ede10",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41714,9 +42638,9 @@
       "weight": 1.08
     },
     {
-      "id": "a4a4e9a364d725613daa",
+      "id": "a7524a71e0cb38277df1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41729,9 +42653,9 @@
       "weight": 1.08
     },
     {
-      "id": "7298d7f39c8535a33651",
+      "id": "87153ba530f8b78948c6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41744,9 +42668,9 @@
       "weight": 1.08
     },
     {
-      "id": "e3667a139278705fc19a",
+      "id": "a71aa13466a627d6e8be",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -41759,9 +42683,9 @@
       "weight": 1.08
     },
     {
-      "id": "2b60f115672b0991ca7a",
+      "id": "d29d04012126a0dc97b5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41774,9 +42698,9 @@
       "weight": 1.08
     },
     {
-      "id": "a75749577c80d0ccaba9",
+      "id": "4cf8d6ee1ca671fd8bbb",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41789,9 +42713,9 @@
       "weight": 1.08
     },
     {
-      "id": "26e580ece35c729954a7",
+      "id": "941f5c490450a5ac75f3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41804,9 +42728,9 @@
       "weight": 1.08
     },
     {
-      "id": "386165d2a9938f27386a",
+      "id": "443c9aa18e598945e795",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41819,9 +42743,9 @@
       "weight": 1.08
     },
     {
-      "id": "88ba0cf8c54f549266b4",
+      "id": "3a98acf161ab5fcafb54",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41834,9 +42758,9 @@
       "weight": 1.08
     },
     {
-      "id": "6b4f096bcf7924e0230f",
+      "id": "4b3b9c53604b584fcee5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41849,9 +42773,9 @@
       "weight": 1.08
     },
     {
-      "id": "8d1fe335b2ca8d1dd216",
+      "id": "634ebb85e897674de23c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41864,9 +42788,9 @@
       "weight": 1.08
     },
     {
-      "id": "cc04c5a7de3cf62c092e",
+      "id": "3175eef058323ab65eb7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -41879,9 +42803,9 @@
       "weight": 1.08
     },
     {
-      "id": "54a0a432e1e41639c542",
+      "id": "80d3c64fcc28e00a4153",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -41894,9 +42818,9 @@
       "weight": 1.08
     },
     {
-      "id": "114c2eb21066193f9c82",
+      "id": "63e4ff937ab6da1e14f3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -41909,9 +42833,9 @@
       "weight": 1.08
     },
     {
-      "id": "f8cd2a304d7dbe45a039",
+      "id": "50509c4d489ee23682c1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/README.md",
       "license": "MIT",
       "domains": [
@@ -41924,9 +42848,9 @@
       "weight": 1.08
     },
     {
-      "id": "01406d2d46276aa959bf",
+      "id": "2d14016ca1e04efe4b5c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -41939,9 +42863,9 @@
       "weight": 1.08
     },
     {
-      "id": "34e6033a0f0b1b9d2fa5",
+      "id": "71d881642fc2fd92d1b6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -41954,9 +42878,9 @@
       "weight": 1.08
     },
     {
-      "id": "24a049ab43cdf5abf857",
+      "id": "960e1e36e2db105117c3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -41969,9 +42893,9 @@
       "weight": 1.08
     },
     {
-      "id": "fd2e63ff1beea4fb5448",
+      "id": "d74834157466ab829d4d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -41984,9 +42908,9 @@
       "weight": 1.08
     },
     {
-      "id": "9f2e700a0854e478b70d",
+      "id": "59b8799e6809743edec7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -41999,9 +42923,9 @@
       "weight": 1.08
     },
     {
-      "id": "ef20ec0d73862aed25f2",
+      "id": "a6c1d304a37c16208178",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -42014,9 +42938,9 @@
       "weight": 1.08
     },
     {
-      "id": "ac648d3e30498a91a23d",
+      "id": "5701ccab1a217e53da72",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/TRANSLATION.md",
       "license": "MIT",
       "domains": [
@@ -42029,9 +42953,9 @@
       "weight": 1.08
     },
     {
-      "id": "ba3e60fa894ff8860167",
+      "id": "23e4fe55b4dc6e9e11fc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/aclide.md",
       "license": "MIT",
       "domains": [
@@ -42044,9 +42968,9 @@
       "weight": 1.08
     },
     {
-      "id": "be87a8618a74816f48c8",
+      "id": "11183b9bb8a4945d05ee",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/aclide.md",
       "license": "MIT",
       "domains": [
@@ -42059,9 +42983,9 @@
       "weight": 1.08
     },
     {
-      "id": "7a6a0acdca518ca9e421",
+      "id": "b5d30acece82f7cec2de",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/api.md",
       "license": "MIT",
       "domains": [
@@ -42074,9 +42998,9 @@
       "weight": 1.08
     },
     {
-      "id": "1ada0116394476c8cd1d",
+      "id": "a1193ad5b9e7eb455573",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42089,9 +43013,9 @@
       "weight": 1.08
     },
     {
-      "id": "2d46e1aeaad328b051c9",
+      "id": "b291236597fdf1c57a97",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -42104,9 +43028,9 @@
       "weight": 1.08
     },
     {
-      "id": "ffe198e8bdc8eb4613b0",
+      "id": "6bb4c75000dc27689200",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/clients/01-agent-clients.md",
       "license": "MIT",
       "domains": [
@@ -42119,9 +43043,9 @@
       "weight": 1.08
     },
     {
-      "id": "2f8c503e7a2d0cd99212",
+      "id": "c4c9fc4c27cff6d62599",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -42134,9 +43058,9 @@
       "weight": 1.08
     },
     {
-      "id": "e9a3b58516fa54975092",
+      "id": "ca495aebc6013fb9ab2b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -42149,9 +43073,9 @@
       "weight": 1.08
     },
     {
-      "id": "080380bf10d0199bc6bb",
+      "id": "20176f25f563aef2cd11",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -42164,9 +43088,9 @@
       "weight": 1.08
     },
     {
-      "id": "d8a7935e1752437ea883",
+      "id": "e3fb7f833362db7e7bbd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -42179,9 +43103,9 @@
       "weight": 1.08
     },
     {
-      "id": "fdfca27e7621d0caad81",
+      "id": "52701e5d8459fb5ad621",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -42194,9 +43118,9 @@
       "weight": 1.08
     },
     {
-      "id": "097fc06677ec99065d85",
+      "id": "27e229eb3737ff831102",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/README.md",
       "license": "MIT",
       "domains": [
@@ -42209,9 +43133,9 @@
       "weight": 1.08
     },
     {
-      "id": "ea76ba112b73dbadef7e",
+      "id": "3874fd41b256883b083e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/README.md",
       "license": "MIT",
       "domains": [
@@ -42224,9 +43148,9 @@
       "weight": 1.08
     },
     {
-      "id": "468eb921fa67563b932b",
+      "id": "f2a730fd4c2f9ecd654d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/README.md",
       "license": "MIT",
       "domains": [
@@ -42239,9 +43163,9 @@
       "weight": 1.08
     },
     {
-      "id": "c5d29744d2f77f3dccf4",
+      "id": "1e93b2f0d599faf38b42",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/README.md",
       "license": "MIT",
       "domains": [
@@ -42254,9 +43178,9 @@
       "weight": 1.08
     },
     {
-      "id": "2fde1e04e6fd2413b90f",
+      "id": "10dca60579338df3b238",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/README.md",
       "license": "MIT",
       "domains": [
@@ -42269,9 +43193,9 @@
       "weight": 1.08
     },
     {
-      "id": "c2e40fe06d1aef1f0ea4",
+      "id": "ac409b135f63a36c12f6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42284,9 +43208,9 @@
       "weight": 1.08
     },
     {
-      "id": "4cc7f3a51b3053da5601",
+      "id": "f4c309d78ce0837c9d34",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42299,9 +43223,9 @@
       "weight": 1.08
     },
     {
-      "id": "5bbe1e059e5e2cc2c1a9",
+      "id": "a741513412e8fb7b4e61",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42314,9 +43238,9 @@
       "weight": 1.08
     },
     {
-      "id": "6545ac74a546f27dfe64",
+      "id": "7a822dc2e1981b230d43",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42329,9 +43253,9 @@
       "weight": 1.08
     },
     {
-      "id": "ad9ad5174cce6f509382",
+      "id": "6b5f90a909a4ecf9ff07",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42344,9 +43268,9 @@
       "weight": 1.08
     },
     {
-      "id": "4ff9024244842cbda3dc",
+      "id": "86e953db1d37167f5b9c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42359,9 +43283,9 @@
       "weight": 1.08
     },
     {
-      "id": "0e7ca9a98d524bac2c08",
+      "id": "c2c2c83ec5e0f3f5dc0e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42374,9 +43298,9 @@
       "weight": 1.08
     },
     {
-      "id": "0c1da54ca4e1e68e5723",
+      "id": "0d850d8e7c4ace764887",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42389,9 +43313,9 @@
       "weight": 1.08
     },
     {
-      "id": "8673505fda21268b8042",
+      "id": "3ab6c8574ee3b87968dd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42404,9 +43328,9 @@
       "weight": 1.08
     },
     {
-      "id": "0a4106ab4d7429d6257b",
+      "id": "66a1ea2e8ac9e770e839",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42419,9 +43343,9 @@
       "weight": 1.08
     },
     {
-      "id": "846ac8f50463a8319841",
+      "id": "8e0ddba02aaa874f9126",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42434,9 +43358,9 @@
       "weight": 1.08
     },
     {
-      "id": "8468f85fface89a11693",
+      "id": "406af3d565ade4ff46dd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42449,9 +43373,9 @@
       "weight": 1.08
     },
     {
-      "id": "1c27617626716de20a96",
+      "id": "f79cc5a345899a75b174",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42464,9 +43388,9 @@
       "weight": 1.08
     },
     {
-      "id": "e9dcc391ebd9d1f168e8",
+      "id": "ef6ba078e0fa91d08a6b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42479,9 +43403,9 @@
       "weight": 1.08
     },
     {
-      "id": "8d3f200d77ecb95909d5",
+      "id": "a442d15247b306b95297",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42494,9 +43418,9 @@
       "weight": 1.08
     },
     {
-      "id": "9b50668648f269d9e901",
+      "id": "62daa1a423653cc31bb3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42509,9 +43433,9 @@
       "weight": 1.08
     },
     {
-      "id": "a4c091a9b0226427a7f1",
+      "id": "0cd91cb2489ce1f1e5a4",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42524,9 +43448,9 @@
       "weight": 1.08
     },
     {
-      "id": "3680369cef1c052be5f3",
+      "id": "ddacea9ef0e41a00cc09",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42539,9 +43463,9 @@
       "weight": 1.08
     },
     {
-      "id": "52d036f2f409456f401e",
+      "id": "aa99068b86cafc29e638",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42554,9 +43478,9 @@
       "weight": 1.08
     },
     {
-      "id": "13c75785762e2f738cfe",
+      "id": "f7ffb2de636634b0d18d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42569,9 +43493,9 @@
       "weight": 1.08
     },
     {
-      "id": "9c760d75acf4ea5210ff",
+      "id": "d5c34e61b490e3368cd9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42584,9 +43508,9 @@
       "weight": 1.08
     },
     {
-      "id": "5af567469e28adb9991e",
+      "id": "06d7e91d56351d7a95bc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42599,9 +43523,9 @@
       "weight": 1.08
     },
     {
-      "id": "3e8b06fa7460fbf30295",
+      "id": "001365e1447e722a86d8",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42614,9 +43538,9 @@
       "weight": 1.08
     },
     {
-      "id": "88f54e43daf9ae7c1992",
+      "id": "fbaf0982ae2c31a57c23",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42629,9 +43553,9 @@
       "weight": 1.08
     },
     {
-      "id": "c379488b8c3152394dd5",
+      "id": "4278354e477f88bd8952",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42644,9 +43568,9 @@
       "weight": 1.08
     },
     {
-      "id": "eab79fdcf2851898c01b",
+      "id": "da7abb8a1d05818ad765",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42659,9 +43583,9 @@
       "weight": 1.08
     },
     {
-      "id": "e48c3a479da541f43ec6",
+      "id": "6945119dc36ce09b5282",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42674,9 +43598,9 @@
       "weight": 1.08
     },
     {
-      "id": "9b9c539bc9ad425a75a6",
+      "id": "55cd31a2cc84766a87d1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42689,9 +43613,9 @@
       "weight": 1.08
     },
     {
-      "id": "8c3b74ebbba59e4cf20e",
+      "id": "ea2ae8b22e7ca3731c39",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42704,9 +43628,9 @@
       "weight": 1.08
     },
     {
-      "id": "4b5c1422188613865258",
+      "id": "cbea89b42b7588be4acb",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42719,9 +43643,9 @@
       "weight": 1.08
     },
     {
-      "id": "70fb4b70580b5751cab1",
+      "id": "d044050e23cbff673b20",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42734,9 +43658,9 @@
       "weight": 1.08
     },
     {
-      "id": "0def008bdf707f88059b",
+      "id": "dfe8ec4e0819b5327afa",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42749,9 +43673,9 @@
       "weight": 1.08
     },
     {
-      "id": "148ebf167aac74499024",
+      "id": "b3aeea199b324fceef5f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42764,9 +43688,9 @@
       "weight": 1.08
     },
     {
-      "id": "dd2ee32b5e5486a2856d",
+      "id": "152d2f90bbbd197afdaf",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/01-rest-api.md",
       "license": "MIT",
       "domains": [
@@ -42779,9 +43703,9 @@
       "weight": 1.08
     },
     {
-      "id": "300809cf71bee007fec3",
+      "id": "6d7533b9029767a22688",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42794,9 +43718,9 @@
       "weight": 1.08
     },
     {
-      "id": "bd16bdd7dd732085c8f8",
+      "id": "11b4b3dbb069ab135afe",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42809,9 +43733,9 @@
       "weight": 1.08
     },
     {
-      "id": "4efce69ecf06ed9d1b35",
+      "id": "32c462b3910eda661a7c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42824,9 +43748,9 @@
       "weight": 1.08
     },
     {
-      "id": "4fd0ac673c2735f53aea",
+      "id": "0e8906bcb6d5ca1d299e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42839,9 +43763,9 @@
       "weight": 1.08
     },
     {
-      "id": "5d58f8acf15a88eec5b3",
+      "id": "5e4db34116c14f309c85",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42854,9 +43778,9 @@
       "weight": 1.08
     },
     {
-      "id": "8095ecf0d1a51b916c79",
+      "id": "b9a8706b32d5fb841fe6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42869,9 +43793,9 @@
       "weight": 1.08
     },
     {
-      "id": "ef37e3af3d969a3bf2a1",
+      "id": "53fde9ca921e0f8a8e77",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42884,9 +43808,9 @@
       "weight": 1.08
     },
     {
-      "id": "a4ecbd6048f6d1421cdd",
+      "id": "5da7d78f35ab43568655",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42899,9 +43823,9 @@
       "weight": 1.08
     },
     {
-      "id": "71e938f79bf1adabbaf9",
+      "id": "69046ece3dd902d05729",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42914,9 +43838,9 @@
       "weight": 1.08
     },
     {
-      "id": "58345749212345f1f131",
+      "id": "d42c4355ccc191b366d5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42929,9 +43853,9 @@
       "weight": 1.08
     },
     {
-      "id": "5cafece80eea044273d4",
+      "id": "e7cc32e3e7ced8a0afa3",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42944,9 +43868,9 @@
       "weight": 1.08
     },
     {
-      "id": "66092b620e1fe055548c",
+      "id": "b0fdab94a1ca7c0dac3c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42959,9 +43883,9 @@
       "weight": 1.08
     },
     {
-      "id": "b9615d4f26086722cfc6",
+      "id": "d4f4dd28dd28d66ffb54",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42974,9 +43898,9 @@
       "weight": 1.08
     },
     {
-      "id": "4b344e6ac150b086bd74",
+      "id": "b8d26d7e1b9c67a8a107",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -42989,9 +43913,9 @@
       "weight": 1.08
     },
     {
-      "id": "04d58fd71b78527dc8b3",
+      "id": "f60337179bee7df97d55",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -43004,9 +43928,9 @@
       "weight": 1.08
     },
     {
-      "id": "02f62c1147217dee5db3",
+      "id": "ffe40ac546cad88c9109",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/02-idempotency.md",
       "license": "MIT",
       "domains": [
@@ -43019,9 +43943,9 @@
       "weight": 1.08
     },
     {
-      "id": "fb2e88cb44d35b40754b",
+      "id": "54f9b44fef519c2a9d00",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -43034,9 +43958,9 @@
       "weight": 1.08
     },
     {
-      "id": "9d6ac87e0f1f85371c09",
+      "id": "c109fe555d4cea1cc7f8",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -43049,9 +43973,9 @@
       "weight": 1.08
     },
     {
-      "id": "dc14e2cdf457874bf564",
+      "id": "1912514cbecb72ce9547",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -43064,9 +43988,9 @@
       "weight": 1.08
     },
     {
-      "id": "3cd6fe2addc782b57732",
+      "id": "d0d5553490460b089da7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -43079,9 +44003,9 @@
       "weight": 1.08
     },
     {
-      "id": "8c160e7e09b6addb5b82",
+      "id": "b2952d73f6cf9c286139",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/CHANGELOG.md",
       "license": "MIT",
       "domains": [
@@ -43094,9 +44018,9 @@
       "weight": 1.08
     },
     {
-      "id": "653196ffc763fc7fcb9b",
+      "id": "3f5a560b7a8396a5b900",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -43109,9 +44033,9 @@
       "weight": 1.08
     },
     {
-      "id": "69a04225ca62feac516c",
+      "id": "4a3f94aa3680508d5811",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -43124,9 +44048,9 @@
       "weight": 1.08
     },
     {
-      "id": "0b570ff0446c6b61beaf",
+      "id": "161621051150e02ab124",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -43139,9 +44063,9 @@
       "weight": 1.08
     },
     {
-      "id": "bcd435bc0b37a676d32e",
+      "id": "ce6fcf0431900eee8d1f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/api/OVERVIEW.md",
       "license": "MIT",
       "domains": [
@@ -43154,9 +44078,9 @@
       "weight": 1.08
     },
     {
-      "id": "73dbbebcc788ee444766",
+      "id": "4c968cfffe21a95bc533",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43169,9 +44093,9 @@
       "weight": 1.08
     },
     {
-      "id": "c72052c9bada62ada1da",
+      "id": "89696be795c0964b36ba",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43184,9 +44108,9 @@
       "weight": 1.08
     },
     {
-      "id": "b3862033ac197e29a2b7",
+      "id": "0b7d587c12278ca0d28e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43199,9 +44123,9 @@
       "weight": 1.08
     },
     {
-      "id": "07fd25fa58c51eb2de3d",
+      "id": "e2f8bdba9eff03ab6bfd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43214,9 +44138,9 @@
       "weight": 1.08
     },
     {
-      "id": "357affa6c20d552b5311",
+      "id": "3652f758176cfe759092",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43229,9 +44153,9 @@
       "weight": 1.08
     },
     {
-      "id": "67bc1546d096ac71b05e",
+      "id": "0d9eadbf62a944b5b270",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43244,9 +44168,9 @@
       "weight": 1.08
     },
     {
-      "id": "a188bd915baa5b0d27e9",
+      "id": "f6b0b6bb13d6bedd9a2a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43259,9 +44183,9 @@
       "weight": 1.08
     },
     {
-      "id": "153f52426d93256cf331",
+      "id": "bc2995c6a7d119b0384d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43274,9 +44198,9 @@
       "weight": 1.08
     },
     {
-      "id": "0adf7b85624fca0d3a42",
+      "id": "6ae7860511d4e0ae7e2f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43289,9 +44213,9 @@
       "weight": 1.08
     },
     {
-      "id": "1d3a98ec82a00ef54e30",
+      "id": "9976a45ee955d1d0aac6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/00-high-level-index.md",
       "license": "MIT",
       "domains": [
@@ -43304,9 +44228,9 @@
       "weight": 1.08
     },
     {
-      "id": "9cdaacbd8d846250beb1",
+      "id": "f57a67b4d6d1970bc8a4",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43319,9 +44243,9 @@
       "weight": 1.08
     },
     {
-      "id": "797d01bc380af706194a",
+      "id": "7389ee5d0600744f18cb",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43334,9 +44258,9 @@
       "weight": 1.08
     },
     {
-      "id": "1ac35ede790a482ac615",
+      "id": "26f26c45d2d65c7922f0",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43349,9 +44273,9 @@
       "weight": 1.08
     },
     {
-      "id": "759f76f9f76d6dc22513",
+      "id": "632df54b128df08c04fd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43364,9 +44288,9 @@
       "weight": 1.08
     },
     {
-      "id": "4f4bb3a5ef71e4f20162",
+      "id": "454bc121da21f37c3fda",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43379,9 +44303,9 @@
       "weight": 1.08
     },
     {
-      "id": "5ebec8cecb77944bc55e",
+      "id": "d5dee97f6a6c222d8050",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43394,9 +44318,9 @@
       "weight": 1.08
     },
     {
-      "id": "6fd36caa6cd50d6b2623",
+      "id": "49d551a229f02a73ec77",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43409,9 +44333,9 @@
       "weight": 1.08
     },
     {
-      "id": "bad0794f3d9e0a98bfe2",
+      "id": "b460f2aaeef4feffdd54",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43424,9 +44348,9 @@
       "weight": 1.08
     },
     {
-      "id": "ff41838fececc3d28322",
+      "id": "0f4a524b213bd4136862",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43439,9 +44363,9 @@
       "weight": 1.08
     },
     {
-      "id": "4a4459cf924124c3375d",
+      "id": "e70f08ce2ec26b123c8a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43454,9 +44378,9 @@
       "weight": 1.08
     },
     {
-      "id": "11f773b632d64ba019f6",
+      "id": "5e21f8b48739d9a750d7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43469,9 +44393,9 @@
       "weight": 1.08
     },
     {
-      "id": "0b6a1a3ae84944b7bfb0",
+      "id": "a5594dbd6810edf8596d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43484,9 +44408,9 @@
       "weight": 1.08
     },
     {
-      "id": "c29632f086146b7d58c8",
+      "id": "1bf1da53489281b1bf4e",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43499,9 +44423,9 @@
       "weight": 1.08
     },
     {
-      "id": "fff8efa5fd88858e4f45",
+      "id": "4eb47748757433f17a3b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43514,9 +44438,9 @@
       "weight": 1.08
     },
     {
-      "id": "f2fb8d4ae2aeaaac21dd",
+      "id": "a8cc21b79ae5da35fb9d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43529,9 +44453,9 @@
       "weight": 1.08
     },
     {
-      "id": "635bc807ef372fcb1517",
+      "id": "656965978db54bb47964",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43544,9 +44468,9 @@
       "weight": 1.08
     },
     {
-      "id": "5258c949361ce953b960",
+      "id": "073f30b450477915308d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43559,9 +44483,9 @@
       "weight": 1.08
     },
     {
-      "id": "9735ad8a3ef41cf352f2",
+      "id": "23ba124e9c57c39819d9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43574,9 +44498,9 @@
       "weight": 1.08
     },
     {
-      "id": "5544c95bc7ef640a4dff",
+      "id": "a8238f16a6bcfb9f29d6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43589,9 +44513,9 @@
       "weight": 1.08
     },
     {
-      "id": "8a75cb0b2950d0d0f02a",
+      "id": "297c8200ddedcc568f5b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43604,9 +44528,9 @@
       "weight": 1.08
     },
     {
-      "id": "93d3d9a18ef9ac5be431",
+      "id": "131331bb7477492d3d7a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43619,9 +44543,9 @@
       "weight": 1.08
     },
     {
-      "id": "633b92edaa947f09cd9d",
+      "id": "cd297f7a1c0c4278a3fd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43634,9 +44558,9 @@
       "weight": 1.08
     },
     {
-      "id": "3984f24cc66369bd7a2c",
+      "id": "41f710ee2718d8839058",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43649,9 +44573,9 @@
       "weight": 1.08
     },
     {
-      "id": "d779a6edcc6a48536058",
+      "id": "bc53ad1f4daf2518ce1f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43664,9 +44588,9 @@
       "weight": 1.08
     },
     {
-      "id": "db82a037eac60e6fcfe2",
+      "id": "667fe38a0a90ca39c5ad",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43679,9 +44603,9 @@
       "weight": 1.08
     },
     {
-      "id": "e538d2b5ef8065c9bfb7",
+      "id": "7e50e3b8d0415e597495",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43694,9 +44618,9 @@
       "weight": 1.08
     },
     {
-      "id": "9bdda34c13d11730a2d0",
+      "id": "7a31566fcae06c85ba22",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43709,9 +44633,9 @@
       "weight": 1.08
     },
     {
-      "id": "2420405d613eccc4944f",
+      "id": "0e43b92c8e8e57baf136",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43724,9 +44648,9 @@
       "weight": 1.08
     },
     {
-      "id": "cad5571ef650a716db00",
+      "id": "2bd207f0f992307e67f4",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/01-routing-and-bandit-scoring.md",
       "license": "MIT",
       "domains": [
@@ -43739,9 +44663,9 @@
       "weight": 1.08
     },
     {
-      "id": "02116123d8255d692915",
+      "id": "b78113cd9755513c4fc4",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43754,9 +44678,9 @@
       "weight": 1.08
     },
     {
-      "id": "4c0ca27227f693079e52",
+      "id": "5aafb5056080b8867660",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43769,9 +44693,9 @@
       "weight": 1.08
     },
     {
-      "id": "26d282b623fc2199196a",
+      "id": "cbc7c3f5e60a290c56de",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43784,9 +44708,9 @@
       "weight": 1.08
     },
     {
-      "id": "af4f66a3dcab00f9a8c7",
+      "id": "009300cb90ae2eb580f1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43799,9 +44723,9 @@
       "weight": 1.08
     },
     {
-      "id": "90dc1065e41657b1ee61",
+      "id": "d91ca40182282840d3c4",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43810,13 +44734,13 @@
         "local-api"
       ],
       "heading": "Provider-Wide Pools",
-      "text": "Some providers enforce **one quota across the whole account**, not per model:\n\n| Pool | Providers | Config |\n|------|-----------|--------|\n| Daily requests | OpenRouter (1000/day free, 50/day <10 credits), ModelScope (2000→1800 margin) | `PROVIDER_DAILY_REQUEST_CAP_<PLATFORM>` |\n| Daily tokens | NavyAI (150K/day shared, model multipliers) | `PROVIDER_DAILY_TOKEN_CAP_<PLATFORM>` |\n| Minute requests | NVIDIA NIM (40 RPM account-wide) | `PROVIDER_MINUTE_REQUEST_CAP_<PLATFORM>` |\n\n- Counted by summing per-model windows for the same `platform + keyId`.\n- NavyAI token multiplier parsed from `monthly_token_budget` label (e.g. `2x`) or derived from `tpd_limit`.",
+      "text": "Some providers enforce **one quota across the whole account**, not per model:\n\n| Pool | Providers | Config |\n|------|-----------|--------|\n| Daily requests | OpenRouter (1000/day free, 50/day <10 credits), ModelScope (2000→1800 margin), Requesty (200→180 margin) | `PROVIDER_DAILY_REQUEST_CAP_<PLATFORM>` |\n| Daily tokens | NavyAI (150K/day shared, model multipliers) | `PROVIDER_DAILY_TOKEN_CAP_<PLATFORM>` |\n| Minute requests | NVIDIA NIM (40 RPM account-wide) | `PROVIDER_MINUTE_REQUEST_CAP_<PLATFORM>` |\n\n- Counted by summing per-model windows for the same `platform + keyId`.\n- NavyAI token multiplier parsed from `monthly_token_budget` label (e.g. `2x`) or derived from `tpd_limit`.",
       "weight": 1.08
     },
     {
-      "id": "8ed4b7f376b82bac26bc",
+      "id": "3ec11f7bfd4a11f0994b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43829,9 +44753,9 @@
       "weight": 1.08
     },
     {
-      "id": "0886280e9f155ea6ddec",
+      "id": "f0017c074e4853791f84",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43844,9 +44768,9 @@
       "weight": 1.08
     },
     {
-      "id": "704a24571232d509f412",
+      "id": "3cac02308c5eaf4effcd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43859,9 +44783,9 @@
       "weight": 1.08
     },
     {
-      "id": "b5441d16555be8efa295",
+      "id": "e7fcd534f6d395be7979",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43874,9 +44798,9 @@
       "weight": 1.08
     },
     {
-      "id": "083d905f2e2b48cfe24a",
+      "id": "5ad96d21d3e31dec7f7a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43889,9 +44813,9 @@
       "weight": 1.08
     },
     {
-      "id": "ef92461ee962a0fa7962",
+      "id": "fbedbbbfcedb66c7e1c7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43904,9 +44828,9 @@
       "weight": 1.08
     },
     {
-      "id": "26656eba638691158fd0",
+      "id": "05af3e1052e9c463ec20",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43919,9 +44843,9 @@
       "weight": 1.08
     },
     {
-      "id": "e8791850623ce3b2ac47",
+      "id": "992362635751e1275493",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43934,9 +44858,9 @@
       "weight": 1.08
     },
     {
-      "id": "cdb324bafc15e0884f5c",
+      "id": "717ca8095be824298cd6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43949,9 +44873,9 @@
       "weight": 1.08
     },
     {
-      "id": "74acbdd2668923421394",
+      "id": "b36034aa07c68704b339",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43964,9 +44888,9 @@
       "weight": 1.08
     },
     {
-      "id": "6e19a222f1993c6be16b",
+      "id": "7a03b4f2c2c5a521ffc2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43979,9 +44903,9 @@
       "weight": 1.08
     },
     {
-      "id": "705d9dada78a5b3eb3b1",
+      "id": "0563b53ee142e165e6e7",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -43994,9 +44918,9 @@
       "weight": 1.08
     },
     {
-      "id": "bd3cb50c770c971b3bfe",
+      "id": "891f5ec331f9088713d5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44009,9 +44933,9 @@
       "weight": 1.08
     },
     {
-      "id": "debaca9e6b101b1dd5e8",
+      "id": "643617fce7e4d301ec47",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44024,9 +44948,9 @@
       "weight": 1.08
     },
     {
-      "id": "a7a9963f925978eceebf",
+      "id": "382ef9cb2d44a1b92bc8",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44039,9 +44963,9 @@
       "weight": 1.08
     },
     {
-      "id": "9ff86f6937ed61320e54",
+      "id": "ec7406ac943311b11385",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44054,9 +44978,9 @@
       "weight": 1.08
     },
     {
-      "id": "8f37984ae844a5f00588",
+      "id": "583e25caca2d39ae30cd",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44069,9 +44993,9 @@
       "weight": 1.08
     },
     {
-      "id": "e57894411f024d14e7cb",
+      "id": "154da761cb549e78edf1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/02-quota-and-cooldown-engine.md",
       "license": "MIT",
       "domains": [
@@ -44084,9 +45008,9 @@
       "weight": 1.08
     },
     {
-      "id": "2fd0585fc8a7cbc45757",
+      "id": "6d4cd185772ab13f91dc",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44099,9 +45023,9 @@
       "weight": 1.08
     },
     {
-      "id": "10bc1598f1177b538224",
+      "id": "541d97cff042477e3dda",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44114,9 +45038,9 @@
       "weight": 1.08
     },
     {
-      "id": "64ca1bf4c580841ee36f",
+      "id": "3bcf0f552b15a1f1a36d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44129,9 +45053,9 @@
       "weight": 1.08
     },
     {
-      "id": "9491c43865c336f8b4d6",
+      "id": "d8958b4f6abd8cca0de0",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44144,9 +45068,9 @@
       "weight": 1.08
     },
     {
-      "id": "f2184407ff0b81f49b5c",
+      "id": "aa403fc855b6113c8165",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44159,9 +45083,9 @@
       "weight": 1.08
     },
     {
-      "id": "c43ffd44c0d450791c73",
+      "id": "051ce37a8104b083bd43",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44174,9 +45098,9 @@
       "weight": 1.08
     },
     {
-      "id": "0a9ea9baa3070d03dc35",
+      "id": "5c9e1122684ecf9229f1",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44189,9 +45113,9 @@
       "weight": 1.08
     },
     {
-      "id": "d9edd0abb48dc14fb24c",
+      "id": "cf1e7d44a11ae7aea16c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44204,9 +45128,9 @@
       "weight": 1.08
     },
     {
-      "id": "c1930828609a20daa836",
+      "id": "f9e8fa900adb7f08d54b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44219,9 +45143,9 @@
       "weight": 1.08
     },
     {
-      "id": "821ff7cf71adabb896ac",
+      "id": "a0ca6b9221bd1189788c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44234,9 +45158,9 @@
       "weight": 1.08
     },
     {
-      "id": "4ecbb8600a9114d5031f",
+      "id": "03cc2b8ddf97a7885ac9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44249,9 +45173,9 @@
       "weight": 1.08
     },
     {
-      "id": "aeda5a5e5ad5a628a51b",
+      "id": "cfc0ac4b0448596ba907",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44264,9 +45188,9 @@
       "weight": 1.08
     },
     {
-      "id": "42ce60cbaf5e3d22032b",
+      "id": "c16e4d74b00f0ca38a0b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44279,9 +45203,9 @@
       "weight": 1.08
     },
     {
-      "id": "4ecfeb5f8c2969e49010",
+      "id": "36ef9be8f8205363bbb5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44294,9 +45218,9 @@
       "weight": 1.08
     },
     {
-      "id": "3bdfdec312938e7fb82c",
+      "id": "bab5ba315e63e473da13",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44309,9 +45233,9 @@
       "weight": 1.08
     },
     {
-      "id": "8d629a226eae05d07875",
+      "id": "938ee02fa1a9d67e998c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44324,9 +45248,9 @@
       "weight": 1.08
     },
     {
-      "id": "93a1b2e26153e8d756ae",
+      "id": "8e90f76cef96ebbf4520",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44339,9 +45263,9 @@
       "weight": 1.08
     },
     {
-      "id": "16f8c667f5908eaefa19",
+      "id": "1e4acff4595248093b4f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44354,9 +45278,9 @@
       "weight": 1.08
     },
     {
-      "id": "0afa3f77cb9d3d472354",
+      "id": "c719ce0dc001190a7f31",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44369,9 +45293,9 @@
       "weight": 1.08
     },
     {
-      "id": "6f9a3cade24437eb2959",
+      "id": "354d93df3e26bc739bd5",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44384,9 +45308,9 @@
       "weight": 1.08
     },
     {
-      "id": "cc3b55c9b8c72a4a30c6",
+      "id": "383d62bf0edffa61b80d",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44399,9 +45323,9 @@
       "weight": 1.08
     },
     {
-      "id": "4672339aec4e7630e7cb",
+      "id": "d2bb4532d2f4647bf29a",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44414,9 +45338,9 @@
       "weight": 1.08
     },
     {
-      "id": "dd40f448ff0a5cd6cc4c",
+      "id": "3c3294816c25fa0ddeb2",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/03-streaming-pipeline.md",
       "license": "MIT",
       "domains": [
@@ -44429,9 +45353,9 @@
       "weight": 1.08
     },
     {
-      "id": "e9e6eb214c415011d26b",
+      "id": "dab7b8c6ad0d1e2baf9b",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44444,9 +45368,9 @@
       "weight": 1.08
     },
     {
-      "id": "55ebfc514f3cf2b7b639",
+      "id": "355f4663cab3604a217c",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44459,9 +45383,9 @@
       "weight": 1.08
     },
     {
-      "id": "79987c577008a2bac7a5",
+      "id": "1ff94117c9a536f8ce72",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44474,9 +45398,9 @@
       "weight": 1.08
     },
     {
-      "id": "615906cf3e78abc13cdc",
+      "id": "dc9e7027657addad0712",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44489,9 +45413,9 @@
       "weight": 1.08
     },
     {
-      "id": "e396da72eac6f370ed29",
+      "id": "268ddde9744b66a632d9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44504,9 +45428,9 @@
       "weight": 1.08
     },
     {
-      "id": "eba4c200293e19e24f6c",
+      "id": "68a983efeedaadc08e78",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44519,9 +45443,9 @@
       "weight": 1.08
     },
     {
-      "id": "b4a9b5b1253c3af1e1dc",
+      "id": "297e630f878d36c726c6",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44534,9 +45458,9 @@
       "weight": 1.08
     },
     {
-      "id": "44464b706930fe17344e",
+      "id": "c45ea093a13cb3f50cee",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44549,9 +45473,9 @@
       "weight": 1.08
     },
     {
-      "id": "94952b2e619af7d80943",
+      "id": "fa108464cd5577e401ef",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44564,9 +45488,9 @@
       "weight": 1.08
     },
     {
-      "id": "9ee2a684274c43563358",
+      "id": "647ac32cc6a882fc5c38",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44579,9 +45503,9 @@
       "weight": 1.08
     },
     {
-      "id": "c275b64c6270b975e8cf",
+      "id": "c4f73bc90aac2f21b16f",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44594,9 +45518,9 @@
       "weight": 1.08
     },
     {
-      "id": "94201335adb06173a33b",
+      "id": "7818d27115bd8cbd90d9",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -44609,9 +45533,9 @@
       "weight": 1.08
     },
     {
-      "id": "e2dc2ae6b37f43f2a1e6",
+      "id": "ac1f2e3d20ec00360ace",
       "source": "tashfeenahmed/freellmapi",
-      "ref": "64b352dc34fc",
+      "ref": "c47a9e7bf8f2",
       "path": "docs/en/architecture/04-degraded-mode-and-failover.md",
       "license": "MIT",
       "domains": [
@@ -47621,9 +48545,9 @@
       "weight": 1.02
     },
     {
-      "id": "ae4135f71b5f78c5d39e",
+      "id": "69687a440480d329d818",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47636,9 +48560,9 @@
       "weight": 1.03
     },
     {
-      "id": "c9a422deeb76464e84a0",
+      "id": "d772ba26da49ed3a9817",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47651,9 +48575,9 @@
       "weight": 1.03
     },
     {
-      "id": "a92254d078ff5b8de3e4",
+      "id": "03dd363f165d95ea304f",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47666,9 +48590,9 @@
       "weight": 1.03
     },
     {
-      "id": "2bf0a1d0a5c1f19518f9",
+      "id": "a3d658ce27afaa30a51d",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47681,9 +48605,9 @@
       "weight": 1.03
     },
     {
-      "id": "4a51940794a5201453fd",
+      "id": "631344ff25bc12b9b0a1",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47692,13 +48616,13 @@
         "parallel-agents"
       ],
       "heading": "Models",
-      "text": "ha**       | Full access             | Beta. A stealth model from an anonymous provider that retains prompts; 1M context, images |\n| **Gemini 3.8 Flash**        | Paid plans              | 1M context, and the only model that accepts audio, video and PDF |\n| **Muse Spark 1.2**          | Full access             | Meta's agentic coding model; 1M context. Rate limited and shared by every user, so it queues when busy and answers on DeepSeek V4 Flash rather than making you wait |\n\nMost models draw on your normal daily sessions rather than a separate limit. GLM 5.3 Flash, DeepSeek V4.1 Flash, MiMo 2.6 Flash, Solar Mini 4 and Solar Pro 4 are unmetered at full access and cost no session at all. Models may still serve from a quantized (Q8_0) build.",
+      "text": "ha**       | Full access             | Beta. A stealth model from an anonymous provider that retains prompts; 1M context, images |\n| **Gemini 3.8 Flash**        | Paid plans              | 1M context, and the only model that accepts audio, video and PDF |\n| **Muse Spark 1.3**          | Paid plans              | Meta's agentic coding model; 1M context. Rate limited and shared by every user, so it queues when busy and answers on DeepSeek V4.1 Flash rather than making you wait |\n\nMost models draw on your normal daily sessions rather than a separate limit. GLM 5.3 Flash, DeepSeek V4.1 Flash, MiMo 2.6 Flash, Solar Mini 4 and Solar Pro 4 are unmetered at full access and cost no session at all. Models may still serve from a quantized (Q8_0) build.",
       "weight": 1.03
     },
     {
-      "id": "33ab5f3818035bdc98c9",
+      "id": "e8139b38a976ec2a6877",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47711,9 +48635,9 @@
       "weight": 1.03
     },
     {
-      "id": "07d3bf808a8a8a9e95d0",
+      "id": "dcddf641c520a40f3b4f",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47726,9 +48650,9 @@
       "weight": 1.03
     },
     {
-      "id": "32b6011e518ab2584839",
+      "id": "51969e1afce249613939",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47741,9 +48665,9 @@
       "weight": 1.03
     },
     {
-      "id": "b51eca7213075dea1b59",
+      "id": "35b88afb11cc3d0171ad",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47756,9 +48680,9 @@
       "weight": 1.03
     },
     {
-      "id": "8892eb4d250f3a395013",
+      "id": "3c3c3ca5adc744fd9c2b",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47771,9 +48695,9 @@
       "weight": 1.03
     },
     {
-      "id": "677d1574a16eca649195",
+      "id": "54ed3732ef16b0112738",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47786,9 +48710,9 @@
       "weight": 1.03
     },
     {
-      "id": "170f7600716d3e04f3f0",
+      "id": "8475b897252de95c39c3",
       "source": "CodebuffAI/freebuff",
-      "ref": "ca5a1da0463c",
+      "ref": "341ec019f555",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
