@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import JSZip from 'jszip';
-import { Activity, AlertTriangle, ArrowLeft, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, X, Zap } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, VolumeX, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
@@ -34,7 +34,7 @@ import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
 import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html';
 import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
-import { speakBrowserText } from '@/lib/voice/browser-voice';
+import { speakBrowserTextTracked, stopBrowserVoice, type BrowserVoiceState } from '@/lib/voice/browser-voice';
 import { resolveBuildTurn } from '@/lib/build-turn';
 import { orchestrateBuild } from '@/lib/build-orchestrator';
 import { runLocalSmokeTest } from '@/lib/local-tools';
@@ -195,6 +195,8 @@ export function ChatShell({onOpenLegal}:Props){
   const [autoLearningStats,setAutoLearningStats]=useState<{promoted:number;evidence:number}|null>(null);
   const [activity,setActivity]=useState<string[]>([]);
   const [lastFailedPrompt,setLastFailedPrompt]=useState('');
+  const [voiceUi,setVoiceUi]=useState<{messageId:string|null;state:'idle'|BrowserVoiceState;label:string}>({messageId:null,state:'idle',label:''});
+  const [feedbackByMessage,setFeedbackByMessage]=useState<Record<string,'positive'|'negative'|'sending'|'error'>>({});
   const [legalHealth,setLegalHealth]=useState<{
     fetchedAt:string;
     latencyMs?:number;
@@ -205,6 +207,7 @@ export function ChatShell({onOpenLegal}:Props){
   const bottom=useRef<HTMLDivElement>(null);
   const scrollFrame=useRef<number|null>(null);
   const turnAbort=useRef<AbortController|null>(null);
+  const voiceActionId=useRef(0);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
   const webllm=useMemo(()=>webLLMStatus(),[modelTick,loadState]);
@@ -1577,6 +1580,9 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   function openChat(id?:string){
+    stopBrowserVoice();
+    voiceActionId.current+=1;
+    setVoiceUi({messageId:null,state:'idle',label:''});
     if(id)s.setActive(id);
     setScreen('chat');
     closeSidebarOnMobile();
@@ -1591,15 +1597,60 @@ export function ChatShell({onOpenLegal}:Props){
     setModelTick(x=>x+1);
   }
 
-  function sendFeedback(kind:'positive'|'negative',message:string){
+  async function toggleVoice(messageId:string,content:string){
+    const isCurrent=voiceUi.messageId===messageId&&(voiceUi.state==='starting'||voiceUi.state==='speaking');
+    if(isCurrent){
+      voiceActionId.current+=1;
+      stopBrowserVoice();
+      setVoiceUi({messageId,state:'stopped',label:'Áudio parado'});
+      window.setTimeout(()=>setVoiceUi(current=>current.messageId===messageId&&current.state==='stopped'?{messageId:null,state:'idle',label:''}:current),1400);
+      return;
+    }
+
+    stopBrowserVoice();
+    const actionId=++voiceActionId.current;
+    setVoiceUi({messageId,state:'starting',label:'Preparando áudio…'});
+    const result=await speakBrowserTextTracked(content,{lang:'pt-BR'},state=>{
+      if(actionId!==voiceActionId.current)return;
+      const label=state==='starting'?'Preparando áudio…'
+        :state==='speaking'?'Reproduzindo áudio'
+        :state==='ended'?'Áudio concluído'
+        :state==='stopped'?'Áudio parado'
+        :'Áudio indisponível';
+      setVoiceUi({messageId,state,label});
+    });
+    if(actionId!==voiceActionId.current)return;
+    if(result.state==='ended'){
+      window.setTimeout(()=>setVoiceUi(current=>current.messageId===messageId&&current.state==='ended'?{messageId:null,state:'idle',label:''}:current),1600);
+    }else if(result.state==='error'){
+      window.setTimeout(()=>setVoiceUi(current=>current.messageId===messageId&&current.state==='error'?{messageId:null,state:'idle',label:''}:current),3200);
+    }
+  }
+
+  async function sendFeedback(kind:'positive'|'negative',message:string,messageId?:string){
     rateAdaptiveAnswer(message,kind==='positive');
     setModelTick(x=>x+1);
+    if(messageId)setFeedbackByMessage(current=>({...current,[messageId]:'sending'}));
     const prompt=[...(active?.messages||[])].reverse().find(m=>m.role==='user')?.content||'';
-    fetch('/api/feedback',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({kind,surface:'chat',message,metadata:{sessionId:active?.id||null,prompt:prompt.slice(0,1200)}})
-    }).catch(()=>{});
+    try{
+      const response=await fetch('/api/feedback',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kind,surface:'chat',message,metadata:{sessionId:active?.id||null,prompt:prompt.slice(0,1200),messageId:messageId||null}})
+      });
+      if(!response.ok)throw new Error('feedback-failed');
+      if(messageId)setFeedbackByMessage(current=>({...current,[messageId]:kind}));
+    }catch{
+      if(messageId){
+        setFeedbackByMessage(current=>({...current,[messageId]:'error'}));
+        window.setTimeout(()=>setFeedbackByMessage(current=>{
+          if(current[messageId]!=='error')return current;
+          const next={...current};
+          delete next[messageId];
+          return next;
+        }),2200);
+      }
+    }
   }
 
   const hasMessages=!!active?.messages.length;
@@ -1726,7 +1777,34 @@ export function ChatShell({onOpenLegal}:Props){
         </div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>speakBrowserText(m.content,{lang:'pt-BR'})} title="Ouvir resposta"><Volume2 size={11}/></button><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{lastFailedPrompt&&!busy?<div className="grok-retry-bar"><button onClick={()=>void send(lastFailedPrompt)}><RefreshCw size={12}/>Tentar novamente</button><button onClick={()=>sendFeedback('negative','Falha técnica no turno anterior')}><Bug size={12}/>Reportar erro</button></div>:null}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Status</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback" aria-label="Ações da resposta">
+  <button
+    className={'grok-feedback-button audio '+(voiceUi.messageId===m.id?voiceUi.state:'idle')}
+    data-state={voiceUi.messageId===m.id?voiceUi.state:'idle'}
+    aria-pressed={voiceUi.messageId===m.id&&(voiceUi.state==='starting'||voiceUi.state==='speaking')}
+    aria-label={voiceUi.messageId===m.id&&(voiceUi.state==='starting'||voiceUi.state==='speaking')?'Parar áudio':'Ouvir resposta'}
+    onClick={()=>void toggleVoice(m.id,m.content)}
+    title={voiceUi.messageId===m.id&&voiceUi.label?voiceUi.label:'Ouvir resposta'}
+  >{voiceUi.messageId===m.id&&(voiceUi.state==='starting'||voiceUi.state==='speaking')?<VolumeX size={12}/>:<Volume2 size={12}/>}</button>
+  <button
+    className={'grok-feedback-button positive '+(feedbackByMessage[m.id]==='positive'?'active':feedbackByMessage[m.id]==='sending'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    data-state={feedbackByMessage[m.id]||'idle'}
+    aria-pressed={feedbackByMessage[m.id]==='positive'}
+    onClick={()=>void sendFeedback('positive',m.content,m.id)}
+    title={feedbackByMessage[m.id]==='positive'?'Marcado como útil':feedbackByMessage[m.id]==='sending'?'Enviando…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta útil'}
+  ><ThumbsUp size={12}/></button>
+  <button
+    className={'grok-feedback-button negative '+(feedbackByMessage[m.id]==='negative'?'active':feedbackByMessage[m.id]==='sending'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    data-state={feedbackByMessage[m.id]||'idle'}
+    aria-pressed={feedbackByMessage[m.id]==='negative'}
+    onClick={()=>void sendFeedback('negative',m.content,m.id)}
+    title={feedbackByMessage[m.id]==='negative'?'Marcado como não útil':feedbackByMessage[m.id]==='sending'?'Enviando…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta incompleta ou errada'}
+  ><ThumbsDown size={12}/></button>
+  {voiceUi.messageId===m.id&&voiceUi.label?<span className={'grok-feedback-label '+voiceUi.state} role="status" aria-live="polite">{voiceUi.state==='speaking'?<i/>:null}{voiceUi.label}</span>:null}
+  {feedbackByMessage[m.id]==='positive'?<span className="grok-feedback-label success">Útil ✓</span>:null}
+  {feedbackByMessage[m.id]==='negative'?<span className="grok-feedback-label negative">Não útil ✓</span>:null}
+  {feedbackByMessage[m.id]==='error'?<span className="grok-feedback-label error">Falhou</span>:null}
+</div>:null}</div></article>)}{lastFailedPrompt&&!busy?<div className="grok-retry-bar"><button onClick={()=>void send(lastFailedPrompt)}><RefreshCw size={12}/>Tentar novamente</button><button onClick={()=>sendFeedback('negative','Falha técnica no turno anterior')}><Bug size={12}/>Reportar erro</button></div>:null}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Status</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
         <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/></div>
       </section>}
 
