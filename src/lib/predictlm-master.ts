@@ -1,5 +1,6 @@
 import { isDecisionRequest } from './decision-centum';
 import { influencerStudioContext, isInfluencerStudioRequest } from './social/influencer-studio';
+import {omniCorePortableContext} from './omnicore-universal';
 
 function normalize(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
@@ -71,6 +72,7 @@ export function predictLMMasterContext(prompt:string,deep=false){
     'Continuity: preserve current project, conversation, case and user constraints. Do not silently restart.',
     'Internal reasoning may be deep and multi-pass; public output never exposes private chain-of-thought.',
     'Current master route: '+route+'.',
+    omniCorePortableContext(prompt),
     decision?'This turn is decision-sensitive: apply Centum/Forge/Aegis/Council/Parallax internally as needed.':'Use the minimum internal machinery that improves the answer.',
     scenarioSimulationContext(prompt,deep),
     route==='social'?influencerStudioContext(prompt):''
