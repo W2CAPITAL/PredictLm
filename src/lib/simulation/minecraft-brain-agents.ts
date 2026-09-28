@@ -361,6 +361,6 @@ export function stepMinecraftBrains(worldInput:VoxelWorldState,stateInput:Minecr
 export function minecraftBrainSummary(state:MinecraftBrainState){
   return (Object.keys(state.agents) as MinecraftBrainId[]).map(id=>{
     const a=state.agents[id];
-    return a.label+' · '+a.dimension+' · '+a.x+','+a.y+','+a.z+' · '+a.lastAction+' · '+a.goal;
+    return a.label+' · '+a.dimension+' · '+a.x+','+a.y+','+a.z+' · '+a.lastAction+' · LIF '+a.neuralAction+' ('+a.neuralSpikes+' spikes) · '+a.goal;
   }).join('\n');
 }
