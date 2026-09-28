@@ -376,7 +376,7 @@ export function createVoxelWorld(seed=Math.floor(Math.random()*2_000_000_000)):V
     player:{x,y,z,yaw:0,pitch:0,health:20,hunger:20,armor:0,experience:0,level:0,mode:'survival',dimension:'overworld',selected:'dirt'},
     inventory:{wood_pickaxe:1,torch:8},
     modifications:{},
-    discoveries:{},
+    discoveries:{['dimension:overworld']:true,['biome:'+biomeAt(seed,x,z)]:true},
     achievements:[],
     events:[{id:'spawn',tick:0,kind:'world',text:'Novo mundo voxel iniciado.'}],
     stats:{mined:0,placed:0,crafted:0,mobsDefeated:0,distance:0,chunksVisited:1,dungeonsCleared:0}
@@ -529,6 +529,12 @@ function withEvent(state:VoxelWorldState,kind:string,text:string){
   });
 }
 
+function markProgress(state:VoxelWorldState,...keys:string[]):VoxelWorldState{
+  const discoveries={...state.discoveries};
+  for(const item of keys)if(item)discoveries[item]=true;
+  return{...state,discoveries};
+}
+
 function addItem(inventory:Record<string,number>,item:string,count=1){
   return{...inventory,[item]:Math.max(0,(inventory[item]||0)+count)};
 }
@@ -564,6 +570,7 @@ export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
     discoveries[newChunk]=true;
     chunksVisited+=1;
   }
+  discoveries['biome:'+biomeAt(state.seed,x,z)]=true;
   let next:VoxelWorldState={
     ...state,
     player:{...state.player,x,y,z,yaw:Math.atan2(dx,dz)},
@@ -574,7 +581,7 @@ export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
   for(const structure of structureForChunk(next,floorDiv(x,VOXEL_CHUNK_SIZE),floorDiv(z,VOXEL_CHUNK_SIZE))){
     const dist=Math.hypot(structure.x-x,structure.z-z);
     if(dist<8&&!discoveries[structure.id]){
-      next={...next,discoveries:{...next.discoveries,[structure.id]:true as const}};
+      next={...next,discoveries:{...next.discoveries,[structure.id]:true as const,['structure-kind:'+structure.kind]:true as const}};
       next=withEvent(next,'structure','Descoberta: '+structure.label+'.');
     }
   }
@@ -591,7 +598,7 @@ export function mineVoxelBlock(state:VoxelWorldState,x:number,y:number,z:number)
   if(def.drop)inventory=addItem(inventory,def.drop,1);
   if(block==='leaves'&&hash2(state.seed,ix,iz,990)>.82)inventory=addItem(inventory,'apple',1);
   const modifications={...state.modifications,[key(ix,iy,iz,state.player.dimension)]:'air' as VoxelBlockId};
-  let next:VoxelWorldState={...state,inventory,modifications,stats:{...state.stats,mined:state.stats.mined+1}};
+  let next:VoxelWorldState=markProgress({...state,inventory,modifications,stats:{...state.stats,mined:state.stats.mined+1}},'milestone:mined:'+block);
   next=withEvent(next,'mine','Minerou '+def.label+' em '+ix+','+iy+','+iz+'.');
   return{state:next,ok:true,message:'Minerou '+def.label+'.',drop:def.drop};
 }
@@ -615,7 +622,7 @@ export function craftVoxelItem(state:VoxelWorldState,recipeId:string){
   if(!hasItems(state.inventory,recipe.input))return{state,ok:false,message:'Materiais insuficientes para '+recipe.label+'.'};
   let inventory=consumeItems(state.inventory,recipe.input);
   for(const [item,count] of Object.entries(recipe.output))inventory=addItem(inventory,item,count);
-  let next:VoxelWorldState={...state,inventory,stats:{...state.stats,crafted:state.stats.crafted+1}};
+  let next:VoxelWorldState=markProgress({...state,inventory,stats:{...state.stats,crafted:state.stats.crafted+1}},'milestone:crafted:'+recipe.id);
   next=withEvent(next,'craft','Criou '+recipe.label+'.');
   return{state:next,ok:true,message:'Criado: '+recipe.label+'.'};
 }
@@ -630,7 +637,7 @@ export function smeltVoxelItem(state:VoxelWorldState,item:string){
   let inventory=addItem(state.inventory,item,-1);
   inventory=coal>=recipe.fuel?addItem(inventory,'coal',-recipe.fuel):addItem(inventory,'wood',-recipe.fuel);
   inventory=addItem(inventory,recipe.output,1);
-  let next:VoxelWorldState={...state,inventory};
+  let next:VoxelWorldState=markProgress({...state,inventory},'milestone:smelted:'+recipe.output);
   next=withEvent(next,'smelt','Fundiu '+item+' → '+recipe.output+'.');
   return{state:next,ok:true,message:'Fundição concluída.'};
 }
@@ -657,9 +664,9 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     const experience=next.player.experience+5;
     const level=Math.max(next.player.level,Math.floor(experience/20));
     next={
-      ...next,
+      ...markProgress(next,'milestone:defeated:'+mob.kind),
       inventory,
-      discoveries:{...next.discoveries,[mob.id+':defeated']:true as const},
+      discoveries:{...markProgress(next,'milestone:defeated:'+mob.kind).discoveries,[mob.id+':defeated']:true as const},
       stats:{...next.stats,mobsDefeated:next.stats.mobsDefeated+1},
       player:{...next.player,experience,level}
     };
@@ -682,7 +689,7 @@ export function tradeVoxelVillager(state:VoxelWorldState,villager?:VoxelMob){
   else if(roll>.34){item='wheat_seed';count=6}
   let inventory=addItem(state.inventory,'emerald',-1);
   inventory=addItem(inventory,item,count);
-  const next=withEvent({...state,inventory},'trade','Trocou 1 esmeralda com '+target.label+' por '+count+'× '+item+'.');
+  const next=withEvent(markProgress({...state,inventory},'milestone:trade:villager'),'trade','Trocou 1 esmeralda com '+target.label+' por '+count+'× '+item+'.');
   return{state:next,ok:true,message:'Troca concluída: '+count+'× '+item+'.'};
 }
 
@@ -698,7 +705,7 @@ export function raidVoxelDungeon(state:VoxelWorldState,structure:VoxelStructure)
   if(roll>.84)inventory=addItem(inventory,'artifact',1);
   const discoveries:Record<string,true>={...state.discoveries,[clearedKey]:true as const};
   let next:VoxelWorldState={
-    ...state,inventory,discoveries,
+    ...markProgress(state,'milestone:raid:dungeon'),inventory,discoveries:{...markProgress(state,'milestone:raid:dungeon').discoveries,...discoveries},
     player:{...state.player,experience:state.player.experience+18},
     stats:{...state.stats,dungeonsCleared:state.stats.dungeonsCleared+1}
   };
@@ -712,7 +719,7 @@ export function eatVoxelFood(state:VoxelWorldState,item='food'){
   if((state.inventory[item]||0)<1)return{state,ok:false,message:'Comida indisponível.'};
   const inventory=addItem(state.inventory,item,-1);
   const hunger=clamp(state.player.hunger+value,0,20);
-  const next=withEvent({...state,inventory,player:{...state.player,hunger}},'eat','Comeu '+item+'; fome '+Math.round(hunger*10)/10+'/20.');
+  const next=withEvent(markProgress({...state,inventory,player:{...state.player,hunger}},'milestone:ate:'+item),'eat','Comeu '+item+'; fome '+Math.round(hunger*10)/10+'/20.');
   return{state:next,ok:true,message:'Fome recuperada.'};
 }
 
@@ -723,11 +730,11 @@ export function farmVoxelBlock(state:VoxelWorldState,x:number,z:number,plant=fal
     if((state.inventory.wheat_seed||0)<1&&state.player.mode!=='creative')return{state,ok:false,message:'Sem sementes.'};
     const inventory=state.player.mode==='creative'?state.inventory:addItem(state.inventory,'wheat_seed',-1);
     const modifications={...state.modifications,[key(surface.x,surface.y+1,surface.z,state.player.dimension)]:'wheat' as VoxelBlockId};
-    return{state:withEvent({...state,inventory,modifications},'farm','Plantou trigo.'),ok:true,message:'Trigo plantado.'};
+    return{state:withEvent(markProgress({...state,inventory,modifications},'milestone:farm:planted'),'farm','Plantou trigo.'),ok:true,message:'Trigo plantado.'};
   }
   if(surface.block!=='grass'&&surface.block!=='dirt')return{state,ok:false,message:'Só grama/terra pode ser arada.'};
   const modifications={...state.modifications,[key(surface.x,surface.y,surface.z,state.player.dimension)]:'farmland' as VoxelBlockId};
-  return{state:withEvent({...state,modifications},'farm','Preparou terra arada.'),ok:true,message:'Terra arada.'};
+  return{state:withEvent(markProgress({...state,modifications},'milestone:farm:tilled'),'farm','Preparou terra arada.'),ok:true,message:'Terra arada.'};
 }
 
 export function setVoxelMode(state:VoxelWorldState,mode:'survival'|'creative'){
@@ -736,7 +743,7 @@ export function setVoxelMode(state:VoxelWorldState,mode:'survival'|'creative'){
 
 export function travelVoxelDimension(state:VoxelWorldState,dimension:VoxelDimension){
   const y=terrainHeight(state.seed,0,0,dimension)+2;
-  return withEvent({...state,player:{...state.player,dimension,x:0,y,z:0}},'dimension','Entrou na dimensão '+dimension+'.');
+  return withEvent(markProgress({...state,player:{...state.player,dimension,x:0,y,z:0}},'dimension:'+dimension),'dimension','Entrou na dimensão '+dimension+'.');
 }
 
 export function tickVoxelWorld(state:VoxelWorldState,steps=1){
