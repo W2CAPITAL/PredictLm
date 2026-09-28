@@ -46,12 +46,12 @@ export function compactImagePromptForTransport(fullPrompt:string,originalPrompt:
 }
 
 export function imageProviderOrder(input:string){
-  const allowed=new Set(['gemini','vercel-gateway','comfyui','nano','configured']);
+  const allowed=new Set(['qwen','gemini','vercel-gateway','comfyui','nano','configured']);
   const parsed=String(input||'')
     .split(',')
     .map(x=>x.trim().toLowerCase())
     .filter(x=>allowed.has(x));
-  return parsed.length?[...new Set(parsed)]:['gemini','vercel-gateway','comfyui','nano','configured'];
+  return parsed.length?[...new Set(parsed)]:['qwen','gemini','vercel-gateway','comfyui','nano','configured'];
 }
 
 export function imageRouteBudget(startedAt:number,totalMs=52_000){

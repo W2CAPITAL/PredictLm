@@ -18,7 +18,8 @@
     "eval:production": "node --import tsx --test tests/production-regressions.test.ts",
     "selfimprove:plan": "node scripts/selfimprove/plan.mjs",
     "selfimprove:snapshot": "node scripts/selfimprove/snapshot.mjs",
-    "eval:build-export": "node --import tsx scripts/evals/build-export-smoke.ts"
+    "eval:build-export": "node --import tsx scripts/evals/build-export-smoke.ts",
+    "grok:preflight": "node scripts/grok/preflight.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.2.1",

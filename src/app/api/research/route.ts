@@ -3,6 +3,7 @@ import { inferResearchDepth, planResearchQueries, researchSourceBudget, type Res
 import { buildEvidenceGraph } from '@/lib/research/evidence-graph';
 import { fusionSourcesFor } from '@/lib/fusion/capability-fabric';
 import { chatTrustIssue, providerEndpointAllowed, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
+import { inferXaiSearchMode, xaiSearch, xaiSearchConfigured, type XaiSearchMode } from '@/lib/server/xai-search';
 
 export const runtime='nodejs';
 
@@ -389,6 +390,39 @@ function researchMeta(query:string,web:any[],news:any[]){
   };
 }
 
+async function optionalXaiResearch(query:string,limit:number,mode:XaiSearchMode,maxTurns:number,filters?:{allowDomains?:string[];excludeDomains?:string[];allowHandles?:string[];excludeHandles?:string[];from?:string;to?:string}){
+  if(!xaiSearchConfigured())return {web:[] as any[],warnings:[] as string[],used:false,mode:null as string|null,citations:0};
+  try{
+    const result=await xaiSearch({
+      query,
+      mode,
+      maxTurns,
+      linksOnly:false,
+      allowDomains:filters?.allowDomains,
+      excludeDomains:filters?.excludeDomains,
+      allowHandles:filters?.allowHandles,
+      excludeHandles:filters?.excludeHandles,
+      from:filters?.from,
+      to:filters?.to
+    });
+    return {
+      web:result.web.slice(0,Math.max(3,Math.min(limit,12))),
+      warnings:[] as string[],
+      used:true,
+      mode:result.mode,
+      citations:result.citations.length
+    };
+  }catch{
+    return {
+      web:[] as any[],
+      warnings:['xAI Search indisponível nesta tentativa; as demais fontes foram mantidas.'],
+      used:false,
+      mode,
+      citations:0
+    };
+  }
+}
+
 async function freeSearch(query:string,limit:number){
   const web:any[]=[];
   const warnings:string[]=[];
@@ -470,6 +504,19 @@ export async function POST(req:Request){
       ...researchQueryPlan(query),
       ...planResearchQueries(query,depth)
     ])).slice(0,depth==='comprehensive'?6:depth==='balanced'?4:2);
+    const requestedXaiMode=String(body?.xaiMode||'').toLowerCase();
+    const xaiMode:XaiSearchMode=requestedXaiMode==='web'||requestedXaiMode==='x'||requestedXaiMode==='auto'
+      ? requestedXaiMode
+      : inferXaiSearchMode(query);
+    const xaiTurns=depth==='comprehensive'?5:depth==='balanced'?3:2;
+    const xaiFilters={
+      allowDomains:Array.isArray(body?.allowDomains)?body.allowDomains:undefined,
+      excludeDomains:Array.isArray(body?.excludeDomains)?body.excludeDomains:undefined,
+      allowHandles:Array.isArray(body?.allowHandles)?body.allowHandles:undefined,
+      excludeHandles:Array.isArray(body?.excludeHandles)?body.excludeHandles:undefined,
+      from:typeof body?.from==='string'?body.from:undefined,
+      to:typeof body?.to==='string'?body.to:undefined
+    };
 
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
@@ -485,32 +532,43 @@ export async function POST(req:Request){
           news:searches.flatMap(x=>x.news||[]),
           images:searches.flatMap(x=>x.images||[])
         };
-        let apify:any[]=[];
-        try{apify=await apifyItems(limit)}catch{}
-        let academic:any[]=[];
-        try{academic=await academicSearch(query,Math.min(depth==='comprehensive'?8:6,limit))}catch{}
-        const web=enrichAndRank(query,[...merged.web,...apify,...academic],limit);
+        const [apifySettled,academicSettled,xaiResult]=await Promise.all([
+          apifyItems(limit).catch(()=>[] as any[]),
+          academicSearch(query,Math.min(depth==='comprehensive'?8:6,limit)).catch(()=>[] as any[]),
+          optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
+        ]);
+        const web=enrichAndRank(query,[...merged.web,...apifySettled,...academicSettled,...xaiResult.web],limit);
         const news=enrichAndRank(query,merged.news,limit);
         return Response.json({
           query,
-          provider:'firecrawl',
+          provider:xaiResult.used?'firecrawl+xai':'firecrawl',
           researchDepth:depth,
           researchPlan:plan,
           web,
           news,
           images:merged.images.slice(0,Math.max(4,Math.min(12,limit))),
+          warnings:xaiResult.warnings,
+          xaiSearch:{configured:xaiSearchConfigured(),used:xaiResult.used,mode:xaiResult.mode,citations:xaiResult.citations},
           coverage:coverage([...web,...news]),
           ...researchMeta(query,web,news)
         });
       }catch(error:any){
-        const fallback=await freeSearch(query,limit);
+        const [fallback,xaiResult]=await Promise.all([
+          freeSearch(query,limit),
+          optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
+        ]);
+        const web=enrichAndRank(query,[...(fallback.web||[]),...xaiResult.web],limit);
         return Response.json({
           query,
           ...fallback,
+          provider:xaiResult.used?'free-search+xai':fallback.provider,
+          web,
           researchDepth:depth,
           researchPlan:plan,
-          warnings:['A busca principal falhou e a rota alternativa foi usada.',...(fallback.warnings||[])],
-          ...researchMeta(query,fallback.web||[],fallback.news||[])
+          warnings:['A busca principal falhou e a rota alternativa foi usada.',...(fallback.warnings||[]),...xaiResult.warnings],
+          xaiSearch:{configured:xaiSearchConfigured(),used:xaiResult.used,mode:xaiResult.mode,citations:xaiResult.citations},
+          coverage:coverage([...web,...(fallback.news||[])]),
+          ...researchMeta(query,web,fallback.news||[])
         });
       }
     }
@@ -518,17 +576,32 @@ export async function POST(req:Request){
     // Free path: comprehensive research fans out only a few bounded queries,
     // merges successful partial results, then re-ranks against the original intent.
     const freePlans=plan.slice(0,depth==='comprehensive'?3:depth==='balanced'?2:1);
-    const settled=await Promise.allSettled(freePlans.map(q=>freeSearch(q,Math.max(6,Math.ceil(limit/freePlans.length)+2))));
+    const [settled,xaiResult]=await Promise.all([
+      Promise.allSettled(freePlans.map(q=>freeSearch(q,Math.max(6,Math.ceil(limit/freePlans.length)+2)))),
+      optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
+    ]);
     const successful=settled.filter((x):x is PromiseFulfilledResult<any>=>x.status==='fulfilled').map(x=>x.value);
     if(!successful.length){
       const fallback=await freeSearch(query,limit);
-      return Response.json({query,...fallback,researchDepth:depth,researchPlan:plan,...researchMeta(query,fallback.web||[],fallback.news||[])});
+      const web=enrichAndRank(query,[...(fallback.web||[]),...xaiResult.web],limit);
+      return Response.json({
+        query,
+        ...fallback,
+        provider:xaiResult.used?'free-search+xai':fallback.provider,
+        web,
+        researchDepth:depth,
+        researchPlan:plan,
+        warnings:[...(fallback.warnings||[]),...xaiResult.warnings],
+        xaiSearch:{configured:xaiSearchConfigured(),used:xaiResult.used,mode:xaiResult.mode,citations:xaiResult.citations},
+        coverage:coverage([...web,...(fallback.news||[])]),
+        ...researchMeta(query,web,fallback.news||[])
+      });
     }
 
-    let web=enrichAndRank(query,successful.flatMap(x=>x.web||[]),limit);
+    let web=enrichAndRank(query,[...successful.flatMap(x=>x.web||[]),...xaiResult.web],limit);
     const news=enrichAndRank(query,successful.flatMap(x=>x.news||[]),limit);
     const images=successful.flatMap(x=>x.images||[]).slice(0,Math.max(4,Math.min(12,limit)));
-    const warnings=successful.flatMap(x=>x.warnings||[]);
+    const warnings=[...successful.flatMap(x=>x.warnings||[]),...xaiResult.warnings];
 
     try{
       const apify=await apifyItems(limit);
@@ -537,13 +610,14 @@ export async function POST(req:Request){
 
     return Response.json({
       query,
-      provider:successful[0]?.provider||'free-search',
+      provider:xaiResult.used?(successful[0]?.provider||'free-search')+'+xai':successful[0]?.provider||'free-search',
       researchDepth:depth,
       researchPlan:plan,
       web,
       news,
       images,
       warnings:Array.from(new Set(warnings)),
+      xaiSearch:{configured:xaiSearchConfigured(),used:xaiResult.used,mode:xaiResult.mode,citations:xaiResult.citations},
       coverage:coverage([...web,...news]),
       ...researchMeta(query,web,news)
     });

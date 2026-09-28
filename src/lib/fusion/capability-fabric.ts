@@ -84,7 +84,9 @@ export const REQUESTED_FUSION_REPOS=[
   'blader/humanizer',
   'gargpratyush/jev-router',
   'tamaratran/fast-jev-compaction',
-  'dbreunig/building-with-jev-skill'
+  'dbreunig/building-with-jev-skill',
+  'Wangnov/grok-skills',
+  'NVIDIA/skills'
 ] as const;
 
 export const FUSION_SOURCES:FusionSource[]=[
@@ -158,6 +160,8 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'gargpratyush/jev-router',license:'unverified',mode:'reference',areas:['chat','social'],ideas:['task-aware route selection','keep simple creator tasks cheap and complex campaigns deep']},
   {repo:'tamaratran/fast-jev-compaction',license:'unverified',mode:'reference',areas:['memory','social'],ideas:['verbatim-first compaction','preserve identity anchors and active campaign facts']},
   {repo:'dbreunig/building-with-jev-skill',license:'unverified',mode:'reference',areas:['build','social'],ideas:['JEV skill implementation patterns','bounded context engineering']},
+  {repo:'Wangnov/grok-skills',license:'MIT',mode:'adapt',areas:['research','media','video','browser'],ideas:['xAI web/X search with normalized citations','capability preflight before choosing local tools','logged-in Grok CLI as local-only media path','verify generated media artifacts before success','adaptive ffmpeg chroma-key/concat/watermark pipeline']},
+  {repo:'NVIDIA/skills',license:'mixed Apache-2.0/CC-BY-4.0',mode:'reference',areas:['build','research','media','video','simulation'],ideas:['RAG deploy/eval and NeMo Retriever patterns','AI-Q research as an explicit remote backend','cuDF/DALI acceleration only on compatible NVIDIA GPU workloads','cuOpt routing/optimization behind GPU service boundaries','DeepStream analytics on GPU hosts','Omniverse USD performance/SimReady/realtime viewer as external GPU paths','Nemotron customization and skill governance as explicit tooling']},
   {repo:'snarepigeonrouter/Cap-Cut-Pro',license:'unverified',mode:'reference',areas:['video'],ideas:['quarantined provenance; do not use cracked/bypass packages as a production dependency']},
   {repo:'Hommy-master/capcut-mate',license:'unverified',mode:'reference',areas:['video','social'],ideas:['reference-only editing workflow until provenance/license/runtime contract is verified']}
 ];
@@ -180,15 +184,18 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'prefer small composable changes with fast feedback; use spec → test/failure → implementation → verification for non-trivial edits',
     'use curated catalogs only to discover options; verify the selected library/API against its primary documentation before integration',
     'when the requested target is Unity, prefer the Unity Fabric GameObject/Component/Transform contract and keep Unity-specific code isolated from the generic web runtime',
-    'keep plugins/adapters permission-scoped and secrets server-side'
+    'keep plugins/adapters permission-scoped and secrets server-side',
+    'NVIDIA CUDA/cuDF/DALI/cuOpt/DeepStream/Omniverse/Nemotron execution belongs on compatible GPU hosts or remote services, never inside the Vercel web bundle'
   ],
   research:[
     'plan parallel queries/hypotheses for complex research',
     'tie every conclusion to source evidence and record contradictions/gaps',
     'make runs reproducible with query plan, source set and timestamp',
     'use Firecrawl only when configured; otherwise preserve the free-search path and never pretend scraping occurred',
+    'when XAI_API_KEY is configured, xAI web/X search may supplement evidence but must pass the same relevance/source-quality gates and never replace citations with provider prose',
     'use curated indexes such as Awesome/Public APIs as discovery leads, then verify against primary sources',
-    'support bounded change monitoring instead of repeated full re-research'
+    'support bounded change monitoring instead of repeated full re-research',
+    'if an AI-Q or NeMo Retriever backend is explicitly configured, treat it as an additional evidence service; do not pretend a local NVIDIA service exists on hosted Vercel'
   ],
   documents:[
     'parse layout, tables, formulas and text into structured blocks before summarizing',
@@ -200,6 +207,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'use staged generation → review → repair → upscale/postprocess',
     'treat ComfyUI workflow JSON as an optional local/remote production graph for image/edit/upscale when configured',
     'keep optional external stylizers/upscalers behind adapters; never pretend they ran',
+    'treat logged-in Grok CLI media as a local/desktop capability only; hosted Vercel must use actually configured media providers',
     'use Unity-style camera/transform scene contracts when a media preview or simulation surface benefits from a shared 3D coordinate model'
   ],
   video:[
@@ -208,7 +216,9 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'track identity and scene state across frames',
     'use Unity-style Transform/Camera scene snapshots when useful for deterministic shot blocking or simulation-to-video continuity',
     'distinguish true generative video from local keyframe motion fallback',
-    'use recoverable job stages and quality gates'
+    'use recoverable job stages and quality gates',
+    'DeepStream is a GPU video-analytics backend, not a substitute for generative video synthesis',
+    'probe ffmpeg filters/encoders before chroma key, alpha WebM, concat or watermark; choose postprocess commands to match the real build'
   ],
   simulation:[
     'agents act from local perception plus persistent memory, not omniscient state',
@@ -219,7 +229,8 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'use adaptive minimal/standard/full rigor for simulation changes and validate a complete perception → decision → action → consequence → memory loop before expanding complex scenarios',
     'use deterministic state transitions for core world rules',
     'allow emergent policies/evolution only as a simulation layer, never as factual prediction',
-    'run baseline, adverse, third-path and second-order counterfactuals'
+    'run baseline, adverse, third-path and second-order counterfactuals',
+    'Omniverse/USD/Physical AI routes are optional external GPU backends; browser simulation remains functional without them'
   ],
   voice:[
     'prefer local/browser audio where practical',

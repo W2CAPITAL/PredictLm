@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "policy": {
     "maxFileBytes": 140000,
     "maxFilesPerRepo": 120,
@@ -108,6 +108,84 @@
       ],
       "weight": 1.24,
       "reason": "MIT-licensed Arcads agent skill pack. Learn reference-first identity workflows, model-specific prompt contracts, character-sheet continuity, still-to-video start-frame handoff, visual QA and bounded repair patterns. Do not ingest bundled reference photos/assets; Arcads endpoints, model availability, credits and pricing are volatile external-service details and must be verified before runtime use."
+    },
+    {
+      "repo": "Wangnov/grok-skills",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "skills/grok/SKILL.md",
+        "skills/grok/references/media-generation.md",
+        "skills/grok/references/search-and-research.md",
+        "skills/grok/references/post-processing.md",
+        "skills/grok/references/xai-search-capabilities.md",
+        "skills/grok/examples/video-reel-playbook.md",
+        "skills/grok/scripts/grok-search.mjs",
+        "skills/grok/scripts/preflight.mjs"
+      ],
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "weight": 1.26,
+      "reason": "MIT-licensed Grok skill pack. Ingest capability-preflight, JSON-first xAI web/X search with citations, verified media-artifact workflow, and adaptive ffmpeg post-processing patterns. Logged-in grok CLI media is local/desktop-only; hosted PredictLM never pretends it can access the user's local Grok session."
+    },
+    {
+      "repo": "NVIDIA/skills",
+      "branch": "main",
+      "license": "mixed-Apache-2.0-CC-BY-4.0",
+      "mode": "reference-only",
+      "include": [
+        "skills/rag-blueprint/SKILL.md",
+        "skills/aiq-research/SKILL.md",
+        "skills/accelerated-computing-cudf/SKILL.md",
+        "skills/cuopt-developer/SKILL.md",
+        "skills/cuopt-install/SKILL.md",
+        "skills/aiq-deploy/SKILL.md",
+        "skills/cudaq-guide/SKILL.md",
+        "skills/cuopt-routing-api-python/SKILL.md",
+        "skills/deepstream-dev/SKILL.md",
+        "skills/data-designer/SKILL.md",
+        "skills/rag-eval/SKILL.md",
+        "skills/skill-card-generator/SKILL.md",
+        "skills/cuopt-server-api-python/SKILL.md",
+        "skills/omniverse-usd-performance-tuning/SKILL.md",
+        "skills/omniverse-cad-to-simready/SKILL.md",
+        "skills/nemotron-customize/SKILL.md",
+        "skills/physical-ai-infrastructure-setup-and-resilient-scaling/SKILL.md",
+        "skills/physical-ai-neural-reconstruction/SKILL.md",
+        "skills/omniverse-realtime-viewer/SKILL.md",
+        "skills/cuopt-numerical-optimization-formulation/SKILL.md",
+        "skills/dali-dynamic-mode/SKILL.md",
+        "skills/nemo-retriever/SKILL.md"
+      ],
+      "domains": [
+        "nvidia",
+        "rag",
+        "research",
+        "gpu",
+        "cudf",
+        "dali",
+        "cuopt",
+        "cudaq",
+        "deepstream",
+        "omniverse",
+        "physical-ai",
+        "nemotron",
+        "retriever",
+        "skill-governance"
+      ],
+      "reason": "Official NVIDIA-verified Agent Skills. Kept reference-only because individual skills carry Apache-2.0 or Apache-2.0/CC-BY-4.0 terms and many require external GPU runtimes. PredictLM distills the routing and capability boundaries into its own nvidia-accelerated skill instead of copying a GPU stack into Vercel."
     },
     {
       "repo": "realasfngl/Grok-Api",

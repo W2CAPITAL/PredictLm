@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.43.0"
+  version: "1.44.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -1026,3 +1026,23 @@ Regras de geração robusta:
 - uma ENV marcada como inválida/expirada deve falhar rápido e deixar o circuito seguir para outra rota.
 
 Critério de sucesso: uma falha 504/502 de um provider não encerra a criação enquanto existir uma rota de imagem compatível e saudável.
+
+
+## Grok/xAI + NVIDIA accelerated fabric
+
+Capabilities adicionadas:
+- `skills/grok/SKILL.md` + `src/lib/server/xai-search.ts`: web/X search com citações, filtros e fallback;
+- `skills/nvidia-accelerated/SKILL.md` + `src/lib/nvidia-capability-router.ts`: RAG/AI-Q/NeMo, cuDF/DALI, cuOpt/CUDA-Q, DeepStream, Nemotron, Omniverse e Physical AI.
+
+Fronteira obrigatória:
+- Vercel é orquestrador/cliente HTTP; não fingir CUDA, DeepStream, Omniverse ou GPU local;
+- workloads GPU rodam em host compatível ou serviço remoto explicitamente configurado;
+- formulação/roteamento leve pode rodar no app;
+- uma skill externa melhora o procedimento, não injeta magicamente os binários/modelos no runtime.
+
+Qwen Image:
+- `QWEN_IMAGE_API_KEY` ou `DASHSCOPE_API_KEY`;
+- `QWEN_IMAGE_BASE_URL`;
+- `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
+- `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
+- referência visual e negative prompt passam ao provider quando disponíveis.

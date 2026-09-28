@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.5.0"
+  version: "2.6.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -595,3 +595,20 @@ Regras de geração robusta:
 - uma ENV marcada como inválida/expirada deve falhar rápido e deixar o circuito seguir para outra rota.
 
 Critério de sucesso: uma falha 504/502 de um provider não encerra a criação enquanto existir uma rota de imagem compatível e saudável.
+
+
+## Qwen Image 3.0 provider
+
+PredictLM pode usar **Qwen Image 3.0** como provider real de imagem através do protocolo OpenAI-compatible da Alibaba Model Studio.
+
+Regras:
+- provider id: `qwen-image`;
+- modelos padrão: `qwen-image-3.0-pro` ou `qwen-image-3.0`;
+- T2I e I2I usam `/images/generations`;
+- até 3 referências visuais são passadas pelo campo `image`;
+- `negative_prompt`, seed e tamanho são preservados;
+- em `Literal`, `prompt_extend` fica desligado por padrão para reduzir drift de identidade;
+- `QWEN_IMAGE_ENABLE_THINKING=false` é o default serverless para reduzir timeout; pode ser habilitado explicitamente;
+- timeout do Qwen é limitado pelo orçamento geral da função, sem bloquear o failover;
+- se Qwen falhar/expirar, o Provider Mesh continua para Gemini/Gateway/ComfyUI/Nano/configured/fallback;
+- a URL de resultado do provider é temporária; storage persistente é uma etapa separada.

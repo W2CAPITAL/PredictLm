@@ -565,3 +565,62 @@ The Imagine pipeline treats image generation as a bounded multi-provider workflo
 - Raw upstream error bodies are not exposed in public diagnostics.
 
 Image-capable settings include Gemini/Nano Banana, Vercel AI Gateway/OIDC, ComfyUI, a configured OpenAI-compatible image endpoint, and the public image renderer. Text-only LLM variables remain useful for Chat/media-director reasoning but are not assumed to produce image pixels.
+
+
+## Qwen Image 3.0 no Vercel
+
+O Imagine suporta `qwen-image-3.0-pro` e `qwen-image-3.0` através do endpoint OpenAI-compatible da Alibaba Cloud Model Studio. O adapter está em `src/lib/media/qwen-image.ts` e entra no cascade de `/api/media/generate`.
+
+No Vercel, configure em **Project → Settings → Environment Variables** para Production e Preview:
+
+```env
+QWEN_IMAGE_API_KEY=<sua chave Model Studio>
+QWEN_IMAGE_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+QWEN_IMAGE_MODEL=qwen-image-3.0-pro
+QWEN_IMAGE_ENABLE_THINKING=false
+QWEN_IMAGE_TIMEOUT_MS=28000
+PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,gemini,vercel-gateway,comfyui,nano,configured
+```
+
+`DASHSCOPE_API_KEY` também é aceito como alias de `QWEN_IMAGE_API_KEY`.
+
+A chave e o endpoint precisam pertencer à mesma região. Para uma workspace moderna, prefira o domínio dedicado mostrado pelo Model Studio, por exemplo `https://<WorkspaceId>.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1` em Singapore. O domínio antigo `dashscope-intl.aliyuncs.com` continua compatível, mas o domínio de workspace é o recomendado.
+
+Não defina `NEXT_PUBLIC_QWEN_IMAGE_API_KEY`: a chave deve ficar somente no servidor.
+
+O provider:
+- usa `POST /images/generations` tanto para T2I quanto I2I;
+- aceita 1–3 referências no campo `image`;
+- envia `negative_prompt`, `seed`, `size`, `prompt_extend` e `enable_thinking`;
+- desliga prompt rewriting por padrão no modo Literal para reduzir identity drift;
+- respeita o orçamento de timeout do Vercel e cai para os demais providers se falhar;
+- trata a URL retornada pelo Qwen como temporária; a Media Library deve persistir o arquivo se retenção longa for necessária.
+
+Depois de salvar as ENV, faça um novo deployment. Nenhuma dependência Python/CUDA é necessária para Qwen Image: o Vercel chama a API por HTTPS.
+
+## NVIDIA Agent Skills
+
+As skills solicitadas de `NVIDIA/skills` foram integradas ao roteador `src/lib/nvidia-capability-router.ts` e ao contrato `skills/nvidia-accelerated/SKILL.md`.
+
+O PredictLM não instala CUDA, cuDF, DALI, cuOpt, DeepStream ou Omniverse dentro do Vercel. Essas capacidades são roteadas corretamente:
+
+- **Vercel-safe**: formulação, planejamento e lógica leve;
+- **remote-service**: Vercel chama AI-Q, NeMo Retriever, cuOpt server ou outro serviço autorizado;
+- **GPU host**: cuDF/DALI/cuOpt/DeepStream/Omniverse/Nemotron/Physical AI rodam em workstation/cloud GPU compatível;
+- **local tooling**: Data Designer e Skill Card Generator permanecem ferramentas de desenvolvimento/CI.
+
+Para instalar as cópias oficiais em um agente local, use CLI atual:
+
+```bash
+npx skills@latest add nvidia/skills --list
+npx skills@latest add nvidia/skills --skill rag-blueprint --yes
+npx skills@latest add nvidia/skills --skill aiq-research --yes
+npx skills@latest add nvidia/skills --skill accelerated-computing-cudf --yes
+npx skills@latest add nvidia/skills --skill cuopt-routing-api-python --yes
+npx skills@latest add nvidia/skills --skill deepstream-dev --yes
+npx skills@latest add nvidia/skills --skill omniverse-usd-performance-tuning --yes
+npx skills@latest add nvidia/skills --skill nemo-retriever --yes
+npx skills update
+```
+
+O app não depende dessa instalação local para compilar ou funcionar no Vercel.
