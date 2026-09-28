@@ -697,26 +697,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     };
 
     const raw=await callProvider(provider,messages,false,timeoutMs);
-    try{
-      return {provider,content:validate(raw)};
-    }catch(firstError:any){
-      const repaired=await callProvider(provider,[
-        {role:'system',content:[
-          system,
-          'Your previous draft was rejected because it did not answer the user cleanly.',
-          'Rewrite from scratch. Answer only the current user request using recent conversation context.',
-          'Do not output README text, repository snippets, source dumps, agent/skill names, Related/Relacionado sections, or internal notes.',
-          'Return only the final natural-language answer.'
-        ].join('\n\n')},
-        ...recent,
-        {role:'user',content:compactText(prompt,1200)}
-      ],false,Math.min(timeoutMs,4000));
-      try{
-        return {provider,content:validate(repaired)};
-      }catch(secondError:any){
-        throw new Error(String(secondError?.message||firstError?.message||'rejected'));
-      }
-    }
+    return {provider,content:validate(raw)};
   };
 
   const errors:string[]=[];
@@ -759,6 +740,38 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
   if(!candidates.length)return Response.json({
     content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
   },{headers:{'Cache-Control':'no-store'}});
+
+  if(PROVIDER_ATTEMPT_LIMIT===1){
+    const provider=candidates[0];
+    try{
+      const content=await callProvider(provider,[
+        {
+          role:'system',
+          content:[
+            'Você é o Media Director interno do PredictLM.',
+            skillContext,
+            'Faça identidade/referência e composição/ação na mesma resposta para economizar chamadas remotas.',
+            'Trave cada sujeito, forma, contagem, roupa, cor, anatomia e atributo visual explicitamente pedido.',
+            'Otimize câmera, enquadramento, separação espacial, legibilidade da ação, escala, luz, profundidade e cenário sem trocar os sujeitos.',
+            'Retorne somente um brief operacional compacto. Não exponha raciocínio privado.',
+            'Preserve literalmente o pedido. Não invente cyberpunk, robôs, armaduras, hologramas ou elementos não pedidos.'
+          ].join('\n')
+        },
+        {role:'user',content:compactText(prompt,2600)}
+      ],true,Math.min(9000,PROVIDER_TIMEOUT_MS));
+      return Response.json({
+        content:compactText(content,2600),
+        provider:provider.name,
+        model:provider.model,
+        mode:'media-director',
+        agentic:{roles:['identity-reference','composition-action'],reviewed:false,apiSaver:true}
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch{
+      return Response.json({
+        content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
+      },{status:502,headers:{'Cache-Control':'no-store'}});
+    }
+  }
 
   const roles=[
     {
