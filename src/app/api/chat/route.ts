@@ -24,6 +24,7 @@ import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {agenticReviewEnabled,cleanRepairEnabled,providerAttemptLimit} from '@/lib/server/api-spend-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -36,7 +37,6 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
-const PROVIDER_ATTEMPT_LIMIT=3;
 const PROVIDER_TIMEOUT_MS=12000;
 const REQUEST_BUDGET_MS=32000;
 
@@ -290,7 +290,7 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
     localAdvisory?'SEGUNDA OPINIÃO LOCAL:\n'+localAdvisory:''
   ].filter(Boolean).join('\n\n');
   const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1200)}];
-  const candidates=taskAwareProviders(configured,'planejar ações de simulação '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const candidates=taskAwareProviders(configured,'planejar ações de simulação '+prompt,false).slice(0,providerAttemptLimit('chat'));
   const errors:string[]=[];
   const startedAt=Date.now();
   for(const provider of candidates){
@@ -374,7 +374,7 @@ async function voxelPlanResponse(configured:Provider[],body:any,prompt:string){
   ].filter(Boolean).join('\n\n');
 
   const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1400)}];
-  const candidates=taskAwareProviders(configured,'planejar ações Minecraft voxel '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const candidates=taskAwareProviders(configured,'planejar ações Minecraft voxel '+prompt,false).slice(0,providerAttemptLimit('chat'));
   const errors:string[]=[];
   const startedAt=Date.now();
   for(const provider of candidates){
@@ -672,7 +672,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,providerAttemptLimit('clean-chat'));
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -699,6 +699,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     try{
       return {provider,content:validate(raw)};
     }catch(firstError:any){
+      if(!cleanRepairEnabled())throw firstError;
       const repaired=await callProvider(provider,[
         {role:'system',content:[
           system,
@@ -754,7 +755,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
   const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
-  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
+  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,providerAttemptLimit('media-director'));
   if(!candidates.length)return Response.json({
     content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
   },{headers:{'Cache-Control':'no-store'}});
@@ -779,7 +780,8 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
     }
   ] as const;
 
-  const runs=await Promise.allSettled(roles.map((role,index)=>{
+  const activeRoles=roles.slice(0,providerAttemptLimit('media-director'));
+  const runs=await Promise.allSettled(activeRoles.map((role,index)=>{
     const provider=candidates[index%candidates.length];
     const messages:Msg[]=[
       {
@@ -1041,7 +1043,7 @@ export async function POST(req:Request){
 
     const errors:string[]=[];
     const startedAt=Date.now();
-    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
+    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,providerAttemptLimit('chat'));
     const reviewSurface=researchContext?'research':'chat';
     const agenticPlan=planAgenticRun(prompt,reviewSurface,deep);
 
@@ -1059,7 +1061,7 @@ export async function POST(req:Request){
 
         let reviewMeta:any={performed:false};
         const reviewBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
-        const shouldReview=agenticPlan.staged&&!simpleTurn&&reviewBudget>=6500;
+        const shouldReview=agenticPlan.staged&&!simpleTurn&&agenticReviewEnabled(deep)&&reviewBudget>=6500;
         if(shouldReview){
           const reviewer=candidates.length>1
             ? candidates[(candidateIndex+1)%candidates.length]
