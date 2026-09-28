@@ -76,6 +76,8 @@ test('first person renderer caches GPU resources/geometry and exposes image/vide
   assert.match(ui,/geometryCacheRef/);
   assert.match(ui,/if\(uploadGeometry\)gl\.bufferData/);
   assert.match(ui,/requestAnimationFrame/);
+  assert.match(ui,/style\.imageRendering/);
+  assert.match(ui,/pixelated/);
   assert.match(ui,/exportEnhancedCanvasPng/);
   assert.match(ui,/mediaRecorderForCanvas/);
   assert.match(ui,/PNG HD/);
