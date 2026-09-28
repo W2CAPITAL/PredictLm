@@ -1470,3 +1470,245 @@ body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overf
 .grok-retry-bar button{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:var(--text,#e8e8e8);border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}
 .grok-retry-bar button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
 @media(max-width:760px){.grok-retry-bar{padding:6px 14px 10px;flex-wrap:wrap}}
+
+
+/* PredictLM mobile shell v1.1 — one fixed navigation layer + visible work state */
+.grok-mobile-topbar,.grok-mobile-busy{display:none}
+
+@keyframes predictlmMobileSpin{
+  to{transform:rotate(360deg)}
+}
+@keyframes predictlmMobileBusyPulse{
+  0%,100%{opacity:.48;transform:scale(.82)}
+  50%{opacity:1;transform:scale(1)}
+}
+
+@media(max-width:760px){
+  html,body,#root,#__next{
+    height:var(--predictlm-viewport-height,100dvh);
+    min-height:0;
+  }
+
+  .grok-shell,.grok-main{
+    height:var(--predictlm-viewport-height,100dvh)!important;
+    min-height:var(--predictlm-viewport-height,100dvh)!important;
+    max-height:var(--predictlm-viewport-height,100dvh)!important;
+  }
+
+  .grok-main{
+    overflow:hidden!important;
+    isolation:isolate;
+  }
+
+  /* The old floating reopen button competed with later dashboard rules.
+     Mobile now has one persistent top bar instead. */
+  .grok-reopen{display:none!important}
+
+  .grok-mobile-topbar{
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr) auto;
+    align-items:center;
+    gap:8px;
+    position:fixed;
+    left:0;
+    right:0;
+    top:var(--predictlm-viewport-top,0px);
+    min-height:calc(54px + env(safe-area-inset-top));
+    padding:env(safe-area-inset-top) 10px 0;
+    z-index:88;
+    border-bottom:1px solid rgba(81,163,170,.16);
+    background:rgba(5,23,27,.97);
+    box-shadow:0 8px 28px rgba(0,0,0,.22);
+  }
+
+  .grok-mobile-topbar button{
+    min-width:42px;
+    min-height:42px;
+    border:1px solid rgba(81,163,170,.18);
+    border-radius:12px;
+    background:#0a252b;
+    color:#d8efec;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    padding:0 10px;
+    touch-action:manipulation;
+  }
+
+  .grok-mobile-title{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    line-height:1.08;
+  }
+  .grok-mobile-title b{
+    color:#edf8f6;
+    font-size:13px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .grok-mobile-title small{
+    margin-top:4px;
+    color:#6f9498;
+    font-size:9px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .grok-mobile-back-chat span{font-size:11px;font-weight:700}
+
+  .grok-mobile-busy{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    position:fixed;
+    top:calc(var(--predictlm-viewport-top,0px) + env(safe-area-inset-top) + 62px);
+    left:12px;
+    right:12px;
+    z-index:84;
+    min-height:38px;
+    padding:8px 11px;
+    border:1px solid rgba(75,211,194,.25);
+    border-radius:12px;
+    background:rgba(7,31,36,.96);
+    box-shadow:0 9px 28px rgba(0,0,0,.25);
+    color:#bcd2d2;
+    font-size:10px;
+    overflow:hidden;
+  }
+  .grok-mobile-busy>span:last-child{
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .grok-mobile-busy-spinner{
+    flex:none;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    border:2px solid rgba(96,221,204,.20);
+    border-top-color:#5fe0ce;
+    animation:predictlmMobileSpin .72s linear infinite;
+  }
+
+  /* One scroll owner. This prevents the page and conversation from fighting
+     while the browser chrome/keyboard changes visual viewport height. */
+  .grok-conversation-wrap{
+    height:var(--predictlm-viewport-height,100dvh)!important;
+    max-height:var(--predictlm-viewport-height,100dvh)!important;
+    padding:
+      calc(66px + env(safe-area-inset-top))
+      0
+      calc(138px + env(safe-area-inset-bottom))!important;
+    scroll-behavior:auto!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    scrollbar-gutter:stable both-edges;
+  }
+  .grok-conversation{
+    min-height:100%;
+    padding:10px 10px 30px!important;
+  }
+
+  .grok-message{
+    content-visibility:auto;
+    contain-intrinsic-size:120px;
+  }
+
+  .grok-bottom-composer,
+  .grok-shell.sidebar-closed .grok-bottom-composer{
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    margin:0!important;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;
+    transform:none!important;
+    z-index:86!important;
+  }
+
+  .grok-bottom-composer .grok-composer-shell{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+
+  /* Dashboard rules later in the stylesheet previously overrode the hardened
+     mobile spacing. Keep the fixed top bar clear on every first screen. */
+  .grok-home.grok-home-dashboard,
+  .grok-home{
+    height:var(--predictlm-viewport-height,100dvh)!important;
+    max-height:var(--predictlm-viewport-height,100dvh)!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    padding:
+      calc(68px + env(safe-area-inset-top))
+      12px
+      calc(30px + env(safe-area-inset-bottom))!important;
+  }
+  .grok-home-core{padding-top:12px!important}
+
+  .grok-library,
+  .animal-vision{
+    padding-top:calc(72px + env(safe-area-inset-top))!important;
+  }
+
+  /* Mobile performance: remove continuous full-screen filters and decorative
+     paint layers. These add no interaction value and are costly on weak GPUs. */
+  .grok-main:before,
+  .grok-home-core:before{display:none!important}
+  .grok-sidebar,
+  .grok-mobile-backdrop,
+  .grok-mobile-topbar,
+  .grok-mobile-busy,
+  .grok-bottom-composer,
+  .grok-bottom-composer .grok-composer-shell,
+  .grok-plus-menu,
+  .grok-model-menu{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+
+  .grok-sidebar{
+    top:var(--predictlm-viewport-top,0px)!important;
+    height:var(--predictlm-viewport-height,100dvh)!important;
+  }
+  .grok-mobile-backdrop{
+    top:var(--predictlm-viewport-top,0px)!important;
+    height:var(--predictlm-viewport-height,100dvh)!important;
+    background:rgba(0,0,0,.68)!important;
+  }
+
+  .grok-thinking i,
+  .grok-live-dot{
+    animation:predictlmMobileBusyPulse .9s ease-in-out infinite!important;
+  }
+
+  .spin{animation:predictlmMobileSpin .85s linear infinite!important}
+
+  /* Keep the composer compact when the software keyboard is open. */
+  html[data-predictlm-keyboard="open"] .grok-bottom-composer{
+    padding-bottom:6px!important;
+  }
+  html[data-predictlm-keyboard="open"] .grok-bottom-composer .grok-composer-shell textarea{
+    max-height:22vh!important;
+  }
+  html[data-predictlm-keyboard="open"] .grok-mobile-busy{
+    right:62px;
+  }
+}
+
+@media(max-width:420px){
+  .grok-mobile-topbar{
+    grid-template-columns:42px minmax(0,1fr) auto;
+    gap:6px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+  .grok-mobile-back-chat{padding:0 9px!important}
+  .grok-mobile-title b{font-size:12px}
+  .grok-mobile-title small{font-size:8px}
+}
