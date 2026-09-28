@@ -32,10 +32,10 @@ function statusFrom(error:unknown){
 
 function cooldownMs(status:number|null,failures:number,error:unknown){
   const text=String((error as any)?.message||error||'').toLowerCase();
-  if(status===401||status===403)return 5*60_000;
-  if(status===429)return Math.min(5*60_000,30_000*Math.max(1,failures));
+  if(status===401||status===403)return 60*60_000;
+  if(status===429)return Math.min(60*60_000,10*60_000*Math.max(1,failures));
   if(status===408||status===409||status===425||(status!==null&&status>=500)){
-    return Math.min(2*60_000,12_000*Math.max(1,failures));
+    return Math.min(10*60_000,60_000*Math.max(1,failures));
   }
   if(/abort|timeout|timed out|econnreset|fetch failed|network/.test(text)){
     return Math.min(2*60_000,15_000*Math.max(1,failures));
