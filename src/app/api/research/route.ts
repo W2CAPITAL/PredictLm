@@ -208,7 +208,7 @@ async function firecrawlSearch(query:string,limit:number,key:string){
 
 async function scraplingExtract(url:string){
   const base=String(process.env.SCRAPLING_BASE_URL||'').trim().replace(/\/$/,'');
-  if(!base||!providerEndpointAllowed(base,Boolean(process.env.VERCEL))||!/^https?:\/\//i.test(url))return '';
+  if(!base||!providerEndpointAllowed(base,Boolean(process.env.VERCEL))||!providerEndpointAllowed(url,true))return '';
   const key=String(process.env.SCRAPLING_API_KEY||'').trim();
   const headers:Record<string,string>={'Content-Type':'application/json','Accept':'application/json'};
   if(key)headers.Authorization='Bearer '+key;
@@ -313,7 +313,7 @@ async function duckHtmlSearch(query:string,limit:number){
 function enrichAndRank(query:string,items:any[],limit:number){
   const sensitive=isSensitiveResearchQuery(query);
   const enriched=items
-    .filter(x=>x?.url&&/^https?:\/\//i.test(String(x.url)))
+    .filter(x=>x?.url&&providerEndpointAllowed(String(x.url),true))
     .filter(x=>{
       const candidate=[x?.title,x?.description,x?.markdown,x?.extractedText].filter(Boolean).join('\n');
       return !chatTrustIssue(query,candidate);
