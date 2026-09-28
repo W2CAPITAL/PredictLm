@@ -44,6 +44,7 @@ import { repairWorkspaceFiles } from '@/lib/workspace-repair';
 import { buildRunnableProject } from '@/lib/project-packager';
 import { loadCognitiveState, saveCognitiveState } from '@/lib/cognitive/cognitive-memory';
 import { advanceCognitiveWorkspace, cognitivePromptContext } from '@/lib/cognitive/cognitive-workspace';
+import { chatTrustIssue } from '@/lib/chat-trust-boundary';
 
 interface Props{
   onOpenLegal?:()=>void;
@@ -122,7 +123,7 @@ function mediaSubject(prompt:string){
     .trim()||prompt.trim();
 }
 
-function buildReasoningSummary(input:{
+function buildReasoningSummary(_input:{
   kind:string;
   webCount?:number;
   localBrain?:boolean;
@@ -131,18 +132,9 @@ function buildReasoningSummary(input:{
   anchor?:boolean;
   deep?:boolean;
 }){
-  const parts:string[]=[];
-  if(input.kind==='howto')parts.push('Tratei a pergunta como uma tarefa prática e priorizei passos que você consegue executar.');
-  else if(input.kind==='current')parts.push('Separei o que precisava de informação atual do que já podia ser respondido pelo contexto.');
-  else if(input.kind==='factual')parts.push('Chequei se a resposta permanecia no assunto e distinguia fato de inferência.');
-  else if(input.kind==='hypothetical')parts.push('Tratei a premissa como hipótese e mantive a resposta dentro dela, sem puxar assuntos externos.');
-  else if(input.kind==='context')parts.push('Continuei a partir do contexto recente relevante.');
-  else parts.push('Respondi diretamente ao pedido atual e descartei contexto não solicitado.');
-  if(input.webCount)parts.push('Cruzei '+input.webCount+' fonte(s) relevante(s) e descartei resultados que desviavam do tema.');
-  if(input.anchor)parts.push('Mantive um piso prático para não trocar uma resposta útil por uma síntese mais vaga.');
-  if(input.localBrain)parts.push('Uma segunda leitura independente apontou possíveis lacunas antes da resposta final.');
-  if(input.deep)parts.push('Fiz uma revisão extra de aderência e contradições.');
-  return parts.join(' ');
+  // Keep internal review private. Public Chat shows the answer and sources,
+  // never a narration of hidden routing/review steps.
+  return '';
 }
 
 function filterDisplayedSources(prompt:string,sources:{title:string;source:string}[],limit=8){
@@ -161,9 +153,10 @@ function filterDisplayedSources(prompt:string,sources:{title:string;source:strin
 }
 
 function safeHistoricalContent(content:string){
+  const trustIssue=chatTrustIssue('',content);
   const sanitized=sanitizePublicAnswer(content);
-  if(sanitized&&!looksLikeOperationalMonologue(sanitized))return sanitized;
-  if(hasInternalReasoningLeak(content)||looksLikeOperationalMonologue(content))return 'Esta resposta antiga continha análise interna ou um relatório operacional em vez da resposta final. Gere novamente para receber uma resposta limpa.';
+  if(!trustIssue&&sanitized&&!looksLikeOperationalMonologue(sanitized))return sanitized;
+  if(trustIssue||hasInternalReasoningLeak(content)||looksLikeOperationalMonologue(content))return 'Resposta anterior descartada por conter conteúdo interno ou payload inválido.';
   return content;
 }
 
@@ -201,6 +194,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [modelTick,setModelTick]=useState(0);
   const [autoLearningStats,setAutoLearningStats]=useState<{promoted:number;evidence:number}|null>(null);
   const [activity,setActivity]=useState<string[]>([]);
+  const [lastFailedPrompt,setLastFailedPrompt]=useState('');
   const [legalHealth,setLegalHealth]=useState<{
     fetchedAt:string;
     latencyMs?:number;
@@ -315,7 +309,10 @@ export function ChatShell({onOpenLegal}:Props){
       const r=await fetchWithTimeout('/api/research',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,limit:8})},10000,signal);
       const data=await r.json();
       if(!r.ok)return {text:'',sources:[] as any[],items:[] as any[]};
-      const rawItems=[...(data.web||[]),...(data.news||[])];
+      const rawItems=[...(data.web||[]),...(data.news||[])].filter((item:any)=>{
+        const candidate=[item?.title,item?.summary,item?.description].filter(Boolean).join('\n');
+        return !chatTrustIssue(query,candidate);
+      });
       const items=filterRelevantResearchItems(query,rawItems,8);
       const text=items.map((x:any,i:number)=>'WEB['+(i+1)+'] '+x.title+' — '+(x.summary||x.description||'')+' URL: '+x.url).join('\n');
       return {text,sources:items.map((x:any)=>({title:x.title,source:x.url})),items};
@@ -333,6 +330,7 @@ export function ChatShell({onOpenLegal}:Props){
     brainContext:string;
     deep:boolean;
     clean?:boolean;
+    sessionId:string;
     signal:AbortSignal;
   }){
     try{
@@ -342,6 +340,7 @@ export function ChatShell({onOpenLegal}:Props){
         body:JSON.stringify({
           ...(input.clean?{mode:'clean-chat',useHistory:true}:{}),
           prompt:input.prompt,
+          sessionId:input.sessionId,
           language:input.language,
           messages:input.messages,
           researchContext:input.researchContext,
@@ -373,13 +372,14 @@ export function ChatShell({onOpenLegal}:Props){
     messages:Array<{role:string;content:string}>;
     language:string;
     brainContext?:string;
+    sessionId:string;
     signal:AbortSignal;
   }){
     try{
       const response=await fetch('/api/chat/stream',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({messages:input.messages,language:input.language,brainContext:String(input.brainContext||'').slice(0,10000)}),
+        body:JSON.stringify({sessionId:input.sessionId,messages:input.messages,language:input.language,brainContext:String(input.brainContext||'').slice(0,10000)}),
         signal:input.signal
       });
       if(!response.ok||!response.body)return {ok:false,text:'',provider:'',model:''};
@@ -662,9 +662,10 @@ export function ChatShell({onOpenLegal}:Props){
     return true;
   }
 
-  async function send(){
-    const prompt=input.trim();
+  async function send(overridePrompt?:string){
+    const prompt=String(overridePrompt??input).trim();
     if(!prompt||busy)return;
+    setLastFailedPrompt('');
     const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const legalSearchRequest=processNumber?null:detectLegalSearchRequest(prompt);
@@ -736,7 +737,7 @@ export function ChatShell({onOpenLegal}:Props){
     setBusy(true);
     setActivity(
       buildIntent
-        ? ['BUILD · usando o projeto atual','JEV ROUTER · escolhendo tier forte','AGENTS · implementando','VERIFY · smoke/Council/review','PACKAGE · ZIP executável']
+        ? ['Preparando o projeto atual','Escolhendo a melhor rota de execução','Implementando alterações','Validando o resultado','Empacotando o projeto']
         : legalSearchRequest
           ? ['DATAJUD · interpretando busca','Consultando tribunal '+legalSearchRequest.tribunal,'Ordenando resultados recentes','Preparando resposta no Chat']
         : djenOabRequest
@@ -752,9 +753,9 @@ export function ChatShell({onOpenLegal}:Props){
           : mediaKind==='image'
             ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
             : safeLocalDeep
-              ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','FORGE · preparando rascunho neural','AEGIS · revisando relevância','VERIFY · preparando resposta']
+              ? ['Recuperando contexto relevante','Entendendo o pedido','Preparando resposta','Conferindo relevância','Finalizando resposta']
               : s.deepThink
-                ? ['RECALL · recuperando contexto','ROUTE · identificando assunto e intenção','VERIFY · usando apenas contexto relevante']
+                ? ['Recuperando contexto relevante','Entendendo o pedido','VERIFY · usando apenas contexto relevante']
                 : ['Analisando contexto']
     );
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
@@ -770,6 +771,7 @@ export function ChatShell({onOpenLegal}:Props){
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify(legalSearchRequest),
+          sessionId:active?.id||'',
           signal:turnController.signal
         });
         const data=await r.json().catch(()=>({}));
@@ -1157,12 +1159,9 @@ export function ChatShell({onOpenLegal}:Props){
               deep:s.deepThink
             }):undefined,
             actions:[
-              result.data?.provider==='freellmapi'
-                ? 'FreeLLMAPI respondeu como provider padrão'
-                : 'Provider mesh respondeu',
+              'Resposta gerada e validada',
               ...(apiSources.length?['Pesquisa integrada · '+apiSources.length+' fonte(s) relevante(s)']:[]),
-              ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[]),
-              'Resposta final validada antes de exibir'
+              ...(report?['Relatório validado · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
             ]
           }:{}),
           status:'done'
@@ -1171,10 +1170,10 @@ export function ChatShell({onOpenLegal}:Props){
       };
 
       setActivity([
-        'FREELLM FIRST · consultando provider padrão',
-        'PREDICT CORE · aplicando histórico, contexto e validações',
-        ...(needsWeb?['RESEARCH · contexto atual preparado']:[]),
-        'VERIFY · validando aderência ao pedido'
+        'Gerando resposta',
+        'Usando contexto relevante',
+        ...(needsWeb?['Pesquisa atualizada preparada']:[]),
+        'Conferindo resposta'
       ]);
 
       let candidate=await requestApiAnswer({
@@ -1188,6 +1187,7 @@ export function ChatShell({onOpenLegal}:Props){
         brainContext,
         deep:s.deepThink,
         clean:cleanEligible,
+        sessionId:active?.id||'',
         signal:turnController.signal
       });
 
@@ -1198,9 +1198,9 @@ export function ChatShell({onOpenLegal}:Props){
       const shouldUseFullRoute=s.deepThink||needsWeb;
       if(!candidate.ok&&shouldUseFullRoute){
         setActivity([
-          needsWeb?'RESEARCH · usando evidência necessária':'DEEPTHINK · ampliando análise',
-          'PREDICT ROUTER · tentando rota completa',
-          'VERIFY · mantendo foco no pedido'
+          needsWeb?'Usando evidência atualizada':'Aprofundando análise',
+          'Tentando outra rota',
+          'Conferindo foco no pedido'
         ]);
         candidate=await requestApiAnswer({
           prompt,
@@ -1213,6 +1213,7 @@ export function ChatShell({onOpenLegal}:Props){
           brainContext,
           deep:s.deepThink,
           clean:false,
+          sessionId:active?.id||'',
           signal:turnController.signal
         });
       }
@@ -1260,7 +1261,7 @@ export function ChatShell({onOpenLegal}:Props){
             fallbackText:localFallback||undefined,
             onStage:(stage)=>{
               const labels:Record<string,string>={
-                recall:'RECALL · recuperando contexto',
+                recall:'Recuperando contexto relevante',
                 plan:'PLAN · estruturando resposta',
                 forge:'FORGE · gerando resposta',
                 aegis:'AEGIS · revisando resposta',
@@ -1316,7 +1317,7 @@ export function ChatShell({onOpenLegal}:Props){
       }
 
       if(s.localRuntimeEnabled){
-        setActivity(['PREDICT CORE · tentando runtime local configurado','VERIFY · validando resposta local']);
+        setActivity(['Tentando execução local','Conferindo resposta local']);
         try{
           const runtimeReply=await answerViaLocalRuntime(prompt,messages,{
             deep:s.deepThink,
@@ -1339,10 +1340,8 @@ export function ChatShell({onOpenLegal}:Props){
               ...(report?.media?.length?{media:report.media}:{}),
               reasoningSummary:buildReasoningSummary({kind,webCount:runtimeReply.sources?.length||0,localBrain:true,deep:s.deepThink}),
               actions:[
-                'PredictLM Core executou o runtime local',
-                'Resposta final passou pelo Prompt OS, memória, skills e gate público',
-                'Provider remoto não foi necessário nesta etapa',
-                ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
+                'Resposta local gerada e validada',
+                ...(report?['Relatório validado · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
               ],
               status:'done'
             });
@@ -1365,11 +1364,7 @@ export function ChatShell({onOpenLegal}:Props){
             engine:'Predict Auto',
             sources:research?.sources||[],
             reasoningSummary:buildReasoningSummary({kind,webCount:research?.sources?.length||0,anchor:true}),
-            actions:[
-              'Providers opcionais não concluíram o turno',
-              'PredictLM usou resposta interna compatível com o mesmo pedido',
-              'Nenhuma dependência de Grok, Claude ou ChatGPT'
-            ],
+            actions:['Resposta de contingência validada'],
             status:'done'
           });
           return;
@@ -1387,14 +1382,18 @@ export function ChatShell({onOpenLegal}:Props){
       return;
     }catch(err:any){
       if(turnController.signal.aborted)return;
-      const message='Não consegui concluir toda a execução. **Falha:** '+(err?.message||'erro desconhecido')+'.';
+      const incidentId=globalThis.crypto?.randomUUID?.()||String(Date.now());
+      const message='Não consegui concluir esta resposta por um problema técnico. Você pode tentar novamente. Código: '+incidentId.slice(0,8)+'.';
+      setLastFailedPrompt(prompt);
       s.addMessage({
         role:'assistant',
         content:message,
-        actions:activity.length?activity:['A tarefa foi iniciada, mas falhou antes de concluir.'],
         status:'error'
       });
-      fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'error',surface:'chat',message,metadata:{prompt}})}).catch(()=>{});
+      fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        kind:'error',surface:'chat',message,
+        metadata:{sessionId:active?.id||null,prompt:prompt.slice(0,1200),incidentId,category:'execution-failure'}
+      })}).catch(()=>{});
     }finally{
       if(turnAbort.current===turnController)turnAbort.current=null;
       setBusy(false);
@@ -1670,7 +1669,7 @@ export function ChatShell({onOpenLegal}:Props){
         </div>
       </section>:
       <section className="grok-conversation-wrap">
-        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.reasoningSummary&&m.role==='assistant'?<details className="grok-reasoning"><summary><Brain size={11}/><span>Raciocínio</span><ChevronDown className="grok-reasoning-chevron" size={11}/></summary><p>{m.reasoningSummary}</p></details>:null}{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>speakBrowserText(m.content,{lang:'pt-BR'})} title="Ouvir resposta"><Volume2 size={11}/></button><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Raciocínio</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
+        <div className="grok-conversation">{active.messages.map(m=><article className={'grok-message '+m.role} key={m.id}><div className="grok-avatar">{m.role==='assistant'?<Sparkles size={14}/>:<span>EU</span>}</div><div className="grok-message-body"><div className="grok-message-meta"><b>{m.role==='assistant'?'PredictLM':'Você'}</b>{m.engine&&<span>{m.engine}</span>}</div><div className="grok-message-text">{renderText(safeHistoricalContent(m.content))}</div>{m.media?.length?<div className="grok-media-results">{m.media.map((media,i)=>media.kind==='image'?<a href={media.url} target="_blank" rel="noreferrer" key={i}><img src={media.url} alt={media.label||'Imagem gerada'}/></a>:media.kind==='video'?<video key={i} src={media.url} controls loop playsInline/>:<a className="grok-file-result" href={media.url} download={media.downloadName||media.label||'arquivo'} key={i}><b>{media.label||'Arquivo gerado'}</b><span>{media.mime||'arquivo'} · baixar</span></a>)}</div>:null}{m.sources?.length?<details className="grok-sources"><summary>{m.sources.length} fontes/contextos</summary>{m.sources.map((src,i)=><div key={i}><b>{src.title}</b><span>{src.source}</span></div>)}</details>:null}{m.role==='assistant'?<div className="grok-feedback"><button onClick={()=>speakBrowserText(m.content,{lang:'pt-BR'})} title="Ouvir resposta"><Volume2 size={11}/></button><button onClick={()=>sendFeedback('positive',m.content)} title="Resposta útil"><ThumbsUp size={11}/></button><button onClick={()=>sendFeedback('negative',m.content)} title="Resposta incompleta ou errada"><ThumbsDown size={11}/></button></div>:null}</div></article>)}{lastFailedPrompt&&!busy?<div className="grok-retry-bar"><button onClick={()=>void send(lastFailedPrompt)}><RefreshCw size={12}/>Tentar novamente</button><button onClick={()=>sendFeedback('negative','Falha técnica no turno anterior')}><Bug size={12}/>Reportar erro</button></div>:null}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Status</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
         <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/></div>
       </section>}
 
