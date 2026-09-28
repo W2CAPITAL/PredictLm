@@ -931,10 +931,10 @@ export async function POST(req:Request){
       },{status:503,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
     }
 
-    if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
-    if(body?.mode==='voxel-plan')return voxelPlanResponse(configured,body,prompt);
-    if(body?.mode==='media-director')return mediaDirectorResponse(configured,prompt);
-    if(body?.mode==='clean-chat')return cleanChatResponse(configured,body,prompt,correlationId);
+    if(body?.mode==='simulation-plan')return await simulationPlanResponse(configured,body,prompt);
+    if(body?.mode==='voxel-plan')return await voxelPlanResponse(configured,body,prompt);
+    if(body?.mode==='media-director')return await mediaDirectorResponse(configured,prompt);
+    if(body?.mode==='clean-chat')return await cleanChatResponse(configured,body,prompt,correlationId);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
