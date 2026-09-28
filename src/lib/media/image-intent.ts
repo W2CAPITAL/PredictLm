@@ -174,8 +174,12 @@ export function analyzeImageIntent(input:string):ImageIntentAnalysis{
   const styles=styleHints(raw);
 
   for(const entry of CATALOG){
+    const hit=entry.aliases.find(alias=>new RegExp('(?:^|\\b)'+alias.replace(/[.*+?^$(){}|[\]\\]/g,'\\  for(const entry of CATALOG){
     const hit=entry.aliases.find(alias=>new RegExp('(?:^|\\b)'+alias.replace(/[.*+?^$(){}|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+')+'(?:\\b|$)','i').test(norm));
     if(!hit)continue;
+    addEntity(entities,{').replace(/\s+/g,'\\s+')+'(?:\\b|$)','i').test(norm));
+    if(!hit)continue;
+    if(entry.id==='kurama-nine-tails'&&/\b(modo kurama|kurama chakra mode|chakra mode|manto da kurama|kurama cloak)\b/.test(norm)&&!/\b(avatar (?:completo|gigante)|full kurama avatar|complete kurama avatar|kurama inteira|kurama inteiro|raposa gigante|nine tails fox|nove caudas completa|nove caudas completo)\b/.test(norm))continue;
     addEntity(entities,{
       id:entry.id,label:entry.label,kind:entry.kind,franchise:entry.franchise,
       form:formFor(entry,norm)||undefined,confidence:.98,source:'catalog'
@@ -189,7 +193,8 @@ export function analyzeImageIntent(input:string):ImageIntentAnalysis{
   }
 
   const lead=leadSubject(raw);
-  if(lead&&looksLikeHandleOrName(lead)){
+  const deicticContinuationLead=continuation&&/^(?:essa|esse|a mesma|o mesmo|mesma|mesmo)\b/i.test(String(lead||''));
+  if(lead&&!deicticContinuationLead&&looksLikeHandleOrName(lead)){
     const leadWords=normalize(lead).split(' ').filter(Boolean);
     const catalogWords=new Set(
       entities.filter(x=>x.source==='catalog').flatMap(x=>normalize(x.label).split(' ')).filter(Boolean)
@@ -210,6 +215,11 @@ export function analyzeImageIntent(input:string):ImageIntentAnalysis{
 
   for(const name of properNouns(raw)){
     const n=normalize(name);
+    const coveredByCatalog=CATALOG.some(entry=>entry.aliases.some(alias=>{
+      const a=normalize(alias);
+      return a===n||a.includes(n)||n.includes(a);
+    }));
+    if(coveredByCatalog)continue;
     if(entities.some(x=>normalize(x.label).includes(n)||n.includes(normalize(x.label))))continue;
     addEntity(entities,{id:'proper:'+slug(name),label:name,kind:'named-subject',confidence:.72,source:'proper-noun'});
   }
