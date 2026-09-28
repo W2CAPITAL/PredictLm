@@ -4,14 +4,17 @@ import {
   type CognitiveState
 } from '@/lib/cognitive/cognitive-workspace';
 import {
+  blockAt,
   chunkSnapshot,
   executeVoxelPlan,
+  mineVoxelBlock,
   localVoxelPlan,
   normalizeVoxelWorld,
   surfaceAt,
   type VoxelDimension,
   type VoxelWorldState
 } from '@/lib/simulation/minecraft-sandbox';
+import {minecraftNeuralDecision,type MinecraftNeuralAction} from '@/lib/simulation/minecraft-neural-controller';
 
 export type MinecraftBrainId='human'|'macaque'|'mouse'|'fly';
 
@@ -31,6 +34,8 @@ export interface MinecraftBrainAgent{
   publicThought:string;
   lastAction:string;
   decisions:number;
+  neuralAction:MinecraftNeuralAction;
+  neuralSpikes:number;
 }
 
 export interface MinecraftBrainState{
@@ -64,7 +69,9 @@ function spawn(world:VoxelWorldState,id:MinecraftBrainId,dx:number,dz:number):Mi
     goal:'explorar e sobreviver',
     publicThought:'Observando o mundo voxel.',
     lastAction:'spawn',
-    decisions:0
+    decisions:0,
+    neuralAction:'explore',
+    neuralSpikes:0
   };
 }
 
@@ -125,20 +132,40 @@ function deterministicDirection(seed:number,tick:number,id:MinecraftBrainId){
   ][n%8] as [number,number];
 }
 
-function chooseIntent(world:VoxelWorldState,brains:MinecraftBrainState,agent:MinecraftBrainAgent){
+function chooseIntent(world:VoxelWorldState,brains:MinecraftBrainState,agent:MinecraftBrainAgent,neuralAction:MinecraftNeuralAction){
   const c=brains.cognitive;
   const has=(item:string)=>(agent.inventory[item]||0)>0;
-  const oreNeed=!has('iron_ingot')&&!has('diamond');
+  const count=(item:string)=>agent.inventory[item]||0;
   const dim=agent.dimension;
-  const phase=(brains.tick+agent.decisions)%8;
+  const phase=(brains.tick+agent.decisions)%10;
 
   if(agent.health<8)return'evite monstros e procure segurança';
   if(agent.hunger<8&&Object.keys(agent.inventory).some(k=>/bread|food|meat|apple/.test(k)))return'coma para recuperar fome';
 
+  // Minecraft progression precedes free wandering so the agents can actually advance.
+  if(dim==='overworld'){
+    if(count('wood')<1&&count('planks')<4)return'minerar madeira de uma árvore próxima';
+    if(count('planks')<4&&count('wood')>0)return'fabricar Tábuas';
+    if(count('cobblestone')<3)return'minerar pedra para avançar';
+    if(count('raw_iron')>0&&!has('iron_ingot'))return'fundir raw_iron na fornalha';
+    if(!has('iron_ingot'))return'minerar ferro e carvão';
+    if(!has('diamond')&&phase<4)return'minerar diamante e explorar cavernas';
+    if(world.stats.chunksVisited>8&&has('obsidian')&&has('iron_ingot'))return'vá para o Nether e explore uma fortaleza';
+  }
+
+  if(dim==='infernal'){
+    if(!has('blaze_rod'))return'ataque blaze e explore uma fortaleza do Nether';
+    return'volte ao Overworld e procure uma stronghold';
+  }
+
+  if(dim==='void')return'explore o End, enfrente guardiões e procure uma cidade do End';
+
+  if(neuralAction==='seek_social')return'encontre outro cérebro no mundo e coopere';
+  if(neuralAction==='avoid_threat')return'evite monstros hostis e procure terreno seguro';
+  if(neuralAction==='forage')return'procure comida, árvores e recursos próximos';
+  if(neuralAction==='build')return'construa abrigo com cama, baú, iluminação e móveis';
+
   if(agent.id==='human'){
-    if(dim==='overworld'&&world.stats.chunksVisited>10&&has('obsidian')&&has('iron_ingot'))return'vá para o Nether e explore uma fortaleza';
-    if(dim==='infernal'&&has('blaze_rod'))return'volte ao Overworld e procure uma stronghold';
-    if(oreNeed)return'mine ferro carvão e diamante';
     if(phase===0)return'construa e equipe um abrigo com cama mesa cadeira baú e iluminação';
     if(phase===1)return'fabrique equipamentos melhores';
     return'explore novos chunks vilas cavernas e masmorras';
@@ -157,8 +184,69 @@ function chooseIntent(world:VoxelWorldState,brains:MinecraftBrainState,agent:Min
     return'explore cavernas e procure comida';
   }
 
-  if(c.fly.exploration>.45||phase<6)return'voe e explore rapidamente novos chunks, vilas, portais e estruturas';
+  if(c.fly.exploration>.45||phase<8)return'voe e explore rapidamente novos chunks, vilas, portais e estruturas';
   return'observe os arredores e mude para outra direção';
+}
+
+function nearestPeer(brains:MinecraftBrainState,agent:MinecraftBrainAgent){
+  return (Object.values(brains.agents) as MinecraftBrainAgent[])
+    .filter(other=>other.id!==agent.id&&other.dimension===agent.dimension)
+    .map(other=>({other,d:Math.hypot(other.x-agent.x,other.z-agent.z)}))
+    .sort((a,b)=>a.d-b.d)[0]||null;
+}
+
+function directedDirection(world:VoxelWorldState,brains:MinecraftBrainState,agent:MinecraftBrainAgent,intent:string,tick:number):[number,number]{
+  if(/outro cérebro|coopere|reúna|reuna/i.test(intent)){
+    const peer=nearestPeer(brains,agent);
+    if(peer&&peer.d>.75)return[Math.sign(peer.other.x-agent.x),Math.sign(peer.other.z-agent.z)];
+  }
+  if(/evite monstros|seguran/i.test(intent)){
+    const shadow=normalizeVoxelWorld({...world,player:{...world.player,x:agent.x,y:agent.y,z:agent.z,dimension:agent.dimension}});
+    const cx=Math.floor(agent.x/16),cz=Math.floor(agent.z/16);
+    const hostile=chunkSnapshot(shadow,cx,cz).mobs
+      .filter(m=>m.hostile)
+      .sort((a,b)=>Math.hypot(a.x-agent.x,a.z-agent.z)-Math.hypot(b.x-agent.x,b.z-agent.z))[0];
+    if(hostile)return[Math.sign(agent.x-hostile.x)||1,Math.sign(agent.z-hostile.z)];
+  }
+  return deterministicDirection(world.seed,tick,agent.id);
+}
+
+function resourceIds(intent:string){
+  const q=intent.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  if(q.includes('madeira'))return new Set(['wood']);
+  if(q.includes('diamante'))return new Set(['diamond_ore']);
+  if(q.includes('ferro'))return new Set(['iron_ore','coal_ore']);
+  if(q.includes('pedra'))return new Set(['stone','cobblestone','coal_ore']);
+  return null;
+}
+
+function tryMineResource(world:VoxelWorldState,agent:MinecraftBrainAgent,intent:string){
+  const wanted=resourceIds(intent);
+  if(!wanted)return null;
+  const shadow=normalizeVoxelWorld({
+    ...world,
+    player:{...world.player,x:agent.x,y:agent.y,z:agent.z,dimension:agent.dimension,health:agent.health,hunger:agent.hunger},
+    inventory:agent.inventory
+  });
+  const wood=wanted.has('wood');
+  const radius=wood?7:3;
+  let best:{x:number;y:number;z:number;d:number}|null=null;
+  for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++){
+    const x=Math.floor(agent.x)+dx,z=Math.floor(agent.z)+dz;
+    const top=surfaceAt(shadow,x,z).y;
+    const yMin=wood?Math.max(1,top-8):1;
+    const yMax=wood?Math.min(127,top+1):Math.min(top,62);
+    for(let y=yMax;y>=yMin;y--){
+      const id=blockAt(shadow,x,y,z);
+      if(!wanted.has(id))continue;
+      const d=Math.hypot(dx,dz)+Math.abs(y-agent.y)*.05;
+      if(!best||d<best.d)best={x,y,z,d};
+      break;
+    }
+  }
+  if(!best)return null;
+  const mined=mineVoxelBlock(shadow,best.x,best.y,best.z);
+  return mined.ok?mined:null;
 }
 
 function mergeSharedWorld(base:VoxelWorldState,executed:VoxelWorldState){
@@ -172,8 +260,24 @@ function mergeSharedWorld(base:VoxelWorldState,executed:VoxelWorldState){
   };
 }
 
-function executeAgent(world:VoxelWorldState,agent:MinecraftBrainAgent,intent:string,tick:number){
-  const [dx,dz]=deterministicDirection(world.seed,tick,agent.id);
+function executeAgent(world:VoxelWorldState,brains:MinecraftBrainState,agent:MinecraftBrainAgent,intent:string,tick:number,neuralAction:MinecraftNeuralAction,neuralSpikes:number){
+  const mined=tryMineResource(world,agent,intent);
+  if(mined){
+    const result=mined.state;
+    const nextAgent:MinecraftBrainAgent={
+      ...agent,
+      inventory:result.inventory,
+      goal:intent,
+      lastAction:'mine',
+      publicThought:intent,
+      decisions:agent.decisions+1,
+      neuralAction,
+      neuralSpikes
+    };
+    return{world:mergeSharedWorld(world,result),agent:nextAgent};
+  }
+
+  const [dx,dz]=directedDirection(world,brains,agent,intent,tick);
   let instruction=intent;
   if(/explore|observe|voe|árvores|arvores/.test(intent))instruction+='; mova '+(3+(tick%5))+' passos para '+dx+','+dz;
 
@@ -210,7 +314,9 @@ function executeAgent(world:VoxelWorldState,agent:MinecraftBrainAgent,intent:str
     goal:intent,
     lastAction:executed.records.map(x=>x.action.type).join(' → ')||'observar',
     publicThought:intent,
-    decisions:agent.decisions+1
+    decisions:agent.decisions+1,
+    neuralAction,
+    neuralSpikes
   };
   return{world:mergeSharedWorld(world,result),agent:nextAgent};
 }
@@ -224,8 +330,21 @@ export function stepMinecraftBrains(worldInput:VoxelWorldState,stateInput:Minecr
     const agent=state.agents[id];
     const seen=observation(world,agent);
     state={...state,cognitive:advanceCognitiveWorkspace(state.cognitive,seen)};
-    const intent=chooseIntent(world,state,agent);
-    const executed=executeAgent(world,agent,intent,state.tick+agent.decisions);
+    const peer=nearestPeer(state,agent);
+    const shadow=normalizeVoxelWorld({...world,player:{...world.player,x:agent.x,y:agent.y,z:agent.z,dimension:agent.dimension}});
+    const local=chunkSnapshot(shadow,Math.floor(agent.x/16),Math.floor(agent.z/16));
+    const hostileCount=local.mobs.filter(m=>m.hostile).length;
+    const neural=minecraftNeuralDecision({
+      seed:world.seed,
+      tick:state.tick+agent.decisions,
+      hunger01:Math.max(0,Math.min(1,(20-agent.hunger)/20)),
+      threat01:Math.max(0,Math.min(1,hostileCount/3)),
+      novelty01:Math.max(0,Math.min(1,state.cognitive.fly.exploration)),
+      socialDistance:peer?.d??24,
+      shelterNeed01:(agent.inventory.bed||0)>0?.15:.8
+    });
+    const intent=chooseIntent(world,state,agent,neural.action);
+    const executed=executeAgent(world,state,agent,intent,state.tick+agent.decisions,neural.action,neural.totalSpikes);
     world=executed.world;
     state={
       ...state,
@@ -242,6 +361,6 @@ export function stepMinecraftBrains(worldInput:VoxelWorldState,stateInput:Minecr
 export function minecraftBrainSummary(state:MinecraftBrainState){
   return (Object.keys(state.agents) as MinecraftBrainId[]).map(id=>{
     const a=state.agents[id];
-    return a.label+' · '+a.dimension+' · '+a.x+','+a.y+','+a.z+' · '+a.lastAction+' · '+a.goal;
+    return a.label+' · '+a.dimension+' · '+a.x+','+a.y+','+a.z+' · '+a.lastAction+' · LIF '+a.neuralAction+' ('+a.neuralSpikes+' spikes) · '+a.goal;
   }).join('\n');
 }

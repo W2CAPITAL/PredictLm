@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.7.0"
+  version: "3.8.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.7
+# PredictLM Digital Brain / NeuroCore v3.8
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -274,3 +274,23 @@ O NeuroCore não mantém mais Fly/Human/Macaque como chats públicos separados. 
 Cada fonte mantém sua classe de evidência. MICrONS não vira cérebro inteiro de camundongo; Allen mesoscale não vira conectoma sináptico; macaque não vira medição humana.
 
 O estado combinado pode modular atenção, binding, inibição, exploração, memória, uncertainty e seleção de ação do mesmo PredictLM. Provider/modelo continua sendo motor, não identidade.
+
+
+## Numerical neuroscience runtime v3.8
+
+A partir desta versão, o PredictLM separa explicitamente **controladores neuro-inspirados** de **simulação neuronal numérica**.
+
+Arquivos:
+- `src/lib/neuroscience/biophysical-solver.ts`: solver LIF por condutância com unidades mV/ms/nS/pA/pF, delays sinápticos, ruído com seed e STDP opcional;
+- `src/lib/neuroscience/scientific-runtime.ts`: manifesto reproduzível, proveniência, claims medidos/simulados/desconhecidos e validação quantitativa;
+- `src/lib/simulation/minecraft-neural-controller.ts`: closed-loop Minecraft em que observação vira corrente injetada, spikes são resolvidos numericamente e a população de ação seleciona política.
+
+### Regra do solver
+- LLM nunca substitui o solver.
+- Resultado de spikes/voltagem só pode ser chamado de simulação neuronal quando veio do solver numérico.
+- `toy-browser` significa escala pequena executada no navegador/Node.
+- `full-external` reserva execução para backend científico como NEST/HPC; não fingir que Vercel serverless executou 10^6–10^7 neurônios.
+- Todo experimento deve registrar seed, `dt`, duração, modelo, datasets e classe de evidência.
+
+### Minecraft closed-loop
+Os cérebros humano, macaque, mouse e fly usam uma pequena rede LIF para seleção pública de ação (`explore`, `forage`, `seek_social`, `avoid_threat`, `build`). Isso é dinâmica neural **simulada**, não reprodução dos cérebros biológicos completos dessas espécies.

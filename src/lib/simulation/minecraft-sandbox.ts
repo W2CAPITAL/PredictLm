@@ -510,9 +510,16 @@ function consumeItems(inventory:Record<string,number>,needs:Record<string,number
 export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
   const len=Math.hypot(dx,dz)||1;
   const step=state.player.mode==='creative'?2.4:1.25;
-  const x=Math.floor(state.player.x+dx/len*step);
-  const z=Math.floor(state.player.z+dz/len*step);
-  const y=surfaceAt(state,x,z).y+1;
+  const nextX=Math.floor(state.player.x+dx/len*step);
+  const nextZ=Math.floor(state.player.z+dz/len*step);
+  const terrainY=terrainHeight(state.seed,nextX,nextZ,state.player.dimension);
+  const feetBlock=blockAt(state,nextX,terrainY+1,nextZ);
+  const headBlock=blockAt(state,nextX,terrainY+2,nextZ);
+  const blocked=VOXEL_BLOCKS[feetBlock].solid||VOXEL_BLOCKS[headBlock].solid;
+  const x=blocked?state.player.x:nextX;
+  const z=blocked?state.player.z:nextZ;
+  const top=surfaceAt(state,x,z);
+  const y=top.block==='water'?top.y+.18:top.block==='lava'?top.y+.3:terrainHeight(state.seed,x,z,state.player.dimension)+1;
   const oldChunk=chunkKey(floorDiv(state.player.x,VOXEL_CHUNK_SIZE),floorDiv(state.player.z,VOXEL_CHUNK_SIZE),state.player.dimension);
   const newChunk=chunkKey(floorDiv(x,VOXEL_CHUNK_SIZE),floorDiv(z,VOXEL_CHUNK_SIZE),state.player.dimension);
   const discoveries:Record<string,true>={...state.discoveries};
@@ -525,7 +532,7 @@ export function moveVoxelPlayer(state:VoxelWorldState,dx:number,dz:number){
     ...state,
     player:{...state.player,x,y,z,yaw:Math.atan2(dx,dz)},
     discoveries,
-    stats:{...state.stats,distance:state.stats.distance+step,chunksVisited}
+    stats:{...state.stats,distance:state.stats.distance+(blocked?0:step),chunksVisited}
   };
   if(oldChunk!==newChunk)next=withEvent(next,'explore','Novo chunk explorado '+newChunk+'.');
   for(const structure of structureForChunk(next,floorDiv(x,VOXEL_CHUNK_SIZE),floorDiv(z,VOXEL_CHUNK_SIZE))){
