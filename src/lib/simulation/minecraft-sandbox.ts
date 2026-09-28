@@ -512,22 +512,111 @@ export function chunksAroundPlayer(state:VoxelWorldState,radius=1){
   return out;
 }
 
+export type VoxelAdvancementCategory='story'|'nether'|'end'|'adventure'|'husbandry';
+
+export interface VoxelAdvancementDef{
+  id:string;
+  category:VoxelAdvancementCategory;
+  title:string;
+  description:string;
+  parent?:string;
+}
+
+export const VOXEL_ADVANCEMENTS:VoxelAdvancementDef[]=[
+  {id:'story:wood',category:'story',title:'Primeira madeira',description:'Colete um tronco.'},
+  {id:'story:crafting-table',category:'story',title:'Oficina montada',description:'Fabrique uma bancada.',parent:'story:wood'},
+  {id:'story:stone',category:'story',title:'Ferramentas de pedra',description:'Obtenha pedregulho.',parent:'story:crafting-table'},
+  {id:'story:iron',category:'story',title:'Era do ferro',description:'Produza um lingote de ferro.',parent:'story:stone'},
+  {id:'story:iron-gear',category:'story',title:'Equipamento de ferro',description:'Fabrique ferramenta, arma, escudo ou armadura de ferro.',parent:'story:iron'},
+  {id:'story:diamond',category:'story',title:'Cristal raro',description:'Encontre diamante.',parent:'story:iron'},
+  {id:'story:obsidian',category:'story',title:'Pedra negra',description:'Obtenha obsidiana.',parent:'story:diamond'},
+  {id:'story:portal-ready',category:'story',title:'Pronto para atravessar',description:'Tenha obsidiana suficiente para uma passagem dimensional.',parent:'story:obsidian'},
+
+  {id:'nether:enter',category:'nether',title:'Dimensão infernal',description:'Entre no Nether.',parent:'story:portal-ready'},
+  {id:'nether:fortress',category:'nether',title:'Fortaleza encontrada',description:'Descubra uma fortaleza do Nether.',parent:'nether:enter'},
+  {id:'nether:blaze',category:'nether',title:'Fogo conquistado',description:'Derrote um blaze ou obtenha uma blaze rod.',parent:'nether:fortress'},
+  {id:'nether:gold',category:'nether',title:'Ouro infernal',description:'Obtenha ouro durante a progressão.',parent:'nether:enter'},
+  {id:'nether:survive',category:'nether',title:'Volta segura',description:'Sobreviva à dimensão infernal e mantenha vida positiva.',parent:'nether:enter'},
+
+  {id:'end:pearl',category:'end',title:'Olho para o vazio',description:'Obtenha uma pérola de enderman.'},
+  {id:'end:stronghold',category:'end',title:'Fortaleza do fim',description:'Descubra a fortaleza que leva ao End.',parent:'end:pearl'},
+  {id:'end:enter',category:'end',title:'Além do portal',description:'Entre no End.',parent:'end:stronghold'},
+  {id:'end:boss',category:'end',title:'Chefe do vazio',description:'Derrote o boss final do End.',parent:'end:enter'},
+  {id:'end:city',category:'end',title:'Cidade além',description:'Descubra uma cidade do End.',parent:'end:boss'},
+
+  {id:'adventure:first-hostile',category:'adventure',title:'Primeiro combate',description:'Derrote uma criatura hostil.'},
+  {id:'adventure:hunter-10',category:'adventure',title:'Caçador veterano',description:'Derrote 10 mobs.',parent:'adventure:first-hostile'},
+  {id:'adventure:explore-10',category:'adventure',title:'Explorador',description:'Visite 10 chunks distintos.'},
+  {id:'adventure:explore-100',category:'adventure',title:'Cartógrafo do mundo',description:'Visite 100 chunks.',parent:'adventure:explore-10'},
+  {id:'adventure:village',category:'adventure',title:'Uma vila!',description:'Descubra uma vila.'},
+  {id:'adventure:trade',category:'adventure',title:'Negociação',description:'Conclua uma troca com aldeão.',parent:'adventure:village'},
+  {id:'adventure:dungeon',category:'adventure',title:'Masmorra limpa',description:'Conclua uma masmorra.'},
+  {id:'adventure:all-biomes',category:'adventure',title:'Mundo diverso',description:'Visite os oito biomas do Overworld.',parent:'adventure:explore-10'},
+  {id:'adventure:bow',category:'adventure',title:'Combate à distância',description:'Fabrique um arco.'},
+  {id:'adventure:ten-days',category:'adventure',title:'Dez dias vivo',description:'Alcance o dia 10 sem perder o mundo.'},
+
+  {id:'husbandry:eat',category:'husbandry',title:'Hora de comer',description:'Consuma qualquer alimento.'},
+  {id:'husbandry:bread',category:'husbandry',title:'Do trigo ao pão',description:'Fabrique pão.'},
+  {id:'husbandry:farm',category:'husbandry',title:'Plantio',description:'Prepare terra e plante trigo.'},
+  {id:'husbandry:cooked-meat',category:'husbandry',title:'Refeição quente',description:'Cozinhe carne.'},
+  {id:'husbandry:golden-apple',category:'husbandry',title:'Comida rara',description:'Fabrique uma maçã dourada.'}
+];
+
+function hasProgress(state:VoxelWorldState,key:string){return !!state.discoveries[key]}
+function hasAnyProgress(state:VoxelWorldState,prefix:string){return Object.keys(state.discoveries).some(k=>k.startsWith(prefix))}
+function biomeProgressCount(state:VoxelWorldState){
+  const biomes:VoxelBiome[]=['plains','forest','desert','mountains','taiga','swamp','ocean','badlands'];
+  return biomes.filter(x=>hasProgress(state,'biome:'+x)).length;
+}
+function advancementCondition(state:VoxelWorldState,id:string){
+  switch(id){
+    case'story:wood':return hasProgress(state,'milestone:mined:wood')||(state.inventory.wood||0)>0;
+    case'story:crafting-table':return hasProgress(state,'milestone:crafted:crafting_table')||(state.inventory.crafting_table||0)>0;
+    case'story:stone':return (state.inventory.cobblestone||0)>0||hasProgress(state,'milestone:mined:stone');
+    case'story:iron':return (state.inventory.iron_ingot||0)>0||hasProgress(state,'milestone:smelted:iron_ingot');
+    case'story:iron-gear':return ['iron_pickaxe','iron_sword','iron_helmet','iron_chestplate','shield'].some(x=>(state.inventory[x]||0)>0)||['iron_pickaxe','iron_sword','iron_helmet','iron_chestplate','shield'].some(x=>hasProgress(state,'milestone:crafted:'+x));
+    case'story:diamond':return (state.inventory.diamond||0)>0||hasProgress(state,'milestone:mined:diamond_ore');
+    case'story:obsidian':return (state.inventory.obsidian||0)>0||hasProgress(state,'milestone:mined:obsidian');
+    case'story:portal-ready':return (state.inventory.obsidian||0)>=10;
+    case'nether:enter':return hasProgress(state,'dimension:infernal');
+    case'nether:fortress':return hasProgress(state,'structure-kind:nether_fortress');
+    case'nether:blaze':return hasProgress(state,'milestone:defeated:blaze')||(state.inventory.blaze_rod||0)>0;
+    case'nether:gold':return (state.inventory.gold_ingot||0)>0||(state.inventory.raw_gold||0)>0;
+    case'nether:survive':return hasProgress(state,'dimension:infernal')&&state.player.health>0;
+    case'end:pearl':return (state.inventory.ender_pearl||0)>0;
+    case'end:stronghold':return hasProgress(state,'structure-kind:stronghold');
+    case'end:enter':return hasProgress(state,'dimension:void');
+    case'end:boss':return hasProgress(state,'milestone:defeated:boss');
+    case'end:city':return hasProgress(state,'structure-kind:end_city');
+    case'adventure:first-hostile':return ['zombie','skeleton','spider','creeper','enderman','blaze','ghast','end_guard','dungeon_guard','boss'].some(x=>hasProgress(state,'milestone:defeated:'+x));
+    case'adventure:hunter-10':return state.stats.mobsDefeated>=10;
+    case'adventure:explore-10':return state.stats.chunksVisited>=10;
+    case'adventure:explore-100':return state.stats.chunksVisited>=100;
+    case'adventure:village':return hasProgress(state,'structure-kind:village');
+    case'adventure:trade':return hasProgress(state,'milestone:trade:villager');
+    case'adventure:dungeon':return state.stats.dungeonsCleared>=1||hasProgress(state,'milestone:raid:dungeon');
+    case'adventure:all-biomes':return biomeProgressCount(state)>=8;
+    case'adventure:bow':return (state.inventory.bow||0)>0||hasProgress(state,'milestone:crafted:bow');
+    case'adventure:ten-days':return state.day>=10;
+    case'husbandry:eat':return hasAnyProgress(state,'milestone:ate:');
+    case'husbandry:bread':return (state.inventory.bread||0)>0||hasProgress(state,'milestone:crafted:bread');
+    case'husbandry:farm':return hasProgress(state,'milestone:farm:planted');
+    case'husbandry:cooked-meat':return (state.inventory.cooked_meat||0)>0||hasProgress(state,'milestone:smelted:cooked_meat');
+    case'husbandry:golden-apple':return (state.inventory.golden_apple||0)>0||hasProgress(state,'milestone:crafted:golden_apple');
+    default:return false;
+  }
+}
+
+export function voxelAdvancementProgress(state:VoxelWorldState){
+  const unlocked=new Set(state.achievements);
+  return VOXEL_ADVANCEMENTS.map(def=>({...def,unlocked:unlocked.has(def.id)||advancementCondition(state,def.id)}));
+}
+
 function syncVoxelProgression(state:VoxelWorldState){
   const unlocked=new Set(state.achievements);
-  const unlock=(id:string,condition:boolean)=>{if(condition)unlocked.add(id)};
-  unlock('primeiro-bloco',state.stats.mined>=1);
-  unlock('construtor',state.stats.placed>=16);
-  unlock('artesao',state.stats.crafted>=5);
-  unlock('explorador-10',state.stats.chunksVisited>=10);
-  unlock('explorador-100',state.stats.chunksVisited>=100);
-  unlock('cacador',state.stats.mobsDefeated>=10);
-  unlock('saqueador',state.stats.dungeonsCleared>=1);
-  unlock('veterano-dungeons',state.stats.dungeonsCleared>=10);
-  unlock('diamantes',(state.inventory.diamond||0)>=1);
-  unlock('sobrevivente-10-dias',state.day>=10);
-  unlock('viajante-dimensional',state.player.dimension!=='overworld');
+  for(const def of VOXEL_ADVANCEMENTS)if(advancementCondition(state,def.id))unlocked.add(def.id);
   const level=Math.max(state.player.level,Math.floor(state.player.experience/20));
-  return{...state,achievements:[...unlocked],player:{...state.player,level}};
+  return{...state,achievements:[...unlocked].slice(-160),player:{...state.player,level}};
 }
 
 function withEvent(state:VoxelWorldState,kind:string,text:string){
