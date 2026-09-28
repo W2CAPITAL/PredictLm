@@ -1429,7 +1429,7 @@ export function GrokImaginePanel(){
               <img src={ref.data} alt={'Referência '+(index+1)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
               <button type="button" onClick={()=>removeReference(index)} title="Remover referência" style={{position:'absolute',right:3,top:3,width:20,height:20,border:0,borderRadius:6,background:'rgba(5,7,10,.82)',color:'#fff',display:'grid',placeItems:'center'}}><X size={11}/></button>
             </div>)}
-          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas do personagem e tenta encaminhá-las ao gerador. Upload manual é somente override opcional.</small>}
+          </div>:<small style={{fontSize:9,lineHeight:1.4,color:'#657184'}}>Busca automática ativa: o PredictLM pesquisa referências públicas de pessoas, personagens, produtos, lugares e estilos específicos e tenta encaminhá-las ao gerador. Upload manual é apenas um override opcional.</small>}
         </div>:null}
         {mode==='image'&&groundingTrace?<div style={{border:'1px solid #292d39',background:'#0b1017',borderRadius:11,padding:9,display:'grid',gap:7}}>
           <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:9}}>
