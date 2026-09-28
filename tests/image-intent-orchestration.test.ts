@@ -75,6 +75,11 @@ test('Imagine uses one server-orchestrated generation per candidate and exposes 
   assert.doesNotMatch(ui,/Provider inválido · tentando outra rota de imagem/);
   assert.match(ui,/avoidProviders:providerPolicy\?\.avoidProviders\|\|\[\]/);
   assert.match(ui,/Validando a imagem entregue pelo provider/);
+  assert.match(ui,/const totalCandidates=1/);
+  assert.match(ui,/const useDirector=deepThink/);
+  assert.match(ui,/if\(!deepThink\|\|shouldForceLiteralMode\(prompt\)\)return safeFallback/);
+  assert.match(ui,/if\(deepThink&&!regenerate&&\(semanticRepair/);
+  assert.match(ui,/const hardRejectSpecific=false/);
   assert.match(ui,/Entendimento do pedido/);
   assert.match(api,/avoidProviders\.has\('pollinations-proxy'\)/);
   assert.match(api,/NO_IMAGE_PROVIDER/);
