@@ -563,10 +563,10 @@ export function ChatShell({onOpenLegal}:Props){
     const baseFiles=Object.values(live.files);
     setActivity([
       'BUILD · entendendo o projeto atual',
-      'JEV ROUTER · selecionando tier forte',
-      'AGENTS · implementando mudança',
-      'VERIFY · testando arquivos',
-      'PACKAGE · preparando ZIP executável'
+      'Escolhendo a melhor rota de execução',
+      'Implementando mudança',
+      'Testando arquivos',
+      'Preparando ZIP executável'
     ]);
 
     let data:any={};
@@ -652,7 +652,7 @@ export function ChatShell({onOpenLegal}:Props){
       }],
       actions:[
         'Projeto atual preservado',
-        providerBuild?'Provider forte selecionado pelo roteador':'Orquestrador local executado após falha das APIs',
+        providerBuild?'Execução principal concluída':'Execução local de contingência concluída',
         'Arquivos aplicados ao workspace',
         'Smoke/Council/review executados',
         'ZIP executável empacotado'
@@ -755,7 +755,7 @@ export function ChatShell({onOpenLegal}:Props){
             : safeLocalDeep
               ? ['Recuperando contexto relevante','Entendendo o pedido','Preparando resposta','Conferindo relevância','Finalizando resposta']
               : s.deepThink
-                ? ['Recuperando contexto relevante','Entendendo o pedido','VERIFY · usando apenas contexto relevante']
+                ? ['Recuperando contexto relevante','Entendendo o pedido','Conferindo contexto relevante']
                 : ['Analisando contexto']
     );
     setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
@@ -841,10 +841,10 @@ export function ChatShell({onOpenLegal}:Props){
 
       if(reportIntent.wantsReport&&!processNumber){
         setActivity([
-          'REPORT ARCHITECT · detectando o tipo e objetivo',
-          'FORGE · extraindo fatos, métricas e padrões',
-          'AEGIS · procurando contradições e lacunas',
-          'PARALLAX · testando terceiro enquadramento',
+          'Identificando o tipo de relatório',
+          'Extraindo fatos, métricas e padrões',
+          'Procurando contradições e lacunas',
+          'Conferindo outros enquadramentos relevantes',
           'CHAIR · redigindo e aplicando quality gate'
         ]);
         const context=history.slice(-10)
@@ -864,7 +864,7 @@ export function ChatShell({onOpenLegal}:Props){
           s.addMessage({
             role:'assistant',
             content:report?.content||markdown,
-            engine:'PredictLM · Report Architect',
+            engine:'PredictLM · Relatório',
             ...(report?.media?.length?{media:report.media}:{}),
             actions:[
               'Tipo detectado · '+String(brainReport.data?.blueprint?.label||brainReport.data?.blueprint?.kind||'relatório personalizado'),
@@ -879,7 +879,7 @@ export function ChatShell({onOpenLegal}:Props){
         }
         // If the dedicated orchestrator is unavailable, continue through the
         // normal PredictLM answer path with the report contract already active.
-        setActivity(['Report Architect avançado indisponível · usando rota normal com contrato de relatório']);
+        setActivity(['Continuando o relatório pela rota disponível']);
       }
 
       if(fraudIntent&&!processNumber){
@@ -1101,6 +1101,7 @@ export function ChatShell({onOpenLegal}:Props){
           messages:[...messages,{role:'user',content:prompt}],
           language,
           brainContext,
+          sessionId:active?.id||'',
           signal:turnController.signal
         });
         if(streamed.ok)return;
@@ -1238,7 +1239,7 @@ export function ChatShell({onOpenLegal}:Props){
             content:report?.content||puter.text,
             engine:'Predict Auto',
             ...(report?.media?.length?{media:report.media}:{}),
-            ...(report?{actions:['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']}:{}),
+            ...(report?{actions:['Relatório validado · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']}:{}),
             status:'done'
           });
           return;
@@ -1246,9 +1247,9 @@ export function ChatShell({onOpenLegal}:Props){
       }
 
       setActivity([
-        'PROVIDER MESH · APIs não concluíram o turno',
-        ...(currentNeural.loaded||currentWebLLM.loaded?['NEURAL LOCAL · tentando geração local']:['PREDICT CORE · tentando conhecimento local']),
-        'VERIFY · preservando o pedido original'
+        'A rota principal não concluiu o turno',
+        ...(currentNeural.loaded||currentWebLLM.loaded?['Tentando geração local']:['Tentando resposta local']),
+        'Preservando o pedido original'
       ]);
 
       const tryLocalBrain=async()=>{
@@ -1263,11 +1264,11 @@ export function ChatShell({onOpenLegal}:Props){
               const labels:Record<string,string>={
                 recall:'Recuperando contexto relevante',
                 plan:'PLAN · estruturando resposta',
-                forge:'FORGE · gerando resposta',
-                aegis:'AEGIS · revisando resposta',
-                verify:'VERIFY · validando resposta'
+                forge:'Gerando resposta',
+                aegis:'Revisando resposta',
+                verify:'Validando resposta'
               };
-              setActivity([labels[stage]||'PREDICT CORE · processando']);
+              setActivity([labels[stage]||'Processando']);
             }
           });
           const gate=publicAnswerGate(local.content,language,prompt);
@@ -1296,7 +1297,7 @@ export function ChatShell({onOpenLegal}:Props){
                 actions:[
                   'Resposta local validada',
                   ...(localSources.length?['Contexto relevante · '+localSources.length+' fonte(s)']:[]),
-                  ...(report?['Report Architect · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
+                  ...(report?['Relatório validado · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
                 ]
               }:{}),
               status:'done'
@@ -1588,7 +1589,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>FreeLLM padrão · APIs + local fallback</small></span></div>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Resposta automática · nuvem + local</small></span></div>
       </div>
     </aside>
     {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
@@ -1696,7 +1697,7 @@ function Composer(props:any){
             <div className="grok-auto-status">
               <span><i className="online"/> PredictLM Core · resposta principal</span>
               <span><i className={localReady?'online':''}/> {localReady?'Neural Local pronto':'Neural Local sob demanda'}</span>
-              <small>{learningStats?.sources?.total||0} fontes · Skill Forge {learningStats?.githubKnowledge?.chunks||0} chunks · autoaprendizado {autoLearningStats?.promoted||0} lições/{autoLearningStats?.evidence||0} evidências · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
+              <small>{learningStats?.sources?.total||0} fontes · conhecimento {learningStats?.githubKnowledge?.chunks||0} chunks · autoaprendizado {autoLearningStats?.promoted||0} lições/{autoLearningStats?.evidence||0} evidências · memória {memoryStats?.trusted||0}/{memoryStats?.count||0}</small>
             </div>
             {!localReady&&<button onClick={enableAutoLocal}><b>Ativar Neural Local</b><span>Escolhe automaticamente 9B → 4B → 1.7B via WebGPU. Em PC sem WebGPU, mantém compatibilidade local e o Predict Auto usa a rota web para tarefas difíceis.</span></button>}
             {localReady&&<button onClick={unloadNeural}><b>Liberar memória local</b><span>Descarrega GPU/CPU local; o Predict Auto continua por knowledge, pesquisa e providers configurados.</span></button>}
