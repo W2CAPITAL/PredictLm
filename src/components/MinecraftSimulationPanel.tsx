@@ -51,6 +51,7 @@ import {
   type MinecraftBrainState
 } from '@/lib/simulation/minecraft-brain-agents';
 import {MinecraftFirstPerson3D} from '@/components/MinecraftFirstPerson3D';
+import {CONTROLLER_COVERAGE,MINECRAFT_ARENA_BANNER} from '@/lib/simulation/cognitive-world-contract';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
@@ -150,7 +151,8 @@ export function MinecraftSimulationPanel(){
   const worldRef=useRef(world);
   const brainsRef=useRef(brains);
   const viewAgent=viewTarget==='player'?null:brains.agents[viewTarget];
-  const viewLabel=viewTarget==='player'?'Você':viewAgent?.label||'Cérebro';
+  const viewLabel=viewTarget==='player'?'Você':viewAgent?.label||'Controller';
+  const selectedCoverage=viewTarget==='player'?null:CONTROLLER_COVERAGE[viewTarget];
   const viewWorld=useMemo(()=>{
     if(!viewAgent)return world;
     return normalizeVoxelWorld({
@@ -481,20 +483,20 @@ export function MinecraftSimulationPanel(){
     }
     const brain=brains.agents[target];
     setViewRadius(BRAIN_VISION[target].radius);
-    setMessage(brain.label+' · '+BRAIN_VISION[target].description+' · pensamento atual: '+brain.publicThought);
+    setMessage(brain.label+' · '+BRAIN_VISION[target].description+' · estado público: '+brain.publicThought);
   }
   function reset(){
     const seed=world.seed;
     const fresh=createVoxelWorld(seed);
     setWorld(fresh);
     setBrains(createMinecraftBrainState(fresh));
-    setMessage('Mundo Minecraft reiniciado com a mesma seed e os quatro cérebros reposicionados.');
+    setMessage('Mundo Minecraft reiniciado com a mesma seed e os quatro controllers reposicionados.');
   }
   function newWorld(){
     const fresh=createVoxelWorld();
     setWorld(fresh);
     setBrains(createMinecraftBrainState(fresh));
-    setMessage('Novo mundo Minecraft procedural criado para os quatro cérebros.');
+    setMessage('Novo mundo Minecraft procedural criado para os quatro controllers.');
   }
   function exportWorld(){
     const payload=JSON.stringify({
@@ -520,7 +522,7 @@ export function MinecraftSimulationPanel(){
       const restoredBrains=normalizeMinecraftBrainState(raw?.brains,restored);
       setWorld(restored);
       setBrains(restoredBrains);
-      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+', quatro cérebros sincronizados.');
+      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+', quatro controllers sincronizados.');
     }catch{
       setMessage('Save inválido; nenhum dado do mundo foi alterado.');
     }finally{
@@ -573,7 +575,7 @@ export function MinecraftSimulationPanel(){
     </header>
 
     <div className={styles.povBar}>
-      <span><Eye size={14}/> Visão no cérebro</span>
+      <span><Eye size={14}/> POV do controller</span>
       <button className={viewTarget==='player'?styles.active:''} onClick={()=>selectView('player')}>Você</button>
       {(Object.keys(BRAIN_VISION) as MinecraftBrainId[]).map(id=><button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>{BRAIN_VISION[id].label}</button>)}
       <small>{viewTarget==='player'?'Câmera e controles manuais.':BRAIN_VISION[viewTarget].description}</small>
@@ -650,7 +652,7 @@ export function MinecraftSimulationPanel(){
 
       <aside className={styles.side}>
         <section>
-          <header><b>Cérebros jogando</b><span>{running?'autônomos':'pausados'}</span></header>
+          <header><b>Controllers no mesmo mundo</b><span>{running?'autônomos':'pausados'}</span></header>
           <div className={styles.list}>
             {(Object.keys(brains.agents) as MinecraftBrainId[]).map(id=>{
               const brain=brains.agents[id];
