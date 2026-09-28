@@ -114,8 +114,7 @@ export async function POST(req:Request){
         quality:rendered.quality,
         blueprint,
         apiBudget:budget.snapshot(),
-        apiBudget:budget.snapshot(),
-      brains:{forge:true,aegis:true,parallax:true,councilX10:false,chair:true,repaired,budgetSafe:true}
+        brains:{forge:true,aegis:true,parallax:true,councilX10:false,chair:true,repaired,budgetSafe:true}
       },{headers:{'Cache-Control':'no-store'}});
     }
 
