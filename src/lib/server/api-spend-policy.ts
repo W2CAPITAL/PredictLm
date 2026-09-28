@@ -72,6 +72,12 @@ export function mediaAutoRepairLimit(){
   return intEnv('PREDICTLM_MEDIA_AUTO_REPAIR_LIMIT',fallback,0,2);
 }
 
+export function cleanRepairEnabled(){
+  const explicit=String(process.env.PREDICTLM_CLEAN_REPAIR||'').trim().toLowerCase();
+  if(explicit)return /^(1|true|yes|on)$/.test(explicit);
+  return apiSpendMode()==='quality';
+}
+
 export function agenticReviewEnabled(deep:boolean){
   const explicit=String(process.env.PREDICTLM_AGENTIC_REVIEW||'').trim().toLowerCase();
   if(explicit)return /^(1|true|yes|on)$/.test(explicit);
@@ -104,6 +110,7 @@ export function spendPolicySnapshot(){
       autoRepairs:mediaAutoRepairLimit(),
       remoteCaptions:remoteCaptionEnabled()
     },
+    cleanRepair:cleanRepairEnabled(),
     backgroundRemoteCalls:backgroundRemoteCallsEnabled()
   };
 }
