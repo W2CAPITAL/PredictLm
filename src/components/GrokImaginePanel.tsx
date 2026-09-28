@@ -52,6 +52,17 @@ type GroundingTrace={
   candidateCount:number;
   candidateScore:number;
   identityMemoryUsed:boolean;
+  intent?:{
+    specific:boolean;
+    specificityScore:number;
+    identitySensitive:boolean;
+    requiresReferences:boolean;
+    requiresLiteral:boolean;
+    continuation:boolean;
+    entities:Array<{label:string;kind:string;form?:string|null;franchise?:string|null}>;
+    styleHints:string[];
+    reasons:string[];
+  };
 };
 
 type RejectedCandidate={
@@ -447,43 +458,75 @@ export function GrokImaginePanel(){
     providerPolicy?:{avoidProviders?:string[];requireReferenceTransport?:boolean;strictIdentityProvider?:boolean}
   ){
     setImageStage('Preparando referências visuais e identidade…');
-    const r=await fetch('/api/media/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        prompt:renderPrompt,
-        originalPrompt:prompt,
-        promptMode,
-        negativePrompt,
-        style,
-        styleLocked:styleManuallyChosen,
-        attempt:renderAttempt,
-        semanticRepair,
-        semanticRepairHints,
-        directorBrief:apiDirectorBrief,
-        width:ratio.w,
-        height:ratio.h,
-        seed:renderSeed,
-        model:'flux',
-        referenceMode:'auto',
-        candidateIndex,
-        candidateCount,
-        referenceImages:referenceImages.map(x=>x.data),
-        identityReferenceImages,
-        avoidProviders:providerPolicy?.avoidProviders||[],
-        requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
-        strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
-      })
-    });
-    const data=await r.json().catch(()=>({}));
-    if(!r.ok||!data?.url)throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE);
-    const url=String(data.url);
-    setImageStage('Finalizando imagem…');
-    try{
-      await preloadGeneratedImage(url);
-    }catch{
-      throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE);
+    const avoidedProviders=new Set<string>((providerPolicy?.avoidProviders||[]).map(x=>String(x||'').trim()).filter(Boolean));
+    let data:any=null;
+    let url='';
+    let lastDetail='';
+
+    for(let providerAttempt=0;providerAttempt<3;providerAttempt++){
+      if(providerAttempt>0)setImageStage('Provider inválido · tentando outra rota de imagem '+(providerAttempt+1)+'/3…');
+      const r=await fetch('/api/media/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          prompt:renderPrompt,
+          originalPrompt:prompt,
+          promptMode,
+          negativePrompt,
+          style,
+          styleLocked:styleManuallyChosen,
+          attempt:renderAttempt+providerAttempt,
+          semanticRepair,
+          semanticRepairHints,
+          directorBrief:apiDirectorBrief,
+          width:ratio.w,
+          height:ratio.h,
+          seed:renderSeed,
+          model:'flux',
+          referenceMode:'auto',
+          candidateIndex,
+          candidateCount,
+          referenceImages:referenceImages.map(x=>x.data),
+          identityReferenceImages,
+          avoidProviders:[...avoidedProviders],
+          requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
+          strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
+        })
+      });
+      const candidate=await r.json().catch(()=>({}));
+      lastDetail=String(candidate?.detail||candidate?.error||'');
+      if(!r.ok||!candidate?.url){
+        const failed=String(candidate?.provider||'').trim();
+        if(failed)avoidedProviders.add(failed);
+        if(candidate?.exhausted===true)break;
+        continue;
+      }
+
+      const candidateUrl=String(candidate.url);
+      setImageStage('Validando a imagem entregue pelo provider…');
+      try{
+        await preloadGeneratedImage(candidateUrl);
+        data=candidate;
+        url=candidateUrl;
+        break;
+      }catch{
+        const failed=String(candidate?.provider||'').trim();
+        if(failed)avoidedProviders.add(failed);
+        reportMediaError(INVALID_IMAGE_PROVIDER_MESSAGE,{
+          stage:'provider-output-validation',
+          failedProvider:failed||'unknown',
+          model:String(candidate?.model||''),
+          providerAttempt:providerAttempt+1
+        });
+      }
     }
+
+    if(!data||!url){
+      throw new Error(lastDetail&&lastDetail!==INVALID_IMAGE_PROVIDER_MESSAGE
+        ? INVALID_IMAGE_PROVIDER_MESSAGE+' · '+lastDetail
+        : INVALID_IMAGE_PROVIDER_MESSAGE);
+    }
+    setImageStage('Finalizando imagem…');
     const referenceReview=data?.referenceReview||{};
     setGroundingTrace({
       query:String(data.referenceQuery||''),
@@ -504,7 +547,20 @@ export function GrokImaginePanel(){
         : [],
       candidateCount:Number(data?.bestImagePlan?.candidateCount||candidateCount||1),
       candidateScore:0,
-      identityMemoryUsed:Number(data?.identityMemoryReferenceCount||0)>0
+      identityMemoryUsed:Number(data?.identityMemoryReferenceCount||0)>0,
+      intent:data?.imageIntent?{
+        specific:!!data.imageIntent.specific,
+        specificityScore:Number(data.imageIntent.specificityScore||0),
+        identitySensitive:!!data.imageIntent.identitySensitive,
+        requiresReferences:!!data.imageIntent.requiresReferences,
+        requiresLiteral:!!data.imageIntent.requiresLiteral,
+        continuation:!!data.imageIntent.continuation,
+        entities:Array.isArray(data.imageIntent.entities)?data.imageIntent.entities.map((x:any)=>({
+          label:String(x?.label||''),kind:String(x?.kind||''),form:x?.form?String(x.form):null,franchise:x?.franchise?String(x.franchise):null
+        })).filter((x:any)=>x.label).slice(0,8):[],
+        styleHints:Array.isArray(data.imageIntent.styleHints)?data.imageIntent.styleHints.map((x:any)=>String(x||'')).filter(Boolean).slice(0,5):[],
+        reasons:Array.isArray(data.imageIntent.reasons)?data.imageIntent.reasons.map((x:any)=>String(x||'')).filter(Boolean).slice(0,6):[]
+      }:undefined
     });
     return {
       url,
@@ -523,7 +579,8 @@ export function GrokImaginePanel(){
       providerWarning:String(data.providerWarning||''),
       referenceQuery:String(data.referenceQuery||''),
       referenceReview,
-      searchedReferenceCount:Number(data.searchedReferenceCount||0)
+      searchedReferenceCount:Number(data.searchedReferenceCount||0),
+      imageIntent:data?.imageIntent||null
     };
   }
 
