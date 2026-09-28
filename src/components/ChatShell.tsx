@@ -1792,18 +1792,18 @@ export function ChatShell({onOpenLegal}:Props){
     title={voiceUi.messageId===m.id&&voiceUi.label?voiceUi.label:'Ouvir resposta'}
   >{voiceUi.messageId===m.id&&(voiceUi.state==='starting'||voiceUi.state==='speaking')?<VolumeX size={12}/>:<Volume2 size={12}/>}</button>
   <button
-    className={'grok-feedback-button positive '+(feedbackByMessage[m.id]==='positive'?'active':feedbackByMessage[m.id]==='sending-positive'?'sending':feedbackByMessage[m.id]==='sending-negative'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    className={'grok-feedback-button positive '+(feedbackByMessage[m.id]==='positive'?'active':feedbackByMessage[m.id]==='sending-positive'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
     data-state={feedbackByMessage[m.id]||'idle'}
     aria-pressed={feedbackByMessage[m.id]==='positive'}
     onClick={()=>void sendFeedback('positive',m.content,m.id)}
-    title={feedbackByMessage[m.id]==='positive'?'Marcado como útil':feedbackByMessage[m.id]==='sending-positive'?'Enviando útil…':feedbackByMessage[m.id]==='sending-negative'?'Enviando não útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta útil'}
+    title={feedbackByMessage[m.id]==='positive'?'Marcado como útil':feedbackByMessage[m.id]==='sending-positive'?'Enviando útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta útil'}
   ><ThumbsUp size={12}/></button>
   <button
-    className={'grok-feedback-button negative '+(feedbackByMessage[m.id]==='negative'?'active':feedbackByMessage[m.id]==='sending-positive'?'sending':feedbackByMessage[m.id]==='sending-negative'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    className={'grok-feedback-button negative '+(feedbackByMessage[m.id]==='negative'?'active':feedbackByMessage[m.id]==='sending-negative'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
     data-state={feedbackByMessage[m.id]||'idle'}
     aria-pressed={feedbackByMessage[m.id]==='negative'}
     onClick={()=>void sendFeedback('negative',m.content,m.id)}
-    title={feedbackByMessage[m.id]==='negative'?'Marcado como não útil':feedbackByMessage[m.id]==='sending-positive'?'Enviando útil…':feedbackByMessage[m.id]==='sending-negative'?'Enviando não útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta incompleta ou errada'}
+    title={feedbackByMessage[m.id]==='negative'?'Marcado como não útil':feedbackByMessage[m.id]==='sending-negative'?'Enviando não útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta incompleta ou errada'}
   ><ThumbsDown size={12}/></button>
   {voiceUi.messageId===m.id&&voiceUi.label?<span className={'grok-feedback-label '+voiceUi.state} role="status" aria-live="polite">{voiceUi.state==='speaking'?<i/>:null}{voiceUi.label}</span>:null}
   {feedbackByMessage[m.id]==='positive'?<span className="grok-feedback-label success">Útil ✓</span>:null}
