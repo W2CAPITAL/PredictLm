@@ -390,14 +390,20 @@ function researchMeta(query:string,web:any[],news:any[]){
   };
 }
 
-async function optionalXaiResearch(query:string,limit:number,mode:XaiSearchMode,maxTurns:number){
+async function optionalXaiResearch(query:string,limit:number,mode:XaiSearchMode,maxTurns:number,filters?:{allowDomains?:string[];excludeDomains?:string[];allowHandles?:string[];excludeHandles?:string[];from?:string;to?:string}){
   if(!xaiSearchConfigured())return {web:[] as any[],warnings:[] as string[],used:false,mode:null as string|null,citations:0};
   try{
     const result=await xaiSearch({
       query,
       mode,
       maxTurns,
-      linksOnly:false
+      linksOnly:false,
+      allowDomains:filters?.allowDomains,
+      excludeDomains:filters?.excludeDomains,
+      allowHandles:filters?.allowHandles,
+      excludeHandles:filters?.excludeHandles,
+      from:filters?.from,
+      to:filters?.to
     });
     return {
       web:result.web.slice(0,Math.max(3,Math.min(limit,12))),
@@ -503,6 +509,14 @@ export async function POST(req:Request){
       ? requestedXaiMode
       : inferXaiSearchMode(query);
     const xaiTurns=depth==='comprehensive'?5:depth==='balanced'?3:2;
+    const xaiFilters={
+      allowDomains:Array.isArray(body?.allowDomains)?body.allowDomains:undefined,
+      excludeDomains:Array.isArray(body?.excludeDomains)?body.excludeDomains:undefined,
+      allowHandles:Array.isArray(body?.allowHandles)?body.allowHandles:undefined,
+      excludeHandles:Array.isArray(body?.excludeHandles)?body.excludeHandles:undefined,
+      from:typeof body?.from==='string'?body.from:undefined,
+      to:typeof body?.to==='string'?body.to:undefined
+    };
 
     const key=process.env.FIRECRAWL_API_KEY;
     if(key){
@@ -521,7 +535,7 @@ export async function POST(req:Request){
         const [apifySettled,academicSettled,xaiResult]=await Promise.all([
           apifyItems(limit).catch(()=>[] as any[]),
           academicSearch(query,Math.min(depth==='comprehensive'?8:6,limit)).catch(()=>[] as any[]),
-          optionalXaiResearch(query,limit,xaiMode,xaiTurns)
+          optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
         ]);
         const web=enrichAndRank(query,[...merged.web,...apifySettled,...academicSettled,...xaiResult.web],limit);
         const news=enrichAndRank(query,merged.news,limit);
@@ -541,7 +555,7 @@ export async function POST(req:Request){
       }catch(error:any){
         const [fallback,xaiResult]=await Promise.all([
           freeSearch(query,limit),
-          optionalXaiResearch(query,limit,xaiMode,xaiTurns)
+          optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
         ]);
         const web=enrichAndRank(query,[...(fallback.web||[]),...xaiResult.web],limit);
         return Response.json({
@@ -564,7 +578,7 @@ export async function POST(req:Request){
     const freePlans=plan.slice(0,depth==='comprehensive'?3:depth==='balanced'?2:1);
     const [settled,xaiResult]=await Promise.all([
       Promise.allSettled(freePlans.map(q=>freeSearch(q,Math.max(6,Math.ceil(limit/freePlans.length)+2)))),
-      optionalXaiResearch(query,limit,xaiMode,xaiTurns)
+      optionalXaiResearch(query,limit,xaiMode,xaiTurns,xaiFilters)
     ]);
     const successful=settled.filter((x):x is PromiseFulfilledResult<any>=>x.status==='fulfilled').map(x=>x.value);
     if(!successful.length){
