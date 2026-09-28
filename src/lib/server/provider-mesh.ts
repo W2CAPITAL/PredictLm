@@ -1,7 +1,8 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { jevRouteDecision } from '@/lib/jev-policy';
+import {allExternalProviderSpecs} from '@/lib/server/external-provider-fabric';
 
-export type ProviderProtocol='openai'|'anthropic';
+export type ProviderProtocol='openai'|'anthropic'|'responses';
 export interface ProviderSpec{
   name:string;
   base:string;
@@ -105,8 +106,18 @@ export function configuredProviders(){
     const base=raw.endsWith('/v1')?raw:raw+'/v1';
     if(serverCanReach(base))push({name:'ollama',base,key:process.env.OLLAMA_API_KEY||'ollama',model:process.env.OLLAMA_MODEL});
   }
+  for(const external of allExternalProviderSpecs()){
+    push({
+      name:external.name,
+      base:external.base,
+      key:external.key,
+      model:external.model,
+      protocol:external.protocol,
+      headers:external.headers
+    });
+  }
 
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcode,gptoss,puterpool,freellmapi,ollama,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,minimax,ark,anthropic,openai,xai,mistral,huggingface,together,fireworks,sambanova,cerebras,deepinfra,requesty,modelscope,siliconflow,nebius,novita,scaleway,venice,friendli,inference-net,llm7,hetzner,nous,ollama-cloud')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const idx=preferred.indexOf(name);return idx<0?999:idx};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -157,6 +168,28 @@ export function rankProviders(prompt:string,deep=false){
     .map(x=>x.provider);
 }
 
+async function collectResponsesSse(response:Response){
+  const raw=await response.text();
+  let out='';
+  for(const rawLine of raw.split(/\r?\n/)){
+    const line=rawLine.trim();
+    if(!line.startsWith('data:'))continue;
+    const payload=line.slice(5).trim();
+    if(!payload||payload==='[DONE]')continue;
+    let data:any={};try{data=JSON.parse(payload)}catch{continue}
+    if(data?.type==='response.output_text.delta'&&typeof data?.delta==='string')out+=data.delta;
+    if(data?.type==='response.completed'&&!out){
+      const output=Array.isArray(data?.response?.output)?data.response.output:[];
+      for(const item of output){
+        for(const part of Array.isArray(item?.content)?item.content:[]){
+          if(part?.type==='output_text'&&typeof part?.text==='string')out+=part.text;
+        }
+      }
+    }
+  }
+  return out.trim();
+}
+
 export async function callProviderText(
   provider:ProviderSpec,
   messages:ProviderMessage[],
@@ -167,6 +200,28 @@ export async function callProviderText(
   const timeoutMs=Math.max(1000,options.timeoutMs||16000);
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
+    if(provider.protocol==='responses'){
+      const response=await fetch(provider.base.replace(/\/$/,'')+'/responses',{
+        method:'POST',
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+provider.key,
+          ...(provider.headers||{})
+        },
+        body:JSON.stringify({
+          model:provider.model,
+          input:messages.map(message=>({role:message.role,content:[{type:'input_text',text:message.content}]})),
+          stream:true,
+          max_output_tokens:options.maxTokens||(deep?2200:1400)
+        })
+      });
+      if(!response.ok)throw new Error(provider.name+' '+response.status);
+      const text=await collectResponsesSse(response);
+      if(!text)throw new Error(provider.name+' empty response');
+      recordProviderSuccess(provider);
+      return text;
+    }
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
