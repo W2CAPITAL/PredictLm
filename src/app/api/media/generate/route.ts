@@ -569,7 +569,7 @@ export async function POST(req:Request){
             ? {'Content-Type':'application/json','x-goog-api-key':provider.key}
             : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
           body:JSON.stringify(providerBody),
-          signal:AbortSignal.timeout(90000)
+          signal:AbortSignal.timeout(budget.timeout(15000,5000))
         });
         const data=await upstream.json().catch(()=>({}));
         if(!upstream.ok){
