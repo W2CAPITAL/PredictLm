@@ -5,6 +5,7 @@ import {
   VOXEL_BLOCKS,
   VOXEL_CHUNK_SIZE,
   VOXEL_SEA_LEVEL,
+  VOXEL_WORLD_HEIGHT,
   blockAt,
   chunkSnapshot,
   surfaceAt,
@@ -21,6 +22,7 @@ import type {MinecraftBrainId,MinecraftBrainState} from '@/lib/simulation/minecr
 import styles from './MinecraftFirstPerson3D.module.css';
 
 type Vec3=[number,number,number];
+type RGB=[number,number,number];
 type RGBA=[number,number,number,number];
 
 interface Props{
