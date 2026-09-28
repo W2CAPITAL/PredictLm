@@ -38,7 +38,7 @@ const AGENT_HINTS:Record<OmniCoreDomain,string[]>={
 };
 
 const CAPABILITY_HINTS:Record<OmniCoreDomain,string[]>={
-  chat:['predictlm-master','human-presence','provider-mesh','prompt-os'],
+  chat:['predictlm-master','human-presence','provider-mesh','free-provider-fabric','prompt-os'],
   build:['predictlm-master','agent-fabric','autodev-runtime','build-review','testing','vibe-security','open-lovable-build','capability-fusion'],
   research:['predictlm-master','web-reach','deep-research','research-source-matrix','evidence-graph','grok-xai','github-knowledge'],
   legal:['predictlm-master','lexis-twincore-x10','predictlm-scanner','datajud','report-architect','office-artifacts'],
@@ -48,7 +48,7 @@ const CAPABILITY_HINTS:Record<OmniCoreDomain,string[]>={
   security:['predictlm-master','defensive-bug-hunter','fraud-shield','vibe-security','build-review'],
   memory:['predictlm-master','second-brain','neurocore','github-knowledge'],
   education:['predictlm-master','tutor-mode','books-courses','research-source-matrix'],
-  performance:['predictlm-master','token-budget','cache','nvidia-accelerated','runtime-federation','testing']
+  performance:['predictlm-master','token-budget','cache','free-provider-fabric','nvidia-accelerated','runtime-federation','testing']
 };
 
 function requestedCores(prompt:string,domain:OmniCoreDomain):NeuroControllerId[]{
