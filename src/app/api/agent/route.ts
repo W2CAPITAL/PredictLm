@@ -13,6 +13,7 @@ import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
 import { jevRouteDecision, jevSelectWorkspaceFiles } from '@/lib/jev-policy';
+import {agenticReviewEnabled,createProviderTurnBudget,estimateProviderTokens,type ProviderTurnBudget} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -79,7 +80,9 @@ function validateBuildPayload(raw:any):BuildPayload|null{
 async function callWithFallback(
   providers:ProviderSpec[],
   messages:ProviderMessage[],
-  options:{deep?:boolean;timeoutMs?:number;maxTokens?:number;temperature?:number;startAt?:number}={}
+  options:{deep?:boolean;timeoutMs?:number;maxTokens?:number;temperature?:number;startAt?:number}={},
+  budget?:ProviderTurnBudget,
+  purpose='build'
 ){
   const errors:string[]=[];
   if(!providers.length)throw new Error('Nenhum provider server-side configurado.');
@@ -87,6 +90,11 @@ async function callWithFallback(
   for(let offset=0;offset<Math.min(3,providers.length);offset++){
     const provider=providers[(start+offset)%providers.length];
     try{
+      const reservation=budget?.reserve(provider,estimateProviderTokens(messages,options.maxTokens||2200),purpose);
+      if(reservation&&!reservation.ok){
+        errors.push(provider.name+': provider-budget-'+reservation.reason);
+        continue;
+      }
       const text=await callProviderText(provider,messages,{
         deep:options.deep,
         timeoutMs:options.timeoutMs,
@@ -140,6 +148,8 @@ export async function POST(req:Request){
     const mode=String(body?.mode||'deep');
     const deep=mode!=='fast';
     const routeDecision=jevRouteDecision(task,{deep,hasTools:true,build:true,contextChars:files.reduce((n,x)=>n+x.content.length,0)});
+    const budget=createProviderTurnBudget(String(body?.sessionId||'build').slice(0,120));
+    const staged=body?.agentic===true||agenticReviewEnabled();
     const providers=rankProviders('software build code architecture '+task+' route '+routeDecision.tier,true);
     if(!providers.length){
       return Response.json({error:'Nenhum provider server-side configurado para o Build.',code:'NO_PROVIDER'},{status:503});
@@ -154,6 +164,58 @@ export async function POST(req:Request){
     const unityContext=/\b(unity|unity3d|gameobject|monobehaviour|rigidbody|collider|unity webgl)\b/i.test(task)
       ? unityFabricContext()
       : '';
+
+    if(!staged){
+      const selected=jevSelectWorkspaceFiles(files,task,{maxFiles:18,maxChars:120000});
+      const relevant=selected.files.length?selected.files:pickRelevantFiles(files,[],task);
+      const direct=await callWithFallback(providers,[
+        {
+          role:'system',
+          content:[
+            BUILD_SYSTEM,
+            master,
+            skillContext,
+            projectInstructions,
+            fusion,
+            unityContext,
+            'BUDGET-SAFE BUILD MODE: inspect, plan and implement in this single provider call.',
+            'Return the complete BuildPayload JSON directly; do not emit separate explorer/reviewer prose.',
+            'Use the supplied current files as source of truth and preserve unrelated project behavior.'
+          ].filter(Boolean).join('\n\n')
+        },
+        {
+          role:'user',
+          content:[
+            'Mode: '+mode,
+            'Task: '+task,
+            'Relevant current files: '+JSON.stringify(compactFilePayload(relevant))
+          ].join('\n\n')
+        }
+      ],{deep,timeoutMs:18000,maxTokens:deep?5200:3600,temperature:0.16,startAt:0},budget,'build-direct');
+      const payload=validateBuildPayload(parseJsonObject(direct.text));
+      if(!payload)throw new Error('Provider returned invalid structured build output');
+      const runLedger=buildAgentRunLedger({
+        task,
+        explorations:[],
+        architecture:{plan:payload.plan,filesToChange:payload.files.map(file=>file.path),tests:[]},
+        files:payload.files,
+        review:null,
+        repaired:false,
+        providers:[direct.provider.name]
+      });
+      return Response.json({
+        ...payload,
+        runLedger,
+        apiBudget:budget.snapshot(),
+        agentic:{
+          mode:'direct-budget',
+          jev:{tier:routeDecision.tier,confidence:routeDecision.confidence,reasons:routeDecision.reasons,context:selected.stats},
+          roles:['implementer','local-verify'],
+          providers:{implementer:direct.provider.name},
+          review:{approved:null,confidence:0,issues:[],missingRequirements:[]}
+        }
+      },{headers:{'Cache-Control':'no-store'}});
+    }
 
     const explorerSystem=[
       'You are a codebase explorer. Inspect before proposing changes.',
@@ -175,7 +237,7 @@ export async function POST(req:Request){
       callWithFallback(providers,[
         {role:'system',content:explorerSystem},
         {role:'user',content:explorerUser}
-      ],{deep:false,timeoutMs:8500,maxTokens:900,temperature:0.15,startAt:index})
+      ],{deep:false,timeoutMs:8500,maxTokens:900,temperature:0.15,startAt:index},budget,'build-explorer')
     ));
     const explorations=explorerResults
       .filter((x):x is PromiseFulfilledResult<{text:string;provider:ProviderSpec}>=>x.status==='fulfilled')
@@ -198,7 +260,7 @@ export async function POST(req:Request){
         'EXPLORER REPORTS:\n'+(explorations.map(x=>'['+x.provider+'] '+x.text).join('\n\n')||'No explorer report available; infer conservatively from manifest.'),
         'WORKSPACE MANIFEST:\n'+manifest
       ].join('\n\n')}
-    ],{deep,timeoutMs:10000,maxTokens:1200,temperature:0.12,startAt:0});
+    ],{deep,timeoutMs:10000,maxTokens:1200,temperature:0.12,startAt:0},budget,'build-architect');
 
     const architecture=parseJsonObject<any>(architect.text)||{
       plan:['Preserve the current architecture','Implement the requested behavior','Validate changed files'],
@@ -227,7 +289,7 @@ export async function POST(req:Request){
         'Task: '+task,
         'Relevant current files: '+JSON.stringify(compactFilePayload(relevant))
       ].join('\n\n')}
-    ],{deep,timeoutMs:18000,maxTokens:deep?5200:3600,temperature:0.18,startAt:0});
+    ],{deep,timeoutMs:18000,maxTokens:deep?5200:3600,temperature:0.18,startAt:0},budget,'build-implementer');
 
     let payload=validateBuildPayload(parseJsonObject(implementation.text));
     if(!payload)throw new Error('Provider returned invalid structured build output');
@@ -249,7 +311,7 @@ export async function POST(req:Request){
         'ARCHITECT PLAN:\n'+compactText(JSON.stringify(architecture),1500),
         'PROPOSED CHANGES:\n'+compactText(JSON.stringify(payload),5200)
       ].join('\n\n')}
-    ],{deep:false,timeoutMs:9000,maxTokens:1300,temperature:0.05,startAt:providers.length>1?1:0});
+    ],{deep:false,timeoutMs:9000,maxTokens:1300,temperature:0.05,startAt:providers.length>1?1:0},budget,'build-review');
 
     const review=parseJsonObject<BuildReview>(reviewCall.text);
     let repairProvider:string|null=null;
@@ -274,7 +336,7 @@ export async function POST(req:Request){
           'VALIDATED REVIEW:\n'+compactText(JSON.stringify(review),2200),
           'RELEVANT ORIGINAL FILES:\n'+compactText(JSON.stringify(compactFilePayload(relevant)),5200)
         ].join('\n\n')}
-      ],{deep,timeoutMs:17000,maxTokens:deep?5200:3600,temperature:0.12,startAt:providers.length>2?2:0});
+      ],{deep,timeoutMs:17000,maxTokens:deep?5200:3600,temperature:0.12,startAt:providers.length>2?2:0},budget,'build-repair');
       const fixed=validateBuildPayload(parseJsonObject(repaired.text));
       if(fixed){
         payload=fixed;
@@ -308,6 +370,7 @@ export async function POST(req:Request){
       ...payload,
       plan,
       runLedger,
+      apiBudget:budget.snapshot(),
       agentic:{
         mode:runPlan.staged?'staged':'direct',
         jev:{tier:routeDecision.tier,confidence:routeDecision.confidence,reasons:routeDecision.reasons,context:jevSelection.stats},
