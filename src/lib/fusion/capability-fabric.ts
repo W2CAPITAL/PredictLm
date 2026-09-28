@@ -84,7 +84,8 @@ export const REQUESTED_FUSION_REPOS=[
   'blader/humanizer',
   'gargpratyush/jev-router',
   'tamaratran/fast-jev-compaction',
-  'dbreunig/building-with-jev-skill'
+  'dbreunig/building-with-jev-skill',
+  'Wangnov/grok-skills'
 ] as const;
 
 export const FUSION_SOURCES:FusionSource[]=[
@@ -158,6 +159,7 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'gargpratyush/jev-router',license:'unverified',mode:'reference',areas:['chat','social'],ideas:['task-aware route selection','keep simple creator tasks cheap and complex campaigns deep']},
   {repo:'tamaratran/fast-jev-compaction',license:'unverified',mode:'reference',areas:['memory','social'],ideas:['verbatim-first compaction','preserve identity anchors and active campaign facts']},
   {repo:'dbreunig/building-with-jev-skill',license:'unverified',mode:'reference',areas:['build','social'],ideas:['JEV skill implementation patterns','bounded context engineering']},
+  {repo:'Wangnov/grok-skills',license:'MIT',mode:'adapt',areas:['research','media','video','browser'],ideas:['xAI web/X search with normalized citations','capability preflight before choosing local tools','logged-in Grok CLI as local-only media path','verify generated media artifacts before success','adaptive ffmpeg chroma-key/concat/watermark pipeline']},
   {repo:'snarepigeonrouter/Cap-Cut-Pro',license:'unverified',mode:'reference',areas:['video'],ideas:['quarantined provenance; do not use cracked/bypass packages as a production dependency']},
   {repo:'Hommy-master/capcut-mate',license:'unverified',mode:'reference',areas:['video','social'],ideas:['reference-only editing workflow until provenance/license/runtime contract is verified']}
 ];
@@ -187,6 +189,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'tie every conclusion to source evidence and record contradictions/gaps',
     'make runs reproducible with query plan, source set and timestamp',
     'use Firecrawl only when configured; otherwise preserve the free-search path and never pretend scraping occurred',
+    'when XAI_API_KEY is configured, xAI web/X search may supplement evidence but must pass the same relevance/source-quality gates and never replace citations with provider prose',
     'use curated indexes such as Awesome/Public APIs as discovery leads, then verify against primary sources',
     'support bounded change monitoring instead of repeated full re-research'
   ],
@@ -200,6 +203,7 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'use staged generation → review → repair → upscale/postprocess',
     'treat ComfyUI workflow JSON as an optional local/remote production graph for image/edit/upscale when configured',
     'keep optional external stylizers/upscalers behind adapters; never pretend they ran',
+    'treat logged-in Grok CLI media as a local/desktop capability only; hosted Vercel must use actually configured media providers',
     'use Unity-style camera/transform scene contracts when a media preview or simulation surface benefits from a shared 3D coordinate model'
   ],
   video:[
@@ -208,7 +212,8 @@ const SURFACE_RULES:Record<FusionSurface,string[]>={
     'track identity and scene state across frames',
     'use Unity-style Transform/Camera scene snapshots when useful for deterministic shot blocking or simulation-to-video continuity',
     'distinguish true generative video from local keyframe motion fallback',
-    'use recoverable job stages and quality gates'
+    'use recoverable job stages and quality gates',
+    'probe ffmpeg filters/encoders before chroma key, alpha WebM, concat or watermark; choose postprocess commands to match the real build'
   ],
   simulation:[
     'agents act from local perception plus persistent memory, not omniscient state',
