@@ -309,7 +309,7 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
     const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
     if(remaining<1200)break;
     try{
-      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)),budget,'simulation-plan');
       const clean=simulationPlanGate(raw);
       if(!clean){errors.push(provider.name+' invalid-plan');continue}
       return Response.json({content:clean,provider:provider.name,model:provider.model,mode:'simulation-plan'},{headers:{'Cache-Control':'no-store'}});
@@ -393,7 +393,7 @@ async function voxelPlanResponse(configured:Provider[],body:any,prompt:string,bu
     const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
     if(remaining<1200)break;
     try{
-      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+      const raw=await callProvider(provider,messages,false,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)),budget,'voxel-plan');
       const clean=voxelPlanGate(raw);
       if(!clean){errors.push(provider.name+' invalid-voxel-plan');continue}
       return Response.json({content:clean,provider:provider.name,model:provider.model,mode:'voxel-plan'},{headers:{'Cache-Control':'no-store'}});
@@ -733,7 +733,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,Math.max(1,budget.maxTotalCalls));
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -756,10 +756,11 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
       return gate.content;
     };
 
-    const raw=await callProvider(provider,messages,false,timeoutMs);
+    const raw=await callProvider(provider,messages,false,timeoutMs,budget,'clean-answer');
     try{
       return {provider,content:validate(raw)};
     }catch(firstError:any){
+      if(!repairCallsEnabled())throw firstError;
       const repaired=await callProvider(provider,[
         {role:'system',content:[
           system,
@@ -770,7 +771,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
         ].join('\n\n')},
         ...recent,
         {role:'user',content:compactText(prompt,1200)}
-      ],false,Math.min(timeoutMs,4000));
+      ],false,Math.min(timeoutMs,4000),budget,'clean-repair');
       try{
         return {provider,content:validate(repaired)};
       }catch(secondError:any){
@@ -820,6 +821,38 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string,budget:
     content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
   },{headers:{'Cache-Control':'no-store'}});
 
+  if(!agenticReviewEnabled()){
+    const provider=candidates[0];
+    try{
+      const content=await callProvider(provider,[
+        {
+          role:'system',
+          content:[
+            'Você é o diretor visual interno do PredictLM.',
+            skillContext,
+            'Em uma única passagem: fixe identidade/referências e depois composição/ação/câmera/luz.',
+            'Preserve literalmente o pedido e produza um brief operacional compacto.',
+            'Não exponha chain-of-thought, providers ou processo interno.'
+          ].join('\n')
+        },
+        {role:'user',content:compactText(prompt,2600)}
+      ],true,Math.min(9000,PROVIDER_TIMEOUT_MS),budget,'media-director');
+      return Response.json({
+        content:compactText(content,3000),
+        provider:provider.name,
+        model:provider.model,
+        mode:'media-director',
+        agentic:{roles:['media-director'],reviewed:false,budgetSafe:true},
+        apiBudget:budget.snapshot()
+      },{headers:{'Cache-Control':'no-store'}});
+    }catch{
+      return Response.json({
+        content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director',
+        apiBudget:budget.snapshot()
+      },{status:502,headers:{'Cache-Control':'no-store'}});
+    }
+  }
+
   const roles=[
     {
       name:'identity-reference',
@@ -856,7 +889,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string,budget:
       },
       {role:'user',content:compactText(prompt,2600)}
     ];
-    return callProvider(provider,messages,true,Math.min(9000,PROVIDER_TIMEOUT_MS)).then(text=>({
+    return callProvider(provider,messages,true,Math.min(9000,PROVIDER_TIMEOUT_MS),budget,'media-specialist').then(text=>({
       role:role.name,
       provider,
       text:compactText(text,2200)
@@ -903,7 +936,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string,budget:
           'BRIEFS ESPECIALISTAS:\n'+briefs.map(x=>'['+x.role+'] '+x.text).join('\n\n')
         ].join('\n\n')
       }
-    ],true,Math.min(9000,PROVIDER_TIMEOUT_MS));
+    ],true,Math.min(9000,PROVIDER_TIMEOUT_MS),budget,'media-finalizer');
     const content=compactText(final,3000);
     if(content)return Response.json({
       content,
@@ -970,6 +1003,7 @@ export async function POST(req:Request){
     if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
     if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
     const sessionScope=safeSessionScope(body?.sessionId);
+    const apiBudget=createProviderTurnBudget(sessionScope||'anonymous');
     const lease=acquireChatRequest(req,sessionScope);
     if(!lease.allowed){
       return Response.json(
@@ -996,10 +1030,10 @@ export async function POST(req:Request){
       },{status:503,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
     }
 
-    if(body?.mode==='simulation-plan')return await simulationPlanResponse(configured,body,prompt);
-    if(body?.mode==='voxel-plan')return await voxelPlanResponse(configured,body,prompt);
-    if(body?.mode==='media-director')return await mediaDirectorResponse(configured,prompt);
-    if(body?.mode==='clean-chat')return await cleanChatResponse(configured,body,prompt,correlationId);
+    if(body?.mode==='simulation-plan')return await simulationPlanResponse(configured,body,prompt,apiBudget);
+    if(body?.mode==='voxel-plan')return await voxelPlanResponse(configured,body,prompt,apiBudget);
+    if(body?.mode==='media-director')return await mediaDirectorResponse(configured,prompt,apiBudget);
+    if(body?.mode==='clean-chat')return await cleanChatResponse(configured,body,prompt,correlationId,apiBudget);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
@@ -1111,7 +1145,7 @@ export async function POST(req:Request){
       const remaining=REQUEST_BUDGET_MS-(Date.now()-startedAt);
       if(remaining<1200){errors.push('request-budget-exhausted');break;}
       try{
-        const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)));
+        const rawContent=await callProvider(provider,messages,deep,Math.min(PROVIDER_TIMEOUT_MS,Math.max(1000,remaining)),apiBudget,'answer');
         const gate=publicAnswerGate(rawContent,language,prompt);
         if(!gate.ok){errors.push(provider.name+' rejected: '+gate.reason);continue;}
         let content=gate.content;
@@ -1120,7 +1154,7 @@ export async function POST(req:Request){
 
         let reviewMeta:any={performed:false};
         const reviewBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
-        const shouldReview=agenticPlan.staged&&!simpleTurn&&reviewBudget>=6500;
+        const shouldReview=agenticReviewEnabled()&&agenticPlan.staged&&!simpleTurn&&reviewBudget>=6500;
         if(shouldReview){
           const reviewer=candidates.length>1
             ? candidates[(candidateIndex+1)%candidates.length]
@@ -1144,7 +1178,7 @@ export async function POST(req:Request){
                   researchContext?'EVIDENCE CONTEXT:\n'+compactText(researchContext,1800):''
                 ].filter(Boolean).join('\n\n')
               }
-            ],false,Math.min(6500,Math.max(2000,reviewBudget-1000)));
+            ],false,Math.min(6500,Math.max(2000,reviewBudget-1000)),apiBudget,'review');
 
             const review=parseJsonObject<ChatDraftReview>(reviewRaw);
             reviewMeta={
@@ -1156,7 +1190,7 @@ export async function POST(req:Request){
               missing:(review?.missing||[]).slice(0,6)
             };
 
-            if(draftNeedsRepair(review)){
+            if(draftNeedsRepair(review)&&repairCallsEnabled()){
               const repairBudget=REQUEST_BUDGET_MS-(Date.now()-startedAt);
               if(repairBudget<4500){
                 errors.push(provider.name+' draft review requested repair but request budget was exhausted');
@@ -1179,7 +1213,7 @@ export async function POST(req:Request){
                 {role:'user',content:compactText(prompt,1400)},
                 {role:'assistant',content:compactText(content,2400)},
                 {role:'user',content:'Produce the corrected final answer now.'}
-              ],deep,Math.min(8000,Math.max(3000,repairBudget-700)));
+              ],deep,Math.min(8000,Math.max(3000,repairBudget-700)),apiBudget,'repair');
 
               const repairedGate=publicAnswerGate(repairedRaw,language,prompt);
               const repairedIssue=repairedGate.ok
@@ -1210,6 +1244,7 @@ export async function POST(req:Request){
             roles:agenticPlan.roles,
             review:reviewMeta
           },
+          apiBudget:apiBudget.snapshot(),
           sources:ghHits.map(x=>({
             title:x.heading,
             source:'https://github.com/'+x.source+'/blob/'+x.ref+'/'+x.path
