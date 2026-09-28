@@ -358,11 +358,26 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     ].join('\n');
   }
 
-  if(kind==='casual')return 'Tô acompanhando. Continua.';
+  const fallbackVariant=(options:string[])=>{
+    let hash=0;
+    for(const char of prompt)hash=((hash*31)+char.charCodeAt(0))|0;
+    return options[Math.abs(hash)%options.length];
+  };
+  if(kind==='casual')return fallbackVariant([
+    'Tô acompanhando o fio da conversa.',
+    'Peguei a ideia e vou levar isso como contexto daqui pra frente.',
+    'Certo — isso entra na premissa da conversa sem precisar interromper com outra pergunta.',
+    'Entendido. Vou seguir esse contexto no próximo ponto que você trouxer.'
+  ]);
   if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
-    return 'Entendi. Continua — quero pegar melhor a ideia.';
+    return fallbackVariant([
+      'Certo — vou tratar isso como contexto e seguir sem pedir esclarecimento à toa.',
+      'Peguei esse ponto. Ele fica incorporado ao contexto da conversa.',
+      'Entendido; não vou transformar uma afirmação simples em interrogatório.',
+      'Anotado no contexto deste turno. Pode desenvolver a ideia no seu ritmo.'
+    ]);
   }
-  return 'Não consegui formular uma resposta boa para isso agora. Se você mandar de novo, eu tento por outra rota sem jogar texto interno ou contexto aleatório na conversa.';
+  return 'Não consegui formular uma resposta boa para isso agora. Vou preservar o pedido original e tentar a próxima rota disponível, sem despejar contexto interno na conversa.';
 }
 
 export function signalsKnowledgeGap(content:string){
