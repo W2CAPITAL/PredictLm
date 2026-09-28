@@ -2,6 +2,10 @@ import { NextRequest } from 'next/server';
 import { conversationAnswerIssue, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevRouteDecision } from '@/lib/jev-policy';
+import { publicAnswerGate } from '@/lib/public-answer-gate';
+import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope } from '@/lib/chat-trust-boundary';
+import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import crypto from 'node:crypto';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -24,6 +28,7 @@ function loopbackBase(base:string){
 }
 
 function serverCanReach(base:string){
+  if(!providerEndpointAllowed(base,Boolean(process.env.VERCEL)))return false;
   return !(process.env.VERCEL&&loopbackBase(base));
 }
 
@@ -132,7 +137,7 @@ function providerList(prompt=''):Provider[]{
     }
     return score;
   };
-  return out.sort((a,b)=>rank(a)-rank(b));
+  return rankHealthyProviders(out.sort((a,b)=>rank(a)-rank(b)));
 }
 
 function systemPrompt(language:string,autoLearning='',brainContext='',prompt=''){
@@ -159,8 +164,11 @@ function safeMessages(input:any,language:string,autoLearning='',brainContext='',
     .slice(-12)
     .map((x:any)=>({
       role:x.role as 'user'|'assistant',
-      content:String(x.content).replace(/\u0000/g,'').slice(0,5000)
-    }));
+      content:x.role==='assistant'
+        ? safeHistoryForModel(String(x.content))
+        : String(x.content).replace(/\u0000/g,'').slice(0,5000)
+    }))
+    .filter((x:any)=>x.content);
   return [{role:'system',content:systemPrompt(language,autoLearning,brainContext,prompt)},...rows];
 }
 
@@ -190,8 +198,11 @@ async function openProvider(provider:Provider,messages:Msg[],signal:AbortSignal)
     body:JSON.stringify(body)
   });
   if(!response.ok||!response.body){
-    const raw=await response.text().catch(()=> '');
-    throw new Error(provider.name+' '+response.status+' '+raw.slice(0,180));
+    throw new Error('upstream-http-'+response.status);
+  }
+  const contentType=String(response.headers.get('content-type')||'').toLowerCase();
+  if(!contentType.includes('text/event-stream')&&!contentType.includes('application/json')){
+    throw new Error('upstream-invalid-content-type');
   }
   return response;
 }
@@ -204,11 +215,14 @@ async function collectOpenAIStream(
   const decoder=new TextDecoder();
   let buffer='';
   let accumulated='';
+  let receivedBytes=0;
 
   while(true){
     if(signal.aborted)throw new DOMException('Aborted','AbortError');
     const {done,value}=await reader.read();
     if(done)break;
+    receivedBytes+=value?.byteLength||0;
+    if(receivedBytes>1_048_576)throw new Error('upstream-stream-too-large');
     buffer+=decoder.decode(value,{stream:true});
     const lines=buffer.split(/\r?\n/);
     buffer=lines.pop()||'';
@@ -244,11 +258,15 @@ function emitValidatedAnswer(
 }
 
 export async function POST(req:NextRequest){
+  const correlationId=crypto.randomUUID();
   const body=await req.json().catch(()=>({}));
   const language=body?.language==='en'?'en':'pt-BR';
   const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
-  const prompt=[...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'';
-  const candidates=providerList(String(prompt)).slice(0,8);
+  const prompt=String([...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'').replace(/\u0000/g,'').trim();
+  safeSessionScope(body?.sessionId);
+  if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
+  if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
+  const candidates=providerList(prompt).slice(0,8);
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
@@ -256,8 +274,9 @@ export async function POST(req:NextRequest){
   if(!candidates.length){
     return Response.json({
       error:'Nenhum provider de chat está configurado.',
-      code:'NO_STREAM_PROVIDER'
-    },{status:503,headers:{'Cache-Control':'no-store'}});
+      code:'NO_STREAM_PROVIDER',
+      correlationId
+    },{status:503,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
   }
 
   const autoLearning=await runtimeAutoLearningContext(String(prompt),3,'chat');
@@ -285,18 +304,22 @@ export async function POST(req:NextRequest){
               errors.push(provider.name+': empty-stream');
               continue;
             }
-            const prompt=[...messages].reverse().find(x=>x.role==='user')?.content||'';
-            const issue=conversationAnswerIssue(prompt,content);
-            const alignment=responseTopicAlignment(prompt,content);
-            if(issue||!alignment.relevant){
-              errors.push(provider.name+': rejected-'+(issue||'off-topic'));
+            const currentPrompt=[...messages].reverse().find(x=>x.role==='user')?.content||'';
+            const gate=publicAnswerGate(content,language as any,currentPrompt);
+            const issue=gate.ok?conversationAnswerIssue(currentPrompt,gate.content):gate.reason;
+            const alignment=gate.ok?responseTopicAlignment(currentPrompt,gate.content):{relevant:false};
+            if(!gate.ok||issue||!alignment.relevant){
+              recordProviderFailure(provider,new Error('answer-rejected-'+String(issue||'off-topic')));
+              errors.push('rejected');
               continue;
             }
+            recordProviderSuccess(provider);
             completed=true;
-            emitValidatedAnswer(content,provider,controller,encoder);
+            emitValidatedAnswer(gate.content,provider,controller,encoder);
             break;
           }catch(error:any){
-            errors.push(provider.name+': '+String(error?.message||error||'failed').slice(0,220));
+            recordProviderFailure(provider,error);
+            errors.push('upstream-failure');
           }finally{
             clearTimeout(timer);
             requestSignal.removeEventListener('abort',onAbort);
@@ -305,9 +328,7 @@ export async function POST(req:NextRequest){
 
         if(!completed&&!requestSignal.aborted){
           controller.enqueue(encoder.encode(sse({
-            error:'Nenhuma API conseguiu iniciar a resposta.',
-            code:'STREAM_PROVIDERS_FAILED',
-            errors:errors.slice(0,8)
+            ...publicFailurePayload(correlationId,'STREAM_PROVIDERS_FAILED')
           })));
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         }
@@ -322,7 +343,8 @@ export async function POST(req:NextRequest){
       'Content-Type':'text/event-stream; charset=utf-8',
       'Cache-Control':'no-cache, no-transform',
       'Connection':'keep-alive',
-      'X-Accel-Buffering':'no'
+      'X-Accel-Buffering':'no',
+      'X-Correlation-Id':correlationId
     }
   });
 }
