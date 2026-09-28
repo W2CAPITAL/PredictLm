@@ -65,3 +65,19 @@ export function providerBudgetSnapshot(now=Date.now()){
 export function resetProviderBudgetForTests(){
   budget.clear();
 }
+
+
+const LOCAL_OR_FREE=/^(?:localcodecli|puter-pool|freellmapi|ollama|gptoss-proxy|.*-free|groq|opencode)$/;
+
+export function providerSaverBonus(name:string){
+  const mode=apiSaverMode();
+  if(mode==='off')return 0;
+  const n=String(name||'').toLowerCase();
+  if(/^(?:localcodecli|puter-pool|freellmapi|ollama)$/.test(n))return mode==='strict'?120:60;
+  if(LOCAL_OR_FREE.test(n))return mode==='strict'?80:35;
+  return 0;
+}
+
+export function providerLooksSaverFriendly(name:string){
+  return LOCAL_OR_FREE.test(String(name||'').toLowerCase());
+}
