@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.44.0"
+  version: "1.45.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -1046,3 +1046,16 @@ Qwen Image:
 - `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
 - `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
 - referência visual e negative prompt passam ao provider quando disponíveis.
+
+
+## OmniCore Universal
+
+A skill portátil `skills/omnicore-universal/SKILL.md` consolida o catálogo atual de agentes, plugins/capabilities, skills e os quatro neuro-cores Human/Mouse/Macaque/Fly em um contrato host-neutral.
+
+No PredictLM:
+- PredictLM Master continua soberano;
+- OmniCore funciona como roteador/camada de exportação;
+- `src/lib/omnicore-universal.ts` injeta apenas o subset relevante no contexto;
+- o catálogo completo fica em `skills/omnicore-universal/manifest.json`;
+- não despejar todas as capabilities em cada turno;
+- outro host de IA pode importar SKILL + manifest e mapear somente ferramentas que realmente possui.
