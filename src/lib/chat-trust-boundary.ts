@@ -101,7 +101,7 @@ export function safeSessionScope(input:unknown){
   return raw.replace(/[^a-zA-Z0-9:_-]/g,'').slice(0,120);
 }
 
-export function providerEndpointAllowed(base:string,isVercel=Boolean(process.env.VERCEL)){
+export function providerEndpointAllowed(base:string,isVercel=false){
   try{
     const url=new URL(base);
     if(url.protocol!=='https:'&&url.protocol!=='http:')return false;
