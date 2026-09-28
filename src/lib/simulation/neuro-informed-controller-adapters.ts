@@ -112,7 +112,7 @@ export function createNeuroInformedMinecraftController(id:NeuroControllerId):Cog
         novelty01:novelty,
         socialDistance:nearestSocial?Math.min(24,Math.abs(nearestSocial.dx)+Math.abs(nearestSocial.dz)):24,
         shelterNeed01:(obs.inventory.bed||0)>0?.1:.8
-      });
+      },id);
 
       const reactive=reactiveCandidate(id,obs);
       const planner=plannerCandidate(id,obs,neural.action);
