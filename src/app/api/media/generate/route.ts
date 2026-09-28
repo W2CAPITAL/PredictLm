@@ -529,7 +529,7 @@ export async function POST(req:Request){
     const qwenReferenceValues=[...new Set([
       ...userInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
       ...identityMemoryInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
-      ...searchedInline.map(x=>'data:'+x.inline.mimeType+';base64,'+x.inline.data),
+      ...searchedInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
       ...referencePlan.references.map(x=>x.imageUrl)
     ].filter(Boolean))].slice(0,3);
     const providerPool=[
