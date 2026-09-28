@@ -7,6 +7,8 @@ import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, saf
 import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import crypto from 'node:crypto';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
+import {providerAttemptLimit,reserveProviderCall} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -120,10 +122,17 @@ function providerList(prompt=''):Provider[]{
     });
   }
 
+  for(const provider of configuredBridgeProviders()){
+    push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+  for(const provider of configuredFreeProviders()){
+    push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+
   const explicit=process.env.PREDICTLM_STREAM_PROVIDER_ORDER||process.env.PREDICTLM_PROVIDER_ORDER;
   const route=jevRouteDecision(prompt,{hasTools:false});
   const preferred=(explicit
-    ||'vercel-gateway,gemini,openai,deepseek,nvidia,groq,openrouter,freellmapi')
+    ||'localcodecli,puter-pool,freellmapi,ollama,groq,opencode,nvidia,deepseek,kimi,zai,minimax,gemini,openrouter,vercel-gateway,openai,gptoss-proxy,mistral-free,cerebras-free,sambanova-free,deepinfra-free,siliconflow-free,requesty-free,venice-free,nous-free,hetzner-free,inference-net-free,modelscope-free,llm7-free')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(provider:Provider)=>{
     const index=preferred.indexOf(provider.name);
@@ -180,6 +189,8 @@ function sse(data:any){
 }
 
 async function openProvider(provider:Provider,messages:Msg[],signal:AbortSignal){
+  const budget=reserveProviderCall(provider,'stream');
+  if(!budget.allowed)throw new Error('provider-budget-exhausted');
   const body:any={
     model:provider.model,
     messages,
@@ -276,7 +287,7 @@ export async function POST(req:NextRequest){
       {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
     );
   }
-  const candidates=providerList(prompt).slice(0,8);
+  const candidates=providerList(prompt).slice(0,providerAttemptLimit('stream',false));
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
