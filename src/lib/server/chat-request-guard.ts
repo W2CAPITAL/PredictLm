@@ -11,8 +11,12 @@ declare global{
 
 const traffic=globalThis.__predictlmChatTraffic||(globalThis.__predictlmChatTraffic=new Map());
 const WINDOW_MS=60_000;
-const MAX_REQUESTS_PER_WINDOW=30;
-const MAX_IN_FLIGHT=3;
+function intEnv(name:string,fallback:number,min:number,max:number){
+  const raw=Number(process.env[name]);
+  return Number.isFinite(raw)?Math.max(min,Math.min(max,Math.floor(raw))):fallback;
+}
+const MAX_REQUESTS_PER_WINDOW=intEnv('PREDICTLM_CHAT_REQUESTS_PER_MINUTE',10,1,120);
+const MAX_IN_FLIGHT=intEnv('PREDICTLM_CHAT_MAX_IN_FLIGHT',1,1,8);
 
 function clientKey(req:Request,sessionScope=''){
   if(sessionScope)return'session:'+sessionScope;
