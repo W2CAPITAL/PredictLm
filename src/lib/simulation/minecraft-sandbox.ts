@@ -272,10 +272,56 @@ export function terrainHeight(seed:number,x:number,z:number,dimension:VoxelDimen
   return clamp(Math.floor(base),5,VOXEL_WORLD_HEIGHT-12);
 }
 
+export interface VoxelTreeDescriptor{
+  x:number;z:number;baseY:number;
+  kind:'broadleaf'|'spruce'|'swamp';
+  trunkHeight:number;
+  crownRadius:number;
+}
+
 function treeMask(seed:number,x:number,z:number,biome:VoxelBiome){
   if(!['forest','plains','taiga','swamp'].includes(biome))return false;
-  const chance=biome==='forest'?.075:biome==='taiga'?.06:.022;
-  return hash2(seed,x,z,61)<chance&&hash2(seed,x>>1,z>>1,62)>.25;
+  const chance=biome==='forest'?.052:biome==='taiga'?.045:biome==='swamp'?.032:.016;
+  if(hash2(seed,x,z,61)>=chance)return false;
+  for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++){
+    if(dx===0&&dz===0)continue;
+    if(hash2(seed,x+dx,z+dz,61)<chance&&hash2(seed,x+dx,z+dz,64)<hash2(seed,x,z,64))return false;
+  }
+  return true;
+}
+
+export function treeDescriptorAt(seed:number,x:number,z:number):VoxelTreeDescriptor|null{
+  const biome=biomeAt(seed,x,z);
+  if(!treeMask(seed,x,z,biome))return null;
+  const kind=biome==='taiga'?'spruce':biome==='swamp'?'swamp':'broadleaf';
+  const trunkHeight=kind==='spruce'?6+Math.floor(hash2(seed,x,z,63)*3):4+Math.floor(hash2(seed,x,z,63)*3);
+  return{x,z,baseY:terrainHeight(seed,x,z,'overworld'),kind,trunkHeight,crownRadius:kind==='spruce'?2:2+(hash2(seed,x,z,65)>.78?1:0)};
+}
+
+function naturalTreeBlockAt(seed:number,x:number,y:number,z:number):VoxelBlockId|'air'{
+  let leaf=false;
+  for(let cx=x-3;cx<=x+3;cx++)for(let cz=z-3;cz<=z+3;cz++){
+    const tree=treeDescriptorAt(seed,cx,cz);
+    if(!tree)continue;
+    const top=tree.baseY+tree.trunkHeight;
+    if(x===cx&&z===cz&&y>tree.baseY&&y<=top)return'wood';
+    const dx=Math.abs(x-cx),dz=Math.abs(z-cz),dy=y-top;
+    if(tree.kind==='spruce'){
+      if(dy>=-3&&dy<=2){
+        const radius=dy<=-2?2:dy<=0?2:1;
+        const cornerCut=dx===radius&&dz===radius;
+        if(dx<=radius&&dz<=radius&&!cornerCut&&hash2(seed,x+y,z,66)>.06)leaf=true;
+      }
+    }else{
+      if(dy>=-2&&dy<=2){
+        const radius=dy===2?1:tree.crownRadius;
+        const cornerCut=dx===radius&&dz===radius&&radius>1;
+        if(dx<=radius&&dz<=radius&&!cornerCut&&hash2(seed,x+y,z,67)>.08)leaf=true;
+      }
+      if(tree.kind==='swamp'&&dy>=-4&&dy<=-1&&dx+dz===tree.crownRadius+1&&hash2(seed,x,z+y,68)>.62)leaf=true;
+    }
+  }
+  return leaf?'leaves':'air';
 }
 
 function naturalBlockAt(seed:number,x:number,y:number,z:number,dimension:VoxelDimension):VoxelBlockId{
@@ -298,18 +344,8 @@ function naturalBlockAt(seed:number,x:number,y:number,z:number,dimension:VoxelDi
 
   if(y>h){
     if(y<=VOXEL_SEA_LEVEL)return'water';
-    if(treeMask(seed,x,z,biome)){
-      const trunk=4+(hash2(seed,x,z,63)>.55?1:0);
-      if(y>h&&y<=h+trunk)return'wood';
-      const dy=y-(h+trunk);
-      if(dy>=-1&&dy<=2){
-        const spread=dy===2?1:2;
-        for(let dx=-spread;dx<=spread;dx++)for(let dz=-spread;dz<=spread;dz++){
-          if(dx===0&&dz===0&&dy<0)continue;
-          if(treeMask(seed,x-dx,z-dz,biome))return'leaves';
-        }
-      }
-    }
+    const treeBlock=naturalTreeBlockAt(seed,x,y,z);
+    if(treeBlock!=='air')return treeBlock;
     return'air';
   }
 
