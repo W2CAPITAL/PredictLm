@@ -22,6 +22,7 @@ import { gameStudioContext } from '@/lib/game-studio-fabric';
 import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
+import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -46,6 +47,7 @@ function loopbackBase(base:string){
 }
 
 function serverCanReach(base:string){
+  if(!providerEndpointAllowed(base,Boolean(process.env.VERCEL)))return false;
   return !(process.env.VERCEL&&loopbackBase(base));
 }
 
@@ -486,6 +488,37 @@ function simpleTurnGuard(prompt:string,researchContext:string){
   return '';
 }
 
+
+async function readResponseTextLimited(response:Response,maxBytes=262_144){
+  if(!response.body)return'';
+  const reader=response.body.getReader();
+  const decoder=new TextDecoder();
+  let out='';
+  let bytes=0;
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      if(value){
+        bytes+=value.byteLength;
+        if(bytes>maxBytes)throw new Error('upstream-response-too-large');
+        out+=decoder.decode(value,{stream:true});
+      }
+    }
+    out+=decoder.decode();
+    return out;
+  }finally{
+    try{reader.releaseLock()}catch{}
+  }
+}
+
+function requireJsonResponse(response:Response){
+  const contentType=String(response.headers.get('content-type')||'').toLowerCase();
+  if(!contentType.includes('application/json')&&!contentType.includes('+json')){
+    throw new Error('upstream-invalid-content-type');
+  }
+}
+
 async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -504,8 +537,9 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
         },
         body:JSON.stringify({model:provider.model,system,messages:dialog,max_tokens:deep?1800:1000})
       });
-      const raw=await r.text();
-      if(!r.ok)throw new Error(provider.name+' '+r.status+' '+raw.slice(0,240));
+      const raw=await readResponseTextLimited(r);
+      if(!r.ok)throw new Error('upstream-http-'+r.status);
+      requireJsonResponse(r);
       let data:any={};
       try{data=JSON.parse(raw)}catch{}
       const content=Array.isArray(data?.content)
@@ -548,8 +582,9 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
       },
       body:JSON.stringify(body)
     });
-    const raw=await r.text();
-    if(!r.ok)throw new Error(provider.name+' '+r.status+' '+raw.slice(0,240));
+    const raw=await readResponseTextLimited(r);
+    if(!r.ok)throw new Error('upstream-http-'+r.status);
+    requireJsonResponse(r);
     let data:any={};
     try{data=JSON.parse(raw)}catch{}
     const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
@@ -562,7 +597,7 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   }finally{clearTimeout(timer)}
 }
 
-async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
+async function cleanChatResponse(configured:Provider[],body:any,prompt:string,correlationId:string){
   const language=(body?.language==='en'||body?.language==='pt-BR')
     ? body.language as ConversationLanguage
     : resolveConversationLanguage(prompt,[]);
@@ -570,7 +605,13 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
   const recent=(body?.useHistory&&Array.isArray(body?.messages)?body.messages:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-4)
-    .map((x:any)=>({role:x.role as 'user'|'assistant',content:compactText(String(x.content),700)}));
+    .map((x:any)=>({
+      role:x.role as 'user'|'assistant',
+      content:x.role==='assistant'
+        ? compactText(safeHistoryForModel(String(x.content)),700)
+        : compactText(String(x.content).replace(/\u0000/g,''),700)
+    }))
+    .filter((x:any)=>x.content);
 
   const mode=isHypotheticalPrompt(prompt)
     ? 'hypothetical'
@@ -634,8 +675,8 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
       code:'NO_REMOTE_PROVIDER',
       mode:'clean-chat',
       sources:[],
-      errors:['Nenhuma API remota configurada ou disponível.']
-    },{status:503,headers:{'Cache-Control':'no-store'}});
+      correlationId
+    },{status:503,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
   }
 
   const validateCandidate=async(provider:Provider,timeoutMs:number)=>{
@@ -701,9 +742,8 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string){
     content:null,
     code:'NO_CLEAN_ANSWER',
     mode:'clean-chat',
-    attempted,
-    errors:errors.slice(0,8)
-  },{status:502,headers:{'Cache-Control':'no-store'}});
+    correlationId
+  },{status:502,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
 
 }
 
@@ -856,14 +896,17 @@ export async function GET(){
 }
 
 export async function POST(req:Request){
+  const correlationId=crypto.randomUUID();
   try{
     const body=await req.json();
-    const prompt=String(body?.prompt||'').trim();
-    const researchContext=String(body?.researchContext||'').trim().slice(0,16000);
-    const localAdvisory=String(body?.localAdvisory||'').trim().slice(0,2200);
-    const answerAnchor=String(body?.answerAnchor||'').trim().slice(0,5200);
-    const brainContext=String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt);
-    if(!prompt)return Response.json({error:'prompt is required'},{status:400});
+    const prompt=String(body?.prompt||'').replace(/\u0000/g,'').trim();
+    if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
+    if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
+    const sessionScope=safeSessionScope(body?.sessionId);
+    const researchContext=sanitizeUntrustedContext(prompt,String(body?.researchContext||''),16000);
+    const localAdvisory=sanitizeUntrustedContext(prompt,String(body?.localAdvisory||''),2200);
+    const answerAnchor=sanitizeUntrustedContext(prompt,String(body?.answerAnchor||''),5200);
+    const brainContext=sanitizeUntrustedContext(prompt,String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt),5200);
 
     const configured=primaryProviders(providers());
     if(!configured.length){
@@ -873,18 +916,25 @@ export async function POST(req:Request){
         code:body?.mode==='simulation-plan'||body?.mode==='voxel-plan'||body?.mode==='media-director'
           ? 'NO_CONFIGURED_GENERATOR'
           : 'NO_REMOTE_PROVIDER',
-        message:'Nenhum provider server-side está configurado. O cliente deve continuar para Neural Local/WebLLM/knowledge fallback.'
-      },{status:503,headers:{'Cache-Control':'no-store'}});
+        message:'O serviço de resposta online está temporariamente indisponível.',
+        correlationId
+      },{status:503,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
     }
 
     if(body?.mode==='simulation-plan')return simulationPlanResponse(configured,body,prompt);
     if(body?.mode==='voxel-plan')return voxelPlanResponse(configured,body,prompt);
     if(body?.mode==='media-director')return mediaDirectorResponse(configured,prompt);
-    if(body?.mode==='clean-chat')return cleanChatResponse(configured,body,prompt);
+    if(body?.mode==='clean-chat')return cleanChatResponse(configured,body,prompt,correlationId);
 
     const rawHistory=(Array.isArray(body?.messages)?body.messages:[])
       .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
-      .map((x:any)=>({role:x.role,content:String(x.content)})) as Msg[];
+      .map((x:any)=>({
+        role:x.role,
+        content:x.role==='assistant'
+          ? safeHistoryForModel(String(x.content))
+          : String(x.content).replace(/\u0000/g,'').slice(0,12000)
+      }))
+      .filter((x:any)=>x.content) as Msg[];
     const deep=Boolean(body?.deep)||isScenarioSimulationRequest(prompt);
     const compactedHistory=jevCompactHistory(rawHistory,prompt,{
       maxChars:deep?48000:28000,
@@ -938,7 +988,8 @@ export async function POST(req:Request){
     });
     const history=packed.messages as Msg[];
     const cacheKey=crypto.createHash('sha256').update(JSON.stringify({
-      version:'conversation-gate-v2',
+      version:'conversation-gate-v3',
+      sessionScope,
       prompt:normalize(prompt),
       language,
       context:packed.context,
@@ -947,7 +998,7 @@ export async function POST(req:Request){
       knowledgeVersion:stats.version,
       providers:configured.map(x=>x.name+':'+x.model)
     })).digest('hex');
-    const hit=cache.get(cacheKey);
+    const hit=sessionScope?cache.get(cacheKey):undefined;
     if(hit&&hit.expires>Date.now()){
       const cachedGate=publicAnswerGate(String(hit.value.content||''),language,prompt);
       if(cachedGate.ok&&!simpleAnswerIssue(prompt,cachedGate.content))return Response.json({...hit.value,content:cachedGate.content,cache:'hit'},{headers:{'Cache-Control':'no-store'}});
@@ -1090,7 +1141,7 @@ export async function POST(req:Request){
           }))
         };
         const ttl=volatileQuery(prompt)?5*60*1000:30*60*1000;
-        cache.set(cacheKey,{expires:Date.now()+ttl,value});
+        if(sessionScope)cache.set(cacheKey,{expires:Date.now()+ttl,value});
         if(cache.size>300){
           for(const [k,v] of cache){if(v.expires<=Date.now())cache.delete(k)}
           while(cache.size>300)cache.delete(cache.keys().next().value);
@@ -1104,10 +1155,13 @@ export async function POST(req:Request){
       error:'Os providers configurados não produziram uma resposta válida. Continue pelas rotas locais/knowledge do PredictLM.',
       code:'NO_VALID_PROVIDER_ANSWER',
       attempted:candidates.length,
-      errors:errors.slice(0,4),
-      budgetMs:REQUEST_BUDGET_MS
-    },{status:502,headers:{'Cache-Control':'no-store'}});
+      correlationId
+    },{status:502,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
   }catch(error:any){
-    return Response.json({error:String(error?.message||error)},{status:500});
+    const code=classifyPublicFailure(error);
+    return Response.json(
+      publicFailurePayload(correlationId,code),
+      {status:code==='TIMEOUT'?504:500,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}}
+    );
   }
 }
