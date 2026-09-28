@@ -36,7 +36,8 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
-const PROVIDER_ATTEMPT_LIMIT=3;
+const configuredProviderAttemptLimit=Number(process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN||1);
+const PROVIDER_ATTEMPT_LIMIT=Math.max(1,Math.min(3,Number.isFinite(configuredProviderAttemptLimit)?Math.floor(configuredProviderAttemptLimit):1));
 const PROVIDER_TIMEOUT_MS=12000;
 const REQUEST_BUDGET_MS=32000;
 
