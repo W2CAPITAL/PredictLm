@@ -2,6 +2,7 @@ import type { ConversationLanguage } from './language-policy';
 import { answerMatchesConversationLanguage } from './language-policy';
 import { looksLikeOperationalMonologue, operationalDisclosureRequested } from './human-presence';
 import { conversationAnswerIssue } from './chat-intelligence';
+import { chatTrustIssue } from './chat-trust-boundary';
 
 const REASONING_PATTERNS=[
   /<think[\s>]/i,
@@ -61,6 +62,7 @@ export function sanitizePublicAnswer(raw:string,prompt=''){
     .trim();
 
   if(hasInternalReasoningLeak(value))return '';
+  if(chatTrustIssue(prompt,value))return '';
 
   const allowOps=operationalDisclosureRequested(prompt);
   value=value
@@ -74,6 +76,8 @@ export function sanitizePublicAnswer(raw:string,prompt=''){
 }
 
 export function publicAnswerGate(text:string,language:ConversationLanguage,prompt=''){
+  const rawTrustIssue=chatTrustIssue(prompt,text);
+  if(rawTrustIssue)return {ok:false,content:'',reason:rawTrustIssue};
   const sanitized=sanitizePublicAnswer(text,prompt);
   if(!sanitized)return {ok:false,content:'',reason:'internal-reasoning'};
   if(!operationalDisclosureRequested(prompt)&&hasInternalRuntimeLeak(sanitized))return {ok:false,content:'',reason:'internal-runtime'};

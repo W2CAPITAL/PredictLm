@@ -529,3 +529,23 @@ Key rules:
 - publishing is adapter-based. A connected social publisher (for example Metricool/Instagram) may auto-publish; when no publisher is connected, PredictLM produces a complete review-ready publishing queue instead of pretending the post was sent.
 
 The skill contract lives in `skills/ai-influencer-studio/SKILL.md` and the deterministic campaign planner in `src/lib/social/influencer-studio.ts`.
+
+
+## Chat Trust Boundary
+
+The public Chat now treats provider, tool, research and historical assistant content as untrusted until validated.
+
+Critical controls:
+- raw third-party API payloads and transport/debug logs are rejected before public output;
+- the synchronous and streaming paths share the same final public-answer gate;
+- provider streams are accumulated and validated before public emission;
+- assistant history is sanitized before reuse, and contaminated historical answers are dropped;
+- response cache keys are session-scoped; requests without a session identifier do not reuse the global response cache;
+- configurable upstream endpoints reject loopback/private/metadata targets in hosted execution;
+- research results reject private/insecure targets and raw payload contamination before entering model context;
+- provider cooldown is a real circuit breaker, with request rate limiting and in-flight backpressure;
+- upstream bodies, stack details and provider error dumps are not exposed to the user;
+- failures include a correlation/incident identifier, and the UI offers retry/report actions;
+- Chat UI no longer exposes internal pass names or a public chain-of-thought/reasoning panel.
+
+Regression tests explicitly cover SpaceX-style raw JSON leakage, truncated payloads, debug/meta-text, session isolation, streaming validation, circuit breaking and legitimate structured-JSON requests.
