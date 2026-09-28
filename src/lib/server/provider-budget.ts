@@ -45,7 +45,10 @@ export function providerCostClass(provider:BudgetProvider){
   const model=String(provider.model||'').toLowerCase();
   if(['ollama','freellmapi','localcode','gptoss','puterpool'].includes(name))return'local-or-free';
   if(/(?:^|[\/:._-])(free|local|lite)(?:$|[\/:._-])/.test(model))return'free-tier';
-  if(['groq','opencode'].includes(name))return'free-tier';
+  if([
+    'groq','opencode','mistral','huggingface','modelscope','ollama-cloud',
+    'nous','hetzner','llm7','siliconflow','inference-net','aion','ovh'
+  ].includes(name))return'free-tier';
   return'metered';
 }
 
