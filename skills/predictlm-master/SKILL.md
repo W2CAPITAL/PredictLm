@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.38.0"
+  version: "3.39.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.38.0
+# PredictLM Master v3.39.0
 
 ## Regra soberana
 
@@ -1478,3 +1478,16 @@ Qwen Image:
 - `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
 - `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
 - referência visual e negative prompt passam ao provider quando disponíveis.
+
+
+## OmniCore Universal
+
+A skill portátil `skills/omnicore-universal/SKILL.md` consolida o catálogo atual de agentes, plugins/capabilities, skills e os quatro neuro-cores Human/Mouse/Macaque/Fly em um contrato host-neutral.
+
+No PredictLM:
+- PredictLM Master continua soberano;
+- OmniCore funciona como roteador/camada de exportação;
+- `src/lib/omnicore-universal.ts` injeta apenas o subset relevante no contexto;
+- o catálogo completo fica em `skills/omnicore-universal/manifest.json`;
+- não despejar todas as capabilities em cada turno;
+- outro host de IA pode importar SKILL + manifest e mapear somente ferramentas que realmente possui.

@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.37.0"
+  version: "1.38.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -935,3 +935,16 @@ Qwen Image:
 - `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
 - `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
 - referência visual e negative prompt passam ao provider quando disponíveis.
+
+
+## OmniCore Universal
+
+A skill portátil `skills/omnicore-universal/SKILL.md` consolida o catálogo atual de agentes, plugins/capabilities, skills e os quatro neuro-cores Human/Mouse/Macaque/Fly em um contrato host-neutral.
+
+No PredictLM:
+- PredictLM Master continua soberano;
+- OmniCore funciona como roteador/camada de exportação;
+- `src/lib/omnicore-universal.ts` injeta apenas o subset relevante no contexto;
+- o catálogo completo fica em `skills/omnicore-universal/manifest.json`;
+- não despejar todas as capabilities em cada turno;
+- outro host de IA pode importar SKILL + manifest e mapear somente ferramentas que realmente possui.
