@@ -624,3 +624,52 @@ npx skills update
 ```
 
 O app não depende dessa instalação local para compilar ou funcionar no Vercel.
+
+
+## API Saver e providers gratuitos/locais
+
+O Chat usa `PREDICTLM_API_SAVER_MODE=strict` por padrão. Isso evita o padrão antigo de um único turno tentar vários providers remotos em sequência.
+
+Configuração recomendada na Vercel:
+
+```env
+PREDICTLM_API_SAVER_MODE=strict
+PREDICTLM_PROVIDER_MAX_ATTEMPTS=1
+PREDICTLM_STREAM_PROVIDER_MAX_ATTEMPTS=1
+PREDICTLM_PROVIDER_DAILY_REQUEST_CAP=120
+PREDICTLM_CHAT_REQUESTS_PER_MINUTE=10
+PREDICTLM_CHAT_MAX_IN_FLIGHT=1
+```
+
+O limite diário é best-effort por instância quente da função. Para um teto financeiro absoluto, configure também quota/billing limit no próprio provider.
+
+Bridges OpenAI-compatible opcionais:
+
+```env
+LOCALCODECLI_BASE_URL=
+LOCALCODECLI_API_KEY=
+LOCALCODECLI_MODEL=auto
+
+PUTER_POOL_BASE_URL=
+PUTER_POOL_API_KEY=
+PUTER_POOL_MODEL=gpt-4o-mini
+
+GPTOSS_PROXY_BASE_URL=
+GPTOSS_PROXY_API_KEY=
+GPTOSS_PROXY_MODEL=gpt-oss-20b
+```
+
+- LocalCodeCli é local/self-hosted; Vercel não alcança `localhost` do computador do usuário.
+- Puter Pool deve apontar apenas para uma instância/contas que o usuário controla.
+- GPTOSS Proxy não possui URL pública padrão no PredictLM: somente um endpoint explicitamente configurado é aceito.
+
+O catálogo também reconhece automaticamente, quando a chave correspondente existe, Mistral, Cerebras, SambaNova, DeepInfra, SiliconFlow, Requesty, Venice, Nous, Hetzner, Inference.net, ModelScope e LLM7. Modelos/tiers gratuitos mudam com o tempo; ajuste `*_MODEL` conforme o painel/documentação do provider.
+
+Fontes arquiteturais:
+- `Corporationakht/LocalCodeCli`
+- `Parithosh-Varma/puter-pool`
+- `junioralive/gptoss-proxy`
+- `nejib1/Free-LLM`
+- `spinov001-art/free-apis-list`
+
+Esses repositórios são referências/adapters. PredictLM não cria contas, não coleta tokens e não contorna autenticação.
