@@ -543,7 +543,11 @@ export async function POST(req:Request){
       const bi=order.indexOf(b.qwen?'qwen':b.gemini?'gemini':b.id==='nano-banana'?'nano':'configured');
       return (ai<0?999:ai)-(bi<0?999:bi);
     });
-    const providers=circuitReadyProviders(providerPool);
+    const configuredProviderAttempts=Number(process.env.PREDICTLM_IMAGE_REMOTE_ATTEMPTS||'1');
+    const providerAttemptBudget=Number.isFinite(configuredProviderAttempts)
+      ? Math.max(1,Math.min(3,Math.floor(configuredProviderAttempts)))
+      : 1;
+    const providers=circuitReadyProviders(providerPool).slice(0,providerAttemptBudget);
 
     for(const provider of providers){
       if(!budget.canTry(6500))break;

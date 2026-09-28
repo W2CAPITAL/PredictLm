@@ -29,7 +29,7 @@ export function isPlayfulPrompt(prompt:string){
   if(selfIntro){
     const label=selfIntro[1];
     const words=label.split(/\s+/).filter(Boolean);
-    if(words.length>=3&&/\b(?:cara|cabeca|cabeça|lata|metal|roxe\w*|arroxe\w*|cosmic\w*|cósmic\w*|galactic\w*|galáctic\w*|interdimensional|ultra\w*|hiper\w*)\b/.test(label))return true;
+    if(words.length>=3&&/\b(?:cara|cabeca|cabeça|lata|metal|roxe\w*|arroxe\w*|cosmic\w*|cósmic\w*|galactic\w*|galáctic\w*|interdimensional|ultra\w*|hiper\w*|aldeia|vila|cla|clã|reino|planeta|ocult\w*|uzucrack)\b/.test(label))return true;
   }
 
   const oddDescriptor=/\b(?:triangular|quadrado|quadrada|roxeado|roxeada|falante|voador|voadora|gigante|minúsculo|minuscule|invisivel|invisível|radioativo|radioativa|interdimensional|ultra\w*|hiper\w*)\b/.test(p);
@@ -288,6 +288,16 @@ export function practicalHowToReply(prompt:string){
  * Último recurso interno do PredictLM quando nenhum modelo/provider consegue
  * concluir o turno. Ele nunca depende de Grok, Claude, GPT ou outra API.
  */
+function stableConversationVariant(prompt:string,variants:string[]){
+  if(!variants.length)return '';
+  let hash=2166136261;
+  for(const ch of clean(prompt)){
+    hash^=ch.charCodeAt(0);
+    hash=Math.imul(hash,16777619);
+  }
+  return variants[(hash>>>0)%variants.length];
+}
+
 export function generativeOfflineReply(prompt:string,kind?:ConversationKind):string|null{
   const p=clean(prompt);
   if(!p)return null;
@@ -358,11 +368,25 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     ].join('\n');
   }
 
-  if(kind==='casual')return 'Tô acompanhando. Continua.';
+  if(kind==='casual')return stableConversationVariant(prompt,[
+    'Tô acompanhando.',
+    'Peguei a ideia.',
+    'Certo — sigo com você nisso.',
+    'Entendi o rumo.'
+  ]);
   if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
-    return 'Entendi. Continua — quero pegar melhor a ideia.';
+    return stableConversationVariant(prompt,[
+      'Peguei a ideia. Vou seguir pelo que você já deixou claro.',
+      'Certo. Dá para continuar daqui sem pedir contexto à toa.',
+      'Entendi o ponto principal e vou trabalhar em cima dele.',
+      'Fechado. Vou tratar isso como continuação do contexto atual.'
+    ]);
   }
-  return 'Não consegui formular uma resposta boa para isso agora. Se você mandar de novo, eu tento por outra rota sem jogar texto interno ou contexto aleatório na conversa.';
+  return stableConversationVariant(prompt,[
+    'Não consegui fechar uma resposta confiável por esta rota. Vou evitar inventar contexto.',
+    'Essa tentativa não produziu uma resposta boa o bastante; prefiro não preencher a lacuna com texto genérico.',
+    'A rota atual falhou em responder com qualidade. O contexto existente continua preservado.'
+  ]);
 }
 
 export function signalsKnowledgeGap(content:string){

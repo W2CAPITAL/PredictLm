@@ -22,6 +22,10 @@ test('invented personas and impossible geometry are recognized as playful conver
   const shape=directConversationReply('um triangulo triangular as vezes pode ser um redondo quadrangular incluido em um 4d ultra pentagonal',[],{loaded:false,tier:null});
   assert.match(String(shape),/geometria|4D|interdimensional/i);
   assert.doesNotMatch(String(shape),/termos aleatórios|contexto específico/i);
+
+  const naruto=directConversationReply('eu sou naruto uzucrack da aldeia da folha da maconha oculta',[],{loaded:false,tier:null});
+  assert.match(String(naruto),/naruto uzucrack/i);
+  assert.doesNotMatch(String(naruto),/quero pegar melhor a ideia|preciso de contexto/i);
 });
 
 test('browser speech uses a finite default volume when no volume option is supplied',()=>{
