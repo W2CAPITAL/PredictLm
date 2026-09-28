@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.34.0"
+  version: "3.35.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.34.0
+# PredictLM Master v3.35.0
 
 ## Regra soberana
 
@@ -1401,3 +1401,20 @@ Regras obrigatórias:
 - validações negativas permanentes cobrem payload SpaceX/raw API, debug/meta-texto, isolamento de sessão e streaming limpo.
 
 Falha técnica deve degradar a capacidade, não mudar o assunto da conversa.
+
+
+## Mobile Chat Shell — viewport, navegação e responsividade
+
+No celular, Chat e superfícies especializadas obedecem um único shell responsivo:
+- barra superior fixa sempre acessível, independentemente da posição do scroll;
+- menu lateral acessível pela barra fixa;
+- ao abrir Imagine, Simulação, Visão, Library ou Plugins, mostrar **Voltar ao Chat** fixo;
+- composer permanece preso ao visual viewport e respeita safe-area/teclado;
+- usar `window.visualViewport` para corrigir altura/offset quando teclado ou chrome móvel mudar;
+- apenas a conversa rola; página e composer não disputam o scroll;
+- loading deve aparecer antes de trabalho local de memória/contexto, não apenas quando começa a rede;
+- durante execução, mostrar status animado e botão de parar sem exigir voltar ao fim da conversa;
+- streaming não deve iniciar `smooth scroll` a cada chunk; atualizações de scroll são agrupadas por `requestAnimationFrame`;
+- em mobile, remover filtros/backdrops e decoração fullscreen cara quando não forem essenciais;
+- conversas longas podem usar `content-visibility` para reduzir custo de render;
+- nenhuma regra responsiva posterior pode sobrescrever a barra/composer mobile de forma que eles desapareçam.
