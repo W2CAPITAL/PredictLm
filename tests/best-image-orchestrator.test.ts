@@ -73,3 +73,16 @@ test('full Kurama avatar is a separate subject only when explicitly requested',(
   assert.ok(!mode.subjects.some(x=>x.id==='kurama-nine-tails'));
   assert.match(mode.promptContract,/chakra MODE on Naruto/i);
 });
+
+
+test('modo avatar Kurama means the giant avatar, not body-scale Kurama Chakra Mode',()=>{
+  const prompt='crie o naruto modo avatar kurama lutando contra o sasuke modo susanoo perfeito';
+  const plan=buildBestImagePlan(prompt,'Anime');
+  const narutoSlot=plan.subjects.find(x=>x.id==='naruto-uzumaki');
+  assert.ok(narutoSlot);
+  assert.match(narutoSlot!.form,/complete Kurama Avatar/i);
+  assert.doesNotMatch(narutoSlot!.form,/Kurama Chakra Mode/i);
+  assert.ok(plan.subjects.some(x=>x.id==='kurama-nine-tails'));
+  assert.equal(plan.subjects.filter(x=>/naruto/i.test(x.id)).length,1);
+  assert.match(plan.promptContract,/separate fox\/Nine-Tails avatar/i);
+});
