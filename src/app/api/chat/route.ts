@@ -24,12 +24,14 @@ import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {allExternalProviderSpecs} from '@/lib/server/external-provider-fabric';
+import {agenticReviewEnabled,createProviderTurnBudget,estimateProviderTokens,repairCallsEnabled,type ProviderTurnBudget} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 type Msg={role:'user'|'assistant'|'system';content:string};
-type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>;protocol?:'openai'|'anthropic'};
+type Provider={name:string;base:string;key:string;model:string;headers?:Record<string,string>;protocol?:'openai'|'anthropic'|'responses'};
 
 declare global{
   var __predictlmChatCache:Map<string,{expires:number,value:any}>|undefined;
@@ -152,7 +154,17 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
+  for(const external of allExternalProviderSpecs()){
+    push({
+      name:external.name,
+      base:external.base,
+      key:external.key,
+      model:external.model,
+      protocol:external.protocol,
+      headers:external.headers
+    });
+  }
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcode,gptoss,puterpool,freellmapi,ollama,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,minimax,ark,anthropic,openai,xai,mistral,huggingface,together,fireworks,sambanova,cerebras,deepinfra,requesty,modelscope,siliconflow,nebius,novita,scaleway,venice,friendli,inference-net,llm7,hetzner,nous,ollama-cloud')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -267,7 +279,7 @@ function simulationPlanGate(raw:string){
   }catch{return null}
 }
 
-async function simulationPlanResponse(configured:Provider[],body:any,prompt:string){
+async function simulationPlanResponse(configured:Provider[],body:any,prompt:string,budget:ProviderTurnBudget){
   const worldState=String(body?.worldState||'').slice(0,7000);
   const localAdvisory=String(body?.localAdvisory||'').slice(0,1800);
   const studio=gameStudioContext(prompt,true);
@@ -345,7 +357,7 @@ function voxelPlanGate(raw:string){
   }catch{return null}
 }
 
-async function voxelPlanResponse(configured:Provider[],body:any,prompt:string){
+async function voxelPlanResponse(configured:Provider[],body:any,prompt:string,budget:ProviderTurnBudget){
   const worldState=String(body?.worldState||'').slice(0,9000);
   const localAdvisory=String(body?.localAdvisory||'').slice(0,1800);
   const studio=gameStudioContext('minecraft voxel simulation '+prompt,true);
@@ -520,10 +532,59 @@ function requireJsonResponse(response:Response){
   }
 }
 
-async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS){
+function collectResponsesSseText(raw:string){
+  let out='';
+  for(const rawLine of String(raw||'').split(/\r?\n/)){
+    const line=rawLine.trim();
+    if(!line.startsWith('data:'))continue;
+    const payload=line.slice(5).trim();
+    if(!payload||payload==='[DONE]')continue;
+    let data:any={};try{data=JSON.parse(payload)}catch{continue}
+    if(data?.type==='response.output_text.delta'&&typeof data?.delta==='string')out+=data.delta;
+    if(data?.type==='response.completed'&&!out){
+      for(const item of Array.isArray(data?.response?.output)?data.response.output:[]){
+        for(const part of Array.isArray(item?.content)?item.content:[]){
+          if(part?.type==='output_text'&&typeof part?.text==='string')out+=part.text;
+        }
+      }
+    }
+  }
+  return out.trim();
+}
+
+async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeoutMs=PROVIDER_TIMEOUT_MS,budget?:ProviderTurnBudget,purpose='answer'){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  const expectedOutput=deep?(provider.name==='nvidia'?4096:1800):1000;
+  const reservation=budget?.reserve(provider,estimateProviderTokens(messages,expectedOutput),purpose);
+  if(reservation&&!reservation.ok){
+    clearTimeout(timer);
+    throw new Error('provider-budget-'+reservation.reason);
+  }
   try{
+    if(provider.protocol==='responses'){
+      const r=await fetch(provider.base.replace(/\/$/,'')+'/responses',{
+        method:'POST',
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+provider.key,
+          ...(provider.headers||{})
+        },
+        body:JSON.stringify({
+          model:provider.model,
+          input:messages.map(message=>({role:message.role,content:[{type:'input_text',text:message.content}]})),
+          stream:true,
+          max_output_tokens:deep?1800:1000
+        })
+      });
+      const raw=await readResponseTextLimited(r);
+      if(!r.ok)throw new Error('upstream-http-'+r.status);
+      const content=collectResponsesSseText(raw);
+      if(!content)throw new Error(provider.name+' empty response');
+      recordProviderSuccess(provider);
+      return content;
+    }
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
@@ -598,7 +659,7 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   }finally{clearTimeout(timer)}
 }
 
-async function cleanChatResponse(configured:Provider[],body:any,prompt:string,correlationId:string){
+async function cleanChatResponse(configured:Provider[],body:any,prompt:string,correlationId:string,budget:ProviderTurnBudget){
   const language=(body?.language==='en'||body?.language==='pt-BR')
     ? body.language as ConversationLanguage
     : resolveConversationLanguage(prompt,[]);
@@ -752,7 +813,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
 
 }
 
-async function mediaDirectorResponse(configured:Provider[],prompt:string){
+async function mediaDirectorResponse(configured:Provider[],prompt:string,budget:ProviderTurnBudget){
   const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
   const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
   if(!candidates.length)return Response.json({
