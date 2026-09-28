@@ -717,6 +717,13 @@ export function ChatShell({onOpenLegal}:Props){
     const prompt=String(overridePrompt??input).trim();
     if(!prompt||busy)return;
     setLastFailedPrompt('');
+    setInput('');
+    setScreen('chat');
+    setBusy(true);
+    setActivity(['Preparando resposta…']);
+    // Paint the loading state before memory/context work. On mobile this avoids
+    // the impression that the app froze between tapping Send and network I/O.
+    await new Promise<void>(resolve=>window.requestAnimationFrame(()=>resolve()));
     const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const legalSearchRequest=processNumber?null:detectLegalSearchRequest(prompt);
@@ -752,8 +759,6 @@ export function ChatShell({onOpenLegal}:Props){
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
     const showExecutionDetails=s.deepThink||needsWeb;
 
-    setInput('');
-    setScreen('chat');
     if(learningInstruction){
       captureAdaptiveInstruction(prompt);
       fetch('/api/learning/propose',{
@@ -778,6 +783,7 @@ export function ChatShell({onOpenLegal}:Props){
         actions:['Minecraft Cognitive World aberto','Quatro cérebros autônomos ativos','POV individual conectado ao ciclo observar → decidir → agir → memorizar'],
         status:'done'
       });
+      setBusy(false);
       setActivity([]);
       return;
     }
@@ -785,7 +791,6 @@ export function ChatShell({onOpenLegal}:Props){
     if(instructionLearned)setModelTick(x=>x+1);
     const turnController=new AbortController();
     turnAbort.current=turnController;
-    setBusy(true);
     setActivity(
       buildIntent
         ? ['Preparando o projeto atual','Escolhendo a melhor rota de execução','Implementando alterações','Validando o resultado','Empacotando o projeto']
@@ -809,7 +814,7 @@ export function ChatShell({onOpenLegal}:Props){
                 ? ['Recuperando contexto relevante','Entendendo o pedido','Conferindo contexto relevante']
                 : ['Analisando contexto']
     );
-    setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
+    scrollConversationToBottom('auto');
 
     try{
       if(buildIntent){
@@ -1443,7 +1448,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(turnAbort.current===turnController)turnAbort.current=null;
       setBusy(false);
       setActivity([]);
-      setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
+      scrollConversationToBottom('auto');
     }
   }
 
