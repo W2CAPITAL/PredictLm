@@ -83,7 +83,11 @@ export function conversationAnswerIssue(prompt:string,content:string){
     if(!topical.relevant)return 'off-topic-hypothetical';
   }
   if(isPlayfulPrompt(prompt)){
-    if(/\b(?:nao tem muito o que falar|não tem muito o que falar|nao consegui formular|não consegui formular|e apenas um personagem|é apenas um personagem|personagem (?:nao|não) tem opiniao|personagem (?:nao|não) tem opinião)\b/i.test(String(content||'')))return 'flattened-playful-answer';
+    const raw=String(content||'').trim();
+    if(/\b(?:nao tem muito o que falar|não tem muito o que falar|nao consegui formular|não consegui formular|e apenas um personagem|é apenas um personagem|personagem (?:nao|não) tem opiniao|personagem (?:nao|não) tem opinião)\b/i.test(raw))return 'flattened-playful-answer';
+    if(/^(?:entendi[.! ]+)?(?:continua|continue)\b.{0,90}\b(?:entender|pegar|contexto|ideia)\b/i.test(raw))return 'generic-playful-deflection';
+    if(/^(?:eu\s+)?(?:nao|não)\s+sou\s+(?:um\s+)?ser\s+vivo\b/i.test(raw)
+      ||/^(?:como\s+)?(?:uma\s+)?ia[, ]/i.test(raw))return 'unnecessary-ai-disclaimer';
     const topical=responseTopicAlignment(prompt,content);
     if(!topical.relevant)return 'off-topic-playful';
   }
