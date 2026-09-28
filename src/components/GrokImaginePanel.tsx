@@ -459,73 +459,54 @@ export function GrokImaginePanel(){
     providerPolicy?:{avoidProviders?:string[];requireReferenceTransport?:boolean;strictIdentityProvider?:boolean}
   ){
     setImageStage('Preparando referências visuais e identidade…');
-    const avoidedProviders=new Set<string>((providerPolicy?.avoidProviders||[]).map(x=>String(x||'').trim()).filter(Boolean));
-    let data:any=null;
-    let url='';
-    let lastDetail='';
-
-    for(let providerAttempt=0;providerAttempt<3;providerAttempt++){
-      if(providerAttempt>0)setImageStage('Provider inválido · tentando outra rota de imagem '+(providerAttempt+1)+'/3…');
-      const r=await fetch('/api/media/generate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          prompt:renderPrompt,
-          originalPrompt:prompt,
-          promptMode,
-          negativePrompt,
-          style,
-          styleLocked:styleManuallyChosen,
-          attempt:renderAttempt+providerAttempt,
-          semanticRepair,
-          semanticRepairHints,
-          directorBrief:apiDirectorBrief,
-          width:ratio.w,
-          height:ratio.h,
-          seed:renderSeed,
-          model:'flux',
-          referenceMode:'auto',
-          candidateIndex,
-          candidateCount,
-          referenceImages:referenceImages.map(x=>x.data),
-          identityReferenceImages,
-          avoidProviders:[...avoidedProviders],
-          requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
-          strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
-        })
-      });
-      const candidate=await r.json().catch(()=>({}));
-      lastDetail=String(candidate?.detail||candidate?.error||'');
-      if(!r.ok||!candidate?.url){
-        const failed=String(candidate?.provider||'').trim();
-        if(failed)avoidedProviders.add(failed);
-        if(candidate?.exhausted===true)break;
-        continue;
-      }
-
-      const candidateUrl=String(candidate.url);
-      setImageStage('Validando a imagem entregue pelo provider…');
-      try{
-        await preloadGeneratedImage(candidateUrl);
-        data=candidate;
-        url=candidateUrl;
-        break;
-      }catch{
-        const failed=String(candidate?.provider||'').trim();
-        if(failed)avoidedProviders.add(failed);
-        reportMediaError(INVALID_IMAGE_PROVIDER_MESSAGE,{
-          stage:'provider-output-validation',
-          failedProvider:failed||'unknown',
-          model:String(candidate?.model||''),
-          providerAttempt:providerAttempt+1
-        });
-      }
+    const r=await fetch('/api/media/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        prompt:renderPrompt,
+        originalPrompt:prompt,
+        promptMode,
+        negativePrompt,
+        style,
+        styleLocked:styleManuallyChosen,
+        attempt:renderAttempt,
+        semanticRepair,
+        semanticRepairHints,
+        directorBrief:apiDirectorBrief,
+        width:ratio.w,
+        height:ratio.h,
+        seed:renderSeed,
+        model:'flux',
+        referenceMode:'auto',
+        candidateIndex,
+        candidateCount,
+        referenceImages:referenceImages.map(x=>x.data),
+        identityReferenceImages,
+        avoidProviders:providerPolicy?.avoidProviders||[],
+        requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
+        strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
+      })
+    });
+    const data:any=await r.json().catch(()=>({}));
+    const detail=String(data?.detail||data?.error||'');
+    if(!r.ok||!data?.url){
+      throw new Error(detail&&detail!==INVALID_IMAGE_PROVIDER_MESSAGE
+        ? INVALID_IMAGE_PROVIDER_MESSAGE+' · '+detail
+        : INVALID_IMAGE_PROVIDER_MESSAGE);
     }
 
-    if(!data||!url){
-      throw new Error(lastDetail&&lastDetail!==INVALID_IMAGE_PROVIDER_MESSAGE
-        ? INVALID_IMAGE_PROVIDER_MESSAGE+' · '+lastDetail
-        : INVALID_IMAGE_PROVIDER_MESSAGE);
+    const url=String(data.url);
+    setImageStage('Validando a imagem entregue pelo provider…');
+    try{
+      await preloadGeneratedImage(url);
+    }catch{
+      reportMediaError(INVALID_IMAGE_PROVIDER_MESSAGE,{
+        stage:'provider-output-validation',
+        failedProvider:String(data?.provider||'unknown'),
+        model:String(data?.model||''),
+        providerAttempt:1
+      });
+      throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE+' · o provider respondeu, mas o arquivo recebido não é uma imagem utilizável.');
     }
     setImageStage('Finalizando imagem…');
     const referenceReview=data?.referenceReview||{};
