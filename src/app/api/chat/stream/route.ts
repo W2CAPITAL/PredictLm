@@ -276,7 +276,9 @@ export async function POST(req:NextRequest){
       {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
     );
   }
-  const configuredRemoteAttempts=Number(process.env.PREDICTLM_CHAT_REMOTE_ATTEMPTS||'1');
+  // Healthy turns still stop after the first accepted answer. The default budget
+  // allows exactly one rescue provider only when the primary hard-fails or is rejected.
+  const configuredRemoteAttempts=Number(process.env.PREDICTLM_CHAT_REMOTE_ATTEMPTS||'2');
   const remoteAttemptBudget=Number.isFinite(configuredRemoteAttempts)
     ? Math.max(1,Math.min(4,Math.floor(configuredRemoteAttempts)))
     : 1;
