@@ -122,9 +122,18 @@ function knownSubjects(prompt:string):VisualSubjectSlot[]{
   }
 
   const intent=analyzeImageIntent(prompt);
+  const canonicalMatchup=isNarutoKuramaVsSasukeSusanooPrompt(prompt);
   for(const entity of intent.entities){
     if(entity.kind==='style'||entity.kind==='franchise')continue;
-    if(slots.some(x=>x.id===entity.id||normalize(x.label)===normalize(entity.label)))continue;
+    const entityLabel=normalize(entity.label);
+    // Canonical matchup slots already represent these compound phrases.
+    // Keeping a second "Naruto Modo Avatar Kurama" object slot made providers
+    // interpret the request as an extra protagonist and increased duplication.
+    if(canonicalMatchup&&(
+      (entityLabel.includes('naruto')&&entityLabel.includes('kurama'))||
+      (entityLabel.includes('sasuke')&&entityLabel.includes('susanoo'))
+    ))continue;
+    if(slots.some(x=>x.id===entity.id||normalize(x.label)===entityLabel))continue;
     const role:VisualSubjectSlot['role']=entity.kind==='person'?'person':entity.kind==='brand'||entity.kind==='product'?'brand':entity.kind==='place'?'place':entity.kind==='character'?'character':'object';
     push({
       id:entity.id,
