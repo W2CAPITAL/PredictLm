@@ -82,3 +82,10 @@ test('stream route validates complete content with the same public answer gate',
   assert.match(route,/publicFailurePayload/);
   assert.doesNotMatch(route,/errors:errors\.slice/);
 });
+
+
+test('legitimate product names such as Minecraft Forge are not mistaken for internal stage leaks',()=>{
+  const answer='Minecraft Forge é uma plataforma de modding do ecossistema Minecraft e pode carregar mods compatíveis.';
+  assert.equal(chatTrustIssue('o que é Minecraft Forge?',answer),'');
+  assert.equal(publicAnswerGate(answer,'pt-BR','o que é Minecraft Forge?').ok,true);
+});
