@@ -132,7 +132,7 @@ export function buildVisualReferenceQueries(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
   const intent=analyzeImageIntent(raw);
-  const queries:string[]=[...intent.referenceQueries];
+  const queries:string[]=[];
   if(isNarutoKuramaVsSasukeSusanooPrompt(input)){
     queries.push(
       'Naruto Uzumaki Kurama chakra mode official anime reference full body',
@@ -177,6 +177,7 @@ export function buildVisualReferenceQueries(input:string){
       queries.push(compactText(raw+' official art canonical appearance',320),compactText(raw+' anime screenshot reference',320));
     }
   }
+  queries.push(...intent.referenceQueries);
   return [...new Set(queries.map(x=>compactText(x,320)).filter(Boolean))].slice(0,8);
 }
 
