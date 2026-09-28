@@ -137,7 +137,7 @@ function providerList(prompt=''):Provider[]{
   const explicit=process.env.PREDICTLM_STREAM_PROVIDER_ORDER||process.env.PREDICTLM_PROVIDER_ORDER;
   const route=jevRouteDecision(prompt,{hasTools:false});
   const preferred=(explicit
-    ||'localcode,gptoss,puterpool,freellmapi,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,nvidia,openai,mistral,huggingface,together,fireworks,sambanova,cerebras,deepinfra,requesty,modelscope,siliconflow,nebius,novita,scaleway,venice,friendli,inference-net,llm7,hetzner,nous,ollama-cloud')
+    ||'localcode,gptoss,puterpool,freellmapi,groq,opencode,mistral,huggingface,modelscope,siliconflow,inference-net,llm7,hetzner,nous,ollama-cloud,aion,ovh,openrouter,vercel-gateway,gemini,deepseek,nvidia,openai,together,fireworks,sambanova,cerebras,deepinfra,requesty,nebius,novita,scaleway,venice,friendli,hyperbolic,nscale,qwen-chat')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(provider:Provider)=>{
     const index=preferred.indexOf(provider.name);
