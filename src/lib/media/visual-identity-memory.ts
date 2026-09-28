@@ -39,6 +39,16 @@ export function loadVisualIdentityMemory(identityKey:string){
   return readAll().find(x=>x.identityKey===identityKey)||null;
 }
 
+export function loadLatestVisualIdentityMemory(){
+  return readAll().sort((a,b)=>b.updatedAt-a.updatedAt)[0]||null;
+}
+
+export function resolveVisualIdentityMemory(identityKey:string,continuation=false){
+  const exact=loadVisualIdentityMemory(identityKey);
+  if(exact)return exact;
+  return continuation?loadLatestVisualIdentityMemory():null;
+}
+
 export function clearVisualIdentityMemory(identityKey?:string){
   if(typeof window==='undefined')return;
   if(!identityKey){
