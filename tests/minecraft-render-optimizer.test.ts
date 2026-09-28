@@ -18,7 +18,7 @@ test('all requested performance repositories are registered with explicit browse
   const expected=[
     'rakanki911/DLSS5-Swapper',
     'Kizzuwatnaa/DLSS5-Autopilot',
-    'SAOG0721/Magpie',
+    'Blinue/Magpie',
     'Merserk/dlss5-visual-enhancer',
     'perseval-BLR/NeuralScreen',
     'hellzerg/optimizer',
@@ -38,6 +38,10 @@ test('all requested performance repositories are registered with explicit browse
   assert.equal(audit.expected,11);
   assert.equal(audit.registered,11);
   assert.equal(audit.complete,true);
+  const magpie=refs.get('Blinue/Magpie');
+  assert.ok(magpie);
+  assert.match(magpie?.role||'',/frame-rate limiting|duplicate-frame detection/i);
+  assert.match(magpie?.nativeBoundary||'',/GPL-3\.0/);
 });
 
 test('auto render governor lowers scale under frame or memory pressure',()=>{
