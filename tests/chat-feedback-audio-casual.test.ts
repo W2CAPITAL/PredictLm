@@ -136,3 +136,13 @@ test('playful answer gate rejects generic deflection and unnecessary AI disclaim
     'unnecessary-ai-disclaimer'
   );
 });
+
+test('offline casual recovery does not force repetitive clarification',()=>{
+  const first=String(directConversationReply('eu sou naruto uzucrack da aldeia da folha da maconha oculta',[],{loaded:false,tier:null})||'');
+  assert.match(first,/naruto uzucrack|aldeia da folha/i);
+  assert.doesNotMatch(first,/quero pegar melhor a ideia|preciso de contexto/i);
+
+  const casual=String(generativeOfflineReply('hoje o negócio ficou estranho por aqui','casual')||'');
+  assert.ok(casual.length>0);
+  assert.doesNotMatch(casual,/continua — quero pegar melhor|quero pegar melhor a ideia/i);
+});
