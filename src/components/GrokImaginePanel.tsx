@@ -464,8 +464,9 @@ export function GrokImaginePanel(){
     let url='';
     let lastDetail='';
 
-    for(let providerAttempt=0;providerAttempt<3;providerAttempt++){
-      if(providerAttempt>0)setImageStage('Provider inválido · tentando outra rota de imagem '+(providerAttempt+1)+'/3…');
+    const providerAttemptBudget=1;
+    for(let providerAttempt=0;providerAttempt<providerAttemptBudget;providerAttempt++){
+      if(providerAttempt>0)setImageStage('Provider inválido · tentando outra rota de imagem '+(providerAttempt+1)+'/'+providerAttemptBudget+'…');
       const r=await fetch('/api/media/generate',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
