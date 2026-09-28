@@ -12,7 +12,7 @@ const envKeys=[
   'NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL',
   'OPENROUTER_API_KEY','OPENROUTER_MODEL',
   'OPENAI_API_KEY','OPENAI_MODEL','OPENAI_BASE_URL',
-  'PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER'
+  'PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER','PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN'
 ];
 
 function clearProviders(){
@@ -90,6 +90,7 @@ test('stream chat falls through from failed Groq to Vercel AI Gateway',async()=>
   process.env.GROQ_API_KEY='groq-test';
   process.env.VERCEL_OIDC_TOKEN='oidc-test';
   process.env.PREDICTLM_STREAM_PROVIDER_ORDER='groq,vercel-gateway';
+  process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN='2';
   const original=globalThis.fetch;
   const calls:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
@@ -127,6 +128,7 @@ test('stream chat uses current Gemini and DeepSeek defaults',async()=>{
   process.env.GEMINI_API_KEY='gem-test';
   process.env.DEEPSEEK_API_KEY='deep-test';
   process.env.PREDICTLM_STREAM_PROVIDER_ORDER='gemini,deepseek';
+  process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN='2';
   const original=globalThis.fetch;
   const models:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
@@ -234,6 +236,7 @@ test('stream chat rejects a flat literal McQueen answer and tries another provid
   process.env.GROQ_API_KEY='groq-test';
   process.env.VERCEL_OIDC_TOKEN='oidc-test';
   process.env.PREDICTLM_STREAM_PROVIDER_ORDER='groq,vercel-gateway';
+  process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN='2';
   const original=globalThis.fetch;
   const calls:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
