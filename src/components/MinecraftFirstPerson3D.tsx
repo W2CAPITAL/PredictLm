@@ -10,6 +10,7 @@ import {
   chunkSnapshot,
   surfaceAt,
   terrainHeight,
+  treeDescriptorAt,
   type VoxelBlockId,
   type VoxelWorldState
 } from '@/lib/simulation/minecraft-sandbox';
@@ -19,6 +20,7 @@ import {
   type MinecraftViewTarget
 } from '@/lib/simulation/minecraft-first-person';
 import type {MinecraftBrainId,MinecraftBrainState} from '@/lib/simulation/minecraft-brain-agents';
+import {mobVoxelModel} from '@/lib/simulation/minecraft-voxel-models';
 import styles from './MinecraftFirstPerson3D.module.css';
 
 type Vec3=[number,number,number];
@@ -47,12 +49,6 @@ const BRAIN_RGBA:Record<MinecraftBrainId,RGBA>={
   human:[.25,.95,.81,1],macaque:[.96,.55,.22,1],mouse:[.76,.69,.95,1],fly:[.96,.9,.25,1]
 };
 
-const MOB_RGBA:Record<string,RGBA>={
-  sheep:[.88,.88,.84,1],pig:[.92,.55,.62,1],cow:[.38,.24,.14,1],chicken:[.92,.92,.86,1],
-  zombie:[.22,.56,.3,1],skeleton:[.78,.8,.78,1],spider:[.11,.09,.1,1],creeper:[.25,.72,.25,1],
-  enderman:[.09,.055,.12,1],villager:[.55,.36,.22,1],dungeon_guard:[.42,.18,.58,1],boss:[.68,.16,.5,1],
-  blaze:[.96,.58,.08,1],ghast:[.88,.9,.9,.92],end_guard:[.25,.12,.38,1]
-};
 
 function blockColor(id:VoxelBlockId):RGBA{return BLOCK_RGBA[id]||[.42,.45,.47,1]}
 function clamp(v:number,min:number,max:number){return Math.max(min,Math.min(max,v))}
@@ -194,9 +190,18 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
           }else{
             const groundId=blockAt(world,x,terrainY,z);
             pushBox(vertices,x,terrainY,z,1,1,1,blockColor(groundId));
-            if(blockAt(world,x,terrainY+1,z)==='wood'){
-              pushBox(vertices,x,terrainY+2,z,.72,3,.72,blockColor('wood'));
-              pushBox(vertices,x,terrainY+4,z,2.5,2.1,2.5,blockColor('leaves'));
+            const tree=dim==='overworld'?treeDescriptorAt(world.seed,x,z):null;
+            if(tree){
+              pushBox(vertices,x,tree.baseY+tree.trunkHeight/2+.5,z,.72,tree.trunkHeight,.72,blockColor('wood'));
+              if(tree.kind==='spruce'){
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight-.8,z,3.6,1.1,3.6,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+.15,z,2.6,1.1,2.6,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+1.05,z,1.5,1.0,1.5,blockColor('leaves'));
+              }else{
+                const crown=tree.crownRadius*2+.5;
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight-.35,z,crown,1.5,crown,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+.8,z,Math.max(2,crown-1.4),1.15,Math.max(2,crown-1.4),blockColor('leaves'));
+              }
             }
           }
           continue;
@@ -236,11 +241,9 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
         for(const mob of snap.mobs){
           if(seen.has(mob.id)||Math.hypot(mob.x-pose.x,mob.z-pose.z)>radius+4)continue;
           seen.add(mob.id);
-          const color=MOB_RGBA[mob.kind]||[.68,.68,.66,1];
-          const h=mob.kind==='spider'?.6:mob.kind==='ghast'?1.5:mob.kind==='enderman'?2.4:1.45;
-          const w=mob.kind==='spider'?1.25:mob.kind==='ghast'?1.5:mob.kind==='creeper'?.72:.62;
-          pushBox(vertices,mob.x,mob.y+h*.42,mob.z,w,h*.78,w,color);
-          if(!['spider','ghast'].includes(mob.kind))pushBox(vertices,mob.x,mob.y+h*.98,mob.z,w*.82,h*.34,w*.82,color);
+          for(const part of mobVoxelModel(mob.kind)){
+            pushBox(vertices,mob.x+part.dx,mob.y+part.dy,mob.z+part.dz,part.sx,part.sy,part.sz,part.color);
+          }
         }
       }
 

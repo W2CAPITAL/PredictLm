@@ -4,6 +4,7 @@ import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {Activity,Download,Eye,MapPin,Play,Pause,RotateCcw,Sparkles,StepForward,Upload} from 'lucide-react';
 import {
   CRAFT_RECIPES,
+  VOXEL_ADVANCEMENTS,
   VOXEL_BLOCKS,
   VOXEL_CHUNK_SIZE,
   attackVoxelMob,
@@ -31,6 +32,7 @@ import {
   travelVoxelDimension,
   voxelUnityScene,
   voxelWorldSummary,
+  voxelAdvancementProgress,
   type VoxelBlockId,
   type VoxelMob,
   type VoxelStructure,
@@ -220,6 +222,8 @@ export function MinecraftSimulationPanel(){
   const chunk=context.snapshot;
   const currentStructures=chunk.structures;
   const currentMobs=chunk.mobs;
+  const advancementProgress=useMemo(()=>voxelAdvancementProgress(world),[world]);
+  const unlockedAdvancements=advancementProgress.filter(x=>x.unlocked);
   const inventoryBlocks=useMemo(
     ()=>Object.entries(world.inventory)
       .filter(([id,count])=>count>0&&id in VOXEL_BLOCKS)
@@ -745,10 +749,21 @@ export function MinecraftSimulationPanel(){
         </section>
 
         <section>
-          <header><b>Conquistas</b><span>{world.achievements.length}</span></header>
-          <div className={styles.achievements}>
-            {world.achievements.slice(-12).map(id=><span key={id}>{id.replace(/-/g,' ')}</span>)}
-            {!world.achievements.length?<small>Mine, construa, explore, lute e conclua masmorras para liberar conquistas.</small>:null}
+          <header><b>Objetivos e conquistas</b><span>{unlockedAdvancements.length}/{VOXEL_ADVANCEMENTS.length}</span></header>
+          <div className={styles.advancementGroups}>
+            {(['story','nether','end','adventure','husbandry'] as const).map(category=>{
+              const items=advancementProgress.filter(x=>x.category===category);
+              const done=items.filter(x=>x.unlocked).length;
+              return <details key={category} open={category==='story'}>
+                <summary><b>{category==='story'?'Progresso':category==='nether'?'Nether':category==='end'?'End':category==='adventure'?'Aventura':'Cultivo'}</b><span>{done}/{items.length}</span></summary>
+                <div className={styles.advancementList}>
+                  {items.map(item=><div key={item.id} data-unlocked={item.unlocked?'1':'0'}>
+                    <i>{item.unlocked?'✓':'○'}</i>
+                    <span><b>{item.title}</b><small>{item.description}</small></span>
+                  </div>)}
+                </div>
+              </details>;
+            })}
           </div>
         </section>
 
