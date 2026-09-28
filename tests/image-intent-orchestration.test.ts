@@ -68,14 +68,22 @@ test('reference queries are produced for arbitrary named subjects',()=>{
   assert.ok(queries.some(x=>/João Silva/i.test(x)));
 });
 
-test('Imagine retries invalid provider output and exposes semantic intent diagnostics',()=>{
+test('Imagine uses one server-orchestrated generation per candidate and exposes semantic intent diagnostics',()=>{
   const ui=fs.readFileSync(new URL('../src/components/GrokImaginePanel.tsx',import.meta.url),'utf8');
   const api=fs.readFileSync(new URL('../src/app/api/media/generate/route.ts',import.meta.url),'utf8');
-  assert.match(ui,/for\(let providerAttempt=0;providerAttempt<3;providerAttempt\+\+\)/);
-  assert.match(ui,/Provider inválido · tentando outra rota de imagem/);
-  assert.match(ui,/avoidedProviders\.add\(failed\)/);
+  assert.doesNotMatch(ui,/for\(let providerAttempt=0;providerAttempt<3;providerAttempt\+\+\)/);
+  assert.doesNotMatch(ui,/Provider inválido · tentando outra rota de imagem/);
+  assert.match(ui,/avoidProviders:providerPolicy\?\.avoidProviders\|\|\[\]/);
+  assert.match(ui,/Validando a imagem entregue pelo provider/);
+  assert.match(ui,/const totalCandidates=1/);
+  assert.match(ui,/const useDirector=deepThink/);
+  assert.match(ui,/if\(!deepThink\|\|shouldForceLiteralMode\(prompt\)\)return safeFallback/);
+  assert.match(ui,/if\(deepThink&&!regenerate&&\(semanticRepair/);
+  assert.match(ui,/const hardRejectSpecific=false/);
   assert.match(ui,/Entendimento do pedido/);
   assert.match(api,/avoidProviders\.has\('pollinations-proxy'\)/);
+  assert.match(api,/NO_IMAGE_PROVIDER/);
+  assert.match(api,/cloudflare-workers-ai/);
   assert.match(api,/IMAGE INTENT RESOLUTION/);
   assert.match(api,/imageIntent:/);
 });

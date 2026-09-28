@@ -114,26 +114,25 @@ No Vercel, `localhost` do usuário não é alcançável. ComfyUI local requer de
 - Browser analysis keeps the photo on the device. Server analysis is an explicit user choice. No automatic photo persistence or Supabase upload. See `services/animal-vision/README.md` for model provenance, compatibility and deployment setup.
 
 
-## Best-image orchestration v2.4
+## Best-image orchestration v2.5
 
-Para personagem/anime/franquia específica, o Imagine usa pipeline de qualidade em camadas:
+O caminho padrão do Imagine prioriza previsibilidade e orçamento de API:
 
 ```text
 intent → scene/subject slots → visual references → persistent Visual ID memory
-→ 2–3 candidates → technical review + semantic identity review
-→ rerank → targeted edit/repair of best candidate → final semantic gate
-→ optional stylize/upscale → persist only if approved
+→ 1 server-orchestrated generation → byte/image validation
+→ local technical review → display valid image + fidelity warning
 ```
 
 Regras:
-- anime/franchise identity-sensitive gera até 3 candidatos; outra identidade específica, até 2; pedido genérico, 1;
-- identidade correta vale mais no score que uma imagem tecnicamente bonita porém semanticamente errada;
+- um clique gera um candidato por padrão; não há retry triplo escondido no cliente;
+- Deep Think é opt-in para Media Director, revisão semântica, repair, stylize e upscale;
+- uma imagem decodificável não é apagada apenas porque o verificador semântico ficou indisponível; o estado fica como não verificado/limitado;
 - referência manual > Visual ID Memory aprovada > referência automática/catalogada > texto;
-- Visual ID Memory reutiliza somente gerações anteriormente aprovadas pelo verificador semântico e não persiste blobs/data URLs gigantes;
-- repair deve usar o melhor candidato como referência visual e corrigir somente erros visíveis, preservando regiões/pose/composição já corretas;
+- Visual ID Memory só é atualizada após aprovação semântica e não persiste blobs/data URLs gigantes;
+- repair profundo usa o candidato visível como referência e corrige erros concretos sem reiniciar a cena cegamente;
 - character slots fixam identidade, forma, paleta, atributos obrigatórios e substituições proibidas;
-- para Naruto/Kurama vs Sasuke/Perfect Susanoo: lados separados, Kurama raposa/nove caudas, Susanoo humanoide blindado completo, ownership de cor ouro/laranja vs roxo/violeta;
-- geração que falha identidade não entra em Recent nem vira memória de identidade.
+- para Naruto/Kurama vs Sasuke/Perfect Susanoo: lados separados, Kurama raposa/nove caudas, Susanoo humanoide blindado completo, ownership de cor ouro/laranja vs roxo/violeta.
 
 Esse padrão adota princípios públicos observáveis em geradores de ponta: referências de imagem, edição multi-turn/repair, identity consistency e seleção do melhor resultado. Não presume acesso a pesos ou técnicas proprietárias.
 
@@ -167,7 +166,7 @@ The subject graph, verifier and repair code must use the same interpretation. A 
 
 The user should not need to write a negative prompt for normal generation. Character/form-specific negatives are compiled automatically from the original request and transformation semantics; manual negative input is an advanced optional override only.
 
-Provider success means **usable image bytes**, not merely HTTP 200. The render fallback validates PNG/JPEG/WebP/AVIF bytes, retries alternate configured fallback models after an invalid 200/JSON/HTML response, and only after exhausting those attempts returns the terminal user-facing message: `O provider não entregou uma imagem válida`.
+Provider success means **usable image bytes**, not merely HTTP 200. The client validates the delivered artifact before announcing success. The public render fallback validates PNG/JPEG/WebP/AVIF bytes and does not call Pollinations anonymously; without authenticated/configured fallback it fails fast with a provider-configuration error instead of repeatedly requesting an endpoint that cannot succeed.
 
 For Naruto Kurama Chakra Mode, automatic negatives protect Naruto's blond hair, whisker identity and golden chakra cloak on Naruto's body. Full-Kurama-avatar negatives are activated only by an explicit full-avatar request.
 

@@ -25,10 +25,12 @@ export function isPlayfulPrompt(prompt:string){
   const shapeWords=p.match(/\b(?:triangul\w*|quadr\w*|redond\w*|circul\w*|pentagon\w*|hexagon\w*|cubo|cubico|cúbico|esfera|4d|5d|hiper\w*|ultra\w*)\b/g)||[];
   if(shapeWords.length>=2)return true;
 
-  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/);
+  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/);
   if(selfIntro){
     const label=selfIntro[1];
     const words=label.split(/\s+/).filter(Boolean);
+    const fictionalIdentity=/\b(?:naruto|sasuke|goku|freeza|frieza|mcqueen|sonic|batman|superman|deadpool|pikachu|uchiha|uzumaki|konoha)\b/.test(label);
+    if(fictionalIdentity)return true;
     if(words.length>=3&&/\b(?:cara|cabeca|cabeça|lata|metal|roxe\w*|arroxe\w*|cosmic\w*|cósmic\w*|galactic\w*|galáctic\w*|interdimensional|ultra\w*|hiper\w*)\b/.test(label))return true;
   }
 
@@ -358,11 +360,26 @@ export function generativeOfflineReply(prompt:string,kind?:ConversationKind):str
     ].join('\n');
   }
 
-  if(kind==='casual')return 'Tô acompanhando. Continua.';
+  const fallbackVariant=(options:string[])=>{
+    let hash=0;
+    for(const char of prompt)hash=((hash*31)+char.charCodeAt(0))|0;
+    return options[Math.abs(hash)%options.length];
+  };
+  if(kind==='casual')return fallbackVariant([
+    'Tô acompanhando o fio da conversa.',
+    'Peguei a ideia e vou levar isso como contexto daqui pra frente.',
+    'Certo — isso entra na premissa da conversa sem precisar interromper com outra pergunta.',
+    'Entendido. Vou seguir esse contexto no próximo ponto que você trouxer.'
+  ]);
   if(!/[?]$/.test(prompt.trim())&&!/^(quem|qual|quais|como|onde|quando|por que|porque|o que|quanto|quantos|quantas)\b/i.test(p)){
-    return 'Entendi. Continua — quero pegar melhor a ideia.';
+    return fallbackVariant([
+      'Certo — vou tratar isso como contexto e seguir sem pedir esclarecimento à toa.',
+      'Peguei esse ponto. Ele fica incorporado ao contexto da conversa.',
+      'Entendido; não vou transformar uma afirmação simples em interrogatório.',
+      'Anotado no contexto deste turno. Pode desenvolver a ideia no seu ritmo.'
+    ]);
   }
-  return 'Não consegui formular uma resposta boa para isso agora. Se você mandar de novo, eu tento por outra rota sem jogar texto interno ou contexto aleatório na conversa.';
+  return 'Não consegui formular uma resposta boa para isso agora. Vou preservar o pedido original e tentar a próxima rota disponível, sem despejar contexto interno na conversa.';
 }
 
 export function signalsKnowledgeGap(content:string){
@@ -413,7 +430,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
     return '**'+thing+'**? Eu entro nessa. Tem cara de assunto que rende uma conversa boa.';
   }
 
-  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/i);
+  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/i);
   if(playfulIntro&&isPlayfulPrompt(prompt)){
     const label=playfulIntro[1].trim();
     return 'Aí sim, **'+label+'**. Nome de entidade que aparece atravessando uma dimensão errada e age como se fosse terça-feira. Pode prosseguir.';

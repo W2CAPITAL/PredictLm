@@ -11,7 +11,7 @@ const envKeys=[
   'NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL',
   'OPENROUTER_API_KEY','OPENROUTER_MODEL',
   'OPENAI_API_KEY','OPENAI_MODEL','OPENAI_BASE_URL',
-  'PREDICTLM_COGNITIVE_PROVIDER_ORDER','PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER'
+  'PREDICTLM_COGNITIVE_PROVIDER_ORDER','PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER','PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN'
 ];
 
 function clearProviders(){
@@ -86,6 +86,7 @@ test('cognitive stream falls through providers without touching normal chat rout
   process.env.GROQ_API_KEY='groq-test';
   process.env.VERCEL_OIDC_TOKEN='oidc-test';
   process.env.PREDICTLM_COGNITIVE_PROVIDER_ORDER='groq,vercel-gateway';
+  process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN='2';
   const original=globalThis.fetch;
   const calls:string[]=[];
   globalThis.fetch=async(input:any,init?:RequestInit)=>{

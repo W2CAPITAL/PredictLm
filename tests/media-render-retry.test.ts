@@ -10,7 +10,17 @@ function req(prompt='Naruto vs Sasuke'){
   return new Request('http://predictlm.test/api/media/render?prompt='+encodeURIComponent(prompt)+'&width=1024&height=1024&seed=7&model=flux');
 }
 
+function enableAuthenticatedPollinations(){
+  const old=process.env.POLLINATIONS_API_KEY;
+  process.env.POLLINATIONS_API_KEY='pollinations-test-key';
+  return ()=>{
+    if(old===undefined)delete process.env.POLLINATIONS_API_KEY;
+    else process.env.POLLINATIONS_API_KEY=old;
+  };
+}
+
 test('media render retries when a provider returns HTTP 200 without image bytes',async()=>{
+  const restoreKey=enableAuthenticatedPollinations();
   const original=globalThis.fetch;
   const calls:string[]=[];
   const png=new Uint8Array(1400);
@@ -33,10 +43,12 @@ test('media render retries when a provider returns HTTP 200 without image bytes'
     assert.equal(calls.length,2);
   }finally{
     globalThis.fetch=original;
+    restoreKey();
   }
 });
 
 test('media render returns the exact terminal error after all image attempts are invalid',async()=>{
+  const restoreKey=enableAuthenticatedPollinations();
   const original=globalThis.fetch;
   globalThis.fetch=async()=>new Response(JSON.stringify({ok:true}),{
     status:200,
@@ -51,6 +63,7 @@ test('media render returns the exact terminal error after all image attempts are
     assert.ok(body.attempts>=2);
   }finally{
     globalThis.fetch=original;
+    restoreKey();
   }
 });
 
@@ -73,6 +86,7 @@ test('public render transport compacts oversized orchestration prompts but prese
 });
 
 test('media render falls back from a configured public base to default public image base',async()=>{
+  const restoreKey=enableAuthenticatedPollinations();
   const original=globalThis.fetch;
   const oldBase=process.env.PREDICT_PUBLIC_IMAGE_URL;
   const oldAttempts=process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS;
@@ -98,5 +112,6 @@ test('media render falls back from a configured public base to default public im
     globalThis.fetch=original;
     if(oldBase===undefined)delete process.env.PREDICT_PUBLIC_IMAGE_URL; else process.env.PREDICT_PUBLIC_IMAGE_URL=oldBase;
     if(oldAttempts===undefined)delete process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS; else process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS=oldAttempts;
+    restoreKey();
   }
 });

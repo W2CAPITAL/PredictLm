@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {conversationAnswerIssue,directConversationReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
+import {conversationAnswerIssue,directConversationReply,generativeOfflineReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
 import {speakBrowserText,speakBrowserTextTracked,stopBrowserVoice} from '../src/lib/voice/browser-voice';
 
 test('casual preference does not start with an unnecessary AI disclaimer',()=>{
@@ -135,4 +135,14 @@ test('playful answer gate rejects generic deflection and unnecessary AI disclaim
     conversationAnswerIssue('ei cara, você gosta de pipoca?','Não sou um ser vivo, mas se eu pudesse comer, pipoca seria boa.'),
     'unnecessary-ai-disclaimer'
   );
+});
+
+test('offline casual recovery does not force repetitive clarification',()=>{
+  const first=String(directConversationReply('eu sou naruto uzucrack da aldeia da folha da maconha oculta',[],{loaded:false,tier:null})||'');
+  assert.match(first,/naruto uzucrack|aldeia da folha/i);
+  assert.doesNotMatch(first,/quero pegar melhor a ideia|preciso de contexto/i);
+
+  const casual=String(generativeOfflineReply('hoje o negócio ficou estranho por aqui','casual')||'');
+  assert.ok(casual.length>0);
+  assert.doesNotMatch(casual,/continua — quero pegar melhor|quero pegar melhor a ideia/i);
 });

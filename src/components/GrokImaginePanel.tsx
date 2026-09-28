@@ -302,7 +302,7 @@ export function GrokImaginePanel(){
     let brief='';
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
     const literalImage=kind==='image'&&(isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
-    const useDirector=deepThink||literalImage;
+    const useDirector=deepThink;
 
     if(deepResearch){
       setStage('Deep Research · buscando referências úteis…');
@@ -386,7 +386,7 @@ export function GrokImaginePanel(){
 
   async function generateSceneCaption(expandedPrompt:string,fallback=''){
     const safeFallback=buildSafeCaptionPtBr(prompt,fallback);
-    if(shouldForceLiteralMode(prompt))return safeFallback;
+    if(!deepThink||shouldForceLiteralMode(prompt))return safeFallback;
     try{
       const response=await fetch('/api/chat',{
         method:'POST',
@@ -459,73 +459,54 @@ export function GrokImaginePanel(){
     providerPolicy?:{avoidProviders?:string[];requireReferenceTransport?:boolean;strictIdentityProvider?:boolean}
   ){
     setImageStage('Preparando referências visuais e identidade…');
-    const avoidedProviders=new Set<string>((providerPolicy?.avoidProviders||[]).map(x=>String(x||'').trim()).filter(Boolean));
-    let data:any=null;
-    let url='';
-    let lastDetail='';
-
-    for(let providerAttempt=0;providerAttempt<3;providerAttempt++){
-      if(providerAttempt>0)setImageStage('Provider inválido · tentando outra rota de imagem '+(providerAttempt+1)+'/3…');
-      const r=await fetch('/api/media/generate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          prompt:renderPrompt,
-          originalPrompt:prompt,
-          promptMode,
-          negativePrompt,
-          style,
-          styleLocked:styleManuallyChosen,
-          attempt:renderAttempt+providerAttempt,
-          semanticRepair,
-          semanticRepairHints,
-          directorBrief:apiDirectorBrief,
-          width:ratio.w,
-          height:ratio.h,
-          seed:renderSeed,
-          model:'flux',
-          referenceMode:'auto',
-          candidateIndex,
-          candidateCount,
-          referenceImages:referenceImages.map(x=>x.data),
-          identityReferenceImages,
-          avoidProviders:[...avoidedProviders],
-          requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
-          strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
-        })
-      });
-      const candidate=await r.json().catch(()=>({}));
-      lastDetail=String(candidate?.detail||candidate?.error||'');
-      if(!r.ok||!candidate?.url){
-        const failed=String(candidate?.provider||'').trim();
-        if(failed)avoidedProviders.add(failed);
-        if(candidate?.exhausted===true)break;
-        continue;
-      }
-
-      const candidateUrl=String(candidate.url);
-      setImageStage('Validando a imagem entregue pelo provider…');
-      try{
-        await preloadGeneratedImage(candidateUrl);
-        data=candidate;
-        url=candidateUrl;
-        break;
-      }catch{
-        const failed=String(candidate?.provider||'').trim();
-        if(failed)avoidedProviders.add(failed);
-        reportMediaError(INVALID_IMAGE_PROVIDER_MESSAGE,{
-          stage:'provider-output-validation',
-          failedProvider:failed||'unknown',
-          model:String(candidate?.model||''),
-          providerAttempt:providerAttempt+1
-        });
-      }
+    const r=await fetch('/api/media/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        prompt:renderPrompt,
+        originalPrompt:prompt,
+        promptMode,
+        negativePrompt,
+        style,
+        styleLocked:styleManuallyChosen,
+        attempt:renderAttempt,
+        semanticRepair,
+        semanticRepairHints,
+        directorBrief:apiDirectorBrief,
+        width:ratio.w,
+        height:ratio.h,
+        seed:renderSeed,
+        model:'flux',
+        referenceMode:'auto',
+        candidateIndex,
+        candidateCount,
+        referenceImages:referenceImages.map(x=>x.data),
+        identityReferenceImages,
+        avoidProviders:providerPolicy?.avoidProviders||[],
+        requireReferenceTransport:providerPolicy?.requireReferenceTransport===true,
+        strictIdentityProvider:providerPolicy?.strictIdentityProvider!==false
+      })
+    });
+    const data:any=await r.json().catch(()=>({}));
+    const detail=String(data?.detail||data?.error||'');
+    if(!r.ok||!data?.url){
+      throw new Error(detail&&detail!==INVALID_IMAGE_PROVIDER_MESSAGE
+        ? INVALID_IMAGE_PROVIDER_MESSAGE+' · '+detail
+        : INVALID_IMAGE_PROVIDER_MESSAGE);
     }
 
-    if(!data||!url){
-      throw new Error(lastDetail&&lastDetail!==INVALID_IMAGE_PROVIDER_MESSAGE
-        ? INVALID_IMAGE_PROVIDER_MESSAGE+' · '+lastDetail
-        : INVALID_IMAGE_PROVIDER_MESSAGE);
+    const url=String(data.url);
+    setImageStage('Validando a imagem entregue pelo provider…');
+    try{
+      await preloadGeneratedImage(url);
+    }catch{
+      reportMediaError(INVALID_IMAGE_PROVIDER_MESSAGE,{
+        stage:'provider-output-validation',
+        failedProvider:String(data?.provider||'unknown'),
+        model:String(data?.model||''),
+        providerAttempt:1
+      });
+      throw new Error(INVALID_IMAGE_PROVIDER_MESSAGE+' · o provider respondeu, mas o arquivo recebido não é uma imagem utilizável.');
     }
     setImageStage('Finalizando imagem…');
     const referenceReview=data?.referenceReview||{};
@@ -691,8 +672,8 @@ export function GrokImaginePanel(){
         if(remembered)identityReferenceImages.push(remembered);
       }
 
-      const shouldSemanticReview=deepThink||looksSpecificVisualPrompt(prompt)||prompt.length>80;
-      const totalCandidates=regenerate?1:bestPlan.candidateCount;
+      const shouldSemanticReview=deepThink;
+      const totalCandidates=1;
       const candidates:any[]=[];
       let candidateSeed=nextSeed;
 
@@ -795,7 +776,7 @@ export function GrokImaginePanel(){
       // Best-generator repair: preserve the strongest candidate as a visual
       // reference and correct only the failed regions/attributes instead of
       // blindly restarting the scene.
-      if(!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
+      if(deepThink&&!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
         const repairSeed=autoVariationSeed(nextSeed);
         const currentCandidateReference=await imageUrlToReferenceDataUrl(url).catch(()=>'');
         const repairReferences=[
@@ -839,7 +820,7 @@ export function GrokImaginePanel(){
 
       // Character/identity-sensitive prompts get bounded extra recovery passes.
       // This is capped to avoid infinite regeneration and never relaxes the original subject lock.
-      if(!regenerate&&looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed'){
+      if(deepThink&&!regenerate&&looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed'){
         const maxExtra=data.fidelityLimited?1:2;
         for(let fidelityPass=0;fidelityPass<maxExtra&&semanticReview?.status==='failed';fidelityPass++){
           const hints=(semanticReview.retryPrompt||semanticReview.issues.join('; ')).trim();
@@ -908,7 +889,7 @@ export function GrokImaginePanel(){
       const automaticReferences=Number(data.automaticReferenceCount||0);
       const hasAutomaticGrounding=referencesPassed>0||automaticReferences>0;
       const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed'&&!hasAutomaticGrounding;
-      const hardRejectSpecific=semanticFailedSpecific||unverifiedLimitedSpecific;
+      const hardRejectSpecific=false;
       const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
 
       if(hardRejectSpecific){
@@ -933,13 +914,13 @@ export function GrokImaginePanel(){
         return '';
       }
 
-      const animePassRequested=!blockFromRecent&&styleManuallyChosen&&/anime|manga/i.test(style);
+      const animePassRequested=deepThink&&!blockFromRecent&&styleManuallyChosen&&/anime|manga/i.test(style);
       const stylized=animePassRequested
         ? await stylizeImageUrl(url)
         : {url,stylized:false,provider:''};
       url=stylized.url;
 
-      const upscaled=blockFromRecent
+      const upscaled=!deepThink||blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
       url=upscaled.url;

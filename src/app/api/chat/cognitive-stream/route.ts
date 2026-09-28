@@ -264,7 +264,9 @@ export async function POST(req:NextRequest){
   const language=body?.language==='en'?'en':'pt-BR';
   const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':body?.cognitiveMode==='macaque'?'macaque':'dual';
   const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''),mode);
-  const candidates=providerList().slice(0,8);
+  const configuredAttemptLimit=Number(process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN||1);
+  const remoteAttemptLimit=Math.max(1,Math.min(3,Number.isFinite(configuredAttemptLimit)?Math.floor(configuredAttemptLimit):1));
+  const candidates=providerList().slice(0,remoteAttemptLimit);
 
   if(!candidates.length){
     return Response.json({
