@@ -88,7 +88,7 @@ export async function GET(req:Request){
 
   const configuredBase=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
   const bases=publicImageBaseCandidates(configuredBase);
-  const modelPlan=references.length
+  const rawModelPlan=references.length
     ? [
         {model,refs:references},
         {model:'kontext',refs:references},
@@ -100,10 +100,13 @@ export async function GET(req:Request){
         {model:'flux',refs:[]},
         {model:'turbo',refs:[]}
       ];
+  const modelPlan=rawModelPlan.filter((entry,index,all)=>
+    all.findIndex(x=>x.model===entry.model&&x.refs.length===entry.refs.length)===index
+  );
 
-  const maxAttempts=Math.max(2,Math.min(5,Number(process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS)||4));
+  const maxAttempts=Math.max(2,Math.min(6,Number(process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS)||4));
   const candidates=circuitReadyProviders(
-    bases.flatMap(base=>modelPlan.map(entry=>({
+    modelPlan.flatMap(entry=>bases.map(base=>({
       name:'public-image-render',
       base,
       model:entry.model,
