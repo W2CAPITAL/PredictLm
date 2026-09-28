@@ -1,6 +1,7 @@
 import { isNarutoKuramaVsSasukeSusanooPrompt, parseSemanticImageReview, requestsValleyOfTheEnd, wantsFullKuramaAvatar, wantsKuramaChakraMode } from '@/lib/media/canonical-matchup';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
 import {analyzeImageIntent} from '@/lib/media/image-intent';
+import {providerAttemptLimit} from '@/lib/server/api-spend-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -121,7 +122,7 @@ export async function POST(req:Request){
           'Requested scene: '+prompt
         ].join('\n');
 
-    const vision=await callVisionProviders(instruction,image,{timeoutMs:22000,maxProviders:4});
+    const vision=await callVisionProviders(instruction,image,{timeoutMs:22000,maxProviders:providerAttemptLimit('vision')});
     const parsed=parseVisionJson<any>(vision.text);
     if(!parsed)return unavailable();
 
