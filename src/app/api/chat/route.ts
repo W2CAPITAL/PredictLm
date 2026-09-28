@@ -23,6 +23,7 @@ import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-f
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
+import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -897,12 +898,21 @@ export async function GET(){
 
 export async function POST(req:Request){
   const correlationId=crypto.randomUUID();
+  let releaseRequest=()=>{};
   try{
     const body=await req.json();
     const prompt=String(body?.prompt||'').replace(/\u0000/g,'').trim();
     if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
     if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
     const sessionScope=safeSessionScope(body?.sessionId);
+    const lease=acquireChatRequest(req,sessionScope);
+    if(!lease.allowed){
+      return Response.json(
+        {...publicFailurePayload(correlationId,'RATE_LIMITED'),retryAfterMs:lease.retryAfterMs},
+        {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
+      );
+    }
+    releaseRequest=lease.release;
     const researchContext=sanitizeUntrustedContext(prompt,String(body?.researchContext||''),16000);
     const localAdvisory=sanitizeUntrustedContext(prompt,String(body?.localAdvisory||''),2200);
     const answerAnchor=sanitizeUntrustedContext(prompt,String(body?.answerAnchor||''),5200);
@@ -1163,5 +1173,7 @@ export async function POST(req:Request){
       publicFailurePayload(correlationId,code),
       {status:code==='TIMEOUT'?504:500,headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}}
     );
+  }finally{
+    releaseRequest();
   }
 }
