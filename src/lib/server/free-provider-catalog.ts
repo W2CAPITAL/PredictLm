@@ -43,7 +43,7 @@ export function configuredFreeProviders(env:NodeJS.ProcessEnv=process.env){
 export function configuredBridgeProviders(env:NodeJS.ProcessEnv=process.env){
   const out:Array<{name:string;base:string;key:string;model:string;source:string}>=[];
   const add=(name:string,base:string|undefined,key:string|undefined,model:string|undefined,source:string,defaultModel:string)=>{
-    if(!base||!model)return;
+    if(!base)return;
     out.push({name,base:base.replace(/\/$/,'').replace(/\/v1$/,'')+'/v1',key:key||'local',model:model||defaultModel,source});
   };
   add('localcodecli',env.LOCALCODECLI_BASE_URL,env.LOCALCODECLI_API_KEY,env.LOCALCODECLI_MODEL,'Corporationakht/LocalCodeCli','auto');
