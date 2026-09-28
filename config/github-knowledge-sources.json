@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "policy": {
     "maxFileBytes": 140000,
     "maxFilesPerRepo": 120,
@@ -108,6 +108,37 @@
       ],
       "weight": 1.24,
       "reason": "MIT-licensed Arcads agent skill pack. Learn reference-first identity workflows, model-specific prompt contracts, character-sheet continuity, still-to-video start-frame handoff, visual QA and bounded repair patterns. Do not ingest bundled reference photos/assets; Arcads endpoints, model availability, credits and pricing are volatile external-service details and must be verified before runtime use."
+    },
+    {
+      "repo": "Wangnov/grok-skills",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "skills/grok/SKILL.md",
+        "skills/grok/references/media-generation.md",
+        "skills/grok/references/search-and-research.md",
+        "skills/grok/references/post-processing.md",
+        "skills/grok/references/xai-search-capabilities.md",
+        "skills/grok/examples/video-reel-playbook.md",
+        "skills/grok/scripts/grok-search.mjs",
+        "skills/grok/scripts/preflight.mjs"
+      ],
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "weight": 1.26,
+      "reason": "MIT-licensed Grok skill pack. Ingest capability-preflight, JSON-first xAI web/X search with citations, verified media-artifact workflow, and adaptive ffmpeg post-processing patterns. Logged-in grok CLI media is local/desktop-only; hosted PredictLM never pretends it can access the user's local Grok session."
     },
     {
       "repo": "realasfngl/Grok-Api",
