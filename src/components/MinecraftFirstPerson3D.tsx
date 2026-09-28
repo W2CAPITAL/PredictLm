@@ -274,6 +274,10 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       const ratio=Math.min(renderProfile.dprCap,window.devicePixelRatio||1)*internalScale;
       const width=Math.max(1,Math.floor(rect.width*ratio));
       const height=Math.max(1,Math.floor(rect.height*ratio));
+      // Voxel scenes stay crisp when rendered below display resolution. This is a
+      // browser-native equivalent of the "render smaller, upscale clearly" pattern;
+      // it is not Magpie's native DirectX scaler.
+      canvas.style.imageRendering=internalScale<.95?'pixelated':'auto';
       canvas.style.filter=renderCssFilter(renderProfile,adaptiveRef.current);
       if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
       gl.viewport(0,0,width,height);
