@@ -10,7 +10,7 @@ export function GrokSimulationPanel(){
       <div>
         <span className="sim-kicker"><Activity size={12}/> SIMULAÇÃO · MINECRAFT</span>
         <h1>Minecraft Cognitive World</h1>
-        <p>Único modo de Simulação do PredictLM: Minecraft persistente em 3D e primeira pessoa, com POV real separado para camundongo, mosca, macaco e humano; os quatro exploram, mineram, constroem, combatem, sobrevivem e aprendem no mesmo mundo.</p>
+        <p>Arena operacional do PredictLM: quatro controllers neuro-informados compartilham a mesma seed e são medidos por exploração, memória, planejamento, cooperação e sobrevivência. Não representa quatro cérebros biológicos completos.</p>
       </div>
     </header>
     <MinecraftSimulationPanel/>
