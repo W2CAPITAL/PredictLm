@@ -4,6 +4,7 @@ import {
   allExternalProviderSpecs,
   externalProviderSpecs,
   freeLlmPresetProviders,
+  FREE_LLM_DISCOVERY_ONLY,
   PUBLIC_API_DISCOVERY_SOURCE
 } from '../src/lib/server/external-provider-fabric';
 
@@ -12,7 +13,8 @@ const keys=[
   'GPTOSS_PROXY_BASE_URL','GPTOSS_PROXY_API_KEY','GPTOSS_PROXY_MODEL',
   'PUTER_POOL_BASE_URL','PUTER_POOL_API_KEY','PUTER_POOL_MODEL',
   'PREDICTLM_EXTRA_PROVIDERS_JSON','PREDICTLM_ALLOW_INLINE_EXTRA_PROVIDER_KEYS',
-  'TEST_EXTRA_KEY','MISTRAL_API_KEY','MISTRAL_MODEL','CEREBRAS_API_KEY','CEREBRAS_MODEL'
+  'TEST_EXTRA_KEY','MISTRAL_API_KEY','MISTRAL_MODEL','CEREBRAS_API_KEY','CEREBRAS_MODEL',
+  'QWEN_CHAT_API_KEY','QWEN_CHAT_MODEL','AION_API_KEY','AION_MODEL','OVH_AI_API_KEY','OVH_AI_MODEL'
 ];
 
 function clear(){
@@ -93,4 +95,28 @@ test('free-apis-list is registered as discovery metadata, not automatic executio
   assert.equal(PUBLIC_API_DISCOVERY_SOURCE.repo,'spinov001-art/free-apis-list');
   assert.match(PUBLIC_API_DISCOVERY_SOURCE.purpose,/Discovery catalog/i);
   assert.match(PUBLIC_API_DISCOVERY_SOURCE.purpose,/not auto-executed/i);
+});
+
+
+test('additional Free-LLM compatible presets include Qwen, Aion and OVH only when configured',()=>{
+  clear();
+  process.env.QWEN_CHAT_API_KEY='qwen-key';
+  process.env.QWEN_CHAT_MODEL='qwen-plus';
+  process.env.AION_API_KEY='aion-key';
+  process.env.AION_MODEL='aion-model';
+  process.env.OVH_AI_API_KEY='ovh-key';
+  process.env.OVH_AI_MODEL='ovh-model';
+  const providers=freeLlmPresetProviders();
+  assert.ok(providers.some(x=>x.name==='qwen-chat'&&x.base.includes('compatible-mode/v1')));
+  assert.ok(providers.some(x=>x.name==='aion'));
+  assert.ok(providers.some(x=>x.name==='ovh'));
+  clear();
+});
+
+test('non-generic Free-LLM providers remain discovery-only until their wire adapter exists',()=>{
+  const names=new Set(FREE_LLM_DISCOVERY_ONLY.map(x=>x.name));
+  assert.ok(names.has('cohere'));
+  assert.ok(names.has('replicate'));
+  assert.ok(names.has('cloudflare-workers-ai'));
+  assert.ok(names.has('pollinations-text'));
 });
