@@ -1,6 +1,6 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
-import {reserveProviderCall} from '@/lib/server/provider-budget';
+import {providerSaverBonus,reserveProviderCall} from '@/lib/server/provider-budget';
 import { jevRouteDecision } from '@/lib/jev-policy';
 
 export type ProviderProtocol='openai'|'anthropic';
@@ -152,7 +152,7 @@ export function rankProviders(prompt:string,deep=false){
   const route=jevRouteDecision(prompt,{deep,hasTools:task==='code'||task==='research',build:task==='code'&&/\b(build|implemente|corrija|refator|deploy|app|site|sistema)\b/i.test(prompt),research:task==='research'});
   return providers
     .map((provider,index)=>{
-      let score=modelBonus(provider.model,task)-index*0.12;
+      let score=modelBonus(provider.model,task)+providerSaverBonus(provider.name)-index*0.12;
       const m=provider.model.toLowerCase();
       if(route.tier==='strong'||route.tier==='long'){
         if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))score+=24;
