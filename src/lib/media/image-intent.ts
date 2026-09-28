@@ -59,13 +59,15 @@ const CATALOG:CatalogEntry[]=[
   {id:'spider-man',label:'Spider-Man',kind:'character',franchise:'Marvel',aliases:['spider-man','spider man','homem aranha','homem-aranha']},
   {id:'minecraft',label:'Minecraft',kind:'franchise',aliases:['minecraft']},
   {id:'tesla',label:'Tesla',kind:'brand',aliases:['tesla']},
-  {id:'playstation',label:'PlayStation',kind:'brand',aliases:['playstation','ps5','playstation 5']}
+  {id:'playstation',label:'PlayStation',kind:'brand',aliases:['playstation','ps5','playstation 5']},
+  {id:'alanzoka',label:'Alanzoka',kind:'person',aliases:['alanzoka','alan ferreira']}
 ];
 
 const GENERIC_LEAD=new Set([
   'homem','mulher','garota','garoto','menina','menino','pessoa','personagem','animal','gato','cachorro','cao','cão',
   'macaco','mosca','camundongo','dragao','dragão','lobo','raposa','monstro','robo','robô','cidade','paisagem','carro',
-  'casa','produto','imagem','foto','retrato','video','vídeo','cena','criatura','heroi','herói','guerreiro','influenciadora'
+  'casa','produto','imagem','foto','retrato','video','vídeo','cena','criatura','heroi','herói','guerreiro','influenciadora',
+  'castelo','floresta','montanha','praia','nave','espada','planeta','quarto','sala','escritorio','escritório'
 ]);
 
 const ACTION_BOUNDARY=/\b(?:lutando|enfrentando|batalhando|assistindo|olhando|correndo|voando|segurando|comendo|abracando|abraçando|dancando|dançando|posando|sentado|sentada|em pe|em pé|usando|vestindo|dirigindo|jogando|contra|fighting|facing|watching|running|flying|holding|eating|hugging|dancing|wearing|driving|playing)\b/i;
@@ -157,7 +159,8 @@ function looksLikeHandleOrName(value:string){
   const n=normalize(raw);
   if(!n||GENERIC_LEAD.has(n))return false;
   if(/^@?[a-z][a-z0-9_.-]{2,24}$/i.test(raw)&&!GENERIC_LEAD.has(n))return true;
-  return /^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+$/u.test(raw);
+  if(/^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+$/u.test(raw))return true;
+  return /^[\p{L}'’.-]{2,}(?:\s+[\p{L}'’.-]{2,}){1,3}$/u.test(raw)&&!GENERIC_LEAD.has(n.split(' ')[0]);
 }
 
 export function analyzeImageIntent(input:string):ImageIntentAnalysis{
@@ -186,7 +189,15 @@ export function analyzeImageIntent(input:string):ImageIntentAnalysis{
 
   const lead=leadSubject(raw);
   if(lead&&looksLikeHandleOrName(lead)){
-    addEntity(entities,{id:'lead:'+slug(lead),label:titleCase(lead.replace(/^@/,'')),kind:'named-subject',confidence:.84,source:'lead-subject'});
+    const leadWords=normalize(lead).split(' ').filter(Boolean);
+    const catalogWords=new Set(
+      entities.filter(x=>x.source==='catalog').flatMap(x=>normalize(x.label).split(' ')).filter(Boolean)
+    );
+    const fullyCoveredByCatalog=leadWords.length>0&&leadWords.every(word=>catalogWords.has(word));
+    if(!fullyCoveredByCatalog){
+      const personContext=/\b(?:pessoa|homem|mulher|celebridade|famos[oa]|ator|atriz|cantor|cantora|streamer|youtuber|influenciador|influenciadora|retrato|portrait|foto|photo)\b/i.test(raw);
+      addEntity(entities,{id:'lead:'+slug(lead),label:titleCase(lead.replace(/^@/,'')),kind:personContext?'person':'named-subject',confidence:.84,source:'lead-subject'});
+    }
   }
 
   for(const name of properNouns(raw)){
