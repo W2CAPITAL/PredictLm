@@ -2,6 +2,7 @@ import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, matchupRefer
 import {resolveAnimeCharacterCatalog} from './anime-character-catalog';
 import { compactText } from '@/lib/token-budget';
 import { extractRequestedNamedSubject, isConcreteCreaturePrompt, isLikelyNamedPersonPrompt, shouldForceLiteralMode } from '@/lib/media/media-fidelity';
+import {analyzeImageIntent} from '@/lib/media/image-intent';
 
 export type VisualReferenceProvider='anilist-character'|'firecrawl'|'pinterest-via-firecrawl'|'google-images'|'pinterest-via-google'|'duckduckgo-images';
 
@@ -62,14 +63,17 @@ export function isPersistentSelfPortraitRequest(input:string){
 export function isSpecificVisualPrompt(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
-  if(shouldForceLiteralMode(raw))return true;
+  const intent=analyzeImageIntent(raw);
+  if(intent.specific||intent.requiresReferences||shouldForceLiteralMode(raw))return true;
   if(/\b(personagem|character|anime|manga|franquia|franchise|jogo|game|filme|movie|serie|series|marca|brand)\b/.test(p)&&/[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\d_-]{2,}/u.test(raw))return true;
   if(/[“"'‘’][^”"'‘’]{3,}[”"'‘’]/.test(raw))return true;
   return /\b(?:personagem|character)\s+[\p{L}\d_-]{3,}/iu.test(raw);
 }
 
 export function buildVisualIdentityLock(input:string){
-  const p=normalize(coreVisualIntent(input));
+  const raw=coreVisualIntent(input);
+  const p=normalize(raw);
+  const intent=analyzeImageIntent(raw);
   const rules=[
     canonicalMatchupLock(input),
     'VISUAL IDENTITY LOCK: preserve the exact identity of every explicitly named character, product, brand, landmark or known subject.',
@@ -78,6 +82,19 @@ export function buildVisualIdentityLock(input:string){
     'Keep distinct named opponents visually separate; never fuse them unless the user explicitly asks for a fusion.',
     'The requested action, matchup and composition are mandatory, not optional inspiration.'
   ];
+  if(intent.entities.length){
+    rules.push('GENERIC ENTITY RESOLUTION: '+intent.entities.map(entity=>{
+      const form=entity.form?' · requested form='+entity.form:'';
+      const franchise=entity.franchise?' · franchise='+entity.franchise:'';
+      return entity.label+' · kind='+entity.kind+franchise+form;
+    }).join(' | ')+'. Resolve each named entity as that exact subject, not as a loose keyword.');
+  }
+  if(intent.continuation){
+    rules.push('CONTINUITY LOCK: this request refers to a previously established identity. Keep the same face/body design, hair, signature clothing/materials, proportions and distinguishing visual traits unless the user explicitly asks to change one of them.');
+  }
+  if(intent.styleSensitive&&intent.styleHints.length){
+    rules.push('STYLE LOCK: preserve the requested visual language "'+intent.styleHints.join(' · ')+'" without changing subject identity, anatomy or required scene content.');
+  }
   if(/\b(naruto|uzumaki)\b/.test(p)&&/\b(kurama|kyuubi|kyubi|nove caudas|nine tails)\b/.test(p)){
     rules.push('Naruto lock: Naruto Uzumaki must remain recognizably Naruto inside the golden-orange Kurama/Nine-Tails chakra form, with fox-like chakra silhouette/tails and canonical black chakra markings; never substitute a generic blond warrior, lion or dragon.');
   }
@@ -114,7 +131,8 @@ export function buildVisualIdentityLock(input:string){
 export function buildVisualReferenceQueries(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
-  const queries:string[]=[];
+  const intent=analyzeImageIntent(raw);
+  const queries:string[]=[...intent.referenceQueries];
   if(isNarutoKuramaVsSasukeSusanooPrompt(input)){
     queries.push(
       'Naruto Uzumaki Kurama chakra mode official anime reference full body',
@@ -165,6 +183,7 @@ export function buildVisualReferenceQueries(input:string){
 export function buildVisualReferenceQuery(input:string){
   const raw=coreVisualIntent(input);
   const p=normalize(raw);
+  const intent=analyzeImageIntent(raw);
   if(/\bnaruto\b/.test(p)&&/\bkurama\b/.test(p)&&/\bsasuke\b/.test(p)&&/\bsusanoo\b/.test(p)){
     return 'Naruto Uzumaki Kurama Chakra Mode vs Sasuke Uchiha Perfect Susanoo anime reference';
   }
@@ -184,6 +203,9 @@ export function buildVisualReferenceQuery(input:string){
     parts.push('full dragon body wings scales draconic head not lizard');
     return compactText(parts.join(' '),320);
   }
+  if(intent.referenceQueries.length)return compactText(intent.referenceQueries[0],320);
+  const primary=intent.entities.find(x=>x.kind!=='style'&&x.kind!=='franchise');
+  if(primary)return compactText(primary.label+(primary.form?' '+primary.form:'')+' canonical official visual reference',320);
   return compactText(raw+' official character design visual reference',320);
 }
 
@@ -311,10 +333,11 @@ async function firecrawlImageSearch(query:string,limit:number,pinterest=false):P
 }
 
 export async function resolveVisualReferences(input:string,limit?:number):Promise<VisualReferencePlan>{
+  const intent=analyzeImageIntent(input);
   const maxEnv=Number(process.env.PREDICTLM_VISUAL_REFERENCE_MAX||6);
   const max=Math.max(1,Math.min(8,Number(limit)||maxEnv||6));
   const matchup=matchupReferenceQueries(input);
-  const queries=[...new Set([...matchup,...buildVisualReferenceQueries(input)])].slice(0,8);
+  const queries=[...new Set([...intent.referenceQueries,...matchup,...buildVisualReferenceQueries(input)])].slice(0,8);
   const query=queries.join(' | ');
   if(!isSpecificVisualPrompt(input))return {query,queries,references:[],warnings:[],candidatesFound:0,searchRounds:0,catalogCharacters:[]};
 
