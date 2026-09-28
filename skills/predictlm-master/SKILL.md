@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.32.0"
+  version: "3.33.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.32.0
+# PredictLM Master v3.33.0
 
 ## Regra soberana
 
@@ -159,6 +159,66 @@ A síntese pública deve mostrar os cenários realmente distintos, pontos comuns
 Não inventar porcentagens sem base estatística. Simulação é contrafactual, não profecia.
 
 Se o host permitir raciocínio adicional, usar o tempo de raciocínio disponível até convergir ou chegar ao limite de evidência. Nunca usar espera artificial.
+
+# Imagine — entendimento visual específico e geração robusta
+
+Toda geração de imagem passa por **INTENT → ENTITY RESOLUTION → GROUND → PROMPT LOCK → PROVIDER → PIXEL VALIDATION → SEMANTIC REVIEW → MEMORY**.
+
+## Entidades e “jeito”
+
+O Imagine deve detectar automaticamente:
+- pessoa real/nome/handle;
+- personagem e franquia;
+- transformação/forma/poder solicitado;
+- marca/produto/modelo;
+- lugar/landmark;
+- objeto nomeado;
+- estilo, estética ou “jeito” específico;
+- continuidade: “essa mesma”, “mesmo rosto”, “mesmo personagem”, “como antes”.
+
+Nomes específicos não dependem de uma lista fixa: a heurística geral resolve nomes próprios, handles e modelos, enquanto catálogos conhecidos enriquecem identidades canônicas.
+
+Pedidos específicos entram em Literal quando necessário, recebem referências automáticas e locks explícitos. O pedido original continua soberano.
+
+## Negative automático
+
+O usuário não precisa fornecer negative prompt para problemas previsíveis. Compilar internamente:
+- identidade errada / lookalike genérico;
+- forma, roupa, cor ou franquia incorretas;
+- anatomia ruim, membros/dedos extras, rosto duplicado;
+- texto/água-marca/UI falsa;
+- artefatos, borrão e composição quebrada;
+- drift de identidade em continuações;
+- estilo divergente quando o estilo foi explicitamente pedido.
+
+Negative manual permanece apenas como override avançado opcional.
+
+## Provider mesh de imagem
+
+Uma resposta do provider só é válida depois que o arquivo é carregável como imagem.
+
+Se URL/data retornado falhar:
+1. registrar a falha;
+2. adicionar o provider à lista de exclusão da tentativa;
+3. refazer a geração com a próxima rota disponível;
+4. no máximo três passagens de provider por candidato;
+5. se o fallback público já falhou, não chamá-lo novamente na mesma tentativa;
+6. somente então retornar “O provider não entregou uma imagem válida”.
+
+Nenhuma URL não validada pode ser apresentada como geração pronta.
+
+## Revisão e memória visual
+
+Para pessoas/personagens/produtos/entidades específicas:
+- gerar best-of-N limitado conforme especificidade;
+- revisar pixels semanticamente contra o pedido;
+- preferir candidato semanticamente correto a um candidato tecnicamente bonito porém errado;
+- tentar reparo direcionado preservando regiões já corretas;
+- persistir Visual Identity Memory apenas após aprovação semântica;
+- em “essa mesma pessoa/personagem”, recuperar a última identidade aprovada se a chave exata não estiver explícita;
+- manter a chave original na continuação para evitar drift.
+
+A UI pode mostrar diagnóstico público conciso: entidades detectadas, score de especificidade, modo Literal/Imagine, referências usadas, provider/model, score e status da revisão. Nunca expor raciocínio privado.
 
 # Minecraft Cognitive World — única superfície de Simulação
 
