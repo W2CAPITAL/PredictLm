@@ -10,6 +10,7 @@ import {
   chunkSnapshot,
   surfaceAt,
   terrainHeight,
+  treeDescriptorAt,
   type VoxelBlockId,
   type VoxelWorldState
 } from '@/lib/simulation/minecraft-sandbox';
@@ -189,9 +190,18 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
           }else{
             const groundId=blockAt(world,x,terrainY,z);
             pushBox(vertices,x,terrainY,z,1,1,1,blockColor(groundId));
-            if(blockAt(world,x,terrainY+1,z)==='wood'){
-              pushBox(vertices,x,terrainY+2,z,.72,3,.72,blockColor('wood'));
-              pushBox(vertices,x,terrainY+4,z,2.5,2.1,2.5,blockColor('leaves'));
+            const tree=dim==='overworld'?treeDescriptorAt(world.seed,x,z):null;
+            if(tree){
+              pushBox(vertices,x,tree.baseY+tree.trunkHeight/2+.5,z,.72,tree.trunkHeight,.72,blockColor('wood'));
+              if(tree.kind==='spruce'){
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight-.8,z,3.6,1.1,3.6,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+.15,z,2.6,1.1,2.6,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+1.05,z,1.5,1.0,1.5,blockColor('leaves'));
+              }else{
+                const crown=tree.crownRadius*2+.5;
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight-.35,z,crown,1.5,crown,blockColor('leaves'));
+                pushBox(vertices,x,tree.baseY+tree.trunkHeight+.8,z,Math.max(2,crown-1.4),1.15,Math.max(2,crown-1.4),blockColor('leaves'));
+              }
             }
           }
           continue;
