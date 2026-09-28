@@ -4,7 +4,7 @@ import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevRouteDecision } from '@/lib/jev-policy';
 import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope } from '@/lib/chat-trust-boundary';
-import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import crypto from 'node:crypto';
 
 export const runtime='nodejs';
@@ -137,7 +137,7 @@ function providerList(prompt=''):Provider[]{
     }
     return score;
   };
-  return rankHealthyProviders(out.sort((a,b)=>rank(a)-rank(b)));
+  return circuitReadyProviders(out.sort((a,b)=>rank(a)-rank(b)));
 }
 
 function systemPrompt(language:string,autoLearning='',brainContext='',prompt=''){
