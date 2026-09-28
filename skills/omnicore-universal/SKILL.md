@@ -46,8 +46,8 @@ Snapshot inicial:
 - 23 agentes de runtime;
 - 11 papéis/estágios de orquestração;
 - 4 neuro-cores por espécie;
-- 22 módulos de skill de primeiro nível;
-- 79 plugins/capabilities do catálogo.
+- 23 módulos de skill de primeiro nível;
+- 80 plugins/capabilities do catálogo.
 
 ## Compatibilidade com qualquer IA
 
@@ -275,7 +275,8 @@ Incluem:
 - PredictLM Scanner;
 - AI Influencer Studio;
 - Domain Engine Fabric;
-- OmniCore Universal.
+- OmniCore Universal;
+- Free Provider Fabric.
 
 Além desses módulos, o catálogo de capabilities contém skills/adapters especializados adicionais.
 
@@ -559,3 +560,17 @@ A mesma skill deve conseguir operar em outro host de IA sem depender do nome Pre
 - os quatro neuro-cores mantenham seus limites científicos;
 - agentes continuem bounded;
 - exista um único resultado público coerente.
+
+
+## Controle de quota e custo
+
+OmniCore trata `free-provider-fabric` como capability de Chat/Performance.
+
+Em modo conservador:
+- roteia local/self-hosted/free-tier antes de metered providers;
+- limita fan-out por turno;
+- não ativa review/repair remoto por padrão;
+- Build e Report usam single-pass por padrão;
+- fallback é sequencial e bounded, nunca broadcast para todos os providers.
+
+O ledger diário em memória é um soft guard por instância serverless. Enforcement global entre instâncias exige storage persistente.
