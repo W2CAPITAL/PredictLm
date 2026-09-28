@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.37.0"
+  version: "3.38.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.37.0
+# PredictLM Master v3.38.0
 
 ## Regra soberana
 
@@ -1458,3 +1458,23 @@ Regras de geração robusta:
 - uma ENV marcada como inválida/expirada deve falhar rápido e deixar o circuito seguir para outra rota.
 
 Critério de sucesso: uma falha 504/502 de um provider não encerra a criação enquanto existir uma rota de imagem compatível e saudável.
+
+
+## Grok/xAI + NVIDIA accelerated fabric
+
+Capabilities adicionadas:
+- `skills/grok/SKILL.md` + `src/lib/server/xai-search.ts`: web/X search com citações, filtros e fallback;
+- `skills/nvidia-accelerated/SKILL.md` + `src/lib/nvidia-capability-router.ts`: RAG/AI-Q/NeMo, cuDF/DALI, cuOpt/CUDA-Q, DeepStream, Nemotron, Omniverse e Physical AI.
+
+Fronteira obrigatória:
+- Vercel é orquestrador/cliente HTTP; não fingir CUDA, DeepStream, Omniverse ou GPU local;
+- workloads GPU rodam em host compatível ou serviço remoto explicitamente configurado;
+- formulação/roteamento leve pode rodar no app;
+- uma skill externa melhora o procedimento, não injeta magicamente os binários/modelos no runtime.
+
+Qwen Image:
+- `QWEN_IMAGE_API_KEY` ou `DASHSCOPE_API_KEY`;
+- `QWEN_IMAGE_BASE_URL`;
+- `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
+- `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
+- referência visual e negative prompt passam ao provider quando disponíveis.
