@@ -2,7 +2,7 @@
 name: predictlm-unified
 description: Meta-skill unificada do PredictLM para Chat, Build, Research, Processos/DataJud/DJEN, Lexis Revisional, estratégia jurídica, Council 5/X10, mídia, memória, self-improve e skill federation. Use quando a tarefa cruza múltiplos módulos ou exige continuidade, revisão adversarial e execução verificável.
 metadata:
-  version: "1.36.0"
+  version: "1.37.0"
   repository: "W2CAPITAL/PredictLm"
   host: "PredictLM"
   superseded_by: "predictlm-master"
@@ -915,3 +915,23 @@ For anime/franchise prompts:
 - expose catalog-resolved identities in the Imagine grounding panel.
 
 The integration borrows only the public catalog/tracker pattern observed in Kitsune, Mangayomi, Zenshin and Unyo. Streaming/torrent/scraping functionality is not imported.
+
+
+## Grok/xAI + NVIDIA accelerated fabric
+
+Capabilities adicionadas:
+- `skills/grok/SKILL.md` + `src/lib/server/xai-search.ts`: web/X search com citações, filtros e fallback;
+- `skills/nvidia-accelerated/SKILL.md` + `src/lib/nvidia-capability-router.ts`: RAG/AI-Q/NeMo, cuDF/DALI, cuOpt/CUDA-Q, DeepStream, Nemotron, Omniverse e Physical AI.
+
+Fronteira obrigatória:
+- Vercel é orquestrador/cliente HTTP; não fingir CUDA, DeepStream, Omniverse ou GPU local;
+- workloads GPU rodam em host compatível ou serviço remoto explicitamente configurado;
+- formulação/roteamento leve pode rodar no app;
+- uma skill externa melhora o procedimento, não injeta magicamente os binários/modelos no runtime.
+
+Qwen Image:
+- `QWEN_IMAGE_API_KEY` ou `DASHSCOPE_API_KEY`;
+- `QWEN_IMAGE_BASE_URL`;
+- `QWEN_IMAGE_MODEL=qwen-image-3.0-pro`;
+- `PREDICTLM_IMAGE_PROVIDER_ORDER=qwen,...`;
+- referência visual e negative prompt passam ao provider quando disponíveis.
