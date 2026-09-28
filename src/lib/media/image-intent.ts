@@ -70,7 +70,7 @@ const GENERIC_LEAD=new Set([
   'castelo','floresta','montanha','praia','nave','espada','planeta','quarto','sala','escritorio','escritório'
 ]);
 
-const ACTION_BOUNDARY=/\b(?:lutando|enfrentando|batalhando|assistindo|olhando|correndo|voando|segurando|comendo|abracando|abraçando|dancando|dançando|posando|sentado|sentada|em pe|em pé|usando|vestindo|dirigindo|jogando|contra|fighting|facing|watching|running|flying|holding|eating|hugging|dancing|wearing|driving|playing)\b/i;
+const ACTION_BOUNDARY=/\b(?:lutando|enfrentando|batalhando|assistindo|olhando|correndo|andando|caminhando|sorrindo|voando|segurando|comendo|abracando|abraçando|dancando|dançando|posando|sentado|sentada|em pe|em pé|usando|vestindo|dirigindo|jogando|contra|fighting|facing|watching|running|walking|smiling|flying|holding|eating|hugging|dancing|wearing|driving|playing)\b/i;
 const CONTINUATION=/\b(?:essa mesma|esse mesmo|a mesma|o mesmo|mesma garota|mesmo rosto|mesmo personagem|mesma pessoa|mesmo visual|mesmo padrao|mesmo padrão|continue com|continua com|como antes|igual a anterior|igual à anterior|same girl|same person|same face|same character|same identity|same look|same design|same as before)\b/i;
 const EXACTNESS=/\b(?:exatamente|fiel|fidelidade|identico|idêntico|igual ao|igual a|parecido com|sem mudar|mesmo jeito|do jeito de|canonical|canonico|canônico|accurate|faithful|exact|same)\b/i;
 const STYLE_PATTERN=/\b(?:estilo|style|jeito|visual|estetica|estética|aesthetic)\s+(?:de|do|da|of)?\s*([^,.;\n]{2,90})/ig;
@@ -159,8 +159,8 @@ function looksLikeHandleOrName(value:string){
   const n=normalize(raw);
   if(!n||GENERIC_LEAD.has(n))return false;
   if(/^@?[a-z][a-z0-9_.-]{2,24}$/i.test(raw)&&!GENERIC_LEAD.has(n))return true;
-  if(/^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}'’.-]+$/u.test(raw))return true;
-  return /^[\p{L}'’.-]{2,}(?:\s+[\p{L}'’.-]{2,}){1,3}$/u.test(raw)&&!GENERIC_LEAD.has(n.split(' ')[0]);
+  if(/^(?:[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\d'’._-]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ\d][\p{L}\d'’._-]*$/u.test(raw))return true;
+  return /^[\p{L}\d][\p{L}\d'’._-]{1,}(?:\s+[\p{L}\d][\p{L}\d'’._-]{1,}){1,4}$/u.test(raw)&&!GENERIC_LEAD.has(n.split(' ')[0]);
 }
 
 export function analyzeImageIntent(input:string):ImageIntentAnalysis{
@@ -196,20 +196,21 @@ export function analyzeImageIntent(input:string):ImageIntentAnalysis{
     const fullyCoveredByCatalog=leadWords.length>0&&leadWords.every(word=>catalogWords.has(word));
     if(!fullyCoveredByCatalog){
       const personContext=/\b(?:pessoa|homem|mulher|celebridade|famos[oa]|ator|atriz|cantor|cantora|streamer|youtuber|influenciador|influenciadora|retrato|portrait|foto|photo)\b/i.test(raw);
-      addEntity(entities,{id:'lead:'+slug(lead),label:titleCase(lead.replace(/^@/,'')),kind:personContext?'person':'named-subject',confidence:.84,source:'lead-subject'});
+      const productContext=/\b(?:produto|product|modelo|model|celular|smartphone|telefone|phone|notebook|laptop|console|carro|vehicle|veiculo|veículo)\b/i.test(raw)||/\d/.test(lead);
+      addEntity(entities,{id:'lead:'+slug(lead),label:titleCase(lead.replace(/^@/,'')),kind:personContext?'person':productContext?'product':'named-subject',confidence:.84,source:'lead-subject'});
     }
-  }
-
-  for(const name of properNouns(raw)){
-    const n=normalize(name);
-    if(entities.some(x=>normalize(x.label).includes(n)||n.includes(normalize(x.label))))continue;
-    addEntity(entities,{id:'proper:'+slug(name),label:name,kind:'named-subject',confidence:.72,source:'proper-noun'});
   }
 
   for(const style of styles){
     if(style.length<3)continue;
     if(/^(?:gotico|gótico|luxo|cyberpunk|steampunk|kawaii|dark fantasy|dark fofo)$/i.test(style))continue;
     addEntity(entities,{id:'style:'+slug(style),label:style,kind:'style',confidence:.68,source:'style'});
+  }
+
+  for(const name of properNouns(raw)){
+    const n=normalize(name);
+    if(entities.some(x=>normalize(x.label).includes(n)||n.includes(normalize(x.label))))continue;
+    addEntity(entities,{id:'proper:'+slug(name),label:name,kind:'named-subject',confidence:.72,source:'proper-noun'});
   }
 
   const namedEntities=entities.filter(x=>x.kind!=='style'&&x.kind!=='franchise');
