@@ -35,6 +35,8 @@ test('human macaque mouse and fly brains all take turns in the same Minecraft wo
     assert.equal(result.brains.agents[id].decisions,1);
     assert.ok(result.brains.agents[id].lastAction.length>0);
     assert.ok(result.brains.agents[id].publicThought.length>0);
+    assert.ok(result.brains.agents[id].neuralSpikes>0);
+    assert.ok(['explore','forage','seek_social','avoid_threat','build'].includes(result.brains.agents[id].neuralAction));
   }
   assert.ok(result.world.stats.distance>=world.stats.distance);
   assert.ok(result.brains.cognitive.tick>=4);
@@ -93,4 +95,7 @@ test('Minecraft UI defaults to WebGL first-person and keeps the old renderer onl
   assert.match(ui,/Mapa 2D/);
   assert.match(renderer,/getContext\('webgl'/);
   assert.match(renderer,/requestPointerLock/);
+  assert.match(renderer,/VOXEL_WORLD_HEIGHT/);
+  assert.match(renderer,/blockAt\(world/);
+  assert.match(renderer,/gl\.BLEND/);
 });
