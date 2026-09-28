@@ -9,7 +9,8 @@ test('normal and cognitive chat default to one remote provider attempt',()=>{
   const shell=fs.readFileSync(new URL('../src/components/ChatShell.tsx',import.meta.url),'utf8');
 
   assert.match(route,/PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN\|\|1/);
-  assert.match(route,/slice\(0,PROVIDER_ATTEMPT_LIMIT\)/);
+  assert.match(route,/PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN\|\|1/);
+  assert.match(route,/slice\(0,providerAttemptLimit\(\)\)/);
   assert.match(stream,/PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN\|\|1/);
   assert.match(stream,/slice\(0,remoteAttemptLimit\)/);
   assert.match(cognitive,/PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN\|\|1/);
