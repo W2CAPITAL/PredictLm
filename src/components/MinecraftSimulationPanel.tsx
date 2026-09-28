@@ -657,10 +657,11 @@ export function MinecraftSimulationPanel(){
               return <button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>
                 <b>{brain.label}</b>
                 <span>{brain.dimension==='infernal'?'Nether':brain.dimension==='void'?'End':'Overworld'} · {brain.x},{brain.z} · {brain.lastAction}</span>
+                <small>LIF · {brain.neuralAction} · {brain.neuralSpikes} spikes</small>
               </button>;
             })}
           </div>
-          <small>Os quatro usam o Cognitive Workspace mapeado (FlyWire, H01, macaque e mouse) para decidir ações no mesmo estado físico do mundo.</small>
+          <small>Closed-loop real do software: observação do Minecraft → corrente injetada → solver LIF → spikes → ação. FlyWire/H01/MICrONS/macaque são fontes de evidência/proveniência; não são cérebros biológicos completos rodando no navegador.</small>
         </section>
 
         <section>
@@ -727,6 +728,7 @@ export function MinecraftSimulationPanel(){
       <summary>Estado e implementação do mundo</summary>
       <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
       <p>Referências registradas: {audit.registered}/{audit.expected}. As referências sem licença verificada são usadas somente como inspiração arquitetural; nenhum asset proprietário do Minecraft é incorporado.</p>
+      <p>Neurociência: solver numérico LIF por condutância em escala toy/browser. Estado do jogo e spikes são simulados; dados de conectoma/atlas permanecem rotulados separadamente como medidos/publicados, proxy ou desconhecidos.</p>
       <p>Unity: {unityReady?'WebGL configurado e sincronizado por scene snapshots.':'fabric de GameObject/Transform/Component ativo; falta uma URL de build Unity WebGL para executar o runtime Unity real no navegador.'}</p>
     </details>
   </section>;
