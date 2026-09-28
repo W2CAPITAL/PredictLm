@@ -112,6 +112,7 @@ export interface VoxelWorldState{
   inventory:Record<string,number>;
   modifications:Record<string,VoxelBlockId>;
   discoveries:Record<string,true>;
+  mobHealth:Record<string,number>;
   achievements:string[];
   events:VoxelEvent[];
   stats:{mined:number;placed:number;crafted:number;mobsDefeated:number;distance:number;chunksVisited:number;dungeonsCleared:number};
@@ -377,6 +378,7 @@ export function createVoxelWorld(seed=Math.floor(Math.random()*2_000_000_000)):V
     inventory:{wood_pickaxe:1,torch:8},
     modifications:{},
     discoveries:{['dimension:overworld']:true,['biome:'+biomeAt(seed,x,z)]:true},
+    mobHealth:{},
     achievements:[],
     events:[{id:'spawn',tick:0,kind:'world',text:'Novo mundo voxel iniciado.'}],
     stats:{mined:0,placed:0,crafted:0,mobsDefeated:0,distance:0,chunksVisited:1,dungeonsCleared:0}
@@ -393,6 +395,7 @@ export function normalizeVoxelWorld(input:any):VoxelWorldState{
     inventory:{...fresh.inventory,...input.inventory},
     modifications:{...input.modifications},
     discoveries:{...input.discoveries},
+    mobHealth:{...input.mobHealth},
     achievements:Array.isArray(input.achievements)?input.achievements.slice(-120):[],
     events:Array.isArray(input.events)?input.events.slice(-120):fresh.events,
     stats:{...fresh.stats,...input.stats}
@@ -470,12 +473,17 @@ export function mobsForChunk(state:VoxelWorldState,cx:number,cz:number):VoxelMob
     }
     const hostile=state.player.dimension!=='overworld'||!daylight||['creeper','enderman','blaze','ghast','end_guard'].includes(kind);
     const id=chunkKey(cx,cz,state.player.dimension)+':mob:'+i;
-    if(!state.discoveries[id+':defeated'])out.push({id,kind,x,y,z,health:hostile?20:10,hostile,label:kind.replace('_',' ')});
+    if(!state.discoveries[id+':defeated'])out.push({id,kind,x,y,z,health:state.mobHealth[id]??(hostile?20:10),hostile,label:kind.replace('_',' ')});
   }
   for(const structure of structureForChunk(state,cx,cz)){
     if(structure.kind==='dungeon'&&!state.discoveries[structure.id+':guard:defeated']){
-      out.push({id:structure.id+':guard',kind:'dungeon_guard',x:structure.x,y:terrainHeight(state.seed,structure.x,structure.z)+1,z:structure.z,health:34,hostile:true,label:'Guardião da masmorra'});
+      const id=structure.id+':guard';
+      out.push({id,kind:'dungeon_guard',x:structure.x,y:terrainHeight(state.seed,structure.x,structure.z)+1,z:structure.z,health:state.mobHealth[id]??34,hostile:true,label:'Guardião da masmorra'});
     }
+  }
+  if(state.player.dimension==='void'&&cx===0&&cz===0&&!state.discoveries['void-boss:defeated']){
+    const id='void-boss';
+    out.push({id,kind:'boss',x:8,y:58,z:8,health:state.mobHealth[id]??120,hostile:true,label:'Dragão do Vazio'});
   }
   return out;
 }
@@ -666,6 +674,7 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     next={
       ...markProgress(next,'milestone:defeated:'+mob.kind),
       inventory,
+      mobHealth:{...next.mobHealth,[mob.id]:0},
       discoveries:{...markProgress(next,'milestone:defeated:'+mob.kind).discoveries,[mob.id+':defeated']:true as const},
       stats:{...next.stats,mobsDefeated:next.stats.mobsDefeated+1},
       player:{...next.player,experience,level}
@@ -673,8 +682,8 @@ export function attackVoxelMob(state:VoxelWorldState,mob:VoxelMob){
     next=withEvent(next,'combat','Derrotou '+mob.label+'.');
     return{state:next,ok:true,message:'Derrotou '+mob.label+'.'};
   }
-  next={...next,player:{...next.player,health:clamp(next.player.health-(mob.hostile?3:1),0,20)}};
-  next=withEvent(next,'combat','Atacou '+mob.label+'; o combate continua.');
+  next={...next,mobHealth:{...next.mobHealth,[mob.id]:Math.max(0,mob.health-damage)},player:{...next.player,health:clamp(next.player.health-(mob.hostile?3:1),0,20)}};
+  next=withEvent(next,'combat','Atacou '+mob.label+'; HP restante '+Math.max(0,mob.health-damage)+'.');
   return{state:next,ok:true,message:'Causou '+damage+' de dano.'};
 }
 
