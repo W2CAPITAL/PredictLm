@@ -6,46 +6,42 @@ export type ChatTrustIssue=
   |'malformed-structured-output';
 
 const EXTERNAL_PAYLOAD_MARKERS=[
-  /"heat_shield"s*:/i,
-  /"payload_weights?"s*:/i,
-  /"payload_mass(?:_kg|_lb)?"s*:/i,
-  /"trunk"s*:s*{/i,
-  /"trunk_volume"s*:/i,
-  /"flickr_images"s*:/i,
-  /"first_flight"s*:/i,
-  /"height_w_trunk"s*:/i,
-  /"diameter"s*:s*{[^}]*"meters"/i,
-  /"launch_payload_mass"s*:/i,
-  /"dry_mass_kg"s*:/i,
-  /"type"s*:s*"Dragon/i,
-  /api.spacexdata.com/i
+  /"heat_shield"\s*:/i,
+  /"payload_weights?"\s*:/i,
+  /"payload_mass(?:_kg|_lb)?"\s*:/i,
+  /"trunk"\s*:\s*\{/i,
+  /"trunk_volume"\s*:/i,
+  /"flickr_images"\s*:/i,
+  /"first_flight"\s*:/i,
+  /"height_w_trunk"\s*:/i,
+  /"diameter"\s*:\s*\{[^}]*"meters"/i,
+  /"launch_payload_mass"\s*:/i,
+  /"dry_mass_kg"\s*:/i,
+  /"type"\s*:\s*"Dragon/i,
+  /api\.spacexdata\.com/i
 ];
 
 const DEBUG_MARKERS=[
-  /successs+responses+codes*:s*2dds*ok/i,
-  /(?:^|
-)s*contents+examples*:/i,
-  /(?:^|
-)s*(?:debug|trace|stderr|stdout|request id|response headers?)s*[:=-]/i,
-  /(?:^|
-)s*http/d(?:.d)?s+d{3}/i,
-  /(?:^|
-)s*(?:502|503|504)s+(?:bad gateway|service unavailable|gateway timeout)/i
+  /success\s+response\s+code\s*:\s*2\d\d\s*ok/i,
+  /(?:^|\n)\s*content\s+example\s*:/i,
+  /(?:^|\n)\s*(?:debug|trace|stderr|stdout|request id|response headers?)\s*[:=-]/i,
+  /(?:^|\n)\s*http\/\d(?:\.\d)?\s+\d{3}\b/i,
+  /(?:^|\n)\s*(?:502|503|504)\s+(?:bad gateway|service unavailable|gateway timeout)\b/i
 ];
 
 const INTERNAL_META_MARKERS=[
-  /segunda leitura independente/i,
-  /piso pr[aá]tico/i,
-  /lacunas antes da resposta final/i,
-  /(?:RECALL|FORGE|AEGIS|PARALLAX|CENTUM|PREDICT ROUTER|PROMPT OS)/,
-  /(?:provider mesh|FreeLLMAPI respondeu|knowledge fallback|runtime local)/i,
-  /respondi diretamente ao pedido atual/i,
-  /descartei contexto n[aã]o solicitado/i
+  /\bsegunda leitura independente\b/i,
+  /\bpiso pr[aá]tico\b/i,
+  /\blacunas antes da resposta final\b/i,
+  /\b(?:RECALL|FORGE|AEGIS|PARALLAX|CENTUM|PREDICT ROUTER|PROMPT OS)\b/,
+  /\b(?:provider mesh|FreeLLMAPI respondeu|knowledge fallback|runtime local)\b/i,
+  /\brespondi diretamente ao pedido atual\b/i,
+  /\bdescartei contexto n[aã]o solicitado\b/i
 ];
 
 export function structuredOutputRequested(prompt:string){
   const p=String(prompt||'').toLowerCase();
-  return /(json|payload|schema|objeto json|resposta da api|api response|raw response|retorne somente json|retorna somente json)/.test(p);
+  return /\b(json|payload|schema|objeto json|resposta da api|api response|raw response|retorne somente json|retorna somente json)\b/.test(p);
 }
 
 function wholeAnswerParsesAsLargeJson(text:string){
@@ -62,14 +58,19 @@ function wholeAnswerParsesAsLargeJson(text:string){
 
 export function chatTrustIssue(prompt:string,text:string):ChatTrustIssue{
   const value=String(text||'').trim();
-  if(!value)return '';
+  if(!value)return'';
   if(DEBUG_MARKERS.some(re=>re.test(value)))return'debug-log';
   if(INTERNAL_META_MARKERS.some(re=>re.test(value)))return'internal-meta';
   if(!structuredOutputRequested(prompt)){
     if(EXTERNAL_PAYLOAD_MARKERS.filter(re=>re.test(value)).length>=2)return'raw-external-payload';
     if(wholeAnswerParsesAsLargeJson(value))return'raw-external-payload';
-    const fenced=value.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)?.[1];
-    if(fenced&&wholeAnswerParsesAsLargeJson(fenced))return'raw-external-payload';
+    const fence=String.fromCharCode(96).repeat(3);
+    if(value.startsWith(fence)){
+      const firstBreak=value.indexOf('\n');
+      const lastFence=value.lastIndexOf(fence);
+      const fenced=firstBreak>=0&&lastFence>firstBreak?value.slice(firstBreak+1,lastFence).trim():'';
+      if(fenced&&wholeAnswerParsesAsLargeJson(fenced))return'raw-external-payload';
+    }
   }
   return'';
 }
