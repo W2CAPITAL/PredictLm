@@ -118,7 +118,7 @@ export function configuredProviders(){
     });
   }
 
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcode,gptoss,puterpool,freellmapi,ollama,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,minimax,ark,anthropic,openai,xai,mistral,huggingface,together,fireworks,sambanova,cerebras,deepinfra,requesty,modelscope,siliconflow,nebius,novita,scaleway,venice,friendli,inference-net,llm7,hetzner,nous,ollama-cloud')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcode,gptoss,puterpool,freellmapi,ollama,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,minimax,ark,anthropic,openai,xai,mistral,huggingface,modelscope,siliconflow,inference-net,llm7,hetzner,nous,ollama-cloud,aion,ovh,together,fireworks,sambanova,cerebras,deepinfra,requesty,nebius,novita,scaleway,venice,friendli,hyperbolic,nscale,qwen-chat')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const idx=preferred.indexOf(name);return idx<0?999:idx};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
