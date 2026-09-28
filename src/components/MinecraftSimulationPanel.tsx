@@ -97,10 +97,10 @@ type ToolMode='mine'|'place'|'inspect';
 type ViewTarget='player'|MinecraftBrainId;
 
 const BRAIN_VISION:Record<MinecraftBrainId,{label:string;radius:number;description:string}>={
-  human:{label:'Humano',radius:10,description:'visão binocular detalhada, leitura de estruturas e planejamento de longo alcance'},
-  macaque:{label:'Macaco',radius:11,description:'visão frontal ampla, contraste de terreno, recursos e ameaças próximas'},
-  mouse:{label:'Camundongo',radius:7,description:'campo baixo e compacto, foco em abrigo, comida, túneis e ameaças próximas'},
-  fly:{label:'Mosca',radius:12,description:'campo muito amplo e rápido, priorizando movimento, rotas, estruturas e exploração'}
+  human:{label:'Humano',radius:18,description:'visão binocular detalhada, leitura de estruturas e planejamento de longo alcance'},
+  macaque:{label:'Macaco',radius:20,description:'visão frontal ampla, contraste de terreno, recursos e ameaças próximas'},
+  mouse:{label:'Camundongo',radius:14,description:'câmera baixa com alcance útil para abrigo, comida, túneis e ameaças'},
+  fly:{label:'Mosca',radius:24,description:'campo muito amplo e rápido, priorizando movimento, rotas, estruturas e exploração'}
 };
 
 function loadWorld(){
@@ -139,7 +139,7 @@ export function MinecraftSimulationPanel(){
   const [command,setCommand]=useState('');
   const [planning,setPlanning]=useState(false);
   const [lastPlan,setLastPlan]=useState('');
-  const [viewRadius,setViewRadius]=useState(10);
+  const [viewRadius,setViewRadius]=useState(18);
   const [renderMode,setRenderMode]=useState<'first-person'|'map'|'unity'>('first-person');
   const [viewTarget,setViewTarget]=useState<ViewTarget>('human');
   const canvas=useRef<HTMLCanvasElement>(null);
@@ -192,7 +192,7 @@ export function MinecraftSimulationPanel(){
 
   useEffect(()=>{
     if(!running)return;
-    const timer=window.setInterval(()=>setWorld(prev=>tickVoxelWorld(prev,1)),450);
+    const timer=window.setInterval(()=>setWorld(prev=>tickVoxelWorld(prev,1)),900);
     return()=>window.clearInterval(timer);
   },[running]);
 
@@ -204,7 +204,7 @@ export function MinecraftSimulationPanel(){
       brainsRef.current=result.brains;
       setWorld(result.world);
       setBrains(result.brains);
-    },1050);
+    },1300);
     return()=>window.clearInterval(timer);
   },[running,hydrated]);
 
@@ -475,7 +475,7 @@ export function MinecraftSimulationPanel(){
   function selectView(target:ViewTarget){
     setViewTarget(target);
     if(target==='player'){
-      setViewRadius(10);
+      setViewRadius(18);
       setMessage('POV manual: você controla e altera o mundo.');
       return;
     }
@@ -604,7 +604,7 @@ export function MinecraftSimulationPanel(){
         {[...new Set<VoxelBlockId>(['dirt','cobblestone','planks','glass','torch','crafting_table','furnace','chest',...inventoryBlocks])].map(id=><option key={id} value={id}>{VOXEL_BLOCKS[id]?.label||id} · {world.inventory[id]||0}</option>)}
       </select>
       <select value={viewRadius} onChange={e=>setViewRadius(Number(e.target.value))}>
-        <option value={7}>Visão 15×15</option><option value={10}>Visão 21×21</option><option value={12}>Visão 25×25</option>
+        <option value={12}>Visão 25×25</option><option value={18}>Visão 37×37</option><option value={24}>Visão 49×49</option>
       </select>
       <button className={renderMode==='first-person'?styles.active:''} onClick={()=>setRenderMode('first-person')}>3D · 1ª pessoa</button>
       <button className={renderMode==='map'?styles.active:''} onClick={()=>setRenderMode('map')}>Mapa 2D</button>
