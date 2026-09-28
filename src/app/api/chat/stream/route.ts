@@ -276,7 +276,9 @@ export async function POST(req:NextRequest){
       {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
     );
   }
-  const candidates=providerList(prompt).slice(0,8);
+  const configuredAttemptLimit=Number(process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN||1);
+  const remoteAttemptLimit=Math.max(1,Math.min(3,Number.isFinite(configuredAttemptLimit)?Math.floor(configuredAttemptLimit):1));
+  const candidates=providerList(prompt).slice(0,remoteAttemptLimit);
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
