@@ -87,7 +87,19 @@ export async function GET(req:Request){
     .slice(0,3);
 
   const configuredBase=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
-  const bases=publicImageBaseCandidates(configuredBase);
+  const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
+  const bases=publicImageBaseCandidates(configuredBase).filter(base=>{
+    const isPollinations=/^https:\/\/gen\.pollinations\.ai\/image\//i.test(base);
+    return !isPollinations||Boolean(pollinationsKey);
+  });
+  if(!bases.length){
+    return Response.json({
+      error:INVALID_IMAGE_PROVIDER_MESSAGE,
+      code:'NO_AUTHENTICATED_PUBLIC_IMAGE_PROVIDER',
+      attempts:0,
+      retryable:false
+    },{status:503,headers:{'Cache-Control':'no-store'}});
+  }
   const rawModelPlan=references.length
     ? [
         {model,refs:references},
