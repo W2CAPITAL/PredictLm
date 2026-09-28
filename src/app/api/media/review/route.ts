@@ -1,5 +1,6 @@
 import { isNarutoKuramaVsSasukeSusanooPrompt, parseSemanticImageReview, requestsValleyOfTheEnd, wantsFullKuramaAvatar, wantsKuramaChakraMode } from '@/lib/media/canonical-matchup';
 import {callVisionProviders,parseVisionJson} from '@/lib/server/vision-provider';
+import {analyzeImageIntent} from '@/lib/media/image-intent';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -12,6 +13,7 @@ function normalize(input:string){
 
 function specificIdentityChecklist(prompt:string){
   const p=normalize(prompt);
+  const intent=analyzeImageIntent(prompt);
   const rules:string[]=[];
   const multi=/\b(vs\.?|versus|contra|lutando|enfrentando|batalha|fight|battle)\b/.test(p);
   if(/\b(freeza|frieza)\b/.test(p)){
@@ -38,7 +40,22 @@ function specificIdentityChecklist(prompt:string){
   if(/\b(quatro caudas|four tails|bijuu)\b/.test(p)&&/\bnaruto\b/.test(p)){
     rules.push('NARUTO FOUR-TAILS BIJUU: require the requested Naruto tailed-beast identity and exactly four visible tails when the prompt says Four-Tails; do not confuse with human Goku from Dragon Ball.');
   }
-  return rules.join('\n');
+  for(const entity of intent.entities){
+    if(entity.kind==='style'||entity.kind==='franchise')continue;
+    rules.push(
+      'ENTITY '+entity.label.toUpperCase()+': verify that the visible subject is recognizably the exact requested '+entity.kind+
+      (entity.franchise?' from '+entity.franchise:'')+
+      (entity.form?' in '+entity.form:'')+
+      '. Fail a generic substitute, wrong identity, wrong category/species/product, missing requested form, or a different named subject.'
+    );
+  }
+  if(intent.continuation){
+    rules.push('CONTINUITY: the request refers to an established prior identity. Fail obvious identity drift such as a different face, body design, signature hair/materials or defining costume when no change was requested.');
+  }
+  if(intent.styleSensitive&&intent.styleHints.length){
+    rules.push('REQUESTED VISUAL LANGUAGE: verify material mismatch only when clearly visible for '+intent.styleHints.join(', ')+'. Do not let style override identity.');
+  }
+  return Array.from(new Set(rules)).join('\n');
 }
 
 function genericReview(value:any){
