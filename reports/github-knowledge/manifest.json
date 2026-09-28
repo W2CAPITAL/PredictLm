@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T15:05:25.309Z",
-  "knowledgeVersion": "0100c077cfd82227",
-  "chunkCount": 5100,
+  "generatedAt": "2026-09-28T18:33:03.614Z",
+  "knowledgeVersion": "223803959eb71d51",
+  "chunkCount": 5056,
   "sources": [
     {
       "repo": "dbreunig/building-with-jev-skill",
@@ -70,9 +70,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "e408d363393ccb72267e67bcccf4f8954b438cd9",
+      "commit": "6d42313deee63b13dbf2f262d9a31cf603d3f1bc",
       "files": 2,
-      "chunks": 63,
+      "chunks": 19,
       "error": null
     },
     {
@@ -304,7 +304,7 @@
       "repo": "Mintplex-Labs/anything-llm",
       "mode": "allow",
       "license": "MIT",
-      "commit": "128a01575a50f0284aeca75a93399b6fb1db0328",
+      "commit": "33b5b2377362f6dac14fc92e0cdb5a64796fc9b3",
       "files": 1,
       "chunks": 32,
       "error": null
@@ -655,7 +655,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "e182bc83c32ed46e561ef63a1ee4d3d7a1aed1f9",
+      "commit": "5e3378bfd30cf3ccd3b2dcc714ff496c5c889131",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -673,7 +673,7 @@
       "repo": "tashfeenahmed/freellmapi",
       "mode": "allow",
       "license": "MIT",
-      "commit": "f9435e7667c7b4d2b4685c7062c21137247c4229",
+      "commit": "64b352dc34fcbd302869006cb83753dc709e03c9",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -727,7 +727,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "d94526c00d428f9267d19bff1d5328200e1dcfe5",
+      "commit": "ca5a1da0463c31501c1992c1ee6e84514f91b6b6",
       "files": 1,
       "chunks": 12,
       "error": null
