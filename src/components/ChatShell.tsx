@@ -1171,6 +1171,10 @@ export function ChatShell({onOpenLegal}:Props){
           return;
         }
       }
+      // API Saver: a failed direct stream already consumed the remote-call
+      // allowance for this ordinary turn. Do not immediately hit /api/chat
+      // and burn a second provider quota; move to browser/local fallbacks.
+      const streamConsumedRemoteTurn=directStreamEligible;
 
       const factualAnchor=kind==='factual'?stableFactualReply(prompt):null;
       const practicalAnchor=kind==='howto'?practicalHowToReply(prompt):null;
@@ -1233,20 +1237,22 @@ export function ChatShell({onOpenLegal}:Props){
         'Conferindo resposta'
       ]);
 
-      let candidate=await requestApiAnswer({
-        prompt,
-        language,
-        kind,
-        messages,
-        researchContext,
-        localAdvisory:'',
-        answerAnchor,
-        brainContext,
-        deep:s.deepThink,
-        clean:cleanEligible,
-        sessionId:active?.id||'',
-        signal:turnController.signal
-      });
+      let candidate=streamConsumedRemoteTurn
+        ? {ok:false,text:'',data:{},reason:'stream-remote-budget-consumed'}
+        : await requestApiAnswer({
+            prompt,
+            language,
+            kind,
+            messages,
+            researchContext,
+            localAdvisory:'',
+            answerAnchor,
+            brainContext,
+            deep:s.deepThink,
+            clean:cleanEligible,
+            sessionId:active?.id||'',
+            signal:turnController.signal
+          });
 
       // Ordinary Chat stays conversational. A rejected clean answer must not
       // promote the turn into Agent Fabric / GitHub Knowledge / skill dumps.
