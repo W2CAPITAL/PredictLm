@@ -324,6 +324,9 @@ export async function POST(req:Request){
       .split(',').map(x=>x.trim()).filter(Boolean);
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
     const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
+    const qwenKey=String(process.env.QWEN_IMAGE_API_KEY||process.env.DASHSCOPE_API_KEY||'').trim();
+    const qwenBase=String(process.env.QWEN_IMAGE_BASE_URL||'https://dashscope-intl.aliyuncs.com/compatible-mode/v1').trim().replace(/\/$/,'');
+    const qwenModel=String(process.env.QWEN_IMAGE_MODEL||'qwen-image-3.0-pro').trim();
     const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
     const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1beta').trim().replace(/\/$/,'');
     const geminiModel=String(process.env.GEMINI_IMAGE_MODEL||'gemini-3.1-flash-image').trim();
@@ -334,9 +337,10 @@ export async function POST(req:Request){
     const order=imageProviderOrder(String(
       process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||
       process.env.PREDICTLM_VISUAL_PROVIDER_ORDER||
-      'gemini,vercel-gateway,comfyui,nano,configured'
+      'qwen,gemini,vercel-gateway,comfyui,nano,configured'
     ));
-    if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
+    if(qwenKey&&!order.includes('qwen'))order.unshift('qwen');
+    if(geminiKey&&!order.includes('gemini'))order.push('gemini');
 
     // Vercel-hosted PredictLM can use the automatically injected OIDC token
     // for AI Gateway image generation. Multimodal Gemini uses Chat Completions
@@ -520,11 +524,24 @@ export async function POST(req:Request){
       }
     }
 
-    const providers=circuitReadyProviders([
-      ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',name:'gemini-image',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
-      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',name:'nano-banana-image',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
-      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',name:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false}]:[])
-    ].filter(provider=>!avoidProviders.has(provider.id)));
+    const qwenReferenceValues=[...new Set([
+      ...userInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
+      ...identityMemoryInline.map(x=>'data:'+x.mimeType+';base64,'+x.data),
+      ...searchedInline.map(x=>'data:'+x.inline.mimeType+';base64,'+x.inline.data),
+      ...referencePlan.references.map(x=>x.imageUrl)
+    ].filter(Boolean))].slice(0,3);
+    const providerPool=[
+      ...(order.includes('qwen')&&qwenKey?[{id:'qwen-image',name:'qwen-image',base:qwenBase,key:qwenKey,model:qwenModel,nano:false,gemini:false,qwen:true}]:[]),
+      ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',name:'gemini-image',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true,qwen:false}]:[]),
+      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',name:'nano-banana-image',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false,qwen:false}]:[]),
+      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',name:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false,qwen:false}]:[])
+    ].filter(provider=>!avoidProviders.has(provider.id));
+    providerPool.sort((a,b)=>{
+      const ai=order.indexOf(a.qwen?'qwen':a.gemini?'gemini':a.id==='nano-banana'?'nano':'configured');
+      const bi=order.indexOf(b.qwen?'qwen':b.gemini?'gemini':b.id==='nano-banana'?'nano':'configured');
+      return (ai<0?999:ai)-(bi<0?999:bi);
+    });
+    const providers=circuitReadyProviders(providerPool);
 
     for(const provider of providers){
       if(!budget.canTry(6500))break;
@@ -539,7 +556,9 @@ export async function POST(req:Request){
         ].slice(0,4);
         const canTransportReferences=provider.gemini
           ? inlineReferences.length>0
-          : provider.id==='configured-image'&&!!mediaReferenceField&&configuredReferenceValues.length>0;
+          : provider.qwen
+            ? qwenReferenceValues.length>0
+            : provider.id==='configured-image'&&!!mediaReferenceField&&configuredReferenceValues.length>0;
         const providerDecision=identityProviderDecision({
           providerId:provider.id,
           identitySensitive:needsStrongIdentity,
@@ -551,6 +570,10 @@ export async function POST(req:Request){
         });
         if(!providerDecision.allowed)continue;
 
+        const qwenPromptExtend=String(process.env.QWEN_IMAGE_PROMPT_EXTEND||'').trim()
+          ? /^(?:1|true|yes|on)$/i.test(String(process.env.QWEN_IMAGE_PROMPT_EXTEND))
+          : effectivePromptMode!=='literal';
+        const qwenThinking=/^(?:1|true|yes|on)$/i.test(String(process.env.QWEN_IMAGE_ENABLE_THINKING||'false'));
         const providerBody=provider.gemini?{
           contents:[{
             parts:[
@@ -559,6 +582,18 @@ export async function POST(req:Request){
             ]
           }],
           generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}
+        }:provider.qwen?{
+          model:provider.model,
+          prompt:providerPrompt,
+          size:width+'x'+height,
+          n:1,
+          seed,
+          ...(negativePrompt?{negative_prompt:negativePrompt}:{}),
+          ...(qwenReferenceValues.length?{image:qwenReferenceValues}:{}),
+          prompt_extend:qwenPromptExtend,
+          prompt_extend_mode:'direct',
+          enable_thinking:qwenThinking,
+          watermark:false
         }:{
           model:provider.model,
           prompt:providerPrompt,
@@ -579,7 +614,10 @@ export async function POST(req:Request){
             ? {'Content-Type':'application/json','x-goog-api-key':provider.key}
             : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
           body:JSON.stringify(providerBody),
-          signal:AbortSignal.timeout(budget.timeout(15000,5000))
+          signal:AbortSignal.timeout(budget.timeout(
+            provider.qwen?Math.max(12000,Math.min(45000,Number(process.env.QWEN_IMAGE_TIMEOUT_MS)||28000)):15000,
+            5000
+          ))
         });
         const data=await upstream.json().catch(()=>({}));
         if(!upstream.ok){
@@ -595,7 +633,11 @@ export async function POST(req:Request){
         const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
           recordProviderSuccess(provider);
-          const referenceImagesPassed=provider.gemini?inlineReferences.length:(provider.id==='configured-image'&&mediaReferenceField?configuredReferenceValues.length:0);
+          const referenceImagesPassed=provider.gemini
+            ? inlineReferences.length
+            : provider.qwen
+              ? qwenReferenceValues.length
+              : (provider.id==='configured-image'&&mediaReferenceField?configuredReferenceValues.length:0);
           const fidelityWarning=needsStrongIdentity
             ? referencePlan.references.length===0
               ? 'Pedido de alta fidelidade sem referência visual recuperada; a identidade depende do conhecimento do modelo.'
@@ -629,7 +671,12 @@ export async function POST(req:Request){
             style,
             styleLocked,
             fidelityLimited:!!fidelityWarning,
-            providerWarning:fidelityWarning||null,
+            providerWarning:provider.qwen
+              ? [
+                  fidelityWarning,
+                  'Qwen Image retorna URL temporária de resultado; salve o arquivo em storage persistente se precisar mantê-lo além da janela do provider.'
+                ].filter(Boolean).join(' ')
+              : fidelityWarning||null,
             postprocessPlan
           });
         }
