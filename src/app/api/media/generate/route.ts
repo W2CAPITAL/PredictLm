@@ -426,7 +426,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -499,7 +499,7 @@ export async function POST(req:Request){
           identityMemoryReferenceCount:identityMemoryInline.length,
           searchedReferenceCount:searchedInline.length,
           bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-          imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+          imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
           referenceReview,
           referenceWarnings:referencePlan.warnings,
           originalPrompt:sourcePrompt,
@@ -616,7 +616,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -659,7 +659,7 @@ export async function POST(req:Request){
         error:INVALID_IMAGE_PROVIDER_MESSAGE,
         detail:'Os providers anteriores retornaram saída inválida e o fallback público já foi descartado nesta tentativa.',
         exhausted:true,
-        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:imageIntent.entities.map(x=>x.label)}
+        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:providerIntentEntities.map(x=>x.label)}
       },{status:502});
     }
     const transportPrompt=compactImagePromptForTransport(
@@ -685,7 +685,7 @@ export async function POST(req:Request){
       userReferenceCount:userInline.length,
       identityMemoryReferenceCount:identityMemoryInline.length,
       bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-      imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+      imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
       identityProviderPolicy:{requireReferenceTransport,strictIdentityProvider,blockedTextOnlyNano:needsStrongIdentity&&strictIdentityProvider},
       searchedReferenceCount:searchedInline.length,
       referenceReview,
