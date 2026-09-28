@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.45.0"
+  version: "1.46.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -1059,3 +1059,30 @@ No PredictLM:
 - o catálogo completo fica em `skills/omnicore-universal/manifest.json`;
 - não despejar todas as capabilities em cada turno;
 - outro host de IA pode importar SKILL + manifest e mapear somente ferramentas que realmente possui.
+
+
+## Provider Budget + Free Provider Fabric
+
+O runtime remoto usa `src/lib/server/provider-budget.ts` e `src/lib/server/external-provider-fabric.ts`.
+
+Default:
+- `PREDICTLM_API_BUDGET_MODE=conservative`;
+- no máximo 2 chamadas remotas por turno;
+- no máximo 1 chamada classificada como metered;
+- local/self-hosted e free-tier têm prioridade sobre metered providers;
+- reviewer remoto separado desativado;
+- repair remoto desativado;
+- Build single-pass por padrão;
+- Report Architect single-pass por padrão;
+- Media Director single-pass por padrão.
+
+Bridges opcionais:
+- LocalCodeCli;
+- GPTOSS Proxy self-hosted;
+- Puter Pool já operado/autorizado;
+- Free-LLM provider presets;
+- providers genéricos via `PREDICTLM_EXTRA_PROVIDERS_JSON`.
+
+Catálogos de API/provider servem para discovery; nunca autorizam criação de contas, coleta de tokens/cookies, bypass de autenticação ou evasão de rate limit.
+
+O soft daily cap em memória reduz loops/bursts por instância. Para limite diário global forte no Vercel, usar storage persistente de counters.
