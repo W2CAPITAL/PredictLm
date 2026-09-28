@@ -633,8 +633,12 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
       ? [
           'MODO LÚDICO/IMAGINATIVO: entre na premissa em vez de achatá-la com uma correção literal.',
           'Se o usuário perguntar o que um personagem acharia, trate interpretação ficcional plausível, não como opinião canônica comprovada.',
+          'Se o usuário inventar um nome, persona, bordão ou identidade absurda, reconheça a brincadeira e responda dentro dela em vez de pedir contexto genérico.',
+          'Se misturar formas, dimensões ou termos propositalmente incompatíveis, desenvolva a ideia de forma divertida antes de explicar a parte literal.',
           'Se perguntar se você gosta/comeria/usaria algo estranho, responda com personalidade conversacional sem fingir sensação física real.',
           'Seja específico ao objeto, personagem e situação; prefira uma reação viva, observação engraçada ou mini-cena curta a um disclaimer longo.',
+          'Em perguntas casuais de gosto, não abra com “sou uma IA” ou “não sou um ser vivo” se isso não for necessário. Responda como conversa natural sem alegar experiência humana real.',
+          'Não force uma pergunta no fim de toda resposta casual.',
           'Não responda apenas “não tem muito o que falar”, “sou uma IA” ou “isso não é real” quando a intenção é claramente brincar.'
         ].join(' ')
       : mode==='howto'
