@@ -40,13 +40,31 @@ function normalize(input:string){
 
 export function nvidiaSkillsForPrompt(prompt:string,limit=6){
   const q=normalize(prompt);
+  const tokens=q.split(/[^a-z0-9]+/).filter(x=>x.length>=3);
   const scored=NVIDIA_SKILL_CAPABILITIES.map(skill=>{
     let score=0;
-    if(q.includes(normalize(skill.id)))score+=20;
+    const id=normalize(skill.id);
+    if(q.includes(id))score+=20;
+    for(const token of id.split(/[^a-z0-9]+/).filter(x=>x.length>=4)){
+      if(tokens.includes(token))score+=4;
+    }
     const hay=normalize([skill.domain,skill.purpose,...skill.improves].join(' '));
-    for(const token of q.split(/[^a-z0-9]+/).filter(x=>x.length>=4)){
+    for(const token of tokens.filter(x=>x.length>=4)){
       if(hay.includes(token))score++;
     }
+
+    // Intent boosts keep broad catalogs from hiding the specialized owner.
+    if(skill.id==='omniverse-usd-performance-tuning'
+      && /(?:usd|omniverse)/.test(q)
+      && /(?:fps|performance|desempenho|memoria|memory|slow|otimiz)/.test(q))score+=30;
+    if(skill.id==='deepstream-dev'&&/deepstream|video analytics|analytics de video/.test(q))score+=30;
+    if(skill.id==='rag-eval'&&/rag/.test(q)&&/(?:eval|avali|qualidade|ragas|regress)/.test(q))score+=24;
+    if(skill.id==='rag-blueprint'&&/rag/.test(q)&&/(?:deploy|config|arquitet|retriev|ingest|troubleshoot)/.test(q))score+=22;
+    if(skill.id==='nemo-retriever'&&/(?:retriever|document|pdf|ingest|retriev)/.test(q))score+=18;
+    if(skill.id==='accelerated-computing-cudf'&&/(?:pandas|dataframe|etl|cudf)/.test(q))score+=24;
+    if(skill.id==='dali-dynamic-mode'&&/(?:dali|data loader|preprocess|decode)/.test(q))score+=24;
+    if(/^cuopt-/.test(skill.id)&&/(?:cuopt|vrp|tsp|milp|linear program|roteir|routing|otimizacao)/.test(q))score+=18;
+
     return {skill,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.skill.id.localeCompare(b.skill.id));
   return scored.slice(0,Math.max(1,limit)).map(x=>x.skill);
