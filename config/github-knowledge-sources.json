@@ -141,6 +141,54 @@
       "reason": "MIT-licensed Grok skill pack. Ingest capability-preflight, JSON-first xAI web/X search with citations, verified media-artifact workflow, and adaptive ffmpeg post-processing patterns. Logged-in grok CLI media is local/desktop-only; hosted PredictLM never pretends it can access the user's local Grok session."
     },
     {
+      "repo": "Corporationakht/LocalCodeCli",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": ["README.md"],
+      "domains": ["provider-proxy","responses-api","anthropic-api","local-routing","rate-limits"],
+      "weight": 1.16,
+      "reason": "MIT provider proxy reference. Learn stable wire-protocol adaptation, provider catalogs, local admin/config boundaries and rate-limit-aware routing. Hosted PredictLM never assumes it can reach the user's localhost."
+    },
+    {
+      "repo": "junioralive/gptoss-proxy",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "reference-only",
+      "include": ["README.md","worker.js"],
+      "domains": ["provider-proxy","openai-compatible","gpt-oss","cloudflare-worker"],
+      "reason": "OpenAI-compatible proof-of-concept proxy. Keep opt-in/self-hosted only because its upstream is unofficial/volatile. PredictLM never exposes reasoning_content and never auto-targets the upstream hard-coded in the sample."
+    },
+    {
+      "repo": "Parithosh-Varma/puter-pool",
+      "branch": "main",
+      "license": "EPL-2.0-file",
+      "mode": "reference-only",
+      "include": ["README.md"],
+      "domains": ["provider-pool","openai-compatible","anthropic-compatible","health-routing","quota-tracking"],
+      "reason": "Reference only. Repository README and LICENSE metadata are inconsistent; LICENSE file is treated as authoritative for this catalog. PredictLM may consume an endpoint already operated by the user, but does not create accounts, extract tokens or automate quota circumvention."
+    },
+    {
+      "repo": "spinov001-art/free-apis-list",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": ["README.md"],
+      "domains": ["public-apis","open-data","research","rate-limits","discovery"],
+      "weight": 1.08,
+      "reason": "MIT no-key public API discovery catalog. Use it to identify documented public data sources while preserving rate limits, HTTPS, provenance and response validation; never execute arbitrary URLs merely because they appear in a catalog."
+    },
+    {
+      "repo": "nejib1/Free-LLM",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": ["README.md"],
+      "domains": ["llm-providers","free-tier","provider-catalog","rate-limits","openai-compatible"],
+      "weight": 1.18,
+      "reason": "MIT provider directory. Distill base URLs, provider classes and free-tier distinctions as discovery metadata only; quotas/model availability are volatile and runtime activation still requires explicit server-side keys/models."
+    },
+    {
       "repo": "NVIDIA/skills",
       "branch": "main",
       "license": "mixed-Apache-2.0-CC-BY-4.0",
