@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import JSZip from 'jszip';
-import { Activity, AlertTriangle, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, X, Zap } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
@@ -203,6 +203,7 @@ export function ChatShell({onOpenLegal}:Props){
   }|null>(null);
   const [legalHealthBusy,setLegalHealthBusy]=useState(false);
   const bottom=useRef<HTMLDivElement>(null);
+  const scrollFrame=useRef<number|null>(null);
   const turnAbort=useRef<AbortController|null>(null);
   const caps=useMemo(()=>typeof window==='undefined'?{native:false,webgpu:false,memory:0,cores:0,recommended:'lite' as NeuralTier}:browserCapabilities(),[]);
   const neural=useMemo(()=>neuralStatus(),[modelTick,loadState]);
@@ -211,6 +212,23 @@ export function ChatShell({onOpenLegal}:Props){
   const learningStats=useMemo(()=>trainingRuntimeStats(),[]);
 
   const visibleSessions=s.sessions.filter(chat=>chat.title.toLowerCase().includes(search.toLowerCase()));
+  const screenTitle:Record<GrokScreen,string>={
+    chat:'Chat',
+    library:'Library',
+    imagine:'Imagine',
+    simulation:'Simulação',
+    vision:'Visão',
+    plugins:'Plugins'
+  };
+
+  function scrollConversationToBottom(behavior:ScrollBehavior='auto'){
+    if(typeof window==='undefined')return;
+    if(scrollFrame.current!==null)return;
+    scrollFrame.current=window.requestAnimationFrame(()=>{
+      scrollFrame.current=null;
+      bottom.current?.scrollIntoView({behavior,block:'end'});
+    });
+  }
 
   useEffect(()=>{
     try{
@@ -269,6 +287,39 @@ export function ChatShell({onOpenLegal}:Props){
       delete document.documentElement.dataset.predictlmMobileShell;
     };
   },[]);
+
+  useEffect(()=>{
+    const root=document.documentElement;
+    const viewport=window.visualViewport;
+    const syncViewport=()=>{
+      const height=Math.max(320,Math.round(viewport?.height||window.innerHeight));
+      const offsetTop=Math.max(0,Math.round(viewport?.offsetTop||0));
+      root.style.setProperty('--predictlm-viewport-height',height+'px');
+      root.style.setProperty('--predictlm-viewport-top',offsetTop+'px');
+      root.dataset.predictlmKeyboard=height<window.innerHeight*0.82?'open':'closed';
+    };
+    syncViewport();
+    viewport?.addEventListener('resize',syncViewport);
+    viewport?.addEventListener('scroll',syncViewport);
+    window.addEventListener('resize',syncViewport);
+    return()=>{
+      viewport?.removeEventListener('resize',syncViewport);
+      viewport?.removeEventListener('scroll',syncViewport);
+      window.removeEventListener('resize',syncViewport);
+      root.style.removeProperty('--predictlm-viewport-height');
+      root.style.removeProperty('--predictlm-viewport-top');
+      delete root.dataset.predictlmKeyboard;
+      if(scrollFrame.current!==null){
+        window.cancelAnimationFrame(scrollFrame.current);
+        scrollFrame.current=null;
+      }
+    };
+  },[]);
+
+  useEffect(()=>{
+    if(screen!=='chat'||!busy)return;
+    scrollConversationToBottom('auto');
+  },[busy,screen,active?.messages.length]);
 
   async function refreshLegalHealth(){
     if(legalHealthBusy)return;
@@ -424,7 +475,7 @@ export function ChatShell({onOpenLegal}:Props){
             }else{
               s.updateLastAssistant(accumulated,'partial');
             }
-            setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
+            scrollConversationToBottom('auto');
           }
           if(data?.done){
             provider=String(data.provider||provider);
@@ -666,7 +717,17 @@ export function ChatShell({onOpenLegal}:Props){
     const prompt=String(overridePrompt??input).trim();
     if(!prompt||busy)return;
     setLastFailedPrompt('');
-    const history=active?.messages||[];
+    setInput('');
+    setScreen('chat');
+    setBusy(true);
+    setActivity(['Preparando resposta…']);
+    const turnController=new AbortController();
+    turnAbort.current=turnController;
+    try{
+      // Paint the loading state before memory/context work. On mobile this avoids
+      // the impression that the app froze between tapping Send and network I/O.
+      await new Promise<void>(resolve=>window.requestAnimationFrame(()=>resolve()));
+      const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const legalSearchRequest=processNumber?null:detectLegalSearchRequest(prompt);
     const djenOabRequest=processNumber?null:detectDjenOabRequest(prompt);
@@ -701,8 +762,6 @@ export function ChatShell({onOpenLegal}:Props){
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
     const showExecutionDetails=s.deepThink||needsWeb;
 
-    setInput('');
-    setScreen('chat');
     if(learningInstruction){
       captureAdaptiveInstruction(prompt);
       fetch('/api/learning/propose',{
@@ -732,9 +791,6 @@ export function ChatShell({onOpenLegal}:Props){
     }
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
-    const turnController=new AbortController();
-    turnAbort.current=turnController;
-    setBusy(true);
     setActivity(
       buildIntent
         ? ['Preparando o projeto atual','Escolhendo a melhor rota de execução','Implementando alterações','Validando o resultado','Empacotando o projeto']
@@ -758,9 +814,8 @@ export function ChatShell({onOpenLegal}:Props){
                 ? ['Recuperando contexto relevante','Entendendo o pedido','Conferindo contexto relevante']
                 : ['Analisando contexto']
     );
-    setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),20);
+    scrollConversationToBottom('auto');
 
-    try{
       if(buildIntent){
         await runBuildInsideChat(prompt);
         return;
@@ -1392,7 +1447,7 @@ export function ChatShell({onOpenLegal}:Props){
       if(turnAbort.current===turnController)turnAbort.current=null;
       setBusy(false);
       setActivity([]);
-      setTimeout(()=>bottom.current?.scrollIntoView({behavior:'smooth'}),30);
+      scrollConversationToBottom('auto');
     }
   }
 
@@ -1589,7 +1644,15 @@ export function ChatShell({onOpenLegal}:Props){
 
     <main className="grok-main">
       {!sidebar&&<button className="grok-reopen" onClick={()=>setSidebar(true)}><Menu size={18}/></button>}
+      <div className="grok-mobile-topbar" role="navigation" aria-label="Navegação mobile">
+        <button className="grok-mobile-menu" onClick={()=>setSidebar(true)} aria-label="Abrir menu"><Menu size={18}/></button>
+        <div className="grok-mobile-title"><b>{screenTitle[screen]}</b><small>{busy&&screen==='chat'?'Gerando resposta…':'PredictLM'}</small></div>
+        {screen!=='chat'
+          ?<button className="grok-mobile-back-chat" onClick={()=>setScreen('chat')} aria-label="Voltar ao Chat"><ArrowLeft size={16}/><span>Chat</span></button>
+          :<button className="grok-mobile-new-chat" onClick={()=>{s.createChat();setScreen('chat')}} aria-label="Nova conversa"><Plus size={17}/></button>}
+      </div>
       <div className="grok-status"><span className="private-dot"/> Privado</div>
+      {busy&&screen==='chat'?<div className="grok-mobile-busy" role="status" aria-live="polite"><span className="grok-mobile-busy-spinner"/><span>{activity.at(-1)||'Gerando resposta…'}</span></div>:null}
 
       {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat} deleteChat={s.deleteSession} createChat={()=>{s.createChat();setScreen('chat')}}/>:
       screen==='imagine'?<GrokImaginePanel/>:
