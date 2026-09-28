@@ -565,7 +565,7 @@ export function MinecraftSimulationPanel(){
       <div>
         <span><Activity size={13}/> MINECRAFT COGNITIVE WORLD</span>
         <h2>Minecraft · mundo quase infinito</h2>
-        <p>Camundongo, mosca, macaco e humano jogam no mesmo mundo persistente: árvores, vilas, cavernas, minérios, crafting, móveis, equipamentos, comidas, monstros, Nether, End, dungeons e construção.</p>
+        <p>Quatro arquiteturas neuro-informadas operam no mesmo mundo persistente para medir exploração, memória, planejamento e cooperação. O resultado é benchmark de controller, não evidência de um cérebro biológico completo.</p>
       </div>
       <div className={styles.badges}>
         <b>{world.player.mode}</b>
@@ -573,6 +573,11 @@ export function MinecraftSimulationPanel(){
         <span>{audit.primary.length} clones + {audit.secondary.length} refs Dungeons</span>
       </div>
     </header>
+
+    <div className={styles.scienceBanner} data-testid="minecraft-scientific-boundary">
+      <b>{MINECRAFT_ARENA_BANNER}</b>
+      <span>Score de tarefa, spikes e aprendizado nesta arena não validam biologia de espécie.</span>
+    </div>
 
     <div className={styles.povBar}>
       <span><Eye size={14}/> POV do controller</span>
@@ -659,12 +664,31 @@ export function MinecraftSimulationPanel(){
               return <button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>
                 <b>{brain.label}</b>
                 <span>{brain.dimension==='infernal'?'Nether':brain.dimension==='void'?'End':'Overworld'} · {brain.x},{brain.z} · {brain.lastAction}</span>
-                <small>LIF · {brain.neuralAction} · {brain.neuralSpikes} spikes</small>
+                <small>{CONTROLLER_COVERAGE[id].summary} · {CONTROLLER_COVERAGE[id].abstractionLabel} · LIF {brain.neuralAction} ({brain.neuralSpikes} spikes)</small>
               </button>;
             })}
           </div>
-          <small>Closed-loop real do software: observação do Minecraft → corrente injetada → solver LIF → spikes → ação. FlyWire/H01/MICrONS/macaque são fontes de evidência/proveniência; não são cérebros biológicos completos rodando no navegador.</small>
+          <small>Closed-loop do software: observação → estado/memória → solver/política → ação → novo estado. FlyWire/H01/MICrONS/Allen/atlas são evidência/proveniência; a arena mede desempenho operacional, não fidelidade biológica.</small>
         </section>
+
+        {selectedCoverage?<section className={styles.coverageCard}>
+          <header><b>Ficha de cobertura</b><span>{selectedCoverage.abstractionLabel}</span></header>
+          <div className={styles.coverageScore}>
+            <strong>{selectedCoverage.evidenceCoverageIndex}/100</strong>
+            <div><b>Índice de cobertura de evidência</b><small>{selectedCoverage.evidenceCoverageBasis}</small></div>
+          </div>
+          <p>{selectedCoverage.summary}</p>
+          <div className={styles.coverageGrid}>
+            {selectedCoverage.subsystems.map(item=><span key={item.id} data-status={item.status}><b>{item.label}</b><small>{item.status} · {item.evidence}</small></span>)}
+          </div>
+          <details>
+            <summary>Por que não é biologia completa?</summary>
+            <p>{selectedCoverage.whyNotComplete}</p>
+            <small>Presente: {selectedCoverage.present.join(' · ')}</small>
+            <small>Proxy: {selectedCoverage.proxy.join(' · ')}</small>
+            <small>Ausente: {selectedCoverage.absent.join(' · ')}</small>
+          </details>
+        </section>:null}
 
         <section>
           <header><b>Sobrevivência</b><span>{world.player.dimension}</span></header>
@@ -728,7 +752,7 @@ export function MinecraftSimulationPanel(){
 
     <details className={styles.details}>
       <summary>Estado e implementação do mundo</summary>
-      <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
+      <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCONTROLLERS\n'+minecraftBrainSummary(brains)}</pre>
       <p>Referências registradas: {audit.registered}/{audit.expected}. As referências sem licença verificada são usadas somente como inspiração arquitetural; nenhum asset proprietário do Minecraft é incorporado.</p>
       <p>Neurociência: solver numérico LIF por condutância em escala toy/browser. Estado do jogo e spikes são simulados; dados de conectoma/atlas permanecem rotulados separadamente como medidos/publicados, proxy ou desconhecidos.</p>
       <p>Unity: {unityReady?'WebGL configurado e sincronizado por scene snapshots.':'fabric de GameObject/Transform/Component ativo; falta uma URL de build Unity WebGL para executar o runtime Unity real no navegador.'}</p>
