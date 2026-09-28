@@ -68,13 +68,15 @@ test('reference queries are produced for arbitrary named subjects',()=>{
   assert.ok(queries.some(x=>/João Silva/i.test(x)));
 });
 
-test('Imagine retries invalid provider output and exposes semantic intent diagnostics',()=>{
+test('Imagine uses one generation call per click by default and exposes semantic intent diagnostics',()=>{
   const ui=fs.readFileSync(new URL('../src/components/GrokImaginePanel.tsx',import.meta.url),'utf8');
   const api=fs.readFileSync(new URL('../src/app/api/media/generate/route.ts',import.meta.url),'utf8');
-  assert.match(ui,/for\(let providerAttempt=0;providerAttempt<3;providerAttempt\+\+\)/);
-  assert.match(ui,/Provider inválido · tentando outra rota de imagem/);
+  assert.match(ui,/const providerAttemptBudget=1/);
+  assert.match(ui,/providerAttempt<providerAttemptBudget/);
   assert.match(ui,/avoidedProviders\.add\(failed\)/);
   assert.match(ui,/Entendimento do pedido/);
+  assert.match(api,/PREDICTLM_IMAGE_REMOTE_ATTEMPTS\|\|'1'/);
+  assert.match(api,/slice\(0,providerAttemptBudget\)/);
   assert.match(api,/avoidProviders\.has\('pollinations-proxy'\)/);
   assert.match(api,/IMAGE INTENT RESOLUTION/);
   assert.match(api,/imageIntent:/);
