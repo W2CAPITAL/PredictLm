@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  circuitReadyProviders,
   providerHealthState,
   rankHealthyProviders,
   recordProviderFailure,
@@ -38,4 +39,13 @@ test('when every provider is cooling the earliest recovery is attempted first',(
   recordProviderFailure(a,new Error('a 429 rate limit'),1000);
   recordProviderFailure(b,new Error('b 500 upstream'),1000);
   assert.equal(rankHealthyProviders([a,b],2000)[0].name,'b');
+});
+
+
+test('strict circuit breaker returns no provider while every endpoint is cooling',()=>{
+  resetProviderHealthForTests();
+  recordProviderFailure(a,new Error('a 502 bad gateway'),1000);
+  recordProviderFailure(b,new Error('b 503 service unavailable'),1000);
+  assert.deepEqual(circuitReadyProviders([a,b],2000),[]);
+  assert.deepEqual(circuitReadyProviders([a,b],180000).map(x=>x.name),['a','b']);
 });
