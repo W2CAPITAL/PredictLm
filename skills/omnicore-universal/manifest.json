@@ -315,6 +315,10 @@
       "path": "skills/fraud-defense/SKILL.md"
     },
     {
+      "id": "free-provider-fabric",
+      "path": "skills/free-provider-fabric/SKILL.md"
+    },
+    {
       "id": "game-studio-fabric",
       "path": "skills/game-studio-fabric/SKILL.md"
     },
@@ -466,6 +470,14 @@
       "category": "AI",
       "description": "Cascade server-side entre APIs remotas com roteamento por tarefa, health/cooldown por provider-model, fallback preservando o turno e segredos fora do client; runtimes locais permanecem auxiliares.",
       "source": "src/lib/server/provider-mesh.ts + src/lib/server/provider-health.ts + Free Claude Code/Hermes reliability patterns",
+      "runtime": "built-in"
+    },
+    {
+      "id": "free-provider-fabric",
+      "name": "Free Provider Fabric",
+      "category": "AI",
+      "description": "Budget-safe provider fabric: LocalCodeCli/GPTOSS/Puter bridges, Free-LLM presets, generic OpenAI-compatible providers and public-API discovery with call budgets and no silent quota fan-out.",
+      "source": "skills/free-provider-fabric/SKILL.md + src/lib/server/external-provider-fabric.ts + src/lib/server/provider-budget.ts",
       "runtime": "built-in"
     },
     {
@@ -1054,7 +1066,7 @@
     "agentCatalog": 23,
     "orchestrationAgents": 11,
     "speciesCores": 4,
-    "skillModules": 22,
-    "pluginsAndCapabilities": 79
+    "skillModules": 23,
+    "pluginsAndCapabilities": 80
   }
 }
