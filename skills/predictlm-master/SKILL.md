@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.39.0"
+  version: "3.40.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.39.0
+# PredictLM Master v3.40.0
 
 ## Regra soberana
 
@@ -1491,3 +1491,31 @@ No PredictLM:
 - o catálogo completo fica em `skills/omnicore-universal/manifest.json`;
 - não despejar todas as capabilities em cada turno;
 - outro host de IA pode importar SKILL + manifest e mapear somente ferramentas que realmente possui.
+
+
+## API Saver / Free Provider Fabric
+
+Objetivo: uma interação do usuário não pode consumir silenciosamente a cota de vários providers.
+
+Padrão:
+- `PREDICTLM_API_SAVER_MODE=strict`;
+- 1 tentativa remota por rota/turno;
+- streaming não pode cair imediatamente em uma segunda chamada cloud equivalente;
+- falha 429 entra em cooldown longo; 401/403 entram em cooldown de autenticação;
+- limite por sessão/minuto e concorrência são configuráveis;
+- budget diário em memória protege cada instância quente, mas o limite duro final deve continuar configurado também no próprio provider;
+- local/browser/free-tier têm prioridade no modo saver quando realmente configurados;
+- Deep Think só amplia tentativas se o operador mudar explicitamente o modo/ENV.
+
+Bridges opcionais:
+- LocalCodeCli — endpoint OpenAI-compatible controlado pelo usuário;
+- Puter Pool — somente pool/autenticação do próprio usuário; não criar/rotacionar contas automaticamente;
+- GPTOSS Proxy — apenas endpoint explicitamente configurado pelo usuário; nenhum upstream não oficial é ativado por padrão.
+
+Catálogo free-tier:
+- providers OpenAI-compatible de `nejib1/Free-LLM` são adapters opcionais;
+- uma entrada é registrada somente quando a chave/flag correspondente existe;
+- lista gratuita é descoberta/configuração, não promessa de quota eterna;
+- `spinov001-art/free-apis-list` é fonte de descoberta de APIs gerais, nunca chamada automaticamente.
+
+Regra crítica: adicionar muitos providers aumenta disponibilidade, **não** autoriza chamar todos no mesmo turno.
