@@ -12,6 +12,7 @@ import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/bes
 import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
 import {analyzeImageIntent,imageIntentSummary} from '@/lib/media/image-intent';
 import {compactImagePromptForTransport,imageProviderOrder,imageRouteBudget} from '@/lib/media/image-runtime';
+import {buildQwenImageRequestBody,qwenImageConfig} from '@/lib/media/qwen-image';
 import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 import {
   buildReferenceEvidencePrompt,
@@ -324,9 +325,10 @@ export async function POST(req:Request){
       .split(',').map(x=>x.trim()).filter(Boolean);
     const mediaReferenceField=String(process.env.MEDIA_IMAGE_REFERENCE_FIELD||'').trim();
     const mediaNegativeField=String(process.env.MEDIA_IMAGE_NEGATIVE_FIELD||'').trim();
-    const qwenKey=String(process.env.QWEN_IMAGE_API_KEY||process.env.DASHSCOPE_API_KEY||'').trim();
-    const qwenBase=String(process.env.QWEN_IMAGE_BASE_URL||'https://dashscope-intl.aliyuncs.com/compatible-mode/v1').trim().replace(/\/$/,'');
-    const qwenModel=String(process.env.QWEN_IMAGE_MODEL||'qwen-image-3.0-pro').trim();
+    const qwen=qwenImageConfig();
+    const qwenKey=qwen.key;
+    const qwenBase=qwen.base;
+    const qwenModel=qwen.model;
     const geminiKey=String(process.env.GEMINI_API_KEY||'').trim();
     const geminiBase=String(process.env.GEMINI_IMAGE_BASE_URL||'https://generativelanguage.googleapis.com/v1beta').trim().replace(/\/$/,'');
     const geminiModel=String(process.env.GEMINI_IMAGE_MODEL||'gemini-3.1-flash-image').trim();
@@ -570,10 +572,6 @@ export async function POST(req:Request){
         });
         if(!providerDecision.allowed)continue;
 
-        const qwenPromptExtend=String(process.env.QWEN_IMAGE_PROMPT_EXTEND||'').trim()
-          ? /^(?:1|true|yes|on)$/i.test(String(process.env.QWEN_IMAGE_PROMPT_EXTEND))
-          : effectivePromptMode!=='literal';
-        const qwenThinking=/^(?:1|true|yes|on)$/i.test(String(process.env.QWEN_IMAGE_ENABLE_THINKING||'false'));
         const providerBody=provider.gemini?{
           contents:[{
             parts:[
@@ -582,19 +580,18 @@ export async function POST(req:Request){
             ]
           }],
           generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:geminiAspectRatio(width,height),imageSize:'2K'}}
-        }:provider.qwen?{
+        }:provider.qwen?buildQwenImageRequestBody({
           model:provider.model,
           prompt:providerPrompt,
-          size:width+'x'+height,
-          n:1,
+          width,
+          height,
           seed,
-          ...(negativePrompt?{negative_prompt:negativePrompt}:{}),
-          ...(qwenReferenceValues.length?{image:qwenReferenceValues}:{}),
-          prompt_extend:qwenPromptExtend,
-          prompt_extend_mode:'direct',
-          enable_thinking:qwenThinking,
-          watermark:false
-        }:{
+          negativePrompt,
+          references:qwenReferenceValues,
+          promptMode:effectivePromptMode,
+          promptExtendRaw:qwen.promptExtendRaw,
+          enableThinking:qwen.enableThinking
+        }):{
           model:provider.model,
           prompt:providerPrompt,
           size:providerImageSize(width,height,provider.nano),
@@ -615,7 +612,7 @@ export async function POST(req:Request){
             : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
           body:JSON.stringify(providerBody),
           signal:AbortSignal.timeout(budget.timeout(
-            provider.qwen?Math.max(12000,Math.min(45000,Number(process.env.QWEN_IMAGE_TIMEOUT_MS)||28000)):15000,
+            provider.qwen?qwen.timeoutMs:15000,
             5000
           ))
         });
