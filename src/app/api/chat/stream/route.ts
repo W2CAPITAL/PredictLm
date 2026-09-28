@@ -6,6 +6,7 @@ import { publicAnswerGate } from '@/lib/public-answer-gate';
 import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope } from '@/lib/chat-trust-boundary';
 import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import crypto from 'node:crypto';
+import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -263,15 +264,23 @@ export async function POST(req:NextRequest){
   const language=body?.language==='en'?'en':'pt-BR';
   const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
   const prompt=String([...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'').replace(/\u0000/g,'').trim();
-  safeSessionScope(body?.sessionId);
+  const sessionScope=safeSessionScope(body?.sessionId);
   if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
   if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
+  const lease=acquireChatRequest(req,sessionScope);
+  if(!lease.allowed){
+    return Response.json(
+      {...publicFailurePayload(correlationId,'RATE_LIMITED'),retryAfterMs:lease.retryAfterMs},
+      {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
+    );
+  }
   const candidates=providerList(prompt).slice(0,8);
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
   // deterministic and avoids a pointless request before the 503 fallback.
   if(!candidates.length){
+    lease.release();
     return Response.json({
       error:'Nenhum provider de chat está configurado.',
       code:'NO_STREAM_PROVIDER',
@@ -333,6 +342,7 @@ export async function POST(req:NextRequest){
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         }
       }finally{
+        lease.release();
         controller.close();
       }
     }
