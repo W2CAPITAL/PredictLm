@@ -1,4 +1,6 @@
 import { rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
+import {reserveProviderCall} from '@/lib/server/provider-budget';
 import { jevRouteDecision } from '@/lib/jev-policy';
 
 export type ProviderProtocol='openai'|'anthropic';
@@ -106,7 +108,14 @@ export function configuredProviders(){
     if(serverCanReach(base))push({name:'ollama',base,key:process.env.OLLAMA_API_KEY||'ollama',model:process.env.OLLAMA_MODEL});
   }
 
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
+  for(const provider of configuredBridgeProviders()){
+    if(serverCanReach(provider.base))push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+  for(const provider of configuredFreeProviders()){
+    if(serverCanReach(provider.base))push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcodecli,puter-pool,freellmapi,ollama,groq,opencode,nvidia,deepseek,kimi,zai,minimax,gemini,openrouter,vercel-gateway,anthropic,openai,xai,server,ark,gptoss-proxy,mistral-free,cerebras-free,sambanova-free,deepinfra-free,siliconflow-free,requesty-free,venice-free,nous-free,hetzner-free,inference-net-free,modelscope-free,llm7-free')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const idx=preferred.indexOf(name);return idx<0?999:idx};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -167,6 +176,8 @@ export async function callProviderText(
   const timeoutMs=Math.max(1000,options.timeoutMs||16000);
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
+    const budget=reserveProviderCall(provider,'chat');
+    if(!budget.allowed)throw new Error(provider.name+' provider-budget-exhausted');
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
