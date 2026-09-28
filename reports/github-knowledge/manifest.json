@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T06:36:48.871Z",
-  "knowledgeVersion": "617088bd63d3c9ef",
-  "chunkCount": 4786,
+  "generatedAt": "2026-09-28T11:43:17.200Z",
+  "knowledgeVersion": "a72f9f1d7d295ce8",
+  "chunkCount": 5046,
   "sources": [
     {
       "repo": "dbreunig/building-with-jev-skill",
@@ -52,7 +52,7 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "5458de948379badc5b84ba624dc029367a28ece4",
+      "commit": "c935aa328f67a8dadf6dc52473da0335125f2656",
       "files": 2,
       "chunks": 63,
       "error": null
@@ -466,7 +466,7 @@
       "repo": "clearml/clearml",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "6201e091cfd607ebf4d0f34604425e6e70c8a69d",
+      "commit": "6f546a58469ce829709290f33ffeafdca1771942",
       "files": 1,
       "chunks": 19,
       "error": null
@@ -637,7 +637,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "34484551843e575e79cca244d9fca3e4459f59e9",
+      "commit": "7974c8da0ad2e66bc227df53f8cd1910e3dcc88b",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -655,7 +655,7 @@
       "repo": "tashfeenahmed/freellmapi",
       "mode": "allow",
       "license": "MIT",
-      "commit": "3b9c351a77b84202ee61189f8fd03979aee45b5f",
+      "commit": "f9435e7667c7b4d2b4685c7062c21137247c4229",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -673,7 +673,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "fd9145958e9e93bfbad3252fce7a69493e61215a",
+      "commit": "c3c252ad6196de1237324b81b7d19146acce444c",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -709,7 +709,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "c3b0e4c58492b463096709ab0cb07b70535df05f",
+      "commit": "f0b399737ee6d068a791a737fa601cf790c3133e",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -1024,7 +1024,7 @@
       "repo": "vladandreevg/salesmancrm",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "7789684e27b48400e3194af5fad2b1dea7a456c4",
+      "commit": "047cf8106aebdba6bd81a3e80054257d89460de9",
       "files": 1,
       "chunks": 17,
       "error": null
@@ -1843,6 +1843,105 @@
       "repo": "asi-alliance/Max_folio",
       "mode": "reference-only",
       "license": "Apache-2.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "rakanki911/DLSS5-Swapper",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Kizzuwatnaa/DLSS5-Autopilot",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "SAOG0721/Magpie",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "Merserk/dlss5-visual-enhancer",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "perseval-BLR/NeuralScreen",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "hellzerg/optimizer",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "IgorMundstein/WinMemoryCleaner",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "thedogecraft/sparkle",
+      "mode": "reference-only",
+      "license": "GPL-3.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "60f4ea81909200d8542eca14dccb2628b763a9a3",
+      "files": 11,
+      "chunks": 260,
+      "error": null
+    },
+    {
+      "repo": "Minecraft-Radiance/Radiance",
+      "mode": "reference-only",
+      "license": "unverified",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
+      "repo": "fholger/openvr_fsr",
+      "mode": "reference-only",
+      "license": "unverified",
       "commit": null,
       "files": 0,
       "chunks": 0,
