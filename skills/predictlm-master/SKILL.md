@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.35.0"
+  version: "3.36.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.35.0
+# PredictLM Master v3.36.0
 
 ## Regra soberana
 
@@ -1418,3 +1418,24 @@ No celular, Chat e superfícies especializadas obedecem um único shell responsi
 - em mobile, remover filtros/backdrops e decoração fullscreen cara quando não forem essenciais;
 - conversas longas podem usar `content-visibility` para reduzir custo de render;
 - nenhuma regra responsiva posterior pode sobrescrever a barra/composer mobile de forma que eles desapareçam.
+
+
+## Chat feedback, áudio e conversa natural
+
+Controles de resposta:
+- áudio, útil e não útil nunca podem parecer botões mortos;
+- cada ação deve expor estado visual: iniciando, ativo, concluído ou erro;
+- áudio deve permitir parar ao tocar novamente;
+- usar TTS do navegador com volume/rate/pitch finitos, escolha de voz por locale e divisão de textos longos em trechos;
+- se TTS não existir ou falhar, mostrar **Áudio indisponível** em vez de falhar silenciosamente;
+- útil/não útil devem confirmar visualmente a seleção e sinalizar falha de envio;
+- estados também precisam existir via `aria-pressed`, `aria-live` e labels acessíveis.
+
+Conversa casual:
+- acompanhar o registro do usuário sem virar palestra;
+- não abrir perguntas leves de gosto com “sou uma IA”/“não sou um ser vivo” quando a ressalva não muda a resposta;
+- nomes, personas, bordões e descrições inventadas podem ser reconhecidos e desenvolvidos de forma lúdica;
+- absurdos deliberados, mistura de formas/dimensões e jogos de palavras devem receber a brincadeira primeiro e a correção literal somente quando útil;
+- não responder a uma persona inventada com “continua, preciso entender melhor” quando já há material suficiente para interagir;
+- não terminar toda resposta casual com uma pergunta;
+- preservar verdade factual sem matar humor ou espontaneidade.
