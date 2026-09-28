@@ -10,7 +10,8 @@ import {
   experimentSpecFromYaml,
   experimentSpecToYaml,
   exportCoverageRunJson,
-  randomBaseline
+  randomBaseline,
+  heuristicBaseline
 } from '../src/lib/simulation/cognitive-world-contract';
 import {
   LAB_SCIENCE_BANNER,
@@ -19,6 +20,8 @@ import {
   assertNoMinecraftTaskInLab,
   buildLabTrialProvenance
 } from '../src/lib/neuroscience/lab-contract';
+import {createNeuroInformedMinecraftController} from '../src/lib/simulation/neuro-informed-controller-adapters';
+import {runMinecraftHeadlessBenchmark} from '../src/lib/simulation/minecraft-headless-benchmark';
 
 test('coverage sheets are explicit evidence indexes, not fake brain percentages',()=>{
   for(const profile of Object.values(CONTROLLER_COVERAGE)){
@@ -114,4 +117,38 @@ test('Minecraft UI does not regress to prohibited complete-brain claims',()=>{
     /spikes? (?:são|=) pensamentos?/i
   ];
   for(const pattern of forbidden)assert.equal(pattern.test(files),false,'forbidden claim: '+pattern);
+});
+
+
+test('all four neuro-informed controllers satisfy the common step(obs) contract',()=>{
+  const obs:any={
+    tick:1,seed:123,position:{x:0,y:64,z:0,dimension:'overworld'},hp:20,hunger:20,
+    inventory:{},visibleGrid:[],entities:[],structures:[],goal:'explore',
+    partialObservability:1,actionDelayTicks:0
+  };
+  for(const id of ['human','mouse','macaque','fly'] as const){
+    const controller=createNeuroInformedMinecraftController(id);
+    controller.reset(123);
+    const action=controller.step(obs);
+    assert.ok(['move','jump','craft','attack','interact','wait'].includes(action.type));
+    assert.equal(controller.id,id);
+    assert.ok(controller.trace?.());
+  }
+});
+
+test('headless Minecraft benchmark runs without renderer/GPU and records replay',()=>{
+  const controller=heuristicBaseline();
+  const result=runMinecraftHeadlessBenchmark(controller,{seed:444,task:'explore',actionBudget:12});
+  assert.equal(result.spec.seed,444);
+  assert.equal(result.metrics.steps,12);
+  assert.equal(result.replay.length,12);
+  assert.equal(result.interpretation,'operational-intelligence-benchmark');
+  assert.equal(result.coverage,null);
+});
+
+test('headless neuro-informed benchmark is deterministic on fixed seed',()=>{
+  const a=runMinecraftHeadlessBenchmark(createNeuroInformedMinecraftController('fly'),{seed:99,task:'explore',actionBudget:5});
+  const b=runMinecraftHeadlessBenchmark(createNeuroInformedMinecraftController('fly'),{seed:99,task:'explore',actionBudget:5});
+  assert.deepEqual(a.metrics,b.metrics);
+  assert.deepEqual(a.replay,b.replay);
 });
