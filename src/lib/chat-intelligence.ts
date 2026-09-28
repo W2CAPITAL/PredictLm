@@ -400,7 +400,8 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
-  const askedLike=p.match(/^(?:voce\s+)?(?:gosta|curte)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  const casualP=p.replace(/^(?:(?:ei|e ai|opa|hey)(?:\s+(?:cara|mano|meu))?[, ]+)/,'');
+  const askedLike=casualP.match(/^(?:voce\s+)?(?:gosta|curte)\s+(?:de\s+)?(.+?)[.!?]*$/i);
   if(askedLike){
     const thing=askedLike[1].trim();
     if(/\bpipoca\b/.test(thing))return 'Pipoca? Aprovadíssima. É praticamente o combustível oficial de filme, jogo e conversa aleatória — melhor ainda quando vem quentinha e bem temperada.';
