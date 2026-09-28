@@ -37,11 +37,11 @@ export function minecraftNeuralDecision(obs:MinecraftNeuralObservation):Minecraf
     ...ACTIONS.map(id=>defaultLifNeuron('action:'+id,{evidence:'simulated',note:'Runtime motor-policy neuron.'}))
   ];
   const weights:Record<typeof sensors[number],Partial<Record<MinecraftNeuralAction,number>>>={
-    hunger:{forage:2.8,explore:.4},
-    threat:{avoid_threat:3.2,seek_social:.7},
-    novelty:{explore:2.7,forage:.3},
-    social:{seek_social:2.9,build:.5},
-    shelter:{build:2.8,avoid_threat:.5}
+    hunger:{forage:12.5,explore:1.2},
+    threat:{avoid_threat:13.5,seek_social:2.0},
+    novelty:{explore:11.5,forage:1.0},
+    social:{seek_social:12.0,build:1.4},
+    shelter:{build:12.5,avoid_threat:1.6}
   };
   const synapses:ConductanceSynapse[]=[];
   for(const sensor of sensors)for(const action of ACTIONS){
@@ -57,14 +57,14 @@ export function minecraftNeuralDecision(obs:MinecraftNeuralObservation):Minecraf
     shelter:obs.shelterNeed01
   };
   const stimuli:CurrentPulse[]=sensors.map(id=>({
-    neuronId:'sensor:'+id,startMS:4,endMS:44,currentPA:150+values[id]*380,
+    neuronId:'sensor:'+id,startMS:4,endMS:54,currentPA:170+values[id]*420,
     provenance:{evidence:'simulated',note:'Closed-loop Minecraft observation converted to injected current.'}
   }));
   const exp:SpikingNetworkExperiment={
     id:'minecraft-neural-'+obs.seed+'-'+obs.tick,
     seed:(obs.seed^Math.imul(obs.tick+1,2654435761))>>>0,
     dtMS:.5,
-    durationMS:70,
+    durationMS:90,
     neurons,
     synapses,
     stimuli,
