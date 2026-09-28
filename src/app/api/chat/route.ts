@@ -25,7 +25,7 @@ import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 import {allExternalProviderSpecs} from '@/lib/server/external-provider-fabric';
-import {agenticReviewEnabled,createProviderTurnBudget,estimateProviderTokens,repairCallsEnabled,type ProviderTurnBudget} from '@/lib/server/provider-budget';
+import {agenticReviewEnabled,createProviderTurnBudget,estimateProviderTokens,providerBudgetMode,providerCostClass,repairCallsEnabled,type ProviderTurnBudget} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -228,6 +228,17 @@ function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
     const score=(provider:Provider)=>{
       const m=provider.model.toLowerCase();
       let value=(TASK_PROVIDER_BONUS[task][provider.name]||0)+modelBonus(provider.model,task)-(manual.get(provider.name)||0)*0.12;
+      const budgetMode=providerBudgetMode();
+      const costClass=providerCostClass(provider);
+      if(budgetMode==='conservative'){
+        if(costClass==='local-or-free')value+=120;
+        else if(costClass==='free-tier')value+=85;
+        else value-=35;
+      }else if(budgetMode==='balanced'){
+        if(costClass==='local-or-free')value+=45;
+        else if(costClass==='free-tier')value+=28;
+        else value-=8;
+      }
       if(route.tier==='strong'||route.tier==='long'){
         if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))value+=28;
         if(provider.name==='freellmapi'||/mini|lite|free|haiku|luna/.test(m))value-=18;
