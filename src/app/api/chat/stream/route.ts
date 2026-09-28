@@ -7,6 +7,8 @@ import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, saf
 import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import crypto from 'node:crypto';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {allExternalProviderSpecs} from '@/lib/server/external-provider-fabric';
+import {createProviderTurnBudget,estimateProviderTokens} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -19,6 +21,7 @@ type Provider={
   model:string;
   headers?:Record<string,string>;
   models?:string[];
+  protocol?:'openai'|'responses';
 };
 
 function loopbackBase(base:string){
@@ -119,11 +122,22 @@ function providerList(prompt=''):Provider[]{
       model:process.env.OPENAI_MODEL||'gpt-5.6-luna'
     });
   }
+  for(const external of allExternalProviderSpecs()){
+    if(external.protocol==='anthropic')continue;
+    push({
+      name:external.name,
+      base:external.base,
+      key:external.key,
+      model:external.model,
+      headers:external.headers,
+      protocol:external.protocol==='responses'?'responses':'openai'
+    });
+  }
 
   const explicit=process.env.PREDICTLM_STREAM_PROVIDER_ORDER||process.env.PREDICTLM_PROVIDER_ORDER;
   const route=jevRouteDecision(prompt,{hasTools:false});
   const preferred=(explicit
-    ||'vercel-gateway,gemini,openai,deepseek,nvidia,groq,openrouter,freellmapi')
+    ||'localcode,gptoss,puterpool,freellmapi,groq,opencode,openrouter,vercel-gateway,gemini,deepseek,nvidia,openai,mistral,huggingface,together,fireworks,sambanova,cerebras,deepinfra,requesty,modelscope,siliconflow,nebius,novita,scaleway,venice,friendli,inference-net,llm7,hetzner,nous,ollama-cloud')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(provider:Provider)=>{
     const index=preferred.indexOf(provider.name);
@@ -180,17 +194,25 @@ function sse(data:any){
 }
 
 async function openProvider(provider:Provider,messages:Msg[],signal:AbortSignal){
-  const body:any={
-    model:provider.model,
-    messages,
-    stream:true,
-    temperature:0.6,
-    max_tokens:1400
-  };
-  if(provider.models?.length)body.models=provider.models;
-  if(provider.name==='nvidia')body.chat_template_kwargs={enable_thinking:false};
+  const body:any=provider.protocol==='responses'
+    ?{
+        model:provider.model,
+        input:messages.map(message=>({role:message.role,content:[{type:'input_text',text:message.content}]})),
+        stream:true,
+        max_output_tokens:1400
+      }
+    :{
+        model:provider.model,
+        messages,
+        stream:true,
+        temperature:0.6,
+        max_tokens:1400
+      };
+  if(provider.models?.length&&provider.protocol!=='responses')body.models=provider.models;
+  if(provider.name==='nvidia'&&provider.protocol!=='responses')body.chat_template_kwargs={enable_thinking:false};
 
-  const response=await fetch(provider.base.replace(/\/$/,'')+'/chat/completions',{
+  const endpoint=provider.protocol==='responses'?'/responses':'/chat/completions';
+  const response=await fetch(provider.base.replace(/\/$/,'')+endpoint,{
     method:'POST',
     signal,
     headers:{
@@ -237,8 +259,17 @@ async function collectOpenAIStream(
       if(!payload||payload==='[DONE]')continue;
       let data:any;
       try{data=JSON.parse(payload)}catch{continue}
-      const token=String(data?.choices?.[0]?.delta?.content||'');
+      const token=data?.type==='response.output_text.delta'
+        ?String(data?.delta||'')
+        :String(data?.choices?.[0]?.delta?.content||'');
       if(token)accumulated+=token;
+      if(data?.type==='response.completed'&&!accumulated){
+        for(const item of Array.isArray(data?.response?.output)?data.response.output:[]){
+          for(const part of Array.isArray(item?.content)?item.content:[]){
+            if(part?.type==='output_text'&&typeof part?.text==='string')accumulated+=part.text;
+          }
+        }
+      }
     }
   }
   return accumulated.trim();
@@ -267,6 +298,7 @@ export async function POST(req:NextRequest){
   const rawRows=(Array.isArray(body?.messages)?body.messages:[]);
   const prompt=String([...rawRows].reverse().find((x:any)=>x?.role==='user'&&typeof x?.content==='string')?.content||'').replace(/\u0000/g,'').trim();
   const sessionScope=safeSessionScope(body?.sessionId);
+  const apiBudget=createProviderTurnBudget(sessionScope||'anonymous');
   if(!prompt)return Response.json({error:'prompt is required',correlationId},{status:400,headers:{'X-Correlation-Id':correlationId}});
   if(prompt.length>50_000)return Response.json({error:'prompt too large',code:'PROMPT_TOO_LARGE',correlationId},{status:413,headers:{'X-Correlation-Id':correlationId}});
   const lease=acquireChatRequest(req,sessionScope);
@@ -276,7 +308,7 @@ export async function POST(req:NextRequest){
       {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
     );
   }
-  const candidates=providerList(prompt).slice(0,8);
+  const candidates=providerList(prompt).slice(0,Math.max(1,apiBudget.maxTotalCalls));
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
@@ -304,6 +336,11 @@ export async function POST(req:NextRequest){
       try{
         for(const provider of candidates){
           if(requestSignal.aborted)break;
+          const reservation=apiBudget.reserve(provider,estimateProviderTokens(messages,1400),'stream-answer');
+          if(!reservation.ok){
+            errors.push('provider-budget-'+reservation.reason);
+            continue;
+          }
           const providerController=new AbortController();
           const onAbort=()=>providerController.abort();
           requestSignal.addEventListener('abort',onAbort,{once:true});
@@ -326,6 +363,7 @@ export async function POST(req:NextRequest){
             }
             recordProviderSuccess(provider);
             completed=true;
+            controller.enqueue(encoder.encode(sse({budget:apiBudget.snapshot()})));
             emitValidatedAnswer(gate.content,provider,controller,encoder);
             break;
           }catch(error:any){
