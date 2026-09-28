@@ -23,6 +23,7 @@ import type {MinecraftBrainId,MinecraftBrainState} from '@/lib/simulation/minecr
 import {mobVoxelModel} from '@/lib/simulation/minecraft-voxel-models';
 import {
   MINECRAFT_RENDER_PROFILES,
+  browserHardwareTier,
   browserMemoryPressure01,
   captureMimeType,
   createAdaptiveRenderState,
@@ -181,6 +182,10 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
 
   useEffect(()=>{
     const next=createAdaptiveRenderState(MINECRAFT_RENDER_PROFILES[renderPreset]);
+    if(renderPreset==='auto'){
+      const tier=browserHardwareTier();
+      next.scale=tier==='high'?.94:tier==='low'?.62:.8;
+    }
     adaptiveRef.current=next;
     setAdaptiveScale(next.scale);
   },[renderPreset]);
@@ -477,7 +482,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       <b>1ª PESSOA 3D · {pose.label}</b>
       <span>FOV {pose.fov}° · {world.player.dimension==='infernal'?'Nether':world.player.dimension==='void'?'End':'Overworld'}</span>
       <small>{profile.description}</small>
-      <small className={styles.perf}>Preset {renderProfile.label} · alvo {renderProfile.targetFps} FPS · escala {Math.round((renderPreset==='auto'?adaptiveScale:renderProfile.renderScale)*100)}% · render {renderStats.renderMs.toFixed(1)} ms · geo {renderStats.geometryMs.toFixed(1)} ms · {Math.round(renderStats.vertices/1000)}k verts</small>
+      <small className={styles.perf}>Preset {renderProfile.label} · alvo {renderProfile.targetFps} FPS · escala {Math.round((renderPreset==='auto'?adaptiveScale:renderProfile.renderScale)*100)}% · render {renderStats.renderMs.toFixed(1)} ms · geo {renderStats.geometryMs.toFixed(1)} ms · {Math.round(renderStats.vertices/1000)}k verts · memória {Math.round(renderStats.memoryPressure01*100)}%</small>
     </div>
     {viewTarget==='player'?<div className={styles.hint}>Clique para mouse-look · WASD para mover · arraste no celular</div>:<div className={styles.hint}>POV autônomo · câmera presa à orientação real do controller</div>}
     <div className={styles.mediaControls}>
