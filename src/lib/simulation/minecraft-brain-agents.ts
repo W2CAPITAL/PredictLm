@@ -342,7 +342,7 @@ export function stepMinecraftBrains(worldInput:VoxelWorldState,stateInput:Minecr
       novelty01:Math.max(0,Math.min(1,state.cognitive.fly.exploration)),
       socialDistance:peer?.d??24,
       shelterNeed01:(agent.inventory.bed||0)>0?.15:.8
-    });
+    },agent.id);
     const intent=chooseIntent(world,state,agent,neural.action);
     const executed=executeAgent(world,state,agent,intent,state.tick+agent.decisions,neural.action,neural.totalSpikes);
     world=executed.world;
