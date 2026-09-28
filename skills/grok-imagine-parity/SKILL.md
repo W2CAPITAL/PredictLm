@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -26,6 +26,20 @@ Uma **skill nao e o modelo de imagem**.
 | Chat sem ferramenta de imagem | Expandir prompt + dizer a limitacao | Nao fingir que gerou arquivo |
 
 Se o host **nao tem** gerador ligado, a resposta correta e: entregar o **prompt pronto** + dizer qual provider configurar — **nunca** inventar URL de imagem falsa.
+
+## Entendimento semântico de imagem
+
+Antes de gerar, resolver silenciosamente o pedido em um contrato visual:
+
+- detectar pessoas, personagens, franquias, marcas, produtos, lugares, objetos nomeados e referências de estilo/“jeito”;
+- nomes podem vir em minúsculas, handles, nomes próprios, modelos com números ou formas canônicas;
+- “essa mesma pessoa/personagem”, “mesmo rosto”, “mesmo visual”, “como antes” e equivalentes ativam **continuidade de identidade**;
+- entidades específicas ativam Literal + referência automática quando necessário;
+- estilo específico controla aparência, mas nunca pode substituir identidade/conteúdo;
+- o usuário **não precisa escrever negative prompt** para defeitos óbvios, troca de identidade, anatomia quebrada, artefatos, personagem genérico ou estilo divergente; essas negativas são compiladas automaticamente;
+- cada request específico mantém uma lista auditável de entidades, forma/franquia, score de especificidade e necessidade de referência.
+
+Provider inválido nunca encerra a geração na primeira falha: validar o arquivo/pixels recebidos, descartar o provider que retornou saída inválida e tentar a próxima rota de imagem em sequência limitada. Nunca repetir indefinidamente o mesmo provider quebrado.
 
 ## Quando o usuario pede imagem
 
@@ -129,6 +143,17 @@ Depois que a imagem real existir:
 - gerar uma legenda/descricao curta em pt-BR;
 - nao colar o prompt tecnico como resposta principal;
 - a legenda nao deve inventar elementos fora do pedido/brief se nao houver visao multimodal do arquivo final.
+
+## Visual Identity Memory
+
+Uma geração específica só vira memória visual quando a revisão semântica aprova a identidade.
+
+Para continuação:
+1. procurar a chave exata da entidade;
+2. se o pedido disser “essa mesma…/o mesmo…/como antes” e não houver chave explícita nova, recuperar a última identidade aprovada;
+3. transformar a imagem aprovada em referência visual;
+4. manter a chave original ao salvar a continuação, evitando criar uma identidade paralela;
+5. nunca promover imagem reprovada ou não verificável como identidade canônica.
 
 ## Integracao PredictLM
 
