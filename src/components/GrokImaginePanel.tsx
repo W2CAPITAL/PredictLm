@@ -14,7 +14,8 @@ import { browserMediaLibraryAvailable, deleteBrowserMediaItem, loadBrowserMediaL
 import { loadCognitiveState } from '@/lib/cognitive/cognitive-memory';
 import { buildCreativeMediaControl } from '@/lib/cognitive/creative-media';
 import { bestCandidateIndex, buildBestImagePlan, buildTargetedEditRepair, scoreImageCandidate } from '@/lib/media/best-image-orchestrator';
-import { imageUrlToReferenceDataUrl, loadVisualIdentityMemory, saveVisualIdentityMemory } from '@/lib/media/visual-identity-memory';
+import { imageUrlToReferenceDataUrl, resolveVisualIdentityMemory, saveVisualIdentityMemory } from '@/lib/media/visual-identity-memory';
+import {analyzeImageIntent} from '@/lib/media/image-intent';
 
 const styles=['Cinematic','Photoreal','Editorial','3D','Anime','Minimal','Product'];
 const ratios:{label:string;w:number;h:number}[]=[
@@ -679,7 +680,10 @@ export function GrokImaginePanel(){
       const renderPrompt=basePrompt+reviewHints+uniqueness;
 
       const bestPlan=buildBestImagePlan(prompt,style);
-      const priorIdentity=!regenerate&&bestPlan.identityKey?loadVisualIdentityMemory(bestPlan.identityKey):null;
+      const requestIntent=analyzeImageIntent(prompt);
+      const priorIdentity=!regenerate
+        ? resolveVisualIdentityMemory(bestPlan.identityKey,requestIntent.continuation)
+        : null;
       const identityReferenceImages:string[]=[];
       if(priorIdentity?.approvedImageUrl&&!referenceImages.length){
         setImageStage('Recuperando identidade visual aprovada…');
@@ -946,10 +950,13 @@ export function GrokImaginePanel(){
       setGeneratedRequest(prompt);
       setGeneratedCaption(caption);
 
-      if(specificRequest&&semanticReview?.status==='passed'&&bestPlan.identityKey&&!url.startsWith('data:')){
+      const approvedIdentityKey=requestIntent.continuation&&priorIdentity?.identityKey
+        ? priorIdentity.identityKey
+        : bestPlan.identityKey;
+      if(specificRequest&&semanticReview?.status==='passed'&&approvedIdentityKey&&!url.startsWith('data:')){
         saveVisualIdentityMemory({
           version:1,
-          identityKey:bestPlan.identityKey,
+          identityKey:approvedIdentityKey,
           prompt,
           approvedImageUrl:url,
           style:data.style||style,
@@ -1440,6 +1447,12 @@ export function GrokImaginePanel(){
             ].map(([label,value])=><span key={String(label)} style={{border:'1px solid #232a35',borderRadius:8,padding:6,color:'#7e8b9d',fontSize:8}}><b style={{display:'block',color:'#bcaeff',fontSize:13}}>{value}</b>{label}</span>)}
           </div>
           <small style={{color:'#657184',fontSize:8}}>Gerador: {groundingTrace.provider||'—'} / {groundingTrace.model||'—'} · Revisor: {groundingTrace.reviewProvider||'—'} / {groundingTrace.reviewModel||'—'}{groundingTrace.identityMemoryUsed?' · Visual ID Memory ativa':''}</small>
+          {groundingTrace.intent?<div style={{border:'1px solid #232a35',borderRadius:8,padding:7,fontSize:8,color:'#8fa1b5',lineHeight:1.5}}>
+            <b style={{color:'#dce5ef'}}>Entendimento do pedido</b> · especificidade {Math.round(groundingTrace.intent.specificityScore*100)}% · {groundingTrace.intent.requiresLiteral?'literal':'criativo'} · {groundingTrace.intent.requiresReferences?'referências automáticas':'sem referência obrigatória'}
+            {groundingTrace.intent.entities.length?<span style={{display:'block',color:'#bcaeff'}}>Entidades: {groundingTrace.intent.entities.map(x=>x.label+(x.form?' · '+x.form:'')).join(' | ')}</span>:null}
+            {groundingTrace.intent.styleHints.length?<span style={{display:'block'}}>Jeito/estilo: {groundingTrace.intent.styleHints.join(' · ')}</span>:null}
+            {groundingTrace.intent.continuation?<span style={{display:'block',color:'#71d7ae'}}>Continuidade de identidade ativa</span>:null}
+          </div>:null}
           {groundingTrace.catalogCharacters.length?<div style={{fontSize:8,color:'#9faec0'}}>Catálogo AniList: {groundingTrace.catalogCharacters.map((x,i)=><React.Fragment key={x.id}>{i?' · ':''}{x.siteUrl?<a href={x.siteUrl} target="_blank" rel="noreferrer" style={{color:'#bcaeff'}}>{x.name}</a>:x.name}</React.Fragment>)}</div>:null}
           {groundingTrace.queries.length?<details style={{fontSize:8,color:'#7f8c9d'}}><summary>Buscas automáticas ({groundingTrace.queries.length})</summary>{groundingTrace.queries.map((q,i)=><em key={q+'-'+i} style={{display:'block',fontStyle:'normal',padding:'3px 0',borderTop:'1px solid #1c232d'}}>{q}</em>)}</details>:null}
           {groundingTrace.issues.length?<ul style={{margin:0,paddingLeft:17,color:'#eaa6ab',fontSize:8}}>{groundingTrace.issues.map((issue,i)=><li key={issue+'-'+i}>{issue}</li>)}</ul>:null}
