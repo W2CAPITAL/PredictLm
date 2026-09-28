@@ -1,12 +1,13 @@
 import { isAnimeFranchisePrompt, isSpecificFranchisePrompt, shouldForceLiteralMode, extractRequestedNamedSubject } from './media-fidelity';
 import { isNarutoKuramaVsSasukeSusanooPrompt, wantsFullKuramaAvatar, wantsKuramaChakraMode } from './canonical-matchup';
+import {analyzeImageIntent} from './image-intent';
 
 export type CandidateSemanticStatus='passed'|'failed'|'unavailable'|''
 
 export interface VisualSubjectSlot{
   id:string;
   label:string;
-  role:'character'|'avatar'|'creature'|'object';
+  role:'character'|'person'|'avatar'|'creature'|'brand'|'place'|'object';
   form:string;
   palette:string[];
   mustShow:string[];
@@ -119,6 +120,26 @@ function knownSubjects(prompt:string):VisualSubjectSlot[]{
       reject:['generic yellow rabbit','cat','wrong Pokémon']
     });
   }
+
+  const intent=analyzeImageIntent(prompt);
+  for(const entity of intent.entities){
+    if(entity.kind==='style'||entity.kind==='franchise')continue;
+    if(slots.some(x=>x.id===entity.id||normalize(x.label)===normalize(entity.label)))continue;
+    const role:VisualSubjectSlot['role']=entity.kind==='person'?'person':entity.kind==='brand'||entity.kind==='product'?'brand':entity.kind==='place'?'place':entity.kind==='character'?'character':'object';
+    push({
+      id:entity.id,
+      label:entity.label,
+      role,
+      form:entity.form||'exact requested canonical/recognizable form',
+      palette:['preserve canonical/requested colors'],
+      mustShow:[
+        'recognizable exact identity for '+entity.label,
+        'requested form, clothing/materials, silhouette and distinctive visual traits',
+        entity.franchise?'visual consistency with '+entity.franchise:'visual consistency with the named subject'
+      ],
+      reject:['generic lookalike','unrelated substitute','identity drift','wrong requested form']
+    });
+  }
   return slots;
 }
 
@@ -139,21 +160,26 @@ function inferComposition(prompt:string,subjectCount:number){
 }
 
 export function visualIdentityKey(prompt:string){
+  const intent=analyzeImageIntent(prompt);
   const slots=knownSubjects(prompt);
   if(slots.length)return slots.map(x=>x.id+':'+normalize(x.form)).sort().join('|');
+  if(intent.identityKey)return intent.identityKey;
   const named=extractRequestedNamedSubject(String(prompt||''));
   return named?'named:'+normalize(named):'';
 }
 
 export function candidateCountForImage(prompt:string){
+  const intent=analyzeImageIntent(prompt);
   if(isAnimeFranchisePrompt(prompt)&&shouldForceLiteralMode(prompt))return 3;
-  if(shouldForceLiteralMode(prompt)||isSpecificFranchisePrompt(prompt))return 2;
+  if(intent.identitySensitive&&intent.specificityScore>=.72)return 3;
+  if(intent.identitySensitive||shouldForceLiteralMode(prompt)||isSpecificFranchisePrompt(prompt))return 2;
   return 1;
 }
 
 export function buildBestImagePlan(prompt:string,style='Cinematic'):BestImagePlan{
+  const intent=analyzeImageIntent(prompt);
   const subjects=knownSubjects(prompt);
-  const identitySensitive=shouldForceLiteralMode(prompt);
+  const identitySensitive=intent.identitySensitive||shouldForceLiteralMode(prompt);
   const anime=isAnimeFranchisePrompt(prompt);
   const identityKey=visualIdentityKey(prompt);
   const action=inferAction(prompt);
@@ -184,6 +210,9 @@ export function buildBestImagePlan(prompt:string,style='Cinematic'):BestImagePla
     'STYLE TARGET: '+style,
     'ACTION LOCK: '+action,
     'COMPOSITION: '+composition,
+    intent.entities.length?'ENTITY INTERPRETATION: '+intent.entities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | ')+'.':'',
+    intent.styleHints.length?'STYLE INTERPRETATION: preserve '+intent.styleHints.join(' · ')+' while keeping subject identity unchanged.':'',
+    intent.continuation?'CONTINUITY: keep the previously approved identity/design unless the user explicitly changes an attribute.':'',
     ...subjectLines,
     ...matchup,
     'REFERENCE POLICY: user-uploaded references outrank approved identity-memory references; both outrank searched/catalog references; references control identity/form, not copied composition.',
