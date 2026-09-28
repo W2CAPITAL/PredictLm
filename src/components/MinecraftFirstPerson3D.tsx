@@ -21,6 +21,18 @@ import {
 } from '@/lib/simulation/minecraft-first-person';
 import type {MinecraftBrainId,MinecraftBrainState} from '@/lib/simulation/minecraft-brain-agents';
 import {mobVoxelModel} from '@/lib/simulation/minecraft-voxel-models';
+import {
+  MINECRAFT_RENDER_PROFILES,
+  browserHardwareTier,
+  browserMemoryPressure01,
+  captureMimeType,
+  createAdaptiveRenderState,
+  effectiveDetailRadius,
+  renderCssFilter,
+  updateAdaptiveRenderState,
+  type MinecraftRenderPreset
+} from '@/lib/simulation/minecraft-render-optimizer';
+import {downloadBlob,exportEnhancedCanvasPng,mediaRecorderForCanvas,minecraftMediaFileName} from '@/lib/simulation/minecraft-media-capture';
 import styles from './MinecraftFirstPerson3D.module.css';
 
 type Vec3=[number,number,number];
@@ -32,6 +44,7 @@ interface Props{
   brains:MinecraftBrainState;
   viewTarget:MinecraftViewTarget;
   viewRadius:number;
+  renderPreset:MinecraftRenderPreset;
   onLook?:(yaw:number,pitch:number)=>void;
 }
 
@@ -96,6 +109,35 @@ function compile(gl:WebGLRenderingContext,type:number,source:string){
   return shader;
 }
 
+interface GLRuntime{
+  gl:WebGLRenderingContext;
+  program:WebGLProgram;
+  buffer:WebGLBuffer;
+  aPosition:number;
+  aColor:number;
+  uMvp:WebGLUniformLocation|null;
+}
+
+function createGLRuntime(gl:WebGLRenderingContext):GLRuntime|null{
+  const vs=compile(gl,gl.VERTEX_SHADER,
+    'attribute vec3 aPosition;attribute vec4 aColor;uniform mat4 uMvp;varying vec4 vColor;void main(){vColor=aColor;gl_Position=uMvp*vec4(aPosition,1.0);}');
+  const fs=compile(gl,gl.FRAGMENT_SHADER,
+    'precision mediump float;varying vec4 vColor;void main(){gl_FragColor=vColor;}');
+  if(!vs||!fs)return null;
+  const program=gl.createProgram();
+  const buffer=gl.createBuffer();
+  if(!program||!buffer){if(program)gl.deleteProgram(program);if(buffer)gl.deleteBuffer(buffer);gl.deleteShader(vs);gl.deleteShader(fs);return null}
+  gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);
+  gl.deleteShader(vs);gl.deleteShader(fs);
+  if(!gl.getProgramParameter(program,gl.LINK_STATUS)){gl.deleteProgram(program);gl.deleteBuffer(buffer);return null}
+  return{
+    gl,program,buffer,
+    aPosition:gl.getAttribLocation(program,'aPosition'),
+    aColor:gl.getAttribLocation(program,'aColor'),
+    uMvp:gl.getUniformLocation(program,'uMvp')
+  };
+}
+
 function pushBox(buffer:number[],cx:number,cy:number,cz:number,sx:number,sy:number,sz:number,color:RGBA){
   const x0=cx-sx/2,x1=cx+sx/2,y0=cy-sy/2,y1=cy+sy/2,z0=cz-sz/2,z1=cz+sz/2;
   const faces:Array<{v:number[][];shade:number}>=[
@@ -120,12 +162,93 @@ function skyFor(world:VoxelWorldState):RGB{
   return[.22,.48,.66];
 }
 
-export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLook}:Props){
+export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,renderPreset,onLook}:Props){
   const canvasRef=useRef<HTMLCanvasElement>(null);
   const dragRef=useRef<{id:number;x:number;y:number}|null>(null);
+  const runtimeRef=useRef<GLRuntime|null>(null);
+  const geometryCacheRef=useRef<{key:string;data:Float32Array;geometryMs:number}|null>(null);
+  const recorderRef=useRef<MediaRecorder|null>(null);
+  const recordingStreamRef=useRef<MediaStream|null>(null);
+  const recordingChunksRef=useRef<Blob[]>([]);
+  const adaptiveRef=useRef(createAdaptiveRenderState(MINECRAFT_RENDER_PROFILES[renderPreset]));
+  const [adaptiveScale,setAdaptiveScale]=useState(MINECRAFT_RENDER_PROFILES[renderPreset].renderScale);
+  const [recording,setRecording]=useState(false);
+  const [captureMessage,setCaptureMessage]=useState('');
+  const [renderStats,setRenderStats]=useState({renderMs:0,geometryMs:0,vertices:0,memoryPressure01:0});
   const [webglError,setWebglError]=useState(false);
   const pose=useMemo(()=>minecraftFirstPersonPose(world,brains,viewTarget),[world,brains,viewTarget]);
   const profile=FIRST_PERSON_VISION[viewTarget];
+  const renderProfile=MINECRAFT_RENDER_PROFILES[renderPreset];
+
+  useEffect(()=>{
+    const next=createAdaptiveRenderState(MINECRAFT_RENDER_PROFILES[renderPreset]);
+    if(renderPreset==='auto'){
+      const tier=browserHardwareTier();
+      next.scale=tier==='high'?.94:tier==='low'?.62:.8;
+    }
+    adaptiveRef.current=next;
+    setAdaptiveScale(next.scale);
+  },[renderPreset]);
+
+  useEffect(()=>()=> {
+    const runtime=runtimeRef.current;
+    if(runtime){
+      runtime.gl.deleteBuffer(runtime.buffer);
+      runtime.gl.deleteProgram(runtime.program);
+      runtimeRef.current=null;
+    }
+    geometryCacheRef.current=null;
+    if(recorderRef.current&&recorderRef.current.state!=='inactive')recorderRef.current.stop();
+    recordingStreamRef.current?.getTracks().forEach(track=>track.stop());
+    recordingStreamRef.current=null;
+  },[]);
+
+  async function capturePng(){
+    const canvas=canvasRef.current;
+    if(!canvas)return;
+    try{
+      const result=await exportEnhancedCanvasPng(canvas,{
+        seed:world.seed,preset:renderPreset,contrast:renderProfile.contrast,saturation:renderProfile.saturation,maxEdge:3200
+      });
+      downloadBlob(result.blob,result.filename);
+      setCaptureMessage('PNG HD '+result.meta.outputWidth+'×'+result.meta.outputHeight+' exportado.');
+    }catch(error){
+      setCaptureMessage(error instanceof Error?error.message:'Falha ao exportar PNG.');
+    }
+  }
+
+  function toggleRecording(){
+    if(recording){
+      const recorder=recorderRef.current;
+      if(recorder&&recorder.state!=='inactive')recorder.stop();
+      return;
+    }
+    const canvas=canvasRef.current;
+    if(!canvas)return;
+    try{
+      const mimeType=captureMimeType();
+      const {recorder,stream}=mediaRecorderForCanvas(canvas,{fps:renderProfile.mediaFps,mimeType,bitsPerSecond:10_000_000});
+      recordingChunksRef.current=[];
+      recorderRef.current=recorder;
+      recordingStreamRef.current=stream;
+      recorder.ondataavailable=event=>{if(event.data.size>0)recordingChunksRef.current.push(event.data)};
+      recorder.onstop=()=>{
+        const blob=new Blob(recordingChunksRef.current,{type:mimeType||'video/webm'});
+        if(blob.size>0)downloadBlob(blob,minecraftMediaFileName('video',world.seed,renderPreset));
+        recordingStreamRef.current?.getTracks().forEach(track=>track.stop());
+        recordingStreamRef.current=null;
+        recorderRef.current=null;
+        recordingChunksRef.current=[];
+        setRecording(false);
+        setCaptureMessage(blob.size>0?'Vídeo WebM exportado.':'Nenhum frame foi gravado.');
+      };
+      recorder.start(1000);
+      setRecording(true);
+      setCaptureMessage('Gravando canvas em '+renderProfile.mediaFps+' FPS alvo…');
+    }catch(error){
+      setCaptureMessage(error instanceof Error?error.message:'Gravação indisponível.');
+    }
+  }
 
   useEffect(()=>{
     const canvas=canvasRef.current;
@@ -133,12 +256,25 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
     const gl=canvas.getContext('webgl',{antialias:true,alpha:false,depth:true});
     if(!gl){setWebglError(true);return}
     setWebglError(false);
+    let runtime=runtimeRef.current;
+    if(!runtime||runtime.gl!==gl){
+      runtime=createGLRuntime(gl);
+      if(!runtime){setWebglError(true);return}
+      runtimeRef.current=runtime;
+      geometryCacheRef.current=null;
+    }
+    const stableRuntime=runtime;
 
     const render=()=>{
+      if(document.hidden)return;
+      const renderStart=performance.now();
       const rect=canvas.getBoundingClientRect();
-      const ratio=Math.min(1.65,window.devicePixelRatio||1);
+      adaptiveRef.current={...adaptiveRef.current,scale:adaptiveScale};
+      const internalScale=renderPreset==='auto'?adaptiveScale:renderProfile.renderScale;
+      const ratio=Math.min(renderProfile.dprCap,window.devicePixelRatio||1)*internalScale;
       const width=Math.max(1,Math.floor(rect.width*ratio));
       const height=Math.max(1,Math.floor(rect.height*ratio));
+      canvas.style.filter=renderCssFilter(renderProfile,adaptiveRef.current);
       if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
       gl.viewport(0,0,width,height);
       const sky=skyFor(world);
@@ -150,22 +286,30 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
       gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
       gl.disable(gl.CULL_FACE);
 
-      const vs=compile(gl,gl.VERTEX_SHADER,
-        'attribute vec3 aPosition;attribute vec4 aColor;uniform mat4 uMvp;varying vec4 vColor;void main(){vColor=aColor;gl_Position=uMvp*vec4(aPosition,1.0);}');
-      const fs=compile(gl,gl.FRAGMENT_SHADER,
-        'precision mediump float;varying vec4 vColor;void main(){gl_FragColor=vColor;}');
-      if(!vs||!fs){setWebglError(true);return}
-      const program=gl.createProgram();
-      if(!program)return;
-      gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);
-      if(!gl.getProgramParameter(program,gl.LINK_STATUS)){setWebglError(true);return}
-      gl.useProgram(program);
+      gl.useProgram(stableRuntime.program);
 
-      const vertices:number[]=[];
-      const radius=clamp(Math.floor(viewRadius),8,24);
-      const detailRadius=Math.min(9,radius);
+      const radius=clamp(Math.floor(viewRadius),8,renderProfile.maxViewRadius);
+      const detailRadius=Math.min(effectiveDetailRadius(renderProfile,adaptiveRef.current),radius);
+      const farStep=renderProfile.farStep;
       const baseX=Math.floor(pose.x),baseZ=Math.floor(pose.z);
       const dim=world.player.dimension;
+      const geometryKey=[
+        world.seed,dim,baseX,baseZ,radius,detailRadius,farStep,
+        world.timeOfDay<12000?'day':'night',
+        world.stats.mined,world.stats.placed,world.stats.mobsDefeated,
+        Object.keys(world.modifications).length,Object.keys(world.discoveries).length,
+        brains.tick,viewTarget
+      ].join('|');
+      let data:Float32Array;
+      let geometryMs=0;
+      let uploadGeometry=true;
+      const cached=geometryCacheRef.current;
+      if(cached?.key===geometryKey){
+        data=cached.data;
+        uploadGeometry=false;
+      }else{
+        const geometryStart=performance.now();
+        const vertices:number[]=[];
 
       const exposed=(x:number,y:number,z:number,id:VoxelBlockId)=>{
         if(id==='water'||id==='lava'||id==='glass'||id==='leaves'||id==='wheat'||id==='torch'||id==='lantern'||id==='ladder')return true;
@@ -184,12 +328,14 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
         const terrainY=terrainHeight(world.seed,x,z,dim);
 
         if(distance>detailRadius){
+          if(farStep>1&&(((dx+radius)%farStep)!==0||((dz+radius)%farStep)!==0))continue;
           const top=surfaceAt(world,x,z);
+          const footprint=farStep;
           if(top.block==='water'){
-            pushBox(vertices,x,top.y-.12,z,1,.76,1,blockColor('water'));
+            pushBox(vertices,x,top.y-.12,z,footprint,.76,footprint,blockColor('water'));
           }else{
             const groundId=blockAt(world,x,terrainY,z);
-            pushBox(vertices,x,terrainY,z,1,1,1,blockColor(groundId));
+            pushBox(vertices,x,terrainY,z,footprint,1,footprint,blockColor(groundId));
             const tree=dim==='overworld'?treeDescriptorAt(world.seed,x,z):null;
             if(tree){
               pushBox(vertices,x,tree.baseY+tree.trunkHeight/2+.5,z,.72,tree.trunkHeight,.72,blockColor('wood'));
@@ -256,15 +402,15 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
       }
 
 
-      const data=new Float32Array(vertices);
-      const buffer=gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
-      gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+        data=new Float32Array(vertices);
+        geometryMs=performance.now()-geometryStart;
+        geometryCacheRef.current={key:geometryKey,data,geometryMs};
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER,stableRuntime.buffer);
+      if(uploadGeometry)gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
       const stride=7*4;
-      const aPosition=gl.getAttribLocation(program,'aPosition');
-      const aColor=gl.getAttribLocation(program,'aColor');
-      gl.enableVertexAttribArray(aPosition);gl.vertexAttribPointer(aPosition,3,gl.FLOAT,false,stride,0);
-      gl.enableVertexAttribArray(aColor);gl.vertexAttribPointer(aColor,4,gl.FLOAT,false,stride,3*4);
+      gl.enableVertexAttribArray(stableRuntime.aPosition);gl.vertexAttribPointer(stableRuntime.aPosition,3,gl.FLOAT,false,stride,0);
+      gl.enableVertexAttribArray(stableRuntime.aColor);gl.vertexAttribPointer(stableRuntime.aColor,4,gl.FLOAT,false,stride,3*4);
 
       const cp=Math.cos(pose.pitch),sp=Math.sin(pose.pitch),sy=Math.sin(pose.yaw),cy=Math.cos(pose.yaw);
       const eye:[number,number,number]=[pose.x,pose.y,pose.z];
@@ -272,18 +418,25 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
       const view=lookAt(eye,center,[0,1,0]);
       const proj=perspective(pose.fov,width/height,.05,Math.max(90,radius*9));
       const mvp=multiply(proj,view);
-      const uMvp=gl.getUniformLocation(program,'uMvp');
-      gl.uniformMatrix4fv(uMvp,false,mvp);
+      gl.uniformMatrix4fv(stableRuntime.uMvp,false,mvp);
       gl.drawArrays(gl.TRIANGLES,0,data.length/7);
 
-      gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);
+      const renderMs=performance.now()-renderStart;
+      const memoryPressure01=browserMemoryPressure01();
+      if(memoryPressure01>.82)geometryCacheRef.current=null;
+      setRenderStats({renderMs,geometryMs,vertices:data.length/7,memoryPressure01});
+      const nextAdaptive=updateAdaptiveRenderState(adaptiveRef.current,{renderMs,geometryMs,vertices:data.length/7,memoryPressure01},renderProfile);
+      adaptiveRef.current=nextAdaptive;
+      if(renderPreset==='auto'&&Math.abs(nextAdaptive.scale-adaptiveScale)>.015)setAdaptiveScale(nextAdaptive.scale);
     };
 
-    render();
-    const resize=new ResizeObserver(()=>render());
+    let frame=requestAnimationFrame(render);
+    const resize=new ResizeObserver(()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(render)});
     resize.observe(canvas);
-    return()=>resize.disconnect();
-  },[world,brains,viewTarget,viewRadius,pose.x,pose.y,pose.z,pose.yaw,pose.pitch,pose.fov]);
+    const visibility=()=>{if(!document.hidden){cancelAnimationFrame(frame);frame=requestAnimationFrame(render)}};
+    document.addEventListener('visibilitychange',visibility);
+    return()=>{cancelAnimationFrame(frame);resize.disconnect();document.removeEventListener('visibilitychange',visibility)};
+  },[world,brains,viewTarget,viewRadius,renderPreset,adaptiveScale,renderProfile,pose.x,pose.y,pose.z,pose.yaw,pose.pitch,pose.fov]);
 
   useEffect(()=>{
     if(viewTarget!=='player'||!onLook)return;
@@ -329,8 +482,14 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,onLoo
       <b>1ª PESSOA 3D · {pose.label}</b>
       <span>FOV {pose.fov}° · {world.player.dimension==='infernal'?'Nether':world.player.dimension==='void'?'End':'Overworld'}</span>
       <small>{profile.description}</small>
+      <small className={styles.perf}>Preset {renderProfile.label} · alvo {renderProfile.targetFps} FPS · escala {Math.round((renderPreset==='auto'?adaptiveScale:renderProfile.renderScale)*100)}% · render {renderStats.renderMs.toFixed(1)} ms · geo {renderStats.geometryMs.toFixed(1)} ms · {Math.round(renderStats.vertices/1000)}k verts · memória {Math.round(renderStats.memoryPressure01*100)}%</small>
     </div>
-    {viewTarget==='player'?<div className={styles.hint}>Clique para mouse-look · WASD para mover · arraste no celular</div>:<div className={styles.hint}>POV autônomo · câmera presa à orientação real do cérebro</div>}
+    {viewTarget==='player'?<div className={styles.hint}>Clique para mouse-look · WASD para mover · arraste no celular</div>:<div className={styles.hint}>POV autônomo · câmera presa à orientação real do controller</div>}
+    <div className={styles.mediaControls}>
+      <button onClick={()=>void capturePng()}>PNG HD</button>
+      <button data-recording={recording?'1':'0'} onClick={toggleRecording}>{recording?'Parar REC':'Gravar vídeo'}</button>
+      {captureMessage?<span>{captureMessage}</span>:null}
+    </div>
     {webglError?<div className={styles.error}>WebGL indisponível neste navegador. Use Mapa 2D ou Unity.</div>:null}
   </div>;
 }

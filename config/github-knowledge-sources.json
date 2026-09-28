@@ -3495,6 +3495,193 @@
         "evidence-weighting"
       ],
       "reason": "Apache-2.0 reference material with useful agent failure-mode and self-audit lessons. Keep autonomous-goal behavior opt-in and bounded; do not let background loops create external actions or durable goals without user/system authorization."
+    },
+    {
+      "repo": "rakanki911/DLSS5-Swapper",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "render-routing",
+        "diagnostics",
+        "upscaling"
+      ],
+      "reason": "Windows-native DLSS installer/manager. Use capability detection, reversible fallback and diagnostics patterns only; never ingest or redistribute NVIDIA/game DLLs."
+    },
+    {
+      "repo": "Kizzuwatnaa/DLSS5-Autopilot",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "autotuning",
+        "render-routing",
+        "media"
+      ],
+      "reason": "Use measured-cost autopilot and fallback-loop concepts only. Never scan/patch external games or download proprietary runtimes."
+    },
+    {
+      "repo": "SAOG0721/Magpie",
+      "branch": "experimental",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "docs/FRAME_SYNC_GUIDE.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "upscaling",
+        "frame-pacing",
+        "sharpening",
+        "media"
+      ],
+      "reason": "Windows capture/upscaling application. Use effect-chain, frame pacing, target-FPS and comparison patterns; native DirectX/DLSS/XeSS backends are out of browser scope."
+    },
+    {
+      "repo": "Merserk/dlss5-visual-enhancer",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "media",
+        "image-enhancement",
+        "video-enhancement",
+        "preview-cache",
+        "pipeline"
+      ],
+      "reason": "Use ordered image/video stage, preview cache and export UX patterns. Do not depend on proprietary NVIDIA runtimes."
+    },
+    {
+      "repo": "perseval-BLR/NeuralScreen",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md",
+        "TECHNICAL.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "media",
+        "dynamic-resolution",
+        "capture",
+        "frame-generation"
+      ],
+      "reason": "Architecture reference only. Repository discusses bundled proprietary NVIDIA runtimes; PredictLM must not redistribute or execute those binaries."
+    },
+    {
+      "repo": "hellzerg/optimizer",
+      "branch": "master",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "performance",
+        "hardware-detection",
+        "reversible-tuning"
+      ],
+      "reason": "Deprecated Windows system utility. Use reversible/hardware-aware optimization concepts only; never apply OS/service/Defender tweaks from PredictLM."
+    },
+    {
+      "repo": "IgorMundstein/WinMemoryCleaner",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "memory",
+        "performance",
+        "thresholds",
+        "telemetry"
+      ],
+      "reason": "Use transparent threshold-based resource-pressure concepts only. Browser runtime never flushes Windows memory lists or working sets."
+    },
+    {
+      "repo": "thedogecraft/sparkle",
+      "branch": "v2",
+      "license": "GPL-3.0",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "performance",
+        "presets",
+        "hardware-stats",
+        "reversible-tuning"
+      ],
+      "reason": "GPL Windows optimizer; use high-level preset/rollback/hardware-stat patterns only, not code or PowerShell/registry tweaks."
+    },
+    {
+      "repo": "GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
+      "branch": "main",
+      "license": "MIT",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "Kits/FidelityFX/docs/techniques/",
+        "docs/samples/super-resolution.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "upscaling",
+        "frame-pacing",
+        "sharpening",
+        "temporal"
+      ],
+      "weight": 1.18,
+      "reason": "Official AMD open-source SDK documentation. PredictLM ports architecture ideas to browser-compatible WebGL code; it does not claim to execute the native FSR SDK."
+    },
+    {
+      "repo": "Minecraft-Radiance/Radiance",
+      "branch": "main",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "renderer",
+        "vulkan",
+        "ray-tracing",
+        "upscaling"
+      ],
+      "reason": "Minecraft renderer architecture reference. No Java/Vulkan mod or proprietary DLSS runtime is embedded in the web app."
+    },
+    {
+      "repo": "fholger/openvr_fsr",
+      "branch": "fsr",
+      "license": "unverified",
+      "mode": "reference-only",
+      "include": [
+        "README.md"
+      ],
+      "domains": [
+        "minecraft-performance",
+        "render-scale",
+        "sharpening",
+        "foveated",
+        "upscaling"
+      ],
+      "reason": "Native OpenVR mod. Use renderScale/sharpen/foveated-quality concepts only; never replace OpenVR DLLs from PredictLM."
     }
   ]
 }

@@ -111,6 +111,35 @@ The arena measures operational behavior: exploration, memory, food seeking, thre
 
 The common contract is `step(observation) -> action`. The stable action vocabulary is `move | jump | craft | attack | interact | wait`. LLM assistance is optional/high-abstraction and must never bypass world state or claim an action happened without the Action API executing it.
 
+### Render optimizer and simulation media
+
+The first-person WebGL renderer has its own adaptive performance layer rather than depending on native DLSS/FSR DLLs.
+
+Implemented browser path:
+- persistent WebGL program/buffer instead of recompiling shaders every camera update;
+- geometry cache keyed by seed/dimension/player cell/LOD/world deltas/controller tick, so mouse-look can reuse the uploaded mesh;
+- `requestAnimationFrame` scheduling;
+- Auto / Performance / Balanced / Quality / Cinematic presets;
+- adaptive internal render scale with a 60 FPS target in normal modes;
+- memory-pressure feedback and cache eviction on high JS heap pressure;
+- center-priority detail with coarser far-world LOD while preserving the configured 49×49 maximum view;
+- high-quality screenshot export and WebM canvas recording;
+- render telemetry for scene cost, geometry cost, vertex count, scale and memory pressure.
+
+The 11 requested projects are registered in `minecraft-performance-fabric.ts`. Native Windows projects are used as architecture references only. PredictLM does **not** swap DLLs, modify Windows services/registry, clear OS memory lists, inject OpenVR, bundle NVIDIA runtimes, or claim that its browser scaler is NVIDIA DLSS/AMD FSR. FidelityFX/OpenVR FSR/Magpie/Radiance patterns are translated into portable WebGL concepts: render scale, sharpening separation, frame pacing, modern renderer boundaries and center-priority quality.
+
+Media capture follows a lightweight browser pipeline:
+
+```
+WebGL frame
+→ adaptive render scale
+→ high-quality spatial resample
+→ contrast/saturation preservation
+→ PNG or WebM encode
+```
+
+This improves capture/export of the Minecraft simulation without pretending to run proprietary neural-rendering models in the browser.
+
 ### Neuroscience Lab
 
 The Lab asks a different question: **does the model respect the available data and limitations of the species?**
