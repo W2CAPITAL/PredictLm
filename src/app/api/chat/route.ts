@@ -24,6 +24,8 @@ import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
+import {providerAttemptLimit,reserveProviderCall} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -36,7 +38,7 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
-const PROVIDER_ATTEMPT_LIMIT=3;
+const PROVIDER_ATTEMPT_LIMIT=providerAttemptLimit('chat',false);
 const PROVIDER_TIMEOUT_MS=12000;
 const REQUEST_BUDGET_MS=32000;
 
@@ -152,7 +154,13 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
+  for(const provider of configuredBridgeProviders()){
+    if(serverCanReach(provider.base))push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+  for(const provider of configuredFreeProviders()){
+    if(serverCanReach(provider.base))push({name:provider.name,base:provider.base,key:provider.key,model:provider.model});
+  }
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'localcodecli,puter-pool,freellmapi,ollama,groq,opencode,nvidia,deepseek,kimi,zai,minimax,gemini,openrouter,vercel-gateway,anthropic,openai,xai,server,ark,gptoss-proxy,mistral-free,cerebras-free,sambanova-free,deepinfra-free,siliconflow-free,requesty-free,venice-free,nous-free,hetzner-free,inference-net-free,modelscope-free,llm7-free')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
@@ -524,6 +532,8 @@ async function callProvider(provider:Provider,messages:Msg[],deep:boolean,timeou
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
+    const quota=reserveProviderCall(provider,'chat');
+    if(!quota.allowed)throw new Error(provider.name+' provider-budget-exhausted');
     if(provider.protocol==='anthropic'){
       const system=messages.filter(x=>x.role==='system').map(x=>x.content).join('\n\n');
       const dialog=messages.filter(x=>x.role!=='system').map(x=>({role:x.role as 'user'|'assistant',content:x.content}));
