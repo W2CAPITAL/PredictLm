@@ -51,7 +51,7 @@ import {
   type MinecraftBrainState
 } from '@/lib/simulation/minecraft-brain-agents';
 import {MinecraftFirstPerson3D} from '@/components/MinecraftFirstPerson3D';
-import {CONTROLLER_COVERAGE,MINECRAFT_ARENA_BANNER} from '@/lib/simulation/cognitive-world-contract';
+import {CONTROLLER_COVERAGE,MINECRAFT_ARENA_BANNER,exportCoverageRunJson} from '@/lib/simulation/cognitive-world-contract';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
@@ -98,10 +98,10 @@ type ToolMode='mine'|'place'|'inspect';
 type ViewTarget='player'|MinecraftBrainId;
 
 const BRAIN_VISION:Record<MinecraftBrainId,{label:string;radius:number;description:string}>={
-  human:{label:'Humano',radius:18,description:'visão binocular detalhada, leitura de estruturas e planejamento de longo alcance'},
-  macaque:{label:'Macaco',radius:20,description:'visão frontal ampla, contraste de terreno, recursos e ameaças próximas'},
-  mouse:{label:'Camundongo',radius:14,description:'câmera baixa com alcance útil para abrigo, comida, túneis e ameaças'},
-  fly:{label:'Mosca',radius:24,description:'campo muito amplo e rápido, priorizando movimento, rotas, estruturas e exploração'}
+  human:{label:'Human · H01',radius:18,description:'controller H01-informed: visão de jogo + planejamento modelado; não visão humana biológica completa'},
+  macaque:{label:'Macaque · atlas',radius:20,description:'controller atlas/projectome-informed: atenção visual proxy e alcance abstrato'},
+  mouse:{label:'Mouse · MICrONS/Allen',radius:14,description:'controller cortical/mesoscale-informed: discriminação visual e memória espacial modelada'},
+  fly:{label:'Fly · FlyWire',radius:24,description:'controller FlyWire-informed: orientação/reação rápida; dinâmica e sensores continuam modelados'}
 };
 
 function loadWorld(){
@@ -513,6 +513,17 @@ export function MinecraftSimulationPanel(){
     window.setTimeout(()=>URL.revokeObjectURL(url),1200);
     setMessage('Save exportado.');
   }
+  function exportCoverage(){
+    if(viewTarget==='player')return;
+    const json=exportCoverageRunJson(viewTarget,'minecraft-'+world.seed+'-tick-'+brains.tick);
+    const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='predictlm-coverage-'+viewTarget+'-'+world.seed+'.json';
+    a.click();
+    window.setTimeout(()=>URL.revokeObjectURL(url),800);
+    setMessage('Ficha de cobertura exportada em JSON.');
+  }
   async function importWorld(file:File|null){
     if(!file)return;
     try{
@@ -688,6 +699,7 @@ export function MinecraftSimulationPanel(){
             <small>Proxy: {selectedCoverage.proxy.join(' · ')}</small>
             <small>Ausente: {selectedCoverage.absent.join(' · ')}</small>
           </details>
+          <button className={styles.coverageExport} onClick={exportCoverage}>Exportar ficha JSON</button>
         </section>:null}
 
         <section>
