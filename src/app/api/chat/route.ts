@@ -16,7 +16,7 @@ import { detectReportIntent, REPORT_DOSSIER_CONTRACT } from '@/lib/predict-dossi
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
-import { providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
+import { circuitReadyProviders, providerHealthSnapshot, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { gameStudioContext } from '@/lib/game-studio-fabric';
 import {minecraftSimulationContext} from '@/lib/simulation/minecraft-reference-fabric';
@@ -202,7 +202,7 @@ function modelBonus(model:string,task:ProviderTask){
 }
 
 function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
-  const primary=rankHealthyProviders(primaryProviders(configured));
+  const primary=circuitReadyProviders(primaryProviders(configured));
   const task=providerTaskClass(prompt,deep);
   const route=jevRouteDecision(prompt,{
     deep,
