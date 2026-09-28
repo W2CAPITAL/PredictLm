@@ -55,7 +55,20 @@ function similarity(a:string,b:string){
 
 export function isTutorRequest(prompt:string){
   const p=normalize(prompt);
-  return /\b(me ensine|ensine me|quero aprender|quero estudar|estudar|estudo|tutor|tutoria|quiz|simulado|flashcard|flashcards|pratique comigo|praticar|me teste|teste meu|explique como professor|aula|revisao para prova|revisar para prova|plano de estudos|mastery|dominar esse assunto)\b/.test(p);
+  return /\b(me ensine|ensine me|quero aprender|quero estudar|estudar|estudo|tutor|tutoria|quiz|simulado|flashcard|flashcards|pratique comigo|praticar|me teste|teste meu|explique como professor|mentor especialista|aula|revisao para prova|revisar para prova|plano de estudos|plano de acao de 7 dias|mastery|dominar esse assunto|dominar o assunto)\b/.test(p);
+}
+
+export function isMasteryBlueprintRequest(prompt:string){
+  const p=normalize(prompt);
+  const explicit=/\b(mentor especialista|dominar esse assunto|dominar o assunto|plano de acao de 7 dias)\b/.test(p);
+  const structured=[
+    /\bfundamentos essenciais\b/.test(p),
+    /\bestrategias avancadas\b/.test(p),
+    /\bexemplos praticos\b/.test(p),
+    /\berros comuns\b/.test(p),
+    /\bplano de acao\b/.test(p)
+  ].filter(Boolean).length;
+  return explicit||structured>=3;
 }
 
 export function inferTutorKnowledgeType(prompt:string):TutorKnowledgeType{
@@ -127,7 +140,8 @@ export function tutorSystemContext(prompt:string){
 
   const type=inferTutorKnowledgeType(prompt);
   const wantsQuiz=/\b(quiz|simulado|me teste|teste meu|flashcard|flashcards)\b/.test(normalize(prompt));
-  const wantsPlan=/\b(plano de estudos|cronograma|mastery|dominar esse assunto)\b/.test(normalize(prompt));
+  const wantsPlan=/\b(plano de estudos|cronograma|mastery|dominar esse assunto|dominar o assunto|plano de acao de 7 dias)\b/.test(normalize(prompt));
+  const wantsMasteryBlueprint=isMasteryBlueprintRequest(prompt);
 
   const softwareLearning=/\b(program|codigo|código|software|javascript|typescript|python|react|next|api|banco|database|sistema|engenharia de software|computacao|computação)\b/.test(normalize(prompt));
 
@@ -146,6 +160,12 @@ export function tutorSystemContext(prompt:string){
       : 'Explique de forma progressiva, com exemplo concreto e uma checagem curta de entendimento quando isso ajudar.',
     wantsPlan
       ? 'Estruture o plano em objetivos pequenos com pré-requisitos, critério de domínio e revisão futura.'
+      : '',
+    wantsMasteryBlueprint
+      ? 'MODO DOMÍNIO: organize a resposta em 6 blocos úteis e não redundantes: (1) Fundamentos essenciais, (2) Estratégias avançadas, (3) Exemplos práticos, (4) Erros comuns a evitar, (5) Plano de ação de 7 dias, (6) Aplicação no mundo real. Em cada bloco, adapte profundidade ao tema em vez de preencher um template vazio.'
+      : '',
+    wantsMasteryBlueprint
+      ? 'No plano de 7 dias, cada dia deve ter objetivo observável, exercício/ação concreta e um critério simples de conclusão. Não prometa domínio total em 7 dias; trate os 7 dias como sprint inicial mensurável.'
       : '',
     softwareLearning
       ? 'Para programação, use prática baseada em projetos: explique o mínimo necessário, faça o aluno construir uma peça pequena e observável, teste o resultado, depois aumente a complexidade. Inspire-se em freeCodeCamp para progressão por projetos e em Build Your Own X para desmontar sistemas em camadas implementáveis; não copie soluções prontas.'

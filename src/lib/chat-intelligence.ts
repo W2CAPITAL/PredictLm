@@ -25,7 +25,7 @@ export function isPlayfulPrompt(prompt:string){
   const shapeWords=p.match(/\b(?:triangul\w*|quadr\w*|redond\w*|circul\w*|pentagon\w*|hexagon\w*|cubo|cubico|cúbico|esfera|4d|5d|hiper\w*|ultra\w*)\b/g)||[];
   if(shapeWords.length>=2)return true;
 
-  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/);
+  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/);
   if(selfIntro){
     const label=selfIntro[1];
     const words=label.split(/\s+/).filter(Boolean);
@@ -437,7 +437,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
     return '**'+thing+'**? Eu entro nessa. Tem cara de assunto que rende uma conversa boa.';
   }
 
-  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/i);
+  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/i);
   if(playfulIntro&&isPlayfulPrompt(prompt)){
     const label=playfulIntro[1].trim();
     return 'Aí sim, **'+label+'**. Nome de entidade que aparece atravessando uma dimensão errada e age como se fosse terça-feira. Pode prosseguir.';

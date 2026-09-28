@@ -3608,22 +3608,23 @@
       "reason": "Use measured-cost autopilot and fallback-loop concepts only. Never scan/patch external games or download proprietary runtimes."
     },
     {
-      "repo": "SAOG0721/Magpie",
-      "branch": "experimental",
-      "license": "unverified",
+      "repo": "Blinue/Magpie",
+      "branch": "dev",
+      "license": "GPL-3.0",
       "mode": "reference-only",
       "include": [
         "README.md",
-        "docs/FRAME_SYNC_GUIDE.md"
+        "docs/Performance optimization.md"
       ],
       "domains": [
         "minecraft-performance",
         "upscaling",
-        "frame-pacing",
-        "sharpening",
-        "media"
+        "frame-rate-limiting",
+        "duplicate-frame-detection",
+        "capture",
+        "performance"
       ],
-      "reason": "Windows capture/upscaling application. Use effect-chain, frame pacing, target-FPS and comparison patterns; native DirectX/DLSS/XeSS backends are out of browser scope."
+      "reason": "Official active Magpie upstream. Learn architecture-level window scaling, lighter-effect fallback, capture-mode fallback, frame-rate limiting, duplicate-frame detection and performance diagnostics. GPL implementation remains reference-only: do not copy/link native C++/HLSL/DirectX code into PredictLM browser/runtime bundles."
     },
     {
       "repo": "Merserk/dlss5-visual-enhancer",
