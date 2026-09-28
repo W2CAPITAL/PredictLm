@@ -36,8 +36,10 @@ declare global{
 }
 
 const cache=globalThis.__predictlmChatCache||(globalThis.__predictlmChatCache=new Map());
-const configuredProviderAttemptLimit=Number(process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN||1);
-const PROVIDER_ATTEMPT_LIMIT=Math.max(1,Math.min(3,Number.isFinite(configuredProviderAttemptLimit)?Math.floor(configuredProviderAttemptLimit):1));
+function providerAttemptLimit(){
+  const configured=Number(process.env.PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN||1);
+  return Math.max(1,Math.min(3,Number.isFinite(configured)?Math.floor(configured):1));
+}
 const PROVIDER_TIMEOUT_MS=12000;
 const REQUEST_BUDGET_MS=32000;
 
@@ -291,7 +293,7 @@ async function simulationPlanResponse(configured:Provider[],body:any,prompt:stri
     localAdvisory?'SEGUNDA OPINIÃO LOCAL:\n'+localAdvisory:''
   ].filter(Boolean).join('\n\n');
   const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1200)}];
-  const candidates=taskAwareProviders(configured,'planejar ações de simulação '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const candidates=taskAwareProviders(configured,'planejar ações de simulação '+prompt,false).slice(0,providerAttemptLimit());
   const errors:string[]=[];
   const startedAt=Date.now();
   for(const provider of candidates){
@@ -375,7 +377,7 @@ async function voxelPlanResponse(configured:Provider[],body:any,prompt:string){
   ].filter(Boolean).join('\n\n');
 
   const messages:Msg[]=[{role:'system',content:system},{role:'user',content:prompt.slice(0,1400)}];
-  const candidates=taskAwareProviders(configured,'planejar ações Minecraft voxel '+prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const candidates=taskAwareProviders(configured,'planejar ações Minecraft voxel '+prompt,false).slice(0,providerAttemptLimit());
   const errors:string[]=[];
   const startedAt=Date.now();
   for(const provider of candidates){
@@ -673,7 +675,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,providerAttemptLimit());
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -736,12 +738,12 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
   const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
-  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
+  const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,providerAttemptLimit()));
   if(!candidates.length)return Response.json({
     content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
   },{headers:{'Cache-Control':'no-store'}});
 
-  if(PROVIDER_ATTEMPT_LIMIT===1){
+  if(providerAttemptLimit()===1){
     const provider=candidates[0];
     try{
       const content=await callProvider(provider,[
@@ -1055,7 +1057,7 @@ export async function POST(req:Request){
 
     const errors:string[]=[];
     const startedAt=Date.now();
-    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,PROVIDER_ATTEMPT_LIMIT);
+    const candidates=taskAwareProviders(configured,prompt,deep).slice(0,providerAttemptLimit());
     const reviewSurface=researchContext?'research':'chat';
     const agenticPlan=planAgenticRun(prompt,reviewSurface,deep);
 
