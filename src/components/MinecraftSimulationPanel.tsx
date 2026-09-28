@@ -44,6 +44,8 @@ import {
   unityWebGLConfigured
 } from '@/lib/unity-fabric';
 import {minecraftReferenceAudit} from '@/lib/simulation/minecraft-reference-fabric';
+import {minecraftPerformanceReferenceAudit} from '@/lib/simulation/minecraft-performance-fabric';
+import {MINECRAFT_RENDER_PROFILES,type MinecraftRenderPreset} from '@/lib/simulation/minecraft-render-optimizer';
 import {
   createMinecraftBrainState,
   minecraftBrainSummary,
@@ -144,12 +146,14 @@ export function MinecraftSimulationPanel(){
   const [lastPlan,setLastPlan]=useState('');
   const [viewRadius,setViewRadius]=useState(18);
   const [renderMode,setRenderMode]=useState<'first-person'|'map'|'unity'>('first-person');
+  const [renderPreset,setRenderPreset]=useState<MinecraftRenderPreset>('auto');
   const [viewTarget,setViewTarget]=useState<ViewTarget>('human');
   const canvas=useRef<HTMLCanvasElement>(null);
   const unityFrame=useRef<HTMLIFrameElement>(null);
   const saveInput=useRef<HTMLInputElement>(null);
   const hitCells=useRef<Array<{x:number;z:number;points:[number,number][];depth:number}>>([]);
   const audit=useMemo(()=>minecraftReferenceAudit(),[]);
+  const performanceAudit=useMemo(()=>minecraftPerformanceReferenceAudit(),[]);
   const worldRef=useRef(world);
   const brainsRef=useRef(brains);
   const viewAgent=viewTarget==='player'?null:brains.agents[viewTarget];
@@ -586,6 +590,7 @@ export function MinecraftSimulationPanel(){
         <b>{world.player.mode}</b>
         <span>seed {world.seed}</span>
         <span>{audit.primary.length} clones + {audit.secondary.length} refs Dungeons</span>
+        <span>{performanceAudit.registered} refs de render/performance</span>
       </div>
     </header>
 
@@ -628,6 +633,9 @@ export function MinecraftSimulationPanel(){
       <select value={viewRadius} onChange={e=>setViewRadius(Number(e.target.value))}>
         <option value={12}>Visão 25×25</option><option value={18}>Visão 37×37</option><option value={24}>Visão 49×49</option>
       </select>
+      <select value={renderPreset} onChange={e=>setRenderPreset(e.target.value as MinecraftRenderPreset)} aria-label="Perfil de renderização">
+        {(Object.keys(MINECRAFT_RENDER_PROFILES) as MinecraftRenderPreset[]).map(id=><option key={id} value={id}>{MINECRAFT_RENDER_PROFILES[id].label} · {MINECRAFT_RENDER_PROFILES[id].targetFps} FPS</option>)}
+      </select>
       <button className={renderMode==='first-person'?styles.active:''} onClick={()=>setRenderMode('first-person')}>3D · 1ª pessoa</button>
       <button className={renderMode==='map'?styles.active:''} onClick={()=>setRenderMode('map')}>Mapa 2D</button>
       <button disabled={!unityReady} className={renderMode==='unity'?styles.active:''} onClick={()=>unityReady&&setRenderMode('unity')}>Unity {unityReady?'3D':'bridge'}</button>
@@ -646,6 +654,7 @@ export function MinecraftSimulationPanel(){
             brains={brains}
             viewTarget={viewTarget}
             viewRadius={viewRadius}
+            renderPreset={renderPreset}
             onLook={viewTarget==='player'?(yaw,pitch)=>setWorld(prev=>({...prev,player:{...prev.player,yaw,pitch}})):undefined}
           />:
           renderMode==='unity'&&unityReady?
@@ -657,6 +666,7 @@ export function MinecraftSimulationPanel(){
           <span><MapPin size={12}/>{viewWorld.player.x},{viewWorld.player.y},{viewWorld.player.z}</span>
           <span>chunk {context.cx},{context.cz} · {chunk.biome}</span>
           <span>dia {viewWorld.day} · {viewWorld.weather}</span>
+          <span>render {MINECRAFT_RENDER_PROFILES[renderPreset].label} · alvo {MINECRAFT_RENDER_PROFILES[renderPreset].targetFps} FPS</span>
           <b>{message}</b>
         </div>
         {renderMode==='map'?<div className={styles.mapBadge}>MAPA 2D · visão auxiliar</div>:null}
