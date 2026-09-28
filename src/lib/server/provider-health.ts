@@ -99,6 +99,11 @@ export function rankHealthyProviders<T extends ProviderHealthIdentity>(providers
     .map(x=>x.provider);
 }
 
+export function circuitReadyProviders<T extends ProviderHealthIdentity>(providers:T[],now=Date.now()){
+  const ranked=rankHealthyProviders(providers,now);
+  return ranked.filter(provider=>!providerHealthState(provider,now).cooling);
+}
+
 export function providerHealthSnapshot<T extends ProviderHealthIdentity>(providers:T[],now=Date.now()){
   return providers.map(provider=>({
     name:provider.name,
