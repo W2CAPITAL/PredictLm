@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {directConversationReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
+import {conversationAnswerIssue,directConversationReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
 import {speakBrowserText,speakBrowserTextTracked,stopBrowserVoice} from '../src/lib/voice/browser-voice';
 
 test('casual preference does not start with an unnecessary AI disclaimer',()=>{
@@ -123,4 +123,16 @@ test('stream and clean-chat prompts explicitly preserve casual/playful tone',()=
   assert.match(stream,/inventar um nome\/persona|nome\/persona/);
   assert.match(route,/não abra com “sou uma IA”/i);
   assert.match(route,/Não force uma pergunta no fim de toda resposta casual/);
+});
+
+
+test('playful answer gate rejects generic deflection and unnecessary AI disclaimer',()=>{
+  assert.equal(
+    conversationAnswerIssue('sou o chirupinga cara de lata aroxeada','Entendi. Continua — quero pegar melhor a ideia.'),
+    'generic-playful-deflection'
+  );
+  assert.equal(
+    conversationAnswerIssue('ei cara, você gosta de pipoca?','Não sou um ser vivo, mas se eu pudesse comer, pipoca seria boa.'),
+    'unnecessary-ai-disclaimer'
+  );
 });
