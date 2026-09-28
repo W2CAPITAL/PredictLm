@@ -8,7 +8,7 @@ import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, rec
 import crypto from 'node:crypto';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
-import {providerAttemptLimit,reserveProviderCall} from '@/lib/server/provider-budget';
+import {providerAttemptLimit,providerSaverBonus,reserveProviderCall} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -136,7 +136,7 @@ function providerList(prompt=''):Provider[]{
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(provider:Provider)=>{
     const index=preferred.indexOf(provider.name);
-    let score=index<0?999:index;
+    let score=(index<0?999:index)-providerSaverBonus(provider.name);
     if(!explicit){
       const m=provider.model.toLowerCase();
       // Quality floor: Predict Auto should not silently downgrade ordinary Chat
