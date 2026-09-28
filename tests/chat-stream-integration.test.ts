@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {POST} from '../src/app/api/chat/stream/route';
+import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
 
 const envKeys=[
   'FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL',
@@ -16,6 +17,7 @@ const envKeys=[
 
 function clearProviders(){
   for(const key of envKeys)delete process.env[key];
+  resetProviderHealthForTests();
 }
 
 function upstream(parts:string[]){
