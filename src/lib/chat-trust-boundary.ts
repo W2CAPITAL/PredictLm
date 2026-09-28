@@ -33,7 +33,7 @@ const INTERNAL_META_MARKERS=[
   /\bsegunda leitura independente\b/i,
   /\bpiso pr[aá]tico\b/i,
   /\blacunas antes da resposta final\b/i,
-  /\b(?:RECALL|FORGE|AEGIS|PARALLAX|CENTUM|PREDICT ROUTER|PROMPT OS)\b/,
+  /\b(?:RECALL|FORGE|AEGIS|PARALLAX|CENTUM|PREDICT ROUTER|PROMPT OS)\s*(?:·|:|→|-)\s*\w/i,
   /\b(?:provider mesh|FreeLLMAPI respondeu|knowledge fallback|runtime local)\b/i,
   /\brespondi diretamente ao pedido atual\b/i,
   /\bdescartei contexto n[aã]o solicitado\b/i
