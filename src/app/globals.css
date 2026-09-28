@@ -1712,3 +1712,90 @@ body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overf
   .grok-mobile-title b{font-size:12px}
   .grok-mobile-title small{font-size:8px}
 }
+
+
+/* Chat response actions — explicit state instead of ambiguous grey icons */
+.grok-feedback{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-height:30px;
+  margin-top:8px;
+  opacity:.88;
+}
+.grok-feedback:hover{opacity:1}
+.grok-feedback .grok-feedback-button{
+  position:relative;
+  width:31px;
+  height:29px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#789095;
+  border-radius:8px;
+  display:grid;
+  place-items:center;
+  transition:background .14s ease,border-color .14s ease,color .14s ease,transform .14s ease;
+}
+.grok-feedback .grok-feedback-button:hover{
+  background:#0e292f;
+  border-color:rgba(92,190,181,.18);
+  color:#d7efeb;
+}
+.grok-feedback .grok-feedback-button:active{transform:scale(.92)}
+.grok-feedback .grok-feedback-button.active,
+.grok-feedback .grok-feedback-button[data-state="speaking"],
+.grok-feedback .grok-feedback-button[data-state="starting"]{
+  background:rgba(42,177,157,.16);
+  border-color:rgba(74,224,197,.42);
+  color:#62e1c9;
+  box-shadow:0 0 0 1px rgba(74,224,197,.04) inset,0 0 14px rgba(42,177,157,.08);
+}
+.grok-feedback .grok-feedback-button.negative.active{
+  background:rgba(226,82,103,.14);
+  border-color:rgba(238,98,118,.38);
+  color:#ff8fa2;
+}
+.grok-feedback .grok-feedback-button.sending{
+  color:#6fd7ca;
+  animation:predictlmFeedbackPulse .75s ease-in-out infinite alternate;
+}
+.grok-feedback .grok-feedback-button.error{
+  border-color:rgba(238,98,118,.38);
+  color:#ff8397;
+}
+.grok-feedback .grok-feedback-button.audio[data-state="speaking"] svg{
+  animation:predictlmAudioPulse .58s ease-in-out infinite alternate;
+}
+.grok-feedback-label{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:22px;
+  max-width:190px;
+  padding:0 7px;
+  border-radius:999px;
+  color:#8da6aa;
+  background:rgba(13,42,47,.62);
+  font-size:8px;
+  line-height:1;
+  white-space:nowrap;
+}
+.grok-feedback-label.success,.grok-feedback-label.speaking,.grok-feedback-label.starting{color:#65d9c6}
+.grok-feedback-label.negative,.grok-feedback-label.error{color:#ff899c}
+.grok-feedback-label.speaking i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#61e0ca;
+  box-shadow:0 0 10px rgba(97,224,202,.55);
+  animation:predictlmFeedbackPulse .7s ease-in-out infinite alternate;
+}
+@keyframes predictlmFeedbackPulse{from{opacity:.48}to{opacity:1}}
+@keyframes predictlmAudioPulse{from{transform:scale(.88)}to{transform:scale(1.12)}}
+
+@media(max-width:760px){
+  .grok-feedback{gap:7px;min-height:38px;overflow-x:auto;scrollbar-width:none}
+  .grok-feedback::-webkit-scrollbar{display:none}
+  .grok-feedback .grok-feedback-button{width:38px;height:36px;flex:none}
+  .grok-feedback-label{font-size:9px;min-height:26px;max-width:150px}
+}
