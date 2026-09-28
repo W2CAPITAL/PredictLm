@@ -25,10 +25,12 @@ export function isPlayfulPrompt(prompt:string){
   const shapeWords=p.match(/\b(?:triangul\w*|quadr\w*|redond\w*|circul\w*|pentagon\w*|hexagon\w*|cubo|cubico|cúbico|esfera|4d|5d|hiper\w*|ultra\w*)\b/g)||[];
   if(shapeWords.length>=2)return true;
 
-  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/);
+  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/);
   if(selfIntro){
     const label=selfIntro[1];
     const words=label.split(/\s+/).filter(Boolean);
+    const fictionalIdentity=/\b(?:naruto|sasuke|goku|freeza|frieza|mcqueen|sonic|batman|superman|deadpool|pikachu|uchiha|uzumaki|konoha)\b/.test(label);
+    if(fictionalIdentity)return true;
     if(words.length>=3&&/\b(?:cara|cabeca|cabeça|lata|metal|roxe\w*|arroxe\w*|cosmic\w*|cósmic\w*|galactic\w*|galáctic\w*|interdimensional|ultra\w*|hiper\w*)\b/.test(label))return true;
   }
 
