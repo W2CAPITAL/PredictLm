@@ -673,7 +673,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,PROVIDER_ATTEMPT_LIMIT);
   if(!candidates.length){
     return Response.json({
       available:false,
