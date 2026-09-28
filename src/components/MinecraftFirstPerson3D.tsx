@@ -165,6 +165,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
   const canvasRef=useRef<HTMLCanvasElement>(null);
   const dragRef=useRef<{id:number;x:number;y:number}|null>(null);
   const runtimeRef=useRef<GLRuntime|null>(null);
+  const geometryCacheRef=useRef<{key:string;data:Float32Array;geometryMs:number}|null>(null);
   const recorderRef=useRef<MediaRecorder|null>(null);
   const recordingStreamRef=useRef<MediaStream|null>(null);
   const recordingChunksRef=useRef<Blob[]>([]);
@@ -191,6 +192,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       runtime.gl.deleteProgram(runtime.program);
       runtimeRef.current=null;
     }
+    geometryCacheRef.current=null;
     if(recorderRef.current&&recorderRef.current.state!=='inactive')recorderRef.current.stop();
     recordingStreamRef.current?.getTracks().forEach(track=>track.stop());
     recordingStreamRef.current=null;
@@ -280,13 +282,26 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
 
       gl.useProgram(stableRuntime.program);
 
-      const geometryStart=performance.now();
-      const vertices:number[]=[];
       const radius=clamp(Math.floor(viewRadius),8,renderProfile.maxViewRadius);
       const detailRadius=Math.min(effectiveDetailRadius(renderProfile,adaptiveRef.current),radius);
       const farStep=renderProfile.farStep;
       const baseX=Math.floor(pose.x),baseZ=Math.floor(pose.z);
       const dim=world.player.dimension;
+      const geometryKey=[
+        world.seed,dim,baseX,baseZ,radius,detailRadius,farStep,
+        world.timeOfDay<12000?'day':'night',
+        world.stats.mined,world.stats.placed,world.stats.mobsDefeated,
+        Object.keys(world.modifications).length,Object.keys(world.discoveries).length,
+        brains.tick,viewTarget
+      ].join('|');
+      let data:Float32Array;
+      let geometryMs=0;
+      const cached=geometryCacheRef.current;
+      if(cached?.key===geometryKey){
+        data=cached.data;
+      }else{
+        const geometryStart=performance.now();
+        const vertices:number[]=[];
 
       const exposed=(x:number,y:number,z:number,id:VoxelBlockId)=>{
         if(id==='water'||id==='lava'||id==='glass'||id==='leaves'||id==='wheat'||id==='torch'||id==='lantern'||id==='ladder')return true;
@@ -379,8 +394,10 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
       }
 
 
-      const data=new Float32Array(vertices);
-      const geometryMs=performance.now()-geometryStart;
+        data=new Float32Array(vertices);
+        geometryMs=performance.now()-geometryStart;
+        geometryCacheRef.current={key:geometryKey,data,geometryMs};
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER,stableRuntime.buffer);
       gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
       const stride=7*4;
@@ -398,6 +415,7 @@ export function MinecraftFirstPerson3D({world,brains,viewTarget,viewRadius,rende
 
       const renderMs=performance.now()-renderStart;
       const memoryPressure01=browserMemoryPressure01();
+      if(memoryPressure01>.82)geometryCacheRef.current=null;
       setRenderStats({renderMs,geometryMs,vertices:data.length/7,memoryPressure01});
       const nextAdaptive=updateAdaptiveRenderState(adaptiveRef.current,{renderMs,geometryMs,vertices:data.length/7,memoryPressure01},renderProfile);
       adaptiveRef.current=nextAdaptive;
