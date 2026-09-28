@@ -25,7 +25,7 @@ import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 import {configuredBridgeProviders,configuredFreeProviders} from '@/lib/server/free-provider-catalog';
-import {providerAttemptLimit,reserveProviderCall} from '@/lib/server/provider-budget';
+import {providerAttemptLimit,providerSaverBonus,reserveProviderCall} from '@/lib/server/provider-budget';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -223,7 +223,7 @@ function taskAwareProviders(configured:Provider[],prompt:string,deep:boolean){
   return [...primary].sort((a,b)=>{
     const score=(provider:Provider)=>{
       const m=provider.model.toLowerCase();
-      let value=(TASK_PROVIDER_BONUS[task][provider.name]||0)+modelBonus(provider.model,task)-(manual.get(provider.name)||0)*0.12;
+      let value=(TASK_PROVIDER_BONUS[task][provider.name]||0)+modelBonus(provider.model,task)+providerSaverBonus(provider.name)-(manual.get(provider.name)||0)*0.12;
       if(route.tier==='strong'||route.tier==='long'){
         if(/gemini-3\.8-flash|claude-(?:sonnet|opus)-5|gpt-5\.6-sol|gpt-6|deepseek-v4|glm-5\.3/.test(m))value+=28;
         if(provider.name==='freellmapi'||/mini|lite|free|haiku|luna/.test(m))value-=18;
