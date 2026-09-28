@@ -14,8 +14,9 @@ export function isHypotheticalPrompt(prompt:string){
 export function isPlayfulPrompt(prompt:string){
   const p=clean(prompt);
   if(!p||p.length>420)return false;
-  if(/^(?:voce\s+)?(?:gosta|curte|prefere|comeria|beberia|usaria|vestiria|teria)\s+(?:de\s+)?[^?]{1,180}\??$/.test(p))return true;
-  if(/^(?:o que|como)\s+.{1,90}\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\b/.test(p))return true;
+  const conversational=p.replace(/^(?:(?:ei|e ai|opa|hey)(?:\s+(?:cara|mano|meu))?[, ]+)/,'');
+  if(/^(?:voce\s+)?(?:gosta|curte|prefere|comeria|beberia|usaria|vestiria|teria)\s+(?:de\s+)?[^?]{1,180}\??$/.test(conversational))return true;
+  if(/^(?:o que|como)\s+.{1,90}\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\b/.test(conversational))return true;
   if(/\b(?:personagem|heroi|herói|vilao|vilão|anime|desenho|filme)\b/.test(p)
     && /\b(?:acha|pensaria|diria|reagiria|faria|gostaria)\b/.test(p))return true;
 
