@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "d6a57c9c54513993",
-  "generatedAt": "2026-09-28T00:36:27.554Z",
+  "knowledgeVersion": "617088bd63d3c9ef",
+  "generatedAt": "2026-09-28T06:36:48.871Z",
   "sourceCount": 95,
   "chunkCount": 4786,
   "chunks": [
@@ -5106,9 +5106,9 @@
       "weight": 1.24
     },
     {
-      "id": "6e7c2c86685a46a59940",
+      "id": "da6d32133f3af6ba1906",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5127,9 +5127,9 @@
       "weight": 1.3
     },
     {
-      "id": "ec46e41fd3ff30d97ab7",
+      "id": "529f244e7574c2152ae0",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5148,9 +5148,9 @@
       "weight": 1.3
     },
     {
-      "id": "a71409df30cf3b4ce220",
+      "id": "5a58f7ff6661d5d15395",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5169,9 +5169,9 @@
       "weight": 1.3
     },
     {
-      "id": "b2ecf8d94ee4c6b6ce30",
+      "id": "c54e211eb3cf56e3a486",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5190,9 +5190,9 @@
       "weight": 1.3
     },
     {
-      "id": "95abf604bce7dc367e6d",
+      "id": "ee3810839354ae82b46f",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5211,9 +5211,9 @@
       "weight": 1.3
     },
     {
-      "id": "3d3f32f5e528800e11ab",
+      "id": "3cb0560406631eae0a40",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5232,9 +5232,9 @@
       "weight": 1.3
     },
     {
-      "id": "b7a871c4064443c8ae4f",
+      "id": "c28284a5dd5bcb1d3ce7",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5253,9 +5253,9 @@
       "weight": 1.3
     },
     {
-      "id": "3d5b461df9e45f446380",
+      "id": "cb12dca4d7ffedf7f295",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5274,9 +5274,9 @@
       "weight": 1.3
     },
     {
-      "id": "467335b62d61001b9b43",
+      "id": "70f371fe4787b93a42ff",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5295,9 +5295,9 @@
       "weight": 1.3
     },
     {
-      "id": "f8fbb7ddd97cb9e5b64f",
+      "id": "291cc139ab7fc91bd695",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5316,9 +5316,9 @@
       "weight": 1.3
     },
     {
-      "id": "2d27e3177c11e2a44e66",
+      "id": "e2911baf0f930b15b8de",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5337,9 +5337,9 @@
       "weight": 1.3
     },
     {
-      "id": "6607929ff1385e2cfc2c",
+      "id": "28aaef6372ce070a296f",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5358,9 +5358,9 @@
       "weight": 1.3
     },
     {
-      "id": "dbc17c7b446e20e4ae0c",
+      "id": "698b0fbe7e2064009e74",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5379,9 +5379,9 @@
       "weight": 1.3
     },
     {
-      "id": "9b5b607f6c00e062eb1a",
+      "id": "0f52372e7752d1a70cd3",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5400,9 +5400,9 @@
       "weight": 1.3
     },
     {
-      "id": "d1fdac54599760a848d4",
+      "id": "dcbf735c9ded7fc28326",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5421,9 +5421,9 @@
       "weight": 1.3
     },
     {
-      "id": "2d9686c3b2c98beae1f1",
+      "id": "0c4974328581d53eb0a3",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5442,9 +5442,9 @@
       "weight": 1.3
     },
     {
-      "id": "16767475b6e804bdf1fb",
+      "id": "efb18eaad46d284beaa1",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5463,9 +5463,9 @@
       "weight": 1.3
     },
     {
-      "id": "8ffa1af2c13f9ea8a9ae",
+      "id": "7d26b5c66eed358eefb5",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5484,9 +5484,9 @@
       "weight": 1.3
     },
     {
-      "id": "9d86b29f75a87754d52f",
+      "id": "835650561b2c58aeeaae",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5505,9 +5505,9 @@
       "weight": 1.3
     },
     {
-      "id": "19e278c93aff3d98e264",
+      "id": "26b8ac93d270d42cfcf1",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5526,9 +5526,9 @@
       "weight": 1.3
     },
     {
-      "id": "28e0926c5f202feb3484",
+      "id": "295b88bf203f3e0571fe",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5547,9 +5547,9 @@
       "weight": 1.3
     },
     {
-      "id": "55cadb9a8fddd4d4d2ff",
+      "id": "9e41cd8854510fcb60bb",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5568,9 +5568,9 @@
       "weight": 1.3
     },
     {
-      "id": "af6bd5f5eb03cda43376",
+      "id": "a04557b27911c5a99119",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5589,9 +5589,9 @@
       "weight": 1.3
     },
     {
-      "id": "beedf60f7fd422a4a683",
+      "id": "8547010391ea53654bdd",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5610,9 +5610,9 @@
       "weight": 1.3
     },
     {
-      "id": "36071c944f57aae83a0d",
+      "id": "b23a36c4902762378cff",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5631,9 +5631,9 @@
       "weight": 1.3
     },
     {
-      "id": "3b6feff0f7f8e3d3c467",
+      "id": "4eeb4824c4798a4558ab",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5652,9 +5652,9 @@
       "weight": 1.3
     },
     {
-      "id": "7e0d9a29e6c8fc05c08c",
+      "id": "914c8a9d1138dd13e148",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5673,9 +5673,9 @@
       "weight": 1.3
     },
     {
-      "id": "f6a50a6c44f9252cdcce",
+      "id": "7adfa3f48f00bcc14da3",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5694,9 +5694,9 @@
       "weight": 1.3
     },
     {
-      "id": "b543fd33bf38e3615455",
+      "id": "a4630b5412fc9207ff4d",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5715,9 +5715,9 @@
       "weight": 1.3
     },
     {
-      "id": "814056b2ae93055d6637",
+      "id": "295891317a24d914247d",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5736,9 +5736,9 @@
       "weight": 1.3
     },
     {
-      "id": "b766b1d08ad9935985a8",
+      "id": "497c18122d88641c0594",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5757,9 +5757,9 @@
       "weight": 1.3
     },
     {
-      "id": "8eeae1260323380fbf90",
+      "id": "7ecddbc72017c47477c4",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5778,9 +5778,9 @@
       "weight": 1.3
     },
     {
-      "id": "504eae43d9c0a770931f",
+      "id": "a8958973af7d10fa70d5",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5799,9 +5799,9 @@
       "weight": 1.3
     },
     {
-      "id": "5295efe9a55a51b9e238",
+      "id": "be084212efe77dce95e9",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5820,9 +5820,9 @@
       "weight": 1.3
     },
     {
-      "id": "ece2b43e251e5273b1b1",
+      "id": "c3b2f4310636a9605887",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5841,9 +5841,9 @@
       "weight": 1.3
     },
     {
-      "id": "113589ebb3976b757a3b",
+      "id": "53ca43d26ab67e336b0d",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5862,9 +5862,9 @@
       "weight": 1.3
     },
     {
-      "id": "ee32e6ada4666d71c0c7",
+      "id": "dce83468a25c729192ef",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5883,9 +5883,9 @@
       "weight": 1.3
     },
     {
-      "id": "11c40678b89524cb3a16",
+      "id": "4b7b46cb70a34586278d",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5904,9 +5904,9 @@
       "weight": 1.3
     },
     {
-      "id": "91f6be18b738c4c7e46e",
+      "id": "f8059761335a24d08ae0",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5925,9 +5925,9 @@
       "weight": 1.3
     },
     {
-      "id": "6e221777fa81df846f62",
+      "id": "58c14c42bc258af81bbc",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5946,9 +5946,9 @@
       "weight": 1.3
     },
     {
-      "id": "3f2efdebacb44b637a67",
+      "id": "7ecc3f8290c241e1e23d",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5967,9 +5967,9 @@
       "weight": 1.3
     },
     {
-      "id": "43d98362cc53b467d2aa",
+      "id": "a712abcd8ae449bcc37c",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5988,9 +5988,9 @@
       "weight": 1.3
     },
     {
-      "id": "cd3bff7a2e9aa25862e2",
+      "id": "cb667f0b05e01884a3b0",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6009,9 +6009,9 @@
       "weight": 1.3
     },
     {
-      "id": "96782f98202da1f8e5fc",
+      "id": "f2d12b07f1bdd878a9e2",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6030,9 +6030,9 @@
       "weight": 1.3
     },
     {
-      "id": "21434d64b275905856d0",
+      "id": "4defa18e1ce34f00a41a",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6051,9 +6051,9 @@
       "weight": 1.3
     },
     {
-      "id": "0dfcbc402b0d75e1ba52",
+      "id": "3e611fe8acf1f2a1acf9",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6072,9 +6072,9 @@
       "weight": 1.3
     },
     {
-      "id": "2fdaed9f9915a7d6a276",
+      "id": "777f4361f115ad1a659e",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6093,9 +6093,9 @@
       "weight": 1.3
     },
     {
-      "id": "a36804d930f8baf48995",
+      "id": "6420682bdd41bd795d87",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6114,9 +6114,9 @@
       "weight": 1.3
     },
     {
-      "id": "24efb8635cf8f751a414",
+      "id": "c0ebb3eb31f9eb2b0d1a",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6135,9 +6135,9 @@
       "weight": 1.3
     },
     {
-      "id": "026a80dbc648b5b35e1e",
+      "id": "d6c5682f905bbc80d199",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6156,9 +6156,9 @@
       "weight": 1.3
     },
     {
-      "id": "1e9ea127183f62d5859e",
+      "id": "c7c61eabee4925094bf1",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6177,9 +6177,9 @@
       "weight": 1.3
     },
     {
-      "id": "ed48ddc3d05ac7b43110",
+      "id": "961db28020356d1aa143",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6198,9 +6198,9 @@
       "weight": 1.3
     },
     {
-      "id": "23ef633d593f09caf9f5",
+      "id": "1266d5e0d2f5c8573651",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6219,9 +6219,9 @@
       "weight": 1.3
     },
     {
-      "id": "0b2b881288a086cd478a",
+      "id": "bf889940e3292de84aee",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6240,9 +6240,9 @@
       "weight": 1.3
     },
     {
-      "id": "c4e68ee3071f80ed0101",
+      "id": "e4c06a0848216b9f2d41",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6261,9 +6261,9 @@
       "weight": 1.3
     },
     {
-      "id": "7eb0198535b7384adb88",
+      "id": "8c8ce1f7c9954568a54c",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6282,9 +6282,9 @@
       "weight": 1.3
     },
     {
-      "id": "aac55d917279fb129ec2",
+      "id": "15f977dd1c6c1cc9fe42",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6303,9 +6303,9 @@
       "weight": 1.3
     },
     {
-      "id": "254828fe48e7738d85d9",
+      "id": "cbd848e9e0b0d7a33da3",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6324,9 +6324,9 @@
       "weight": 1.3
     },
     {
-      "id": "86a83fc4d8fbe37240f0",
+      "id": "aefdf7abe73dd0137429",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6345,9 +6345,9 @@
       "weight": 1.3
     },
     {
-      "id": "05154ff07885c10e4871",
+      "id": "0f6c47303b3b49a99a0b",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6366,9 +6366,9 @@
       "weight": 1.3
     },
     {
-      "id": "9db5d1e6952e3455c81f",
+      "id": "0aafbe6d8c85b855d7f6",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6387,9 +6387,9 @@
       "weight": 1.3
     },
     {
-      "id": "2ed9fc01037a2650a283",
+      "id": "e519fc0b430d6c8d3bfe",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6408,9 +6408,9 @@
       "weight": 1.3
     },
     {
-      "id": "905a52b39cbc3fca63c1",
+      "id": "842233eeadbd1441e583",
       "source": "NousResearch/hermes-agent",
-      "ref": "801a9022a742",
+      "ref": "5458de948379",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8629,9 +8629,9 @@
       "weight": 1.28
     },
     {
-      "id": "edb3758e3cc09ff472cf",
+      "id": "79c6552438214ae3be4d",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8648,9 +8648,9 @@
       "weight": 1.16
     },
     {
-      "id": "fe133f09d98c06a2d9f0",
+      "id": "867b401ab5563d306cf5",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8667,9 +8667,9 @@
       "weight": 1.16
     },
     {
-      "id": "e8b79c25d8af1acda440",
+      "id": "4f88a4f75fe972074064",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8686,9 +8686,9 @@
       "weight": 1.16
     },
     {
-      "id": "e2f39cec240a02239c60",
+      "id": "f6f971cec86dc7ce81cf",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8705,9 +8705,9 @@
       "weight": 1.16
     },
     {
-      "id": "db3f9216d03bc9a82127",
+      "id": "b224d77c2b47383d89bb",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8724,9 +8724,9 @@
       "weight": 1.16
     },
     {
-      "id": "210646fe51e25dea42e3",
+      "id": "72f823f3129ff86f5da9",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8743,9 +8743,9 @@
       "weight": 1.16
     },
     {
-      "id": "6f5513044f412a658f31",
+      "id": "d9e36628105ea1486631",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8762,9 +8762,9 @@
       "weight": 1.16
     },
     {
-      "id": "e3fbc3499cc6df0227ee",
+      "id": "95f34b11612288c562cb",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8781,9 +8781,9 @@
       "weight": 1.16
     },
     {
-      "id": "a702f2b02b5968e7f646",
+      "id": "4330726193cf6489b6b2",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8800,9 +8800,9 @@
       "weight": 1.16
     },
     {
-      "id": "79f98d8e6988e4feed5f",
+      "id": "cad665489446ff265a57",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8819,9 +8819,9 @@
       "weight": 1.16
     },
     {
-      "id": "df73fa41e8044544fa2c",
+      "id": "5f7668f4cd3473e08a0b",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8838,9 +8838,9 @@
       "weight": 1.16
     },
     {
-      "id": "058f291d9bacb7a54007",
+      "id": "ec4909b7d43c2366bee0",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8857,9 +8857,9 @@
       "weight": 1.16
     },
     {
-      "id": "be7e3c72e8c17d9765e9",
+      "id": "44a526d6f20fada59a3d",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8876,9 +8876,9 @@
       "weight": 1.16
     },
     {
-      "id": "f58e05354b1c1250485a",
+      "id": "074ad29d3515def6ab0d",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8895,9 +8895,9 @@
       "weight": 1.16
     },
     {
-      "id": "63303f4021eae37df3e0",
+      "id": "f2dd34183daa2e71649c",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8914,9 +8914,9 @@
       "weight": 1.16
     },
     {
-      "id": "a9c702473a57c95f7db3",
+      "id": "05ae212386c08d2592a9",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8933,9 +8933,9 @@
       "weight": 1.16
     },
     {
-      "id": "51982431a6090fd75161",
+      "id": "4d2232f6e6a6cc2ae611",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8952,9 +8952,9 @@
       "weight": 1.16
     },
     {
-      "id": "beedcd5a0e184205a896",
+      "id": "0d059a4f9a7f25c47f18",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8971,9 +8971,9 @@
       "weight": 1.16
     },
     {
-      "id": "3dc6bb4206e9815ad735",
+      "id": "c349eec7481704cd78a8",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -8990,9 +8990,9 @@
       "weight": 1.16
     },
     {
-      "id": "8c6ad87695318d98d37e",
+      "id": "7a6f9c4eb264cccaaedb",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9009,9 +9009,9 @@
       "weight": 1.16
     },
     {
-      "id": "b45a7e82877e8fb74cad",
+      "id": "a891b44840c8151b2fa1",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9028,9 +9028,9 @@
       "weight": 1.16
     },
     {
-      "id": "31ecd91556e33a6ac903",
+      "id": "baf96d81ea115f1215c5",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9047,9 +9047,9 @@
       "weight": 1.16
     },
     {
-      "id": "1df516a04d13afa208d6",
+      "id": "76d9ef3284afae52922e",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9066,9 +9066,9 @@
       "weight": 1.16
     },
     {
-      "id": "671308bae84ea80fb7a5",
+      "id": "88f57a7b04982bf14274",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9085,9 +9085,9 @@
       "weight": 1.16
     },
     {
-      "id": "2da558e27fe07aa00c5a",
+      "id": "646608ac38e8d4570f45",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9104,9 +9104,9 @@
       "weight": 1.16
     },
     {
-      "id": "ea36a50eccb8bc61b9da",
+      "id": "2a777d42e034d8b4a22f",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9123,9 +9123,9 @@
       "weight": 1.16
     },
     {
-      "id": "fee18b11f62921dfda83",
+      "id": "97dbed05fcb630b473ac",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9142,9 +9142,9 @@
       "weight": 1.16
     },
     {
-      "id": "132da93ea4f67cea5d76",
+      "id": "3e3a1988724ef00ef645",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9161,9 +9161,9 @@
       "weight": 1.16
     },
     {
-      "id": "189dc2cd1363c72d50f9",
+      "id": "0fc0f70aeba5be492638",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9180,9 +9180,9 @@
       "weight": 1.16
     },
     {
-      "id": "51a90deb4591b39a360f",
+      "id": "9075e64d7444ff1b8a01",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9199,9 +9199,9 @@
       "weight": 1.16
     },
     {
-      "id": "67194225253b37587c78",
+      "id": "8859ce0aa654e2ffb951",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9218,9 +9218,9 @@
       "weight": 1.16
     },
     {
-      "id": "53eb1a59828b6f726c7a",
+      "id": "b7067ef6bb0a808bd12e",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -9237,9 +9237,9 @@
       "weight": 1.16
     },
     {
-      "id": "f2d15c6823bf7546556f",
+      "id": "5c52c33e7a8389d2b0e9",
       "source": "Alishahryar1/free-claude-code",
-      "ref": "5643391e7714",
+      "ref": "105bfab8c2fa",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47357,9 +47357,9 @@
       "weight": 1.02
     },
     {
-      "id": "ed9a6677dc37bf3c3e6f",
+      "id": "991e01c52ea85cdfea55",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47372,9 +47372,9 @@
       "weight": 1.03
     },
     {
-      "id": "9e3214d5dc063655b623",
+      "id": "e7175d851bc9900d64a1",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47387,9 +47387,9 @@
       "weight": 1.03
     },
     {
-      "id": "9f970f8b704bdc7215b2",
+      "id": "304773ea3e2b7169db37",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47402,9 +47402,9 @@
       "weight": 1.03
     },
     {
-      "id": "3d4e242658f5c8af42f1",
+      "id": "2f1869abacadbd6042fb",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47417,9 +47417,9 @@
       "weight": 1.03
     },
     {
-      "id": "face6a4618f7001dca98",
+      "id": "5fc57065eb42c2363b71",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47432,9 +47432,9 @@
       "weight": 1.03
     },
     {
-      "id": "1fe6c26cf2149327de0a",
+      "id": "cf3d6432fcb5e1e4497f",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47447,9 +47447,9 @@
       "weight": 1.03
     },
     {
-      "id": "84f522326326da4194ea",
+      "id": "bc61acab85582d71b85d",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47462,9 +47462,9 @@
       "weight": 1.03
     },
     {
-      "id": "6b783f837062e6a85c8d",
+      "id": "31a795002df3b2c0a51c",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47477,9 +47477,9 @@
       "weight": 1.03
     },
     {
-      "id": "68d9aa80e2016a0f2140",
+      "id": "600c624207b995cdb97f",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47492,9 +47492,9 @@
       "weight": 1.03
     },
     {
-      "id": "2385fd8aa8e34a67749a",
+      "id": "4eccc3902b847f686af8",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47507,9 +47507,9 @@
       "weight": 1.03
     },
     {
-      "id": "c765650fa6ea06c336f2",
+      "id": "39c498bb8cd59672b263",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -47522,9 +47522,9 @@
       "weight": 1.03
     },
     {
-      "id": "764f36e69cb0f7c95454",
+      "id": "e679adad9b5e5af465ae",
       "source": "CodebuffAI/freebuff",
-      "ref": "689db2d75af2",
+      "ref": "c3b0e4c58492",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [

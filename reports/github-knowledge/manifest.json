@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-28T00:36:27.554Z",
-  "knowledgeVersion": "d6a57c9c54513993",
+  "generatedAt": "2026-09-28T06:36:48.871Z",
+  "knowledgeVersion": "617088bd63d3c9ef",
   "chunkCount": 4786,
   "sources": [
     {
@@ -52,7 +52,7 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "801a9022a742562a3c4578c0d8dd12cfd393fc47",
+      "commit": "5458de948379badc5b84ba624dc029367a28ece4",
       "files": 2,
       "chunks": 63,
       "error": null
@@ -79,7 +79,7 @@
       "repo": "Alishahryar1/free-claude-code",
       "mode": "allow",
       "license": "MIT",
-      "commit": "5643391e77142ce7404ab5c45821fd9c7d46d41b",
+      "commit": "105bfab8c2fa92b56c1077b103a8a5417a4f174e",
       "files": 1,
       "chunks": 33,
       "error": null
@@ -709,7 +709,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "689db2d75af29693d9e29995bd23e5df7ab381ce",
+      "commit": "c3b0e4c58492b463096709ab0cb07b70535df05f",
       "files": 1,
       "chunks": 12,
       "error": null
