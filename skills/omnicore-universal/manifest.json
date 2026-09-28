@@ -355,6 +355,10 @@
       "path": "skills/office-artifacts/SKILL.md"
     },
     {
+      "id": "omnicore-universal",
+      "path": "skills/omnicore-universal/SKILL.md"
+    },
+    {
       "id": "predictlm-master",
       "path": "skills/predictlm-master/SKILL.md"
     },
@@ -390,6 +394,14 @@
       "category": "Meta Agent",
       "description": "Skill soberana única: unifica Chat, Build, Research, Processos, TwinCore/Centum/PARALLAX, Digital Brain, agentes, runtimes, mídia e simulações de cenários sob um único contrato de comportamento.",
       "source": "skills/predictlm-master/SKILL.md + src/lib/predictlm-master.ts",
+      "runtime": "built-in"
+    },
+    {
+      "id": "omnicore-universal",
+      "name": "OmniCore Universal",
+      "category": "Meta Agent",
+      "description": "Skill portátil host-neutral que agrega agentes, plugins/capabilities, skills e os quatro neuro-cores Human/Mouse/Macaque/Fly em um manifesto único para qualquer IA.",
+      "source": "skills/omnicore-universal/SKILL.md + manifest.json + src/lib/omnicore-universal.ts",
       "runtime": "built-in"
     },
     {
@@ -1042,7 +1054,7 @@
     "agentCatalog": 23,
     "orchestrationAgents": 11,
     "speciesCores": 4,
-    "skillModules": 21,
-    "pluginsAndCapabilities": 78
+    "skillModules": 22,
+    "pluginsAndCapabilities": 79
   }
 }
