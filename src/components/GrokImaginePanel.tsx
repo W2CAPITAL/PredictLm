@@ -302,7 +302,7 @@ export function GrokImaginePanel(){
     let brief='';
     const setStage=(message:string)=>kind==='video'?setVideoStage(message):setImageStage(message);
     const literalImage=kind==='image'&&(isNarutoKuramaVsSasukeSusanooPrompt(prompt)||promptMode==='literal'||(promptMode==='auto'&&looksSpecificVisualPrompt(prompt)));
-    const useDirector=deepThink||literalImage;
+    const useDirector=deepThink;
 
     if(deepResearch){
       setStage('Deep Research · buscando referências úteis…');
@@ -386,7 +386,7 @@ export function GrokImaginePanel(){
 
   async function generateSceneCaption(expandedPrompt:string,fallback=''){
     const safeFallback=buildSafeCaptionPtBr(prompt,fallback);
-    if(shouldForceLiteralMode(prompt))return safeFallback;
+    if(!deepThink||shouldForceLiteralMode(prompt))return safeFallback;
     try{
       const response=await fetch('/api/chat',{
         method:'POST',
@@ -672,8 +672,8 @@ export function GrokImaginePanel(){
         if(remembered)identityReferenceImages.push(remembered);
       }
 
-      const shouldSemanticReview=deepThink||looksSpecificVisualPrompt(prompt)||prompt.length>80;
-      const totalCandidates=regenerate?1:bestPlan.candidateCount;
+      const shouldSemanticReview=deepThink;
+      const totalCandidates=1;
       const candidates:any[]=[];
       let candidateSeed=nextSeed;
 
@@ -776,7 +776,7 @@ export function GrokImaginePanel(){
       // Best-generator repair: preserve the strongest candidate as a visual
       // reference and correct only the failed regions/attributes instead of
       // blindly restarting the scene.
-      if(!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
+      if(deepThink&&!regenerate&&(semanticRepair||(finalReview&&finalReview.score<72&&data.promptMode!=='literal'))){
         const repairSeed=autoVariationSeed(nextSeed);
         const currentCandidateReference=await imageUrlToReferenceDataUrl(url).catch(()=>'');
         const repairReferences=[
@@ -820,7 +820,7 @@ export function GrokImaginePanel(){
 
       // Character/identity-sensitive prompts get bounded extra recovery passes.
       // This is capped to avoid infinite regeneration and never relaxes the original subject lock.
-      if(!regenerate&&looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed'){
+      if(deepThink&&!regenerate&&looksSpecificVisualPrompt(prompt)&&semanticReview?.status==='failed'){
         const maxExtra=data.fidelityLimited?1:2;
         for(let fidelityPass=0;fidelityPass<maxExtra&&semanticReview?.status==='failed';fidelityPass++){
           const hints=(semanticReview.retryPrompt||semanticReview.issues.join('; ')).trim();
@@ -889,7 +889,7 @@ export function GrokImaginePanel(){
       const automaticReferences=Number(data.automaticReferenceCount||0);
       const hasAutomaticGrounding=referencesPassed>0||automaticReferences>0;
       const unverifiedLimitedSpecific=specificRequest&&data.fidelityLimited&&semanticReview?.status!=='passed'&&!hasAutomaticGrounding;
-      const hardRejectSpecific=semanticFailedSpecific||unverifiedLimitedSpecific;
+      const hardRejectSpecific=false;
       const blockFromRecent=semanticFailedSpecific||unverifiedSpecific||unverifiedLimitedSpecific;
 
       if(hardRejectSpecific){
@@ -914,13 +914,13 @@ export function GrokImaginePanel(){
         return '';
       }
 
-      const animePassRequested=!blockFromRecent&&styleManuallyChosen&&/anime|manga/i.test(style);
+      const animePassRequested=deepThink&&!blockFromRecent&&styleManuallyChosen&&/anime|manga/i.test(style);
       const stylized=animePassRequested
         ? await stylizeImageUrl(url)
         : {url,stylized:false,provider:''};
       url=stylized.url;
 
-      const upscaled=blockFromRecent
+      const upscaled=!deepThink||blockFromRecent
         ? {url,upscaled:false,provider:''}
         : await upscaleImageUrl(url);
       url=upscaled.url;
