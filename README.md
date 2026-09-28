@@ -71,26 +71,24 @@ The web product intentionally does **not** expose 7B as a browser button. A larg
 
 The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
 
-## Imagine — Best-of-N character pipeline
+## Imagine — single-click default + opt-in deep review
 
-Named characters and anime/franchise requests no longer use first-image-wins.
+Imagine now defaults to one generated image per click. The browser validates that the provider returned a real image and keeps the usable result instead of launching hidden regeneration cascades.
 
 ```text
 prompt
-→ subject/form scene plan
+→ subject/form + identity lock
 → user refs / approved Visual ID Memory / auto refs
-→ 2–3 bounded candidates
-→ technical + semantic identity review
-→ rerank
-→ targeted edit/repair of the best candidate
-→ final identity gate
-→ optional stylize/upscale
-→ persist approved result
+→ 1 server-orchestrated generation
+→ local technical review
+→ display the valid image + fidelity warning when needed
 ```
 
-For anime/specific-franchise requests, semantic identity outranks isolated pixel polish. A beautiful wrong character loses to a slightly less polished candidate that actually matches the requested identity/form. An approved remote image may become the lightweight Visual ID reference for the same canonical identity in later scenes.
+Deep Think is the explicit quality-expansion path: it may add Media Director guidance, semantic identity review, bounded repair, stylization or upscale. A semantic verifier can warn about identity drift, but a decodable generated image is no longer silently discarded just because verification is unavailable.
 
-The pipeline borrows public design patterns from modern image systems—multi-image grounding/editing, image-input repair, and persistent identity consistency—without claiming access to proprietary model internals.
+Cloudflare Workers AI is an optional server-side image adapter. Pollinations remains an optional fallback only when authenticated (or when a different explicitly configured public image endpoint is supplied). Secrets remain server-side.
+
+The pipeline uses public patterns such as image grounding, image-input repair and persistent identity consistency without claiming access to proprietary model internals.
 
 ## Minecraft Cognitive World vs Neuroscience Lab
 
@@ -391,6 +389,12 @@ The order is configurable with `PREDICTLM_PROVIDER_ORDER`. OpenAI-compatible pro
 
 All cloud keys are **server-only**. No secret belongs in `NEXT_PUBLIC_*`, GitHub source, browser bundles or Supabase tables. No cloud key is required for local-first mode. See `.env.example` for the complete provider variable list.
 
+
+## API Saver
+
+Normal Chat and Cognitive Stream default to **one remote provider attempt per turn**. A failed streaming attempt does not immediately open a second server-side provider cascade, and Clean Chat does not make a hidden second "repair" completion. Redundancy can be raised deliberately with `PREDICTLM_REMOTE_PROVIDER_ATTEMPTS_PER_TURN` (maximum 3).
+
+Imagine follows the same cost-control principle at the UI layer: one generated image per click by default; Deep Think is the explicit opt-in path for additional semantic review/repair/post-processing.
 
 ## Token Budget Engine
 
