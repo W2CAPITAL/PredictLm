@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 import {defaultLifNeuron,simulateSpikingNetwork,type SpikingNetworkExperiment} from '../src/lib/neuroscience/biophysical-solver';
 import {minecraftNeuralDecision} from '../src/lib/simulation/minecraft-neural-controller';
 import {SCIENTIFIC_DATASETS,buildScientificRunManifest} from '../src/lib/neuroscience/scientific-runtime';
+import {
+  ablateExperiment,
+  firingRatesToCsv,
+  injectCurrent,
+  paperFigurePayload,
+  shuffledSynapseControl,
+  spikesToCsv
+} from '../src/lib/neuroscience/scientific-experiments';
 
 function experiment(seed=7):SpikingNetworkExperiment{
   return{
@@ -57,4 +65,29 @@ test('Minecraft neural controller is an actual deterministic spike simulation',(
   assert.equal(a.evidence,'simulated');
   assert.ok(a.totalSpikes>0);
   assert.equal(a.action,'forage');
+});
+
+
+test('scientific experiment tools support current injection, ablation, negative controls and export',()=>{
+  const base=experiment(17);
+  const injected=injectCurrent(base,{
+    neuronId:'b',startMS:10,endMS:30,currentPA:250,
+    provenance:{evidence:'simulated',note:'standard current injection test'}
+  });
+  assert.equal(injected.stimuli.length,base.stimuli.length+1);
+
+  const ablated=ablateExperiment(injected,{neuronIds:['a'],label:'remove-a'});
+  assert.equal(ablated.neurons.some(n=>n.id==='a'),false);
+  assert.equal(ablated.synapses.some(s=>s.pre==='a'||s.post==='a'),false);
+
+  const shuffled=shuffledSynapseControl(base,99);
+  assert.equal(shuffled.synapses.length,base.synapses.length);
+  assert.match(shuffled.metadata.createdFrom.join(' '),/negative-control/);
+
+  const result=simulateSpikingNetwork(injected);
+  assert.match(spikesToCsv(result),/^experiment_id,seed,neuron_id,time_ms/m);
+  assert.match(firingRatesToCsv(result),/firing_rate_hz/);
+  const figure=paperFigurePayload(result,'Current injection response');
+  assert.equal(figure.units.voltage,'mV');
+  assert.equal(figure.parameters.seed,17);
 });
