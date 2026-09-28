@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.36.0"
+  version: "3.37.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.36.0
+# PredictLM Master v3.37.0
 
 ## Regra soberana
 
@@ -1439,3 +1439,22 @@ Conversa casual:
 - não responder a uma persona inventada com “continua, preciso entender melhor” quando já há material suficiente para interagir;
 - não terminar toda resposta casual com uma pergunta;
 - preservar verdade factual sem matar humor ou espontaneidade.
+
+
+## Image runtime failover e Avatar Kurama
+
+Regras de geração robusta:
+- `modo avatar Kurama`, `avatar da Kurama` e equivalentes significam **Avatar Kurama gigante / Nine-Tails completo**, não apenas Kurama Chakra Mode no corpo;
+- a interpretação não pode criar um quinto sujeito artificial chamado “Naruto Modo Avatar Kurama”; Naruto + Avatar Kurama são uma relação/form, não um personagem duplicado;
+- o prompt enviado por URL ao fallback público deve ser compacto e manter apenas intenção, identidade, forma, ação, composição e locks críticos;
+- nunca transportar o prompt interno gigante inteiro em `/api/media/render?...prompt=...`;
+- cada função serverless mantém orçamento total menor que o limite da plataforma; timeout de um provider precisa deixar tempo para o próximo;
+- providers com 401/403/429/5xx/timeout entram em cooldown e não são martelados em todas as tentativas;
+- `PREDICT_PUBLIC_IMAGE_URL` é uma rota configurável, mas falha nela não elimina o fallback público padrão;
+- retries do render devem alternar base/modelo e podem degradar de image-to-image para text-to-image somente como último recurso, sinalizando a degradação;
+- corpo bruto de erro do provider nunca é devolvido como diagnóstico público;
+- `GEMINI_API_KEY`, `NANO_BANANA_API_KEY`, AI Gateway/OIDC, ComfyUI, provider configurado e fallback público são capacidades de imagem; chaves de LLM textual (Ollama, DeepSeek, Kimi, ZAI, NVIDIA, Anthropic etc.) não devem ser tratadas automaticamente como geradores de pixels;
+- Firecrawl/Google/DuckDuckGo/AniList servem ao grounding de referência, não substituem o gerador;
+- uma ENV marcada como inválida/expirada deve falhar rápido e deixar o circuito seguir para outra rota.
+
+Critério de sucesso: uma falha 504/502 de um provider não encerra a criação enquanto existir uma rota de imagem compatível e saudável.

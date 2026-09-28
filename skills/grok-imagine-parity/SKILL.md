@@ -8,7 +8,7 @@ description: >
   ilustracao, capa, cena anime/realista, ou quando PredictLM/outro host so descreve
   em vez de gerar. Integra com predictlm-master na rota midia.
 metadata:
-  version: "2.4.0"
+  version: "2.5.0"
   pairs_with: "predictlm-master"
   does_not_replace: "actual image model weights or API keys"
 ---
@@ -576,3 +576,22 @@ On Vercel, Imagine may authenticate to Vercel AI Gateway with the deployment's `
 - reference-aware repair/edit for supported models → `/v1/images/edits` with JSON image URLs/data URLs.
 
 The hosted route therefore does not depend on the obsolete unauthenticated `image.pollinations.ai` host. Pollinations fallback uses the current `gen.pollinations.ai/image/` endpoint and requires current authentication/configuration.
+
+
+## Image runtime failover e Avatar Kurama
+
+Regras de geração robusta:
+- `modo avatar Kurama`, `avatar da Kurama` e equivalentes significam **Avatar Kurama gigante / Nine-Tails completo**, não apenas Kurama Chakra Mode no corpo;
+- a interpretação não pode criar um quinto sujeito artificial chamado “Naruto Modo Avatar Kurama”; Naruto + Avatar Kurama são uma relação/form, não um personagem duplicado;
+- o prompt enviado por URL ao fallback público deve ser compacto e manter apenas intenção, identidade, forma, ação, composição e locks críticos;
+- nunca transportar o prompt interno gigante inteiro em `/api/media/render?...prompt=...`;
+- cada função serverless mantém orçamento total menor que o limite da plataforma; timeout de um provider precisa deixar tempo para o próximo;
+- providers com 401/403/429/5xx/timeout entram em cooldown e não são martelados em todas as tentativas;
+- `PREDICT_PUBLIC_IMAGE_URL` é uma rota configurável, mas falha nela não elimina o fallback público padrão;
+- retries do render devem alternar base/modelo e podem degradar de image-to-image para text-to-image somente como último recurso, sinalizando a degradação;
+- corpo bruto de erro do provider nunca é devolvido como diagnóstico público;
+- `GEMINI_API_KEY`, `NANO_BANANA_API_KEY`, AI Gateway/OIDC, ComfyUI, provider configurado e fallback público são capacidades de imagem; chaves de LLM textual (Ollama, DeepSeek, Kimi, ZAI, NVIDIA, Anthropic etc.) não devem ser tratadas automaticamente como geradores de pixels;
+- Firecrawl/Google/DuckDuckGo/AniList servem ao grounding de referência, não substituem o gerador;
+- uma ENV marcada como inválida/expirada deve falhar rápido e deixar o circuito seguir para outra rota.
+
+Critério de sucesso: uma falha 504/502 de um provider não encerra a criação enquanto existir uma rota de imagem compatível e saudável.

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {classifyConversation,shouldSearchConversation,practicalHowToReply,filterRelevantResearchItems,stableFactualReply,conversationAnswerIssue,responseTopicAlignment,signalsKnowledgeGap,generativeOfflineReply,answerQuality,isPurchaseLocationIntent,directConversationReply} from '../src/lib/chat-intelligence';
 import {publicAnswerGate} from '../src/lib/public-answer-gate';
 import {buildLiteralImagePrompt,buildDefaultNegativePrompt} from '../src/lib/media/grok-imagine-parity';
-import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt} from '../src/lib/media/canonical-matchup';
+import {canonicalMatchupLock,matchupReferenceQueries,parseSemanticImageReview,isNarutoKuramaVsSasukeSusanooPrompt,wantsFullKuramaAvatar} from '../src/lib/media/canonical-matchup';
 import {recommendedImageStyle} from '../src/lib/media/media-fidelity';
 import {buildVisualIdentityLock} from '../src/lib/media/visual-reference';
 import {animalResult,validateAnimalFile} from '../src/lib/vision/animal-contract';
@@ -276,4 +276,16 @@ test('solo Frieza request locks one canonical subject and rejects unrelated Saiy
   assert.match(negative,/Goku as a second character/i);
   assert.match(negative,/orange gi/i);
   assert.match(negative,/duplicate Frieza/i);
+});
+
+
+test('exact modo avatar Kurama wording keeps the giant fox avatar and removes the old contradictory negative',()=>{
+  const prompt='crie o naruto modo avatar kurama lutando contra o sasuke modo susanoo perfeito';
+  assert.equal(wantsFullKuramaAvatar(prompt),true);
+  const lock=canonicalMatchupLock(prompt);
+  assert.match(lock,/gigantic complete golden-orange Kurama\/Nine-Tails fox avatar/i);
+  assert.match(lock,/nine distinct tails/i);
+  const negative=buildDefaultNegativePrompt(prompt);
+  assert.match(negative,/missing Kurama/i);
+  assert.doesNotMatch(negative,/separate giant fox avatar not requested/i);
 });

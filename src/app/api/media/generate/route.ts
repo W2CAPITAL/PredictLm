@@ -1,4 +1,4 @@
-import { isNarutoKuramaVsSasukeSusanooPrompt, wantsFullKuramaAvatar } from '@/lib/media/canonical-matchup';
+import { canonicalMatchupLock, isNarutoKuramaVsSasukeSusanooPrompt, wantsFullKuramaAvatar } from '@/lib/media/canonical-matchup';
 import { ENTITY_REFERENCE_IMAGE } from '@/lib/entity-self-model';
 import { compactText } from '@/lib/token-budget';
 import { buildDefaultNegativePrompt, buildLiteralImagePrompt, chooseImagePromptMode, expandImagePromptForParity, parityCaptionPtBr, type ImagePromptMode } from '@/lib/media/grok-imagine-parity';
@@ -11,6 +11,8 @@ import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/best-image-orchestrator';
 import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
 import {analyzeImageIntent,imageIntentSummary} from '@/lib/media/image-intent';
+import {compactImagePromptForTransport,imageProviderOrder,imageRouteBudget} from '@/lib/media/image-runtime';
+import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -22,6 +24,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 function clamp(value:number,min:number,max:number){
   return Math.max(min,Math.min(max,Math.round(value||0)));
@@ -63,7 +66,7 @@ async function reviewReferenceUsefulness(
     const vision=await callVisionProviders(
       instruction,
       'data:'+inline.mimeType+';base64,'+inline.data,
-      {timeoutMs:11000,maxProviders:2}
+      {timeoutMs:6500,maxProviders:1}
     );
     const parsed=parseVisionJson<any>(vision.text);
     if(!parsed||typeof parsed.useful!=='boolean')return {status:'unavailable' as const,useful:true,confidence:0,subjects:[] as string[],provider:'',model:''};
@@ -142,6 +145,8 @@ function localRenderUrl(
 
 export async function POST(req:Request){
   try{
+    const startedAt=Date.now();
+    const budget=imageRouteBudget(startedAt,Number(process.env.PREDICTLM_IMAGE_ROUTE_BUDGET_MS)||52000);
     const body=await req.json().catch(()=>({}));
     const rawPrompt=String(body?.prompt||'').trim();
     const originalPrompt=String(body?.originalPrompt||rawPrompt).trim();
@@ -280,9 +285,19 @@ export async function POST(req:Request){
     const unityImageGuidance=/\b(unity|unity3d|game environment|game scene|voxel|3d scene|level design|game asset)\b/i.test(sourcePrompt)
       ? '\n\n3D SCENE CONTRACT:\n'+unityFabricContext()
       : '';
+    const fullKuramaAvatar=wantsFullKuramaAvatar(sourcePrompt);
+    const providerIntentEntities=isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)
+      ? imageIntent.entities.filter(entity=>{
+          const label=String(entity.label||'').toLowerCase();
+          if(label.includes('naruto')&&label.includes('kurama'))return false;
+          if(label.includes('sasuke')&&label.includes('susanoo'))return false;
+          if(!fullKuramaAvatar&&/kurama|nine[- ]?tails|nove caudas/i.test(label)&&!/naruto/i.test(label))return false;
+          return true;
+        })
+      : imageIntent.entities;
     const providerPrompt=groundedPrompt+
       '\n\nIMAGE INTENT RESOLUTION: '+imageIntentSummary(imageIntent)+
-      (imageIntent.entities.length?'\nENTITY LOCKS: '+imageIntent.entities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | '):'')+
+      (providerIntentEntities.length?'\nENTITY LOCKS: '+providerIntentEntities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | '):'')+
       (imageIntent.styleHints.length?'\nSTYLE LOCKS: '+imageIntent.styleHints.join(' · '):'')+
       (userInline.length
         ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form.'
@@ -316,8 +331,11 @@ export async function POST(req:Request){
     const nanoBase=String(process.env.NANO_BANANA_BASE_URL||'https://nanobanana.aikit.club').trim();
     const requestedModel=String(body?.model||process.env.MEDIA_IMAGE_MODEL||'flux').trim();
     const nanoModel=String(process.env.NANO_BANANA_MODEL||'nano-banana').trim();
-    const order=String(process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||'gemini,vercel-gateway,comfyui,nano,configured')
-      .split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+    const order=imageProviderOrder(String(
+      process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||
+      process.env.PREDICTLM_VISUAL_PROVIDER_ORDER||
+      'gemini,vercel-gateway,comfyui,nano,configured'
+    ));
     if(geminiKey&&!order.includes('gemini'))order.unshift('gemini');
 
     // Vercel-hosted PredictLM can use the automatically injected OIDC token
@@ -331,7 +349,14 @@ export async function POST(req:Request){
         ...referencePlan.references.map(x=>x.imageUrl)
       ].filter(Boolean).slice(0,4);
 
-      for(const gatewayModel of gatewayImageModels){
+      const gatewayCandidates=circuitReadyProviders(gatewayImageModels.map(model=>({
+        name:'image-gateway',
+        base:gatewayBase,
+        model
+      })));
+      for(const gatewayProvider of gatewayCandidates){
+        if(!budget.canTry(6500))break;
+        const gatewayModel=gatewayProvider.model;
         try{
           const isGeminiMultimodal=/^google\/gemini-3\.1-flash-image(?:$|[-/])/i.test(gatewayModel);
           const canEdit=/^(?:google\/gemini-3\.1-flash-image|spacexai\/grok-imagine-image|openai\/gpt-image-2|bfl\/flux-kontext)/i.test(gatewayModel);
@@ -365,10 +390,13 @@ export async function POST(req:Request){
               'Authorization':'Bearer '+gatewayKey
             },
             body:JSON.stringify(requestBody),
-            signal:AbortSignal.timeout(90000)
+            signal:AbortSignal.timeout(budget.timeout(15000,5000))
           });
           const data=await upstream.json().catch(()=>({}));
-          if(!upstream.ok)continue;
+          if(!upstream.ok){
+            recordProviderFailure(gatewayProvider,new Error('image gateway '+upstream.status));
+            continue;
+          }
 
           let imageUrl='';
           if(endpoint==='/chat/completions'){
@@ -378,7 +406,11 @@ export async function POST(req:Request){
             const first=data?.data?.[0]||{};
             imageUrl=first?.b64_json?'data:image/png;base64,'+first.b64_json:String(first?.url||data?.url||'');
           }
-          if(!imageUrl)continue;
+          if(!imageUrl){
+            recordProviderFailure(gatewayProvider,new Error('image gateway empty output'));
+            continue;
+          }
+          recordProviderSuccess(gatewayProvider);
 
           const referenceImagesPassed=endpoint==='/images/edits'?gatewayReferenceValues.length:0;
           return Response.json({
@@ -394,7 +426,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -412,7 +444,8 @@ export async function POST(req:Request){
               : null,
             postprocessPlan
           });
-        }catch{
+        }catch(error){
+          recordProviderFailure(gatewayProvider,error);
           // Try the next Gateway image model, then the remaining providers.
         }
       }
@@ -433,7 +466,7 @@ export async function POST(req:Request){
       avoidProviders
     });
     const comfyBlockedByIdentity=!comfyDecision.allowed;
-    if(order.includes('comfyui')&&comfy.enabled&&!comfyBlockedByIdentity){
+    if(order.includes('comfyui')&&comfy.enabled&&!comfyBlockedByIdentity&&budget.canTry(6500)){
       try{
         const comfyResult=await runComfyImageWorkflow({
           prompt:providerPrompt,
@@ -442,7 +475,7 @@ export async function POST(req:Request){
           height,
           seed,
           references:inlineReferences,
-          timeoutMs:42000
+          timeoutMs:budget.timeout(14000,5000)
         });
         const comfyReferenceTransport=comfyReferenceTransportPotential;
         const fidelityWarning=needsStrongIdentity
@@ -466,7 +499,7 @@ export async function POST(req:Request){
           identityMemoryReferenceCount:identityMemoryInline.length,
           searchedReferenceCount:searchedInline.length,
           bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-          imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+          imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
           referenceReview,
           referenceWarnings:referencePlan.warnings,
           originalPrompt:sourcePrompt,
@@ -487,13 +520,14 @@ export async function POST(req:Request){
       }
     }
 
-    const providers=[
-      ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
-      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
-      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false}]:[])
-    ].filter(provider=>!avoidProviders.has(provider.id));
+    const providers=circuitReadyProviders([
+      ...(order.includes('gemini')&&geminiKey?[{id:'gemini-nano-banana-2',name:'gemini-image',base:geminiBase,key:geminiKey,model:geminiModel,nano:false,gemini:true}]:[]),
+      ...(order.includes('nano')&&nanoKey?[{id:'nano-banana',name:'nano-banana-image',base:nanoBase,key:nanoKey,model:nanoModel,nano:true,gemini:false}]:[]),
+      ...(order.includes('configured')&&mediaBase?[{id:'configured-image',name:'configured-image',base:mediaBase,key:mediaKey,model:requestedModel,nano:false,gemini:false}]:[])
+    ].filter(provider=>!avoidProviders.has(provider.id)));
 
     for(const provider of providers){
+      if(!budget.canTry(6500))break;
       try{
         const url=provider.gemini
           ? provider.base+'/models/'+encodeURIComponent(provider.model)+':generateContent'
@@ -545,10 +579,13 @@ export async function POST(req:Request){
             ? {'Content-Type':'application/json','x-goog-api-key':provider.key}
             : {'Content-Type':'application/json',...(provider.key?{'Authorization':'Bearer '+provider.key}:{})},
           body:JSON.stringify(providerBody),
-          signal:AbortSignal.timeout(90000)
+          signal:AbortSignal.timeout(budget.timeout(15000,5000))
         });
         const data=await upstream.json().catch(()=>({}));
-        if(!upstream.ok)continue;
+        if(!upstream.ok){
+          recordProviderFailure(provider,new Error(provider.id+' '+upstream.status));
+          continue;
+        }
         const first=data?.data?.[0]||{};
         const parts=Array.isArray(data?.candidates?.[0]?.content?.parts)?data.candidates[0].content.parts:[];
         const inline=parts.find((x:any)=>x?.inlineData?.data||x?.inline_data?.data);
@@ -557,6 +594,7 @@ export async function POST(req:Request){
         const mime=inline?.inlineData?.mimeType||inline?.inline_data?.mime_type||'image/png';
         const dataUrl=b64?'data:'+mime+';base64,'+b64:null;
         if(remoteUrl||dataUrl){
+          recordProviderSuccess(provider);
           const referenceImagesPassed=provider.gemini?inlineReferences.length:(provider.id==='configured-image'&&mediaReferenceField?configuredReferenceValues.length:0);
           const fidelityWarning=needsStrongIdentity
             ? referencePlan.references.length===0
@@ -578,7 +616,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -595,7 +633,8 @@ export async function POST(req:Request){
             postprocessPlan
           });
         }
-      }catch{
+      }catch(error){
+        recordProviderFailure(provider,error);
         // Continue to the next configured provider; public fallback remains available.
       }
     }
@@ -620,11 +659,19 @@ export async function POST(req:Request){
         error:INVALID_IMAGE_PROVIDER_MESSAGE,
         detail:'Os providers anteriores retornaram saída inválida e o fallback público já foi descartado nesta tentativa.',
         exhausted:true,
-        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:imageIntent.entities.map(x=>x.label)}
+        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:providerIntentEntities.map(x=>x.label)}
       },{status:502});
     }
+    const transportPrompt=compactImagePromptForTransport(
+      [
+        providerPrompt,
+        isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?canonicalMatchupLock(sourcePrompt):''
+      ].filter(Boolean).join('\n'),
+      sourcePrompt,
+      Number(process.env.PREDICTLM_IMAGE_TRANSPORT_MAX_CHARS)||2600
+    );
     return Response.json({
-      url:localRenderUrl(providerPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
+      url:localRenderUrl(transportPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
       provider:'pollinations-proxy',
       model:fallbackModel,
       width,
@@ -638,7 +685,7 @@ export async function POST(req:Request){
       userReferenceCount:userInline.length,
       identityMemoryReferenceCount:identityMemoryInline.length,
       bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
-      imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+      imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
       identityProviderPolicy:{requireReferenceTransport,strictIdentityProvider,blockedTextOnlyNano:needsStrongIdentity&&strictIdentityProvider},
       searchedReferenceCount:searchedInline.length,
       referenceReview,

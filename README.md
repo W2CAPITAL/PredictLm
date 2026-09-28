@@ -549,3 +549,19 @@ Critical controls:
 - Chat UI no longer exposes internal pass names or a public chain-of-thought/reasoning panel.
 
 Regression tests explicitly cover SpaceX-style raw JSON leakage, truncated payloads, debug/meta-text, session isolation, streaming validation, circuit breaking and legitimate structured-JSON requests.
+
+
+## Image generation reliability
+
+The Imagine pipeline treats image generation as a bounded multi-provider workflow instead of a single long request.
+
+- "modo avatar Kurama" is resolved as the giant complete Kurama/Nine-Tails avatar; it is not collapsed into body-scale Kurama Chakra Mode.
+- Compound phrases such as "Naruto Modo Avatar Kurama" are relationships/forms, not extra subjects. The provider prompt keeps Naruto, Kurama Avatar, Sasuke and Perfect Susanoo distinct without creating duplicate protagonists.
+- Large internal prompt contracts are **not** copied wholesale into /api/media/render URLs. The public render transport is compacted to the identity/form/action/composition locks required by the renderer.
+- /api/media/generate and /api/media/render keep provider timeouts inside Vercel's function budget so one slow provider leaves time for failover.
+- Failed image endpoints enter provider-health cooldown instead of being retried on every request.
+- A configured PREDICT_PUBLIC_IMAGE_URL is tried alongside the default public renderer; a broken custom base does not remove the default fallback.
+- Public-render retries interleave bases/models and can make a final text-to-image attempt when reference transport is unavailable.
+- Raw upstream error bodies are not exposed in public diagnostics.
+
+Image-capable settings include Gemini/Nano Banana, Vercel AI Gateway/OIDC, ComfyUI, a configured OpenAI-compatible image endpoint, and the public image renderer. Text-only LLM variables remain useful for Chat/media-director reasoning but are not assumed to produce image pixels.

@@ -13,8 +13,13 @@ export function wantsKuramaChakraMode(input:string){
 
 export function wantsFullKuramaAvatar(input:string){
   const p=normalize(input);
-  if(wantsKuramaChakraMode(input)&&!/\b(avatar (?:completo|gigante)|full kurama avatar|complete kurama avatar|kurama inteira|kurama inteiro|raposa gigante|nine[- ]tails fox|nove caudas completa|nove caudas completo)\b/.test(p))return false;
-  return /\b(full kurama avatar|complete kurama avatar|avatar (?:completo|gigante) da kurama|kurama (?:inteira|inteiro|completa|completo)|raposa gigante[^.]{0,50}(?:kurama|nove caudas)|nine[- ]tails fox)\b/.test(p);
+  // "modo avatar Kurama" is an explicit request for the giant Nine-Tails
+  // manifestation. It must not be collapsed into body-scale Kurama Chakra Mode.
+  const explicitFull=/\b(?:modo\s+avatar\s+(?:da\s+)?kurama|avatar\s+(?:da\s+)?kurama|kurama\s+avatar|full\s+kurama\s+avatar|complete\s+kurama\s+avatar|avatar\s+(?:completo|gigante)\s+(?:da\s+)?kurama|kurama\s+(?:inteira|inteiro|completa|completo)|raposa\s+gigante[^.]{0,50}(?:kurama|nove\s+caudas)|nine[- ]tails\s+fox|nove\s+caudas\s+(?:completa|completo))\b/.test(p);
+  if(explicitFull)return true;
+  if(wantsKuramaChakraMode(input))return false;
+  return /\b(?:avatar\s+(?:completo|gigante)|full\s+avatar|complete\s+avatar)\b/.test(p)
+    &&/\b(?:kurama|kyuubi|kyubi|nove\s+caudas|nine[- ]tails)\b/.test(p);
 }
 export function wantsTechData(input:string){
   return /\b(binario|binary|neural|dados|tech[- ]data|drone|circuitos?|holograma|cyberpunk)\b/.test(normalize(input));

@@ -1,4 +1,6 @@
 import { INVALID_IMAGE_PROVIDER_MESSAGE } from '@/lib/media/media-errors';
+import {compactImagePromptForTransport,imageRouteBudget,publicImageBaseCandidates} from '@/lib/media/image-runtime';
+import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -9,12 +11,9 @@ function clamp(value:number,min:number,max:number){
 }
 
 function upstreamUrl(
-  prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean,
+  base:string,prompt:string,width:number,height:number,seed:number,model:string,enhance:boolean,
   references:string[]=[]
 ){
-  const key=String(process.env.POLLINATIONS_API_KEY||'').trim();
-  const configured=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
-  const base=configured||'https://gen.pollinations.ai/image/';
   const root=base.endsWith('/')?base:base+'/';
   const q=new URLSearchParams({
     width:String(width),
@@ -30,20 +29,16 @@ function upstreamUrl(
   return root+encodeURIComponent(prompt)+'?'+q.toString();
 }
 
-async function fetchImage(url:string){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),55000);
-  try{
-    return await fetch(url,{
-      signal:controller.signal,
-      cache:'no-store',
-      headers:{
-        Accept:'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        'User-Agent':'PredictLM-Media/6.2',
-        ...(process.env.POLLINATIONS_API_KEY?{'Authorization':'Bearer '+process.env.POLLINATIONS_API_KEY}:{})
-      }
-    });
-  }finally{clearTimeout(timer)}
+async function fetchImage(url:string,timeoutMs:number){
+  return fetch(url,{
+    signal:AbortSignal.timeout(Math.max(1200,timeoutMs)),
+    cache:'no-store',
+    headers:{
+      Accept:'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+      'User-Agent':'PredictLM-Media/6.3',
+      ...(process.env.POLLINATIONS_API_KEY?{'Authorization':'Bearer '+process.env.POLLINATIONS_API_KEY}:{})
+    }
+  });
 }
 
 function sniffImageType(bytes:Uint8Array,_header=''){
@@ -54,80 +49,131 @@ function sniffImageType(bytes:Uint8Array,_header=''){
   return '';
 }
 
-export async function GET(req:Request){
-  const url=new URL(req.url);
-  const prompt=String(url.searchParams.get('prompt')||'').trim();
-  if(!prompt)return new Response('Prompt vazio.',{status:400});
+function safeReference(input:string){
+  try{
+    const u=new URL(input);
+    if(u.protocol!=='https:'&&u.protocol!=='http:')return '';
+    const h=u.hostname.toLowerCase();
+    if(h==='localhost'||h==='0.0.0.0'||h==='::1'||h.endsWith('.local'))return '';
+    if(/^127\./.test(h)||/^10\./.test(h)||/^192\.168\./.test(h)||/^169\.254\./.test(h))return '';
+    const private172=h.match(/^172\.(\d{1,2})\./);
+    if(private172&&Number(private172[1])>=16&&Number(private172[1])<=31)return '';
+    return u.toString();
+  }catch{return ''}
+}
 
+export async function GET(req:Request){
+  const startedAt=Date.now();
+  const budget=imageRouteBudget(startedAt,Number(process.env.PREDICTLM_RENDER_ROUTE_BUDGET_MS)||48_000);
+  const url=new URL(req.url);
+  const rawPrompt=String(url.searchParams.get('prompt')||'').trim();
+  if(!rawPrompt)return new Response('Prompt vazio.',{status:400});
+
+  // The route is used as an <img src>. Keep its URL and upstream path prompt
+  // intentionally compact; the full internal orchestration prompt never belongs here.
+  const prompt=compactImagePromptForTransport(
+    rawPrompt,
+    rawPrompt.slice(0,700),
+    Number(process.env.PREDICTLM_RENDER_PROMPT_MAX_CHARS)||2800
+  );
   const width=clamp(Number(url.searchParams.get('width'))||1024,256,2048);
   const height=clamp(Number(url.searchParams.get('height'))||1024,256,2048);
   const seed=Math.max(1,Math.min(2147483646,Math.floor(Number(url.searchParams.get('seed'))||1)));
-  const model=String(url.searchParams.get('model')||'flux').slice(0,40);
+  const model=String(url.searchParams.get('model')||'flux').slice(0,48);
   const enhance=String(url.searchParams.get('enhance')||'false').toLowerCase()==='true';
   const references=url.searchParams.getAll('reference')
-    .map(x=>String(x||'').trim())
-    .filter(x=>{
-      try{
-        const u=new URL(x);
-        return u.protocol==='https:'||u.protocol==='http:';
-      }catch{return false}
-    })
+    .map(x=>safeReference(String(x||'').trim()))
+    .filter(Boolean)
     .slice(0,3);
 
-  const referenceModels=references.length
-    ? [model,'kontext','nanobanana-2-lite','p-image-edit','flux'].filter((x,i,a)=>x&&a.indexOf(x)===i)
-    : [model,'flux','turbo'].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  const configuredBase=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
+  const bases=publicImageBaseCandidates(configuredBase);
+  const rawModelPlan=references.length
+    ? [
+        {model,refs:references},
+        {model:'kontext',refs:references},
+        {model:'flux',refs:[]},
+        {model:'turbo',refs:[]}
+      ]
+    : [
+        {model,refs:[]},
+        {model:'flux',refs:[]},
+        {model:'turbo',refs:[]}
+      ];
+  const modelPlan=rawModelPlan.filter((entry,index,all)=>
+    all.findIndex(x=>x.model===entry.model&&x.refs.length===entry.refs.length)===index
+  );
+
+  const maxAttempts=Math.max(2,Math.min(6,Number(process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS)||4));
+  const candidates=circuitReadyProviders(
+    modelPlan.flatMap(entry=>bases.map(base=>({
+      name:'public-image-render',
+      base,
+      model:entry.model,
+      refs:entry.refs
+    })))
+  ).slice(0,maxAttempts);
 
   const failures:Array<{model:string;status:number;contentType:string;detail:string}>=[];
-  for(let i=0;i<referenceModels.length;i++){
-    const usedModel=referenceModels[i];
+  for(let i=0;i<candidates.length;i++){
+    if(!budget.canTry(3500))break;
+    const candidate=candidates[i];
     try{
-      const upstream=await fetchImage(upstreamUrl(prompt,width,height,seed,usedModel,enhance,references));
+      const requestUrl=upstreamUrl(candidate.base,prompt,width,height,seed,candidate.model,enhance,candidate.refs);
+      const upstream=await fetchImage(requestUrl,budget.timeout(12_000,3000));
       if(!upstream.ok){
+        recordProviderFailure(candidate,new Error('public image '+upstream.status));
         failures.push({
-          model:usedModel,
+          model:candidate.model,
           status:upstream.status,
           contentType:String(upstream.headers.get('content-type')||''),
-          detail:(await upstream.text().catch(()=>'')).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,180)
+          detail:'http-'+upstream.status
         });
       }else{
         const bytes=new Uint8Array(await upstream.arrayBuffer());
         const type=sniffImageType(bytes,String(upstream.headers.get('content-type')||''));
         if(type&&bytes.byteLength>=1024){
+          recordProviderSuccess(candidate);
           return new Response(bytes,{
             status:200,
             headers:{
               'Content-Type':type,
               'Content-Length':String(bytes.byteLength),
               'Cache-Control':'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400',
-              'X-Predict-Media':'pollinations-proxy',
-              'X-Predict-Reference-Count':String(references.length),
-              'X-Predict-Image-Model':usedModel,
-              'X-Predict-Render-Attempt':String(i+1)
+              'X-Predict-Media':'public-image-proxy',
+              'X-Predict-Reference-Count':String(candidate.refs.length),
+              'X-Predict-Image-Model':candidate.model,
+              'X-Predict-Render-Attempt':String(i+1),
+              'X-Predict-Transport-Prompt-Chars':String(prompt.length),
+              ...(references.length&&!candidate.refs.length?{'X-Predict-Reference-Degraded':'true'}:{})
             }
           });
         }
+        recordProviderFailure(candidate,new Error('public image invalid payload'));
         failures.push({
-          model:usedModel,
+          model:candidate.model,
           status:upstream.status,
           contentType:String(upstream.headers.get('content-type')||''),
           detail:bytes.byteLength<1024?'payload-too-small':'payload-not-an-image'
         });
       }
     }catch(error:any){
+      const timeout=/timeout|abort/i.test(String(error?.name||'')+' '+String(error?.message||''));
+      recordProviderFailure(candidate,error);
       failures.push({
-        model:usedModel,
-        status:error?.name==='AbortError'?504:502,
+        model:candidate.model,
+        status:timeout?504:502,
         contentType:'',
-        detail:error?.name==='AbortError'?'timeout':String(error?.message||'provider-error').slice(0,180)
+        detail:timeout?'timeout':'provider-error'
       });
     }
-    if(i<referenceModels.length-1)await new Promise(r=>setTimeout(r,450));
   }
 
   return Response.json({
     error:INVALID_IMAGE_PROVIDER_MESSAGE,
     attempts:failures.length,
-    diagnostics:failures.slice(-4)
-  },{status:502});
+    retryable:true,
+    diagnostics:failures.slice(-4),
+    promptChars:prompt.length
+  },{status:502,headers:{'Cache-Control':'no-store'}});
 }
