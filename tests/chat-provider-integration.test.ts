@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GET,POST} from '../src/app/api/chat/route';
 import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
+import {resetProviderBudgetForTests} from '../src/lib/server/provider-budget';
 import {conversationAnswerIssue} from '../src/lib/chat-intelligence';
 
-const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','DEEPSEEK_BASE_URL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_BASE_URL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ANTHROPIC_BASE_URL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL','FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL','PREDICTLM_PROVIDER_ORDER','VERCEL_OIDC_TOKEN'];
+const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','DEEPSEEK_BASE_URL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_BASE_URL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ANTHROPIC_BASE_URL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL','FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL','PREDICTLM_PROVIDER_ORDER','PREDICTLM_API_BUDGET_MODE','PREDICTLM_MAX_REMOTE_CALLS_PER_TURN','PREDICTLM_MAX_METERED_CALLS_PER_TURN','PREDICTLM_PROVIDER_SOFT_DAILY_CALL_CAP','PREDICTLM_SESSION_DAILY_REMOTE_CALL_CAP','PREDICTLM_ENABLE_AGENTIC_REVIEW','PREDICTLM_ENABLE_REPAIR_CALLS','LOCALCODE_BASE_URL','LOCALCODE_API_KEY','LOCALCODE_MODEL','GPTOSS_PROXY_BASE_URL','GPTOSS_PROXY_API_KEY','GPTOSS_PROXY_MODEL','PUTER_POOL_BASE_URL','PUTER_POOL_API_KEY','PUTER_POOL_MODEL','PREDICTLM_EXTRA_PROVIDERS_JSON','MISTRAL_API_KEY','MISTRAL_MODEL','HUGGINGFACE_API_KEY','HUGGINGFACE_MODEL','TOGETHER_API_KEY','TOGETHER_MODEL','FIREWORKS_API_KEY','FIREWORKS_MODEL','SAMBANOVA_API_KEY','SAMBANOVA_MODEL','CEREBRAS_API_KEY','CEREBRAS_MODEL','DEEPINFRA_API_KEY','DEEPINFRA_MODEL','REQUESTY_API_KEY','REQUESTY_MODEL','MODELSCOPE_API_KEY','MODELSCOPE_MODEL','SILICONFLOW_API_KEY','SILICONFLOW_MODEL','NEBIUS_API_KEY','NEBIUS_MODEL','NOVITA_API_KEY','NOVITA_MODEL','SCALEWAY_API_KEY','SCALEWAY_MODEL','VENICE_API_KEY','VENICE_MODEL','FRIENDLI_API_KEY','FRIENDLI_MODEL','INFERENCE_NET_API_KEY','INFERENCE_NET_MODEL','LLM7_API_KEY','LLM7_MODEL','HETZNER_API_KEY','HETZNER_MODEL','NOUS_API_KEY','NOUS_MODEL','OLLAMA_CLOUD_API_KEY','OLLAMA_CLOUD_MODEL','VERCEL_OIDC_TOKEN'];
 
 function isolateFreeLLM(){
   for(const key of providerEnv)delete process.env[key];
@@ -13,6 +14,7 @@ function isolateFreeLLM(){
   process.env.FREELLMAPI_MODEL='auto';
   process.env.PREDICTLM_PROVIDER_ORDER='freellmapi';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 }
 
 function providerAnswer(prompt:string){
@@ -149,6 +151,7 @@ function isolateSingleProvider(name:'nvidia'|'gemini'|'anthropic'|'deepseek'){
   }
   process.env.PREDICTLM_PROVIDER_ORDER=name;
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 }
 
 function mockOpenAICompatible(spec:{
@@ -317,6 +320,7 @@ test('Vercel OIDC keeps online chat on an API when no manual provider key exists
   process.env.VERCEL_OIDC_TOKEN='oidc-test-token';
   process.env.PREDICTLM_PROVIDER_ORDER='vercel-gateway';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 
   const original=globalThis.fetch;
   const calls:any[]=[];
@@ -348,6 +352,7 @@ test('purchase-location wording stays a direct provider turn instead of encyclop
   process.env.VERCEL_OIDC_TOKEN='oidc-test-token';
   process.env.PREDICTLM_PROVIDER_ORDER='vercel-gateway';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 
   const original=globalThis.fetch;
   globalThis.fetch=async(input:any,init?:RequestInit)=>{
@@ -374,6 +379,7 @@ test('normal game conversation stays on clean provider chat with history and no 
   process.env.VERCEL_OIDC_TOKEN='oidc-test-token';
   process.env.PREDICTLM_PROVIDER_ORDER='vercel-gateway';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 
   const original=globalThis.fetch;
   const seen:any[]=[];
@@ -437,6 +443,7 @@ test('normal chat rejects internal context leakage',()=>{
 test('clean chat without server providers returns a real failure instead of fake internal success',async()=>{
   for(const key of providerEnv)delete process.env[key];
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   const {response,data}=await ask('Eu gosto de batatas');
   assert.equal(response.status,503);
   assert.equal(data.code,'NO_REMOTE_PROVIDER');
@@ -454,6 +461,7 @@ test('provider keys work without separate model environment variables',async()=>
   process.env.GROQ_API_KEY='groq-key';
   process.env.OPENROUTER_API_KEY='or-key';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   try{
     const response=await GET();
     const data=await response.json();
@@ -467,6 +475,7 @@ test('provider keys work without separate model environment variables',async()=>
   }finally{
     for(const key of providerEnv)delete process.env[key];
     resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   }
 });
 
@@ -474,6 +483,7 @@ test('AI Gateway API key works even when AI_GATEWAY_MODEL is omitted',async()=>{
   for(const key of providerEnv)delete process.env[key];
   process.env.AI_GATEWAY_API_KEY='gateway-key';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   try{
     const response=await GET();
     const data=await response.json();
@@ -484,6 +494,7 @@ test('AI Gateway API key works even when AI_GATEWAY_MODEL is omitted',async()=>{
   }finally{
     for(const key of providerEnv)delete process.env[key];
     resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   }
 });
 
@@ -492,7 +503,9 @@ test('clean chat sequentially reaches the next configured API after a provider f
   process.env.GEMINI_API_KEY='gem-key';
   process.env.DEEPSEEK_API_KEY='ds-key';
   process.env.PREDICTLM_PROVIDER_ORDER='gemini,deepseek';
+  process.env.PREDICTLM_API_BUDGET_MODE='balanced';
   resetProviderHealthForTests();
+  resetProviderBudgetForTests();
 
   const original=globalThis.fetch;
   const calls:string[]=[];
@@ -523,5 +536,6 @@ test('clean chat sequentially reaches the next configured API after a provider f
     globalThis.fetch=original;
     for(const key of providerEnv)delete process.env[key];
     resetProviderHealthForTests();
+  resetProviderBudgetForTests();
   }
 });
