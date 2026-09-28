@@ -13,6 +13,7 @@ import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
 import {analyzeImageIntent,imageIntentSummary} from '@/lib/media/image-intent';
 import {compactImagePromptForTransport,imageProviderOrder,imageRouteBudget} from '@/lib/media/image-runtime';
 import {buildQwenImageRequestBody,qwenImageConfig} from '@/lib/media/qwen-image';
+import {cloudflareImageConfig,generateCloudflareImage} from '@/lib/media/cloudflare-image';
 import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 import {
   buildReferenceEvidencePrompt,
@@ -339,7 +340,7 @@ export async function POST(req:Request){
     const order=imageProviderOrder(String(
       process.env.PREDICTLM_IMAGE_PROVIDER_ORDER||
       process.env.PREDICTLM_VISUAL_PROVIDER_ORDER||
-      'qwen,gemini,vercel-gateway,comfyui,nano,configured'
+      'qwen,gemini,vercel-gateway,cloudflare,comfyui,nano,configured'
     ));
     if(qwenKey&&!order.includes('qwen'))order.unshift('qwen');
     if(geminiKey&&!order.includes('gemini'))order.push('gemini');
@@ -453,6 +454,69 @@ export async function POST(req:Request){
         }catch(error){
           recordProviderFailure(gatewayProvider,error);
           // Try the next Gateway image model, then the remaining providers.
+        }
+      }
+    }
+
+    const cloudflare=cloudflareImageConfig();
+    if(order.includes('cloudflare')&&cloudflare.enabled&&!avoidProviders.has('cloudflare-workers-ai')&&budget.canTry(6000)){
+      const cloudflareProvider={
+        name:'cloudflare-image',
+        base:'https://api.cloudflare.com/client/v4',
+        model:cloudflare.model
+      };
+      const cloudflareReady=circuitReadyProviders([cloudflareProvider]).length>0;
+      const cloudflareDecision=identityProviderDecision({
+        providerId:'cloudflare-workers-ai',
+        identitySensitive:needsStrongIdentity,
+        strictIdentityProvider,
+        requireReferenceTransport,
+        referenceEvidenceAvailable,
+        canTransportReferences:false,
+        avoidProviders
+      });
+      if(cloudflareReady&&cloudflareDecision.allowed){
+        try{
+          const generated=await generateCloudflareImage({
+            prompt:providerPrompt,
+            seed,
+            timeoutMs:budget.timeout(cloudflare.timeoutMs,4500),
+            config:cloudflare
+          });
+          recordProviderSuccess(cloudflareProvider);
+          return Response.json({
+            url:generated.dataUrl,
+            provider:generated.provider,
+            model:generated.model,
+            width,height,seed,
+            identityLocked:true,
+            referenceQuery:referencePlan.query||null,
+            referencesUsed:referencePlan.references.map(x=>({provider:x.provider,title:x.title,sourceUrl:x.sourceUrl,site:x.site})),
+            referenceImagesPassed:0,
+            userReferenceCount:userInline.length,
+            identityMemoryReferenceCount:identityMemoryInline.length,
+            searchedReferenceCount:searchedInline.length,
+            bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:providerIntentEntities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
+            referenceReview,
+            referenceWarnings:referencePlan.warnings,
+            originalPrompt:sourcePrompt,
+            expandedPrompt:providerPrompt,
+            caption:buildSafeCaptionPtBr(sourcePrompt),
+            displayTitle:buildDisplayTitle(sourcePrompt),
+            parityContract:'grok-imagine-parity',
+            promptMode:effectivePromptMode,
+            negativePrompt,
+            style,
+            styleLocked,
+            fidelityLimited:needsStrongIdentity,
+            providerWarning:needsStrongIdentity
+              ? 'Cloudflare Workers AI gerou por texto nesta tentativa; pedidos de identidade exata continuam reservados a providers que transportem referências visuais.'
+              : null,
+            postprocessPlan
+          });
+        }catch(error){
+          recordProviderFailure(cloudflareProvider,error);
         }
       }
     }
@@ -693,11 +757,21 @@ export async function POST(req:Request){
     const fallbackModel=wantsReferenceFallback
       ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
       : requestedModel;
-    const referenceTransportVerified=Boolean(
-      String(process.env.POLLINATIONS_API_KEY||'').trim()||
-      String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim()
-    );
+    const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
+    const configuredPublicImageUrl=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
+    const publicFallbackIsPollinations=!configuredPublicImageUrl||/^https:\/\/gen\.pollinations\.ai\/image\//i.test(configuredPublicImageUrl);
+    const publicFallbackAvailable=publicFallbackIsPollinations?Boolean(pollinationsKey):Boolean(configuredPublicImageUrl);
+    const referenceTransportVerified=publicFallbackAvailable;
     const referenceCapableFallback=wantsReferenceFallback&&referenceTransportVerified;
+    if(!publicFallbackAvailable){
+      return Response.json({
+        error:INVALID_IMAGE_PROVIDER_MESSAGE,
+        detail:'Nenhum provider de imagem autenticado respondeu nesta tentativa. Configure um provider de imagem, Cloudflare Workers AI ou uma chave Pollinations válida.',
+        code:'NO_IMAGE_PROVIDER',
+        exhausted:true,
+        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:providerIntentEntities.map(x=>x.label)}
+      },{status:503});
+    }
     if(avoidProviders.has('pollinations-proxy')){
       return Response.json({
         error:INVALID_IMAGE_PROVIDER_MESSAGE,
