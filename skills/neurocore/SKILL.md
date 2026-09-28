@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.9.0"
+  version: "3.10.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.9
+# PredictLM Digital Brain / NeuroCore v3.10
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -356,3 +356,42 @@ Arquivos canônicos desta separação:
 - `src/lib/simulation/minecraft-headless-benchmark.ts`;
 - `src/lib/neuroscience/lab-contract.ts`;
 - `tests/cognitive-world-lab-contract.test.ts`.
+
+
+## Minecraft render/performance/media v3.10
+
+O Minecraft Cognitive World usa uma camada própria de renderização adaptativa para manter a arena jogável sem transformar o browser em dependência de DLL/driver específico.
+
+Princípios:
+- distância de visão e informação do controller não devem ser reduzidas silenciosamente só para mascarar lentidão;
+- reduzir primeiro resolução interna, custo de LOD distante e trabalho redundante;
+- mouse-look deve reutilizar geometria/GPU buffer quando mundo e célula visível não mudaram;
+- perfil Auto mede custo real e pressão de memória antes de baixar/subir escala;
+- cache transitório pode ser descartado sob pressão; estado científico/world state nunca é descartado por otimização gráfica;
+- FPS gerado/interpolado nunca deve ser confundido com taxa real de simulação ou de decisões neurais.
+
+Perfis:
+- Performance;
+- Balanced;
+- Quality;
+- Cinematic;
+- Auto.
+
+Referências arquiteturais registradas:
+- DLSS5-Swapper / DLSS5-Autopilot: detecção, fallback, reversibilidade e diagnóstico;
+- Magpie / NeuralScreen / Visual Enhancer: effect groups, frame pacing, reduced processing resolution, preview/capture;
+- FidelityFX SDK / openvr_fsr: render scale, upscale/sharpen separation e center-priority/foveated quality;
+- Radiance: separação entre simulation core e renderer moderno substituível;
+- Optimizer / WinMemoryCleaner / Sparkle: limiares, hardware stats e presets reversíveis.
+
+Limite obrigatório:
+- não injetar DLL;
+- não alterar registro/serviços/Defender/Windows Update;
+- não limpar working set/standby list do Windows;
+- não redistribuir runtimes NVIDIA;
+- não chamar o scaler WebGL do PredictLM de DLSS/FSR real.
+
+Mídia da simulação:
+- PNG HD pode ser exportado do canvas com resampling de alta qualidade;
+- vídeo usa `canvas.captureStream` + `MediaRecorder` quando suportado;
+- captura/exportação é pós-processamento da simulação, não geração neural proprietária.
