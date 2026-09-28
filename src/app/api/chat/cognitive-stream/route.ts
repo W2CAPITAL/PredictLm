@@ -1,4 +1,5 @@
 import {NextRequest} from 'next/server';
+import {providerAttemptLimit} from '@/lib/server/api-spend-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -264,7 +265,7 @@ export async function POST(req:NextRequest){
   const language=body?.language==='en'?'en':'pt-BR';
   const mode:CognitiveMode=body?.cognitiveMode==='fly'?'fly':body?.cognitiveMode==='human'?'human':body?.cognitiveMode==='macaque'?'macaque':'dual';
   const messages=safeMessages(body?.messages,language,String(body?.cognitiveContext||''),mode);
-  const candidates=providerList().slice(0,8);
+  const candidates=providerList().slice(0,providerAttemptLimit('cognitive'));
 
   if(!candidates.length){
     return Response.json({
