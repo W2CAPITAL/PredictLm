@@ -428,7 +428,7 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
     return '**'+thing+'**? Eu entro nessa. Tem cara de assunto que rende uma conversa boa.';
   }
 
-  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/i);
+  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:(?:o|a|um|uma)\s+)?(.{3,150})$/i);
   if(playfulIntro&&isPlayfulPrompt(prompt)){
     const label=playfulIntro[1].trim();
     return 'Aí sim, **'+label+'**. Nome de entidade que aparece atravessando uma dimensão errada e age como se fosse terça-feira. Pode prosseguir.';
