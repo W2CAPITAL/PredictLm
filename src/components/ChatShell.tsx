@@ -721,10 +721,13 @@ export function ChatShell({onOpenLegal}:Props){
     setScreen('chat');
     setBusy(true);
     setActivity(['Preparando resposta…']);
-    // Paint the loading state before memory/context work. On mobile this avoids
-    // the impression that the app froze between tapping Send and network I/O.
-    await new Promise<void>(resolve=>window.requestAnimationFrame(()=>resolve()));
-    const history=active?.messages||[];
+    const turnController=new AbortController();
+    turnAbort.current=turnController;
+    try{
+      // Paint the loading state before memory/context work. On mobile this avoids
+      // the impression that the app froze between tapping Send and network I/O.
+      await new Promise<void>(resolve=>window.requestAnimationFrame(()=>resolve()));
+      const history=active?.messages||[];
     const processNumber=resolveCnjFromContext(prompt,history.slice(-14).map(m=>m.content));
     const legalSearchRequest=processNumber?null:detectLegalSearchRequest(prompt);
     const djenOabRequest=processNumber?null:detectDjenOabRequest(prompt);
@@ -783,14 +786,11 @@ export function ChatShell({onOpenLegal}:Props){
         actions:['Minecraft Cognitive World aberto','Quatro cérebros autônomos ativos','POV individual conectado ao ciclo observar → decidir → agir → memorizar'],
         status:'done'
       });
-      setBusy(false);
       setActivity([]);
       return;
     }
     const instructionLearned=isAdaptiveInstruction(prompt)&&captureAdaptiveInstruction(prompt);
     if(instructionLearned)setModelTick(x=>x+1);
-    const turnController=new AbortController();
-    turnAbort.current=turnController;
     setActivity(
       buildIntent
         ? ['Preparando o projeto atual','Escolhendo a melhor rota de execução','Implementando alterações','Validando o resultado','Empacotando o projeto']
@@ -816,7 +816,6 @@ export function ChatShell({onOpenLegal}:Props){
     );
     scrollConversationToBottom('auto');
 
-    try{
       if(buildIntent){
         await runBuildInsideChat(prompt);
         return;
