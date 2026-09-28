@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {conversationAnswerIssue,directConversationReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
+import {conversationAnswerIssue,directConversationReply,generativeOfflineReply,isPlayfulPrompt} from '../src/lib/chat-intelligence';
 import {speakBrowserText,speakBrowserTextTracked,stopBrowserVoice} from '../src/lib/voice/browser-voice';
 
 test('casual preference does not start with an unnecessary AI disclaimer',()=>{
