@@ -120,6 +120,7 @@ function leadSubject(raw:string){
   if(boundary>0)value=value.slice(0,boundary);
   value=value.split(/[,.;!?\n]/)[0].trim();
   value=value.replace(/\b(?:em|no|na)\s+(?:estilo|style)\b.*$/i,'').trim();
+  value=value.split(/\s+(?:em|no|na|num|numa|sobre|dentro\s+de|ao\s+lado\s+de|ao|à|com)\s+/i)[0].trim();
   const words=value.split(/\s+/).filter(Boolean);
   if(!words.length||words.length>5)return '';
   const n=normalize(value);
