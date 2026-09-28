@@ -10,6 +10,7 @@ import {comfyImageConfig,runComfyImageWorkflow} from '@/lib/media/comfy-image';
 import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/best-image-orchestrator';
 import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
+import {analyzeImageIntent,imageIntentSummary} from '@/lib/media/image-intent';
 import {
   buildReferenceEvidencePrompt,
   buildVisualIdentityLock,
@@ -171,6 +172,7 @@ export async function POST(req:Request){
 
     const preparedPrompt=compactText(rawPrompt,1100);
     const sourcePrompt=compactText(originalPrompt,700);
+    const imageIntent=analyzeImageIntent(sourcePrompt);
     const directorBrief=compactText(String(body?.directorBrief||'').trim(),620);
     const requestedStyle=String(body?.style||'Cinematic').trim()||'Cinematic';
     const styleLocked=!!body?.styleLocked;
@@ -185,7 +187,7 @@ export async function POST(req:Request){
     const requestedPromptMode=(['auto','literal','imagine'].includes(String(body?.promptMode||'auto').toLowerCase())
       ? String(body?.promptMode||'auto').toLowerCase()
       : 'auto') as ImagePromptMode;
-    const effectivePromptMode=isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'literal':chooseImagePromptMode(requestedPromptMode,shouldForceLiteralMode(sourcePrompt));
+    const effectivePromptMode=isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)?'literal':chooseImagePromptMode(requestedPromptMode,imageIntent.requiresLiteral||shouldForceLiteralMode(sourcePrompt));
     const userNegative=compactText(String(body?.negativePrompt||'').trim(),500);
     const negativePrompt=buildDefaultNegativePrompt(sourcePrompt,userNegative);
     const referenceMode=String(body?.referenceMode||'auto').toLowerCase();
@@ -194,7 +196,7 @@ export async function POST(req:Request){
       : await resolveVisualReferences(sourcePrompt);
     const identityLock=buildVisualIdentityLock(sourcePrompt);
     const evidencePrompt=buildReferenceEvidencePrompt(referencePlan.references);
-    const needsStrongIdentity=shouldForceLiteralMode(sourcePrompt);
+    const needsStrongIdentity=imageIntent.identitySensitive||shouldForceLiteralMode(sourcePrompt);
     const compiledPrompt=effectivePromptMode==='literal'
       ? buildLiteralImagePrompt({
           originalPrompt:sourcePrompt,
@@ -279,6 +281,9 @@ export async function POST(req:Request){
       ? '\n\n3D SCENE CONTRACT:\n'+unityFabricContext()
       : '';
     const providerPrompt=groundedPrompt+
+      '\n\nIMAGE INTENT RESOLUTION: '+imageIntentSummary(imageIntent)+
+      (imageIntent.entities.length?'\nENTITY LOCKS: '+imageIntent.entities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | '):'')+
+      (imageIntent.styleHints.length?'\nSTYLE LOCKS: '+imageIntent.styleHints.join(' · '):'')+
       (userInline.length
         ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form.'
         : '')+
@@ -389,6 +394,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -460,6 +466,7 @@ export async function POST(req:Request){
           identityMemoryReferenceCount:identityMemoryInline.length,
           searchedReferenceCount:searchedInline.length,
           bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+          imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
           referenceReview,
           referenceWarnings:referencePlan.warnings,
           originalPrompt:sourcePrompt,
@@ -571,6 +578,7 @@ export async function POST(req:Request){
             identityMemoryReferenceCount:identityMemoryInline.length,
             searchedReferenceCount:searchedInline.length,
             bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+            imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
             referenceReview,
             referenceWarnings:referencePlan.warnings,
             originalPrompt:sourcePrompt,
@@ -607,6 +615,14 @@ export async function POST(req:Request){
       String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim()
     );
     const referenceCapableFallback=wantsReferenceFallback&&referenceTransportVerified;
+    if(avoidProviders.has('pollinations-proxy')){
+      return Response.json({
+        error:INVALID_IMAGE_PROVIDER_MESSAGE,
+        detail:'Os providers anteriores retornaram saída inválida e o fallback público já foi descartado nesta tentativa.',
+        exhausted:true,
+        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:imageIntent.entities.map(x=>x.label)}
+      },{status:502});
+    }
     return Response.json({
       url:localRenderUrl(providerPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
       provider:'pollinations-proxy',
@@ -622,6 +638,7 @@ export async function POST(req:Request){
       userReferenceCount:userInline.length,
       identityMemoryReferenceCount:identityMemoryInline.length,
       bestImagePlan:{identityKey:bestImagePlan.identityKey,subjects:bestImagePlan.subjects.map(x=>x.label),candidateIndex,candidateCount},
+      imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,identitySensitive:imageIntent.identitySensitive,requiresReferences:imageIntent.requiresReferences,requiresLiteral:imageIntent.requiresLiteral,continuation:imageIntent.continuation,entities:imageIntent.entities.map(x=>({id:x.id,label:x.label,kind:x.kind,franchise:x.franchise||null,form:x.form||null,confidence:x.confidence})),styleHints:imageIntent.styleHints,reasons:imageIntent.reasons},
       identityProviderPolicy:{requireReferenceTransport,strictIdentityProvider,blockedTextOnlyNano:needsStrongIdentity&&strictIdentityProvider},
       searchedReferenceCount:searchedInline.length,
       referenceReview,
