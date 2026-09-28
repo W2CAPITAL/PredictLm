@@ -46,10 +46,10 @@ export interface MinecraftBrainState{
 }
 
 const LABELS:Record<MinecraftBrainId,string>={
-  human:'Cérebro Humano',
-  macaque:'Cérebro Macaco',
-  mouse:'Cérebro Camundongo',
-  fly:'Cérebro Mosca'
+  human:'H01-informed Human Controller',
+  macaque:'Atlas/projectome-informed Macaque Controller',
+  mouse:'MICrONS/Allen-informed Mouse Controller',
+  fly:'FlyWire-informed Fly Controller'
 };
 
 function spawn(world:VoxelWorldState,id:MinecraftBrainId,dx:number,dz:number):MinecraftBrainAgent{
@@ -67,7 +67,7 @@ function spawn(world:VoxelWorldState,id:MinecraftBrainId,dx:number,dz:number):Mi
     hunger:20,
     inventory:id==='human'?{wood_pickaxe:1,torch:4}:id==='mouse'?{food:1}:{},
     goal:'explorar e sobreviver',
-    publicThought:'Observando o mundo voxel.',
+    publicThought:'Estado público do controller: observação inicial do mundo voxel.',
     lastAction:'spawn',
     decisions:0,
     neuralAction:'explore',
@@ -160,7 +160,7 @@ function chooseIntent(world:VoxelWorldState,brains:MinecraftBrainState,agent:Min
 
   if(dim==='void')return'explore o End, enfrente guardiões e procure uma cidade do End';
 
-  if(neuralAction==='seek_social')return'encontre outro cérebro no mundo e coopere';
+  if(neuralAction==='seek_social')return'encontre outro controller no mundo e coopere';
   if(neuralAction==='avoid_threat')return'evite monstros hostis e procure terreno seguro';
   if(neuralAction==='forage')return'procure comida, árvores e recursos próximos';
   if(neuralAction==='build')return'construa abrigo com cama, baú, iluminação e móveis';
@@ -196,7 +196,7 @@ function nearestPeer(brains:MinecraftBrainState,agent:MinecraftBrainAgent){
 }
 
 function directedDirection(world:VoxelWorldState,brains:MinecraftBrainState,agent:MinecraftBrainAgent,intent:string,tick:number):[number,number]{
-  if(/outro cérebro|coopere|reúna|reuna/i.test(intent)){
+  if(/outro controller|coopere|reúna|reuna/i.test(intent)){
     const peer=nearestPeer(brains,agent);
     if(peer&&peer.d>.75)return[Math.sign(peer.other.x-agent.x),Math.sign(peer.other.z-agent.z)];
   }
