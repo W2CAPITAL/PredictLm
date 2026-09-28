@@ -1,5 +1,6 @@
 import {rankProviders,type ProviderSpec} from './provider-mesh';
 import {recordProviderFailure,recordProviderSuccess} from './provider-health';
+import {providerAttemptLimit} from './api-spend-policy';
 
 export interface VisionProviderResult{
   provider:string;
@@ -98,7 +99,7 @@ export async function callVisionProviders(
   parseDataUrl(dataUrl);
   const candidates=rankProviders('análise visual multimodal imagem reconhecimento '+instruction,false)
     .filter(provider=>!['deepseek','nvidia','opencode','freellmapi','ollama'].includes(provider.name))
-    .slice(0,Math.max(1,Math.min(5,options.maxProviders||4)));
+    .slice(0,Math.max(1,Math.min(providerAttemptLimit('vision'),options.maxProviders||providerAttemptLimit('vision'))));
   if(!candidates.length)throw new Error('Nenhum provider multimodal está configurado.');
   const errors:string[]=[];
   for(const provider of candidates){
