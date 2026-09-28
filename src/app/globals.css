@@ -1465,3 +1465,8 @@ body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overf
   .grok-source-health{grid-template-columns:38px 1fr}
   .grok-source-health>button{grid-column:2;justify-self:start}
 }
+
+.grok-retry-bar{display:flex;gap:8px;align-items:center;padding:6px 44px 12px}
+.grok-retry-bar button{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:var(--text,#e8e8e8);border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}
+.grok-retry-bar button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+@media(max-width:760px){.grok-retry-bar{padding:6px 14px 10px;flex-wrap:wrap}}
