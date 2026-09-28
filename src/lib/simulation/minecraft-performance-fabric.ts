@@ -24,11 +24,11 @@ export const MINECRAFT_PERFORMANCE_REFERENCES:readonly MinecraftPerformanceRefer
     nativeBoundary:'No external game scanning, executable patching or runtime downloading.'
   },
   {
-    repo:'SAOG0721/Magpie',
+    repo:'Blinue/Magpie',
     mode:'runtime-pattern',
-    role:'window scaling, effect chains, target FPS, comparison and frame pacing',
-    browserUse:'render presets, target-frame budget, adaptive scaling and post-effect ordering',
-    nativeBoundary:'No DirectX capture, XeSS/DLSS/FSR native backend or frame-generation DLL.'
+    role:'official Windows window-upscaling reference: scaling effects, capture-mode fallback, frame-rate limiting, duplicate-frame detection and performance diagnostics',
+    browserUse:'demand-driven voxel rendering, measured frame-cost governor, reduced internal resolution, crisp browser upscaling and explicit quality/performance presets',
+    nativeBoundary:'Official Magpie is GPL-3.0 and Windows/DirectX native. PredictLM does not copy/link its GPL implementation, capture APIs or native effects into the Next.js browser runtime; only architecture-level behavior is reimplemented independently.'
   },
   {
     repo:'Merserk/dlss5-visual-enhancer',
