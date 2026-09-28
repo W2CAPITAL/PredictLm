@@ -14,11 +14,25 @@ export function isHypotheticalPrompt(prompt:string){
 export function isPlayfulPrompt(prompt:string){
   const p=clean(prompt);
   if(!p||p.length>420)return false;
-  if(/^(?:voce\s+)?(?:gosta|curte|prefere|comeria|beberia|usaria|vestiria|teria)\s+(?:de\s+)?[^?]{1,180}\??$/.test(p))return true;
-  if(/^(?:o que|como)\s+.{1,90}\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\b/.test(p))return true;
+  const conversational=p.replace(/^(?:(?:ei|e ai|opa|hey)(?:\s+(?:cara|mano|meu))?[, ]+)/,'');
+  if(/^(?:voce\s+)?(?:gosta|curte|prefere|comeria|beberia|usaria|vestiria|teria)\s+(?:de\s+)?[^?]{1,180}\??$/.test(conversational))return true;
+  if(/^(?:o que|como)\s+.{1,90}\s+(?:acha|pensaria|diria|reagiria|reage|faria)\s+(?:de|se|ao|a)\b/.test(conversational))return true;
   if(/\b(?:personagem|heroi|herói|vilao|vilão|anime|desenho|filme)\b/.test(p)
     && /\b(?:acha|pensaria|diria|reagiria|faria|gostaria)\b/.test(p))return true;
-  const oddDescriptor=/\b(?:triangular|quadrado|quadrada|roxeado|roxeada|falante|voador|voadora|gigante|minúsculo|minuscule|invisivel|invisível|radioativo|radioativa)\b/.test(p);
+
+  // Conversational absurdity/wordplay should stay conversational instead of
+  // being flattened into a literal correction or "preciso de contexto".
+  const shapeWords=p.match(/\b(?:triangul\w*|quadr\w*|redond\w*|circul\w*|pentagon\w*|hexagon\w*|cubo|cubico|cúbico|esfera|4d|5d|hiper\w*|ultra\w*)\b/g)||[];
+  if(shapeWords.length>=2)return true;
+
+  const selfIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/);
+  if(selfIntro){
+    const label=selfIntro[1];
+    const words=label.split(/\s+/).filter(Boolean);
+    if(words.length>=3&&/\b(?:cara|cabeca|cabeça|lata|metal|roxe\w*|arroxe\w*|cosmic\w*|cósmic\w*|galactic\w*|galáctic\w*|interdimensional|ultra\w*|hiper\w*)\b/.test(label))return true;
+  }
+
+  const oddDescriptor=/\b(?:triangular|quadrado|quadrada|roxeado|roxeada|falante|voador|voadora|gigante|minúsculo|minuscule|invisivel|invisível|radioativo|radioativa|interdimensional|ultra\w*|hiper\w*)\b/.test(p);
   const opinion=/\b(?:gosta|curte|acha|comeria|usaria|teria|prefere)\b/.test(p);
   return oddDescriptor&&opinion;
 }
@@ -69,7 +83,11 @@ export function conversationAnswerIssue(prompt:string,content:string){
     if(!topical.relevant)return 'off-topic-hypothetical';
   }
   if(isPlayfulPrompt(prompt)){
-    if(/\b(?:nao tem muito o que falar|não tem muito o que falar|nao consegui formular|não consegui formular|e apenas um personagem|é apenas um personagem|personagem (?:nao|não) tem opiniao|personagem (?:nao|não) tem opinião)\b/i.test(String(content||'')))return 'flattened-playful-answer';
+    const raw=String(content||'').trim();
+    if(/\b(?:nao tem muito o que falar|não tem muito o que falar|nao consegui formular|não consegui formular|e apenas um personagem|é apenas um personagem|personagem (?:nao|não) tem opiniao|personagem (?:nao|não) tem opinião)\b/i.test(raw))return 'flattened-playful-answer';
+    if(/^(?:entendi[.! ]+)?(?:continua|continue)\b.{0,90}\b(?:entender|pegar|contexto|ideia)\b/i.test(raw))return 'generic-playful-deflection';
+    if(/^(?:eu\s+)?(?:nao|não)\s+sou\s+(?:um\s+)?ser\s+vivo\b/i.test(raw)
+      ||/^(?:como\s+)?(?:uma\s+)?ia[, ]/i.test(raw))return 'unnecessary-ai-disclaimer';
     const topical=responseTopicAlignment(prompt,content);
     if(!topical.relevant)return 'off-topic-playful';
   }
@@ -387,10 +405,23 @@ export function directConversationReply(prompt:string,history:AssistantMessage[]
   }
   if(/^(qual (e|é) (seu )?nome|como voce se chama|como você se chama)/i.test(prompt.trim()))return 'Meu nome é **PredictLM**.';
   if(/^(como voce funciona|como você funciona)/i.test(prompt.trim()))return 'Eu combino conversa com histórico, DeepThink, memória, pesquisa quando necessária, knowledge packs e um modelo neural local opcional. No **Build**, também leio o estado atual do projeto e continuo a partir dele em vez de recriar tudo.';
-  const askedLike=p.match(/^(?:voce\s+)?(?:gosta|curte)\s+(?:de\s+)?(.+?)[.!?]*$/i);
+  const casualP=p.replace(/^(?:(?:ei|e ai|opa|hey)(?:\s+(?:cara|mano|meu))?[, ]+)/,'');
+  const askedLike=casualP.match(/^(?:voce\s+)?(?:gosta|curte)\s+(?:de\s+)?(.+?)[.!?]*$/i);
   if(askedLike){
     const thing=askedLike[1].trim();
-    return 'Eu não tenho gosto físico de verdade, mas entrando na brincadeira: **'+thing+'** parece interessante o bastante para eu dizer “sim, quero entender essa ideia”. Quanto mais específico e esquisito, melhor a conversa.';
+    if(/\bpipoca\b/.test(thing))return 'Pipoca? Aprovadíssima. É praticamente o combustível oficial de filme, jogo e conversa aleatória — melhor ainda quando vem quentinha e bem temperada.';
+    return '**'+thing+'**? Eu entro nessa. Tem cara de assunto que rende uma conversa boa.';
+  }
+
+  const playfulIntro=p.match(/^(?:eu\s+)?sou\s+(?:o|a|um|uma)\s+(.{3,150})$/i);
+  if(playfulIntro&&isPlayfulPrompt(prompt)){
+    const label=playfulIntro[1].trim();
+    return 'Aí sim, **'+label+'**. Nome de entidade que aparece atravessando uma dimensão errada e age como se fosse terça-feira. Pode prosseguir.';
+  }
+
+  const shapeWords=p.match(/\b(?:triangul\w*|quadr\w*|redond\w*|circul\w*|pentagon\w*|hexagon\w*|cubo|cubico|cúbico|esfera|4d|5d|hiper\w*|ultra\w*)\b/g)||[];
+  if(shapeWords.length>=2){
+    return 'Isso aí já saiu da geometria comum e entrou na **geometria interdimensional proibida** kkk. Um objeto triangular que fica redondo-quadrangular dentro de uma estrutura 4D ultra-pentagonal não é uma figura matemática padrão — mas como projeção fictícia de uma forma de dimensão maior, a ideia funciona perfeitamente.';
   }
 
   if(/^(obrigad|valeu|vlw|thanks)/.test(p))return 'Imagina. Manda a próxima.';

@@ -2,7 +2,7 @@
 name: predictlm
 description: Skill do próprio PredictLM. Use para conversar, construir/continuar apps, pesquisar, gerar mídia, consultar processos por CNJ, revisar estratégia jurídica, executar Council X10, gerir memória e produzir melhorias seguras no próprio projeto.
 metadata:
-  version: "1.41.0"
+  version: "1.42.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   superseded_by: "predictlm-master"
@@ -986,3 +986,24 @@ No celular, Chat e superfícies especializadas obedecem um único shell responsi
 - em mobile, remover filtros/backdrops e decoração fullscreen cara quando não forem essenciais;
 - conversas longas podem usar `content-visibility` para reduzir custo de render;
 - nenhuma regra responsiva posterior pode sobrescrever a barra/composer mobile de forma que eles desapareçam.
+
+
+## Chat feedback, áudio e conversa natural
+
+Controles de resposta:
+- áudio, útil e não útil nunca podem parecer botões mortos;
+- cada ação deve expor estado visual: iniciando, ativo, concluído ou erro;
+- áudio deve permitir parar ao tocar novamente;
+- usar TTS do navegador com volume/rate/pitch finitos, escolha de voz por locale e divisão de textos longos em trechos;
+- se TTS não existir ou falhar, mostrar **Áudio indisponível** em vez de falhar silenciosamente;
+- útil/não útil devem confirmar visualmente a seleção e sinalizar falha de envio;
+- estados também precisam existir via `aria-pressed`, `aria-live` e labels acessíveis.
+
+Conversa casual:
+- acompanhar o registro do usuário sem virar palestra;
+- não abrir perguntas leves de gosto com “sou uma IA”/“não sou um ser vivo” quando a ressalva não muda a resposta;
+- nomes, personas, bordões e descrições inventadas podem ser reconhecidos e desenvolvidos de forma lúdica;
+- absurdos deliberados, mistura de formas/dimensões e jogos de palavras devem receber a brincadeira primeiro e a correção literal somente quando útil;
+- não responder a uma persona inventada com “continua, preciso entender melhor” quando já há material suficiente para interagir;
+- não terminar toda resposta casual com uma pergunta;
+- preservar verdade factual sem matar humor ou espontaneidade.
