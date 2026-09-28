@@ -141,7 +141,12 @@ export const FREE_LLM_ENV_PRESETS=[
   {name:'llm7',base:'https://api.llm7.io/v1',keyEnv:'LLM7_API_KEY',modelEnv:'LLM7_MODEL'},
   {name:'hetzner',base:'https://inference.hetzner.com/api/v1',keyEnv:'HETZNER_API_KEY',modelEnv:'HETZNER_MODEL'},
   {name:'nous',base:'https://inference-api.nousresearch.com/v1',keyEnv:'NOUS_API_KEY',modelEnv:'NOUS_MODEL'},
-  {name:'ollama-cloud',base:'https://ollama.com/v1',keyEnv:'OLLAMA_CLOUD_API_KEY',modelEnv:'OLLAMA_CLOUD_MODEL'}
+  {name:'ollama-cloud',base:'https://ollama.com/v1',keyEnv:'OLLAMA_CLOUD_API_KEY',modelEnv:'OLLAMA_CLOUD_MODEL'},
+  {name:'hyperbolic',base:'https://api.hyperbolic.xyz/v1',keyEnv:'HYPERBOLIC_API_KEY',modelEnv:'HYPERBOLIC_MODEL'},
+  {name:'ovh',base:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',keyEnv:'OVH_AI_API_KEY',modelEnv:'OVH_AI_MODEL'},
+  {name:'aion',base:'https://api.aionlabs.ai/v1',keyEnv:'AION_API_KEY',modelEnv:'AION_MODEL'},
+  {name:'nscale',base:'https://inference.api.nscale.com/v1',keyEnv:'NSCALE_API_KEY',modelEnv:'NSCALE_MODEL'},
+  {name:'qwen-chat',base:'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',keyEnv:'QWEN_CHAT_API_KEY',modelEnv:'QWEN_CHAT_MODEL'}
 ] as const;
 
 export function freeLlmPresetProviders(){
@@ -166,6 +171,19 @@ export function freeLlmPresetProviders(){
 export function allExternalProviderSpecs(){
   return [...externalProviderSpecs(),...freeLlmPresetProviders()];
 }
+
+// Present in the Free-LLM directory but not treated as generic OpenAI chat
+// adapters until their provider-specific wire contract is implemented.
+export const FREE_LLM_DISCOVERY_ONLY=[
+  {name:'cohere',reason:'provider-specific chat contract'},
+  {name:'replicate',reason:'predictions/task contract rather than chat/completions'},
+  {name:'ai21',reason:'provider-specific contract must be verified per model'},
+  {name:'upstage',reason:'provider-specific Solar contract must be verified'},
+  {name:'coze',reason:'bot/workflow chat contract is not generic OpenAI chat'},
+  {name:'cloudflare-workers-ai',reason:'account-scoped model-run URL and contract'},
+  {name:'pollinations-text',reason:'prompt/text endpoint is not generic chat/completions'},
+  {name:'cerebrium',reason:'deployment-specific inference endpoint'}
+] as const;
 
 export const PUBLIC_API_DISCOVERY_SOURCE={
   repo:'spinov001-art/free-apis-list',
