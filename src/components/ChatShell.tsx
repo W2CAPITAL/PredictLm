@@ -562,7 +562,7 @@ export function ChatShell({onOpenLegal}:Props){
     const live=useStudio.getState();
     const baseFiles=Object.values(live.files);
     setActivity([
-      'BUILD · entendendo o projeto atual',
+      'Entendendo o projeto atual',
       'Escolhendo a melhor rota de execução',
       'Implementando mudança',
       'Testando arquivos',
@@ -637,7 +637,7 @@ export function ChatShell({onOpenLegal}:Props){
         '**Build aplicado no projeto atual.**',
         String(data.explanation||''),
         '',
-        '**Validação:** '+quality+'/100 · smoke '+smoke.score+' · council '+council.score+' · review '+review.score,
+        '**Validação:** '+quality+'/100 · execução '+smoke.score+' · consistência '+council.score+' · alterações '+review.score,
         changed.length?'**Arquivos alterados:** '+changed.join(', '):'',
         review.blocking?'**Atenção:** o review ainda encontrou bloqueio; o ZIP foi gerado para inspeção, não tratado como produção pronta.':'ZIP executável gerado e anexado.'
       ].filter(Boolean).join('\n\n'),
@@ -654,7 +654,7 @@ export function ChatShell({onOpenLegal}:Props){
         'Projeto atual preservado',
         providerBuild?'Execução principal concluída':'Execução local de contingência concluída',
         'Arquivos aplicados ao workspace',
-        'Smoke/Council/review executados',
+        'Validações do projeto concluídas',
         'ZIP executável empacotado'
       ],
       status:'done'
@@ -845,7 +845,7 @@ export function ChatShell({onOpenLegal}:Props){
           'Extraindo fatos, métricas e padrões',
           'Procurando contradições e lacunas',
           'Conferindo outros enquadramentos relevantes',
-          'CHAIR · redigindo e aplicando quality gate'
+          'Redigindo e aplicando controle de qualidade'
         ]);
         const context=history.slice(-10)
           .filter(m=>m.role==='user'||m.role==='assistant')
@@ -856,11 +856,6 @@ export function ChatShell({onOpenLegal}:Props){
         if(brainReport.ok){
           const markdown=String(brainReport.data.markdown||'');
           const report=prepareReportArtifact(prompt,markdown);
-          const brainNames=[
-            'FORGE','AEGIS','PARALLAX',
-            ...(brainReport.data?.brains?.councilX10?['COUNCIL X10']:[]),
-            'CHAIR'
-          ];
           s.addMessage({
             role:'assistant',
             content:report?.content||markdown,
@@ -868,9 +863,8 @@ export function ChatShell({onOpenLegal}:Props){
             ...(report?.media?.length?{media:report.media}:{}),
             actions:[
               'Tipo detectado · '+String(brainReport.data?.blueprint?.label||brainReport.data?.blueprint?.kind||'relatório personalizado'),
-              'Cérebros usados · '+brainNames.join(' · '),
-              'Quality Gate · '+String(brainReport.data?.quality?.score??report?.quality?.score??'—')+'/100',
-              ...(brainReport.data?.brains?.repaired?['CHAIR executou uma rodada adicional de reparo']:[]),
+              'Qualidade · '+String(brainReport.data?.quality?.score??report?.quality?.score??'—')+'/100',
+              ...(brainReport.data?.brains?.repaired?['Uma rodada adicional de correção foi aplicada']:[]),
               'Conteúdo completo enviado ao Dossiê Studio'
             ],
             status:'done'
