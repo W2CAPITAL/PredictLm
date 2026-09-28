@@ -2,11 +2,15 @@ import { isSensitiveResearchQuery, sourceQuality, suppressRawResearchContent } f
 import { inferResearchDepth, planResearchQueries, researchSourceBudget, type ResearchDepth } from '@/lib/research-policy';
 import { buildEvidenceGraph } from '@/lib/research/evidence-graph';
 import { fusionSourcesFor } from '@/lib/fusion/capability-fabric';
+import { chatTrustIssue, providerEndpointAllowed, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 
 export const runtime='nodejs';
 
 function safeHost(url:string){try{return new URL(url).hostname}catch{return ''}}
 function stripHtml(input:string){return String(input||'').replace(/<[^>]+>/g,' ').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&amp;/g,'&').replace(/\s+/g,' ').trim()}
+function safeExternalText(query:string,input:string,maxChars=5000){
+  return sanitizeUntrustedContext(query,stripHtml(input),maxChars);
+}
 
 function normalized(input:string){
   return String(input||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/\s+/g,' ').trim();
@@ -204,7 +208,7 @@ async function firecrawlSearch(query:string,limit:number,key:string){
 
 async function scraplingExtract(url:string){
   const base=String(process.env.SCRAPLING_BASE_URL||'').trim().replace(/\/$/,'');
-  if(!base||!/^https?:\/\//i.test(url))return '';
+  if(!base||!providerEndpointAllowed(base,Boolean(process.env.VERCEL))||!/^https?:\/\//i.test(url))return '';
   const key=String(process.env.SCRAPLING_API_KEY||'').trim();
   const headers:Record<string,string>={'Content-Type':'application/json','Accept':'application/json'};
   if(key)headers.Authorization='Bearer '+key;
@@ -308,17 +312,28 @@ async function duckHtmlSearch(query:string,limit:number){
 
 function enrichAndRank(query:string,items:any[],limit:number){
   const sensitive=isSensitiveResearchQuery(query);
-  const enriched=items.filter(x=>x?.url).map(x=>{
+  const enriched=items
+    .filter(x=>x?.url&&/^https?:\/\//i.test(String(x.url)))
+    .filter(x=>{
+      const candidate=[x?.title,x?.description,x?.markdown,x?.extractedText].filter(Boolean).join('\n');
+      return !chatTrustIssue(query,candidate);
+    })
+    .map(x=>{
     const q=sourceQuality(x.url,x.source);
-    const rel=sourceRelevance(query,x);
+    const cleanDescription=safeExternalText(query,String(x.description||''),2200);
+    const cleanMarkdown=safeExternalText(query,String(x.markdown||''),12000);
+    const cleanExtracted=safeExternalText(query,String(x.extractedText||''),5000);
+    const normalizedItem={...x,description:cleanDescription,markdown:cleanMarkdown,extractedText:cleanExtracted};
+    const rel=sourceRelevance(query,normalizedItem);
     const authority=Math.floor(q.score/12);
     const citationBonus=Math.min(6,Math.floor(Math.log10(Math.max(1,Number(x.citedBy||0)))+1));
     const rank=rel.score*4+authority+(x.academic?4:0)+citationBonus;
     const scrub=suppressRawResearchContent(x.url);
     return {
-      ...x,
-      description:scrub?'Fonte adversarial monitorada apenas para threat-model; conteúdo bruto, PII, credenciais e mídia não são ingeridos.':x.description,
-      markdown:scrub?'':x.markdown,
+      ...normalizedItem,
+      description:scrub?'Fonte adversarial monitorada apenas para threat-model; conteúdo bruto, PII, credenciais e mídia não são ingeridos.':cleanDescription,
+      markdown:scrub?'':cleanMarkdown,
+      extractedText:scrub?'':cleanExtracted,
       qualityScore:q.score,
       qualityTier:q.tier,
       qualityReasons:q.reasons,
@@ -442,6 +457,7 @@ export async function POST(req:Request){
     const body=await req.json();
     const query=body?.query;
     if(!query||typeof query!=='string') return Response.json({error:'query is required'},{status:400});
+    if(query.length>8000)return Response.json({error:'query too large',code:'QUERY_TOO_LARGE'},{status:413});
 
     const requestedDepth=String(body?.depth||'').toLowerCase();
     const depth:ResearchDepth=
@@ -493,7 +509,7 @@ export async function POST(req:Request){
           ...fallback,
           researchDepth:depth,
           researchPlan:plan,
-          warnings:['Firecrawl falhou: '+(error?.message||'erro desconhecido'),...(fallback.warnings||[])],
+          warnings:['A busca principal falhou e a rota alternativa foi usada.',...(fallback.warnings||[])],
           ...researchMeta(query,fallback.web||[],fallback.news||[])
         });
       }
