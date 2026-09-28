@@ -46,8 +46,8 @@ Snapshot inicial:
 - 23 agentes de runtime;
 - 11 papéis/estágios de orquestração;
 - 4 neuro-cores por espécie;
-- 21 módulos de skill de primeiro nível;
-- 78 plugins/capabilities do catálogo.
+- 22 módulos de skill de primeiro nível;
+- 79 plugins/capabilities do catálogo.
 
 ## Compatibilidade com qualquer IA
 
@@ -274,7 +274,8 @@ Incluem:
 - Tutor Mode;
 - PredictLM Scanner;
 - AI Influencer Studio;
-- Domain Engine Fabric.
+- Domain Engine Fabric;
+- OmniCore Universal.
 
 Além desses módulos, o catálogo de capabilities contém skills/adapters especializados adicionais.
 
