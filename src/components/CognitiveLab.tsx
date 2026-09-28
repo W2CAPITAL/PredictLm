@@ -21,6 +21,7 @@ import {
 import {FLYWIRE_FAFB_V783,H01_HUMAN_CORTEX,MACAQUE_CORTEX_SPATIAL_ATLAS} from '@/lib/cognitive/connectome-provenance';
 import {COGNITIVE_FUNCTIONAL_MAP} from '@/lib/cognitive/functional-map';
 import {CognitiveBrainInspector} from '@/components/CognitiveBrainInspector';
+import {LAB_SCIENCE_BANNER} from '@/lib/simulation/cognitive-world-contract';
 
 type Msg={role:'user'|'assistant';content:string;status?:'partial'|'done'|'error'};
 export type CognitiveChatMode='dual'|'fly'|'human'|'macaque';
@@ -306,19 +307,23 @@ export function CognitiveLab({defaultMode='dual'}:{defaultMode?:CognitiveChatMod
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-500/30 bg-violet-500/10 text-violet-300"><Brain size={20}/></div>
           <div>
-            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':mode==='macaque'?'PredictLM · Macaque Core':'PredictLM Cognitive Lab'}</div>
+            <div className="font-semibold tracking-tight">{mode==='fly'?'Mosca Predict · Fly Core':mode==='human'?'PredictLM · Human Core':mode==='macaque'?'PredictLM · Macaque Core':'PredictLM Neuroscience Lab'}</div>
             <div className="text-[11px] text-zinc-500">{mode==='fly'?'FlyWire FAFB v783 · chat isolado da mosca':mode==='human'?'H01 humano + proxy cortical macaque · chat isolado':mode==='macaque'?'143 regiões · 264 tipos celulares · chat isolado':'FlyWire + H01 + atlas cortical macaque · rota isolada'}</div>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {provider&&<span className="hidden rounded-full border border-zinc-800 px-2.5 py-1 text-[10px] text-zinc-500 sm:inline">{provider}</span>}
-          <button onClick={openFlySimulation} className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 hover:bg-amber-500/15"><Activity size={14}/> Simulação</button>
+          <button onClick={openFlySimulation} className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 hover:bg-amber-500/15"><Activity size={14}/> Minecraft Cognitive World</button>
           <button onClick={resetAll} className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-400 hover:text-white"><RotateCcw size={14}/> Reiniciar</button>
         </div>
       </div>
     </header>
 
     <main className="mx-auto grid max-w-7xl gap-4 p-4 lg:grid-cols-[280px_minmax(0,1fr)_280px]">
+      <section data-testid="neuroscience-lab-scientific-boundary" className="lg:col-span-3 rounded-2xl border border-violet-500/20 bg-violet-500/[0.04] px-4 py-3">
+        <div className="text-xs font-semibold text-violet-200">{LAB_SCIENCE_BANNER}</div>
+        <div className="mt-1 text-[10px] leading-5 text-zinc-500">Minecraft mede inteligência operacional. Este Lab limita cada trial ao escopo dos dados da espécie, separando conectividade publicada, dinâmica modelada, proxy e lacunas desconhecidas.</div>
+      </section>
       <aside className="space-y-3">
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Bug size={16} className="text-amber-300"/> Fly Core</div>
