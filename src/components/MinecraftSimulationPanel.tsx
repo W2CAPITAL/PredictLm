@@ -51,6 +51,7 @@ import {
   type MinecraftBrainState
 } from '@/lib/simulation/minecraft-brain-agents';
 import {MinecraftFirstPerson3D} from '@/components/MinecraftFirstPerson3D';
+import {CONTROLLER_COVERAGE,MINECRAFT_ARENA_BANNER,exportCoverageRunJson} from '@/lib/simulation/cognitive-world-contract';
 import styles from './MinecraftSimulationPanel.module.css';
 
 const STORAGE='predictlm-minecraft-sandbox-v1';
@@ -97,10 +98,10 @@ type ToolMode='mine'|'place'|'inspect';
 type ViewTarget='player'|MinecraftBrainId;
 
 const BRAIN_VISION:Record<MinecraftBrainId,{label:string;radius:number;description:string}>={
-  human:{label:'Humano',radius:18,description:'visão binocular detalhada, leitura de estruturas e planejamento de longo alcance'},
-  macaque:{label:'Macaco',radius:20,description:'visão frontal ampla, contraste de terreno, recursos e ameaças próximas'},
-  mouse:{label:'Camundongo',radius:14,description:'câmera baixa com alcance útil para abrigo, comida, túneis e ameaças'},
-  fly:{label:'Mosca',radius:24,description:'campo muito amplo e rápido, priorizando movimento, rotas, estruturas e exploração'}
+  human:{label:'Human · H01',radius:18,description:'controller H01-informed: visão de jogo + planejamento modelado; não visão humana biológica completa'},
+  macaque:{label:'Macaque · atlas',radius:20,description:'controller atlas/projectome-informed: atenção visual proxy e alcance abstrato'},
+  mouse:{label:'Mouse · MICrONS/Allen',radius:14,description:'controller cortical/mesoscale-informed: discriminação visual e memória espacial modelada'},
+  fly:{label:'Fly · FlyWire',radius:24,description:'controller FlyWire-informed: orientação/reação rápida; dinâmica e sensores continuam modelados'}
 };
 
 function loadWorld(){
@@ -150,7 +151,8 @@ export function MinecraftSimulationPanel(){
   const worldRef=useRef(world);
   const brainsRef=useRef(brains);
   const viewAgent=viewTarget==='player'?null:brains.agents[viewTarget];
-  const viewLabel=viewTarget==='player'?'Você':viewAgent?.label||'Cérebro';
+  const viewLabel=viewTarget==='player'?'Você':viewAgent?.label||'Controller';
+  const selectedCoverage=viewTarget==='player'?null:CONTROLLER_COVERAGE[viewTarget];
   const viewWorld=useMemo(()=>{
     if(!viewAgent)return world;
     return normalizeVoxelWorld({
@@ -481,20 +483,20 @@ export function MinecraftSimulationPanel(){
     }
     const brain=brains.agents[target];
     setViewRadius(BRAIN_VISION[target].radius);
-    setMessage(brain.label+' · '+BRAIN_VISION[target].description+' · pensamento atual: '+brain.publicThought);
+    setMessage(brain.label+' · '+BRAIN_VISION[target].description+' · estado público: '+brain.publicThought);
   }
   function reset(){
     const seed=world.seed;
     const fresh=createVoxelWorld(seed);
     setWorld(fresh);
     setBrains(createMinecraftBrainState(fresh));
-    setMessage('Mundo Minecraft reiniciado com a mesma seed e os quatro cérebros reposicionados.');
+    setMessage('Mundo Minecraft reiniciado com a mesma seed e os quatro controllers reposicionados.');
   }
   function newWorld(){
     const fresh=createVoxelWorld();
     setWorld(fresh);
     setBrains(createMinecraftBrainState(fresh));
-    setMessage('Novo mundo Minecraft procedural criado para os quatro cérebros.');
+    setMessage('Novo mundo Minecraft procedural criado para os quatro controllers.');
   }
   function exportWorld(){
     const payload=JSON.stringify({
@@ -511,6 +513,17 @@ export function MinecraftSimulationPanel(){
     window.setTimeout(()=>URL.revokeObjectURL(url),1200);
     setMessage('Save exportado.');
   }
+  function exportCoverage(){
+    if(viewTarget==='player')return;
+    const json=exportCoverageRunJson(viewTarget,'minecraft-'+world.seed+'-tick-'+brains.tick);
+    const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='predictlm-coverage-'+viewTarget+'-'+world.seed+'.json';
+    a.click();
+    window.setTimeout(()=>URL.revokeObjectURL(url),800);
+    setMessage('Ficha de cobertura exportada em JSON.');
+  }
   async function importWorld(file:File|null){
     if(!file)return;
     try{
@@ -520,7 +533,7 @@ export function MinecraftSimulationPanel(){
       const restoredBrains=normalizeMinecraftBrainState(raw?.brains,restored);
       setWorld(restored);
       setBrains(restoredBrains);
-      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+', quatro cérebros sincronizados.');
+      setMessage('Save importado: seed '+restored.seed+', dia '+restored.day+', quatro controllers sincronizados.');
     }catch{
       setMessage('Save inválido; nenhum dado do mundo foi alterado.');
     }finally{
@@ -563,7 +576,7 @@ export function MinecraftSimulationPanel(){
       <div>
         <span><Activity size={13}/> MINECRAFT COGNITIVE WORLD</span>
         <h2>Minecraft · mundo quase infinito</h2>
-        <p>Camundongo, mosca, macaco e humano jogam no mesmo mundo persistente: árvores, vilas, cavernas, minérios, crafting, móveis, equipamentos, comidas, monstros, Nether, End, dungeons e construção.</p>
+        <p>Quatro arquiteturas neuro-informadas operam no mesmo mundo persistente para medir exploração, memória, planejamento e cooperação. O resultado é benchmark de controller, não evidência de um cérebro biológico completo.</p>
       </div>
       <div className={styles.badges}>
         <b>{world.player.mode}</b>
@@ -572,8 +585,13 @@ export function MinecraftSimulationPanel(){
       </div>
     </header>
 
+    <div className={styles.scienceBanner} data-testid="minecraft-scientific-boundary">
+      <b>{MINECRAFT_ARENA_BANNER}</b>
+      <span>Score de tarefa, spikes e aprendizado nesta arena não validam biologia de espécie.</span>
+    </div>
+
     <div className={styles.povBar}>
-      <span><Eye size={14}/> Visão no cérebro</span>
+      <span><Eye size={14}/> POV do controller</span>
       <button className={viewTarget==='player'?styles.active:''} onClick={()=>selectView('player')}>Você</button>
       {(Object.keys(BRAIN_VISION) as MinecraftBrainId[]).map(id=><button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>{BRAIN_VISION[id].label}</button>)}
       <small>{viewTarget==='player'?'Câmera e controles manuais.':BRAIN_VISION[viewTarget].description}</small>
@@ -650,19 +668,39 @@ export function MinecraftSimulationPanel(){
 
       <aside className={styles.side}>
         <section>
-          <header><b>Cérebros jogando</b><span>{running?'autônomos':'pausados'}</span></header>
+          <header><b>Controllers no mesmo mundo</b><span>{running?'autônomos':'pausados'}</span></header>
           <div className={styles.list}>
             {(Object.keys(brains.agents) as MinecraftBrainId[]).map(id=>{
               const brain=brains.agents[id];
               return <button key={id} className={viewTarget===id?styles.active:''} onClick={()=>selectView(id)}>
                 <b>{brain.label}</b>
                 <span>{brain.dimension==='infernal'?'Nether':brain.dimension==='void'?'End':'Overworld'} · {brain.x},{brain.z} · {brain.lastAction}</span>
-                <small>LIF · {brain.neuralAction} · {brain.neuralSpikes} spikes</small>
+                <small>{CONTROLLER_COVERAGE[id].summary} · {CONTROLLER_COVERAGE[id].abstractionLabel} · LIF {brain.neuralAction} ({brain.neuralSpikes} spikes)</small>
               </button>;
             })}
           </div>
-          <small>Closed-loop real do software: observação do Minecraft → corrente injetada → solver LIF → spikes → ação. FlyWire/H01/MICrONS/macaque são fontes de evidência/proveniência; não são cérebros biológicos completos rodando no navegador.</small>
+          <small>Closed-loop do software: observação → estado/memória → solver/política → ação → novo estado. FlyWire/H01/MICrONS/Allen/atlas são evidência/proveniência; a arena mede desempenho operacional, não fidelidade biológica.</small>
         </section>
+
+        {selectedCoverage?<section className={styles.coverageCard}>
+          <header><b>Ficha de cobertura</b><span>{selectedCoverage.abstractionLabel}</span></header>
+          <div className={styles.coverageScore}>
+            <strong>{selectedCoverage.evidenceCoverageIndex}/100</strong>
+            <div><b>Índice de cobertura de evidência</b><small>{selectedCoverage.evidenceCoverageBasis}</small></div>
+          </div>
+          <p>{selectedCoverage.summary}</p>
+          <div className={styles.coverageGrid}>
+            {selectedCoverage.subsystems.map(item=><span key={item.id} data-status={item.status}><b>{item.label}</b><small>{item.status} · {item.evidence}</small></span>)}
+          </div>
+          <details>
+            <summary>Por que não é biologia completa?</summary>
+            <p>{selectedCoverage.whyNotComplete}</p>
+            <small>Presente: {selectedCoverage.present.join(' · ')}</small>
+            <small>Proxy: {selectedCoverage.proxy.join(' · ')}</small>
+            <small>Ausente: {selectedCoverage.absent.join(' · ')}</small>
+          </details>
+          <button className={styles.coverageExport} onClick={exportCoverage}>Exportar ficha JSON</button>
+        </section>:null}
 
         <section>
           <header><b>Sobrevivência</b><span>{world.player.dimension}</span></header>
@@ -726,7 +764,7 @@ export function MinecraftSimulationPanel(){
 
     <details className={styles.details}>
       <summary>Estado e implementação do mundo</summary>
-      <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCÉREBROS\n'+minecraftBrainSummary(brains)}</pre>
+      <pre>{'POV ATUAL · '+viewLabel+'\n'+voxelWorldSummary(viewWorld)+'\n\nCONTROLLERS\n'+minecraftBrainSummary(brains)}</pre>
       <p>Referências registradas: {audit.registered}/{audit.expected}. As referências sem licença verificada são usadas somente como inspiração arquitetural; nenhum asset proprietário do Minecraft é incorporado.</p>
       <p>Neurociência: solver numérico LIF por condutância em escala toy/browser. Estado do jogo e spikes são simulados; dados de conectoma/atlas permanecem rotulados separadamente como medidos/publicados, proxy ou desconhecidos.</p>
       <p>Unity: {unityReady?'WebGL configurado e sincronizado por scene snapshots.':'fabric de GameObject/Transform/Component ativo; falta uma URL de build Unity WebGL para executar o runtime Unity real no navegador.'}</p>

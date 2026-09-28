@@ -80,3 +80,27 @@
 
 .mapBadge{position:absolute;right:12px;bottom:50px;padding:6px 8px;border:1px solid rgba(112,153,160,.2);border-radius:8px;background:rgba(4,13,17,.72);color:#82999b;font-size:6.5px;letter-spacing:.06em}
 @media(max-width:680px){.mapBadge{right:8px;bottom:74px}}
+
+.scienceBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;border:1px solid rgba(240,180,68,.28);border-radius:10px;background:rgba(111,76,12,.12)}
+.scienceBanner b{font-size:7.5px;color:#f0c96f}
+.scienceBanner span{font-size:6.5px;color:#9e8d69;text-align:right}
+.coverageCard>p{margin:0 0 8px;color:#8aa0a2;font-size:6.5px;line-height:1.5}
+.coverageScore{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center;margin-bottom:8px;padding:8px;border:1px solid rgba(84,190,178,.16);border-radius:8px;background:#081b20}
+.coverageScore>strong{font-size:18px;letter-spacing:-.04em;color:#63dfcb}
+.coverageScore div{display:flex;flex-direction:column;gap:2px}
+.coverageScore b{font-size:7px;color:#c4d8d6}
+.coverageScore small{font-size:5.7px;line-height:1.35;color:#667f82}
+.coverageGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.coverageGrid>span{display:flex;flex-direction:column;gap:2px;padding:6px;border:1px solid rgba(76,155,151,.14);border-radius:7px;background:#0a2025}
+.coverageGrid>span[data-status="present"]{border-color:rgba(76,206,154,.24)}
+.coverageGrid>span[data-status="proxy"]{border-color:rgba(232,179,69,.22)}
+.coverageGrid>span[data-status="absent"]{border-color:rgba(219,101,101,.2)}
+.coverageGrid b{font-size:6.4px;color:#afc3c2}
+.coverageGrid small{font-size:5.4px;line-height:1.35;color:#657d80}
+.coverageCard details{margin-top:7px;border-top:1px solid rgba(77,156,151,.12);padding-top:6px}
+.coverageCard details summary{cursor:pointer;font-size:6.3px;color:#85a09f}
+.coverageCard details p,.coverageCard details small{display:block;margin:5px 0 0;font-size:5.6px;line-height:1.45;color:#657d80}
+@media(max-width:680px){.scienceBanner{align-items:flex-start;flex-direction:column}.scienceBanner span{text-align:left}.coverageGrid{grid-template-columns:1fr}}
+
+.coverageExport{width:100%;margin-top:8px;min-height:29px;border:1px solid rgba(75,210,190,.25);border-radius:7px;background:#0d292f;color:#9dd8ce;font-size:6.5px;font-weight:700}
+.coverageExport:hover{border-color:rgba(75,220,198,.45);background:#10343a;color:#e7fffa}

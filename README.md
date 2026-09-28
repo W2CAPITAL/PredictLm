@@ -92,13 +92,46 @@ For anime/specific-franchise requests, semantic identity outranks isolated pixel
 
 The pipeline borrows public design patterns from modern image systems—multi-image grounding/editing, image-input repair, and persistent identity consistency—without claiming access to proprietary model internals.
 
-## Minecraft Cognitive World
+## Minecraft Cognitive World vs Neuroscience Lab
 
-Simulation has one public mode only: **Minecraft Cognitive World**. The previous Life/Vida mode is no longer exposed.
+PredictLM now treats these as two different products with different success criteria.
 
-Human, macaque, mouse and fly cognitive controllers share the same persistent voxel save. When the world is running, each controller observes the current world, selects an executable goal, acts on the real voxel state and persists its own position, inventory, health/hunger and public simulation thought.
+### Minecraft Cognitive World
 
-The world currently includes procedural chunks, trees, villages, caves/mineshafts/dungeons, ores, crafting/smelting, placeable furniture, equipment, food, passive/hostile mobs, weather/day-night, Overworld, Nether, End, structures unique to those dimensions, save import/export, survival/creative and optional Unity WebGL rendering.
+Minecraft is the **arena de inteligência / closed-loop**, not a complete biological-brain simulation. Four neuro-informed controllers share the same persistent voxel world:
+
+- `H01-informed Human Controller`;
+- `MICrONS/Allen-informed Mouse Controller`;
+- `Atlas/projectome-informed Macaque Controller`;
+- `FlyWire-informed Fly Controller`.
+
+Each controller has a visible evidence-coverage sheet, abstraction level and a list of present/proxy/absent subsystems. The 0–100 value is an **internal evidence-coverage index**, never a percentage of a reconstructed brain.
+
+The arena measures operational behavior: exploration, memory, food seeking, threat avoidance, crafting, long-path navigation, multi-objective planning and, as the multi-agent runner grows, cooperation/competition. Fixed seeds, action budgets, replay events, deterministic baselines and a renderer-free headless runner make results reproducible in CI.
+
+The common contract is `step(observation) -> action`. The stable action vocabulary is `move | jump | craft | attack | interact | wait`. LLM assistance is optional/high-abstraction and must never bypass world state or claim an action happened without the Action API executing it.
+
+### Neuroscience Lab
+
+The Lab asks a different question: **does the model respect the available data and limitations of the species?**
+
+Species-scoped task families are enforced in code:
+- fly: odor plume, optomotor, orientation and gap crossing;
+- mouse: visual discrimination, simple maze and circuit probes;
+- macaque: fixation, visual search and simplified reach;
+- human: local H01 stimulation/circuit/column experiments only, never whole-brain.
+
+Every trial records species, task, seed, model, `dt`, duration, datasets and the separation between published connectivity and modelled dynamics. A data-only mode can prohibit invented priors. Minecraft/survival tasks are rejected from the scientific Lab contract.
+
+**Interpretation rule:** victory in Minecraft is not biological validation; scientific fidelity in the Lab is not a game-performance score. These axes are intentionally orthogonal.
+
+Implementation:
+- `src/lib/simulation/cognitive-world-contract.ts` — coverage sheets, task suite, Controller/Action API, Experiment Runner YAML, replay/checkpoint, baselines;
+- `src/lib/simulation/neuro-informed-controller-adapters.ts` — four common controller adapters with bounded episodic/spatial memory and decision trace;
+- `src/lib/simulation/minecraft-headless-benchmark.ts` — renderer-free benchmark environment;
+- `src/lib/neuroscience/lab-contract.ts` — species/task compatibility, provenance and release checklist;
+- `tests/cognitive-world-lab-contract.test.ts` — regression tests for disclaimers, claims, seeds and contracts.
+
 
 ## Autonomous operational learning
 

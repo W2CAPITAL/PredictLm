@@ -2,11 +2,11 @@
 name: neurocore
 description: Digital Brain persistente e sempre ativo do PredictLM: saliência, atenção, memória, planejamento, inibição, metacognição, estado social, previsão, homeostase e self-model.
 metadata:
-  version: "3.8.0"
+  version: "3.9.0"
   runtime: "browser + provider context"
 ---
 
-# PredictLM Digital Brain / NeuroCore v3.8
+# PredictLM Digital Brain / NeuroCore v3.9
 
 ## Estado
 O cérebro digital permanece ativo enquanto o app está aberto, inclusive fora da simulação.
@@ -294,3 +294,65 @@ Arquivos:
 
 ### Minecraft closed-loop
 Os cérebros humano, macaque, mouse e fly usam uma pequena rede LIF para seleção pública de ação (`explore`, `forage`, `seek_social`, `avoid_threat`, `build`). Isso é dinâmica neural **simulada**, não reprodução dos cérebros biológicos completos dessas espécies.
+
+
+## Minecraft Cognitive World vs Neuroscience Lab v3.9
+
+O PredictLM mantém duas perguntas separadas:
+
+1. **Minecraft Cognitive World** — arena de inteligência operacional em closed-loop.
+   - unidade: `Controller`, não “cérebro completo”;
+   - contrato: `step(observation) -> action`;
+   - mede exploração, memória, planejamento, crafting, robustez e cooperação;
+   - seeds, action budget, replay, baselines e runner headless são parte do benchmark;
+   - vitória no Minecraft **não** valida biologia.
+
+2. **Neuroscience Lab** — experimentos limitados à cobertura dos dados da espécie.
+   - Fly: FlyWire como conectividade de referência, dinâmica/sensores/corpo ainda modelados;
+   - Mouse: MICrONS + Allen como cobertura cortical/mesoscale, nunca whole-brain sináptico;
+   - Macaque: atlas/projectome como organização/projeção, nunca conectoma whole-brain;
+   - Human: H01 como fragmento cortical local, nunca mente/cérebro inteiro;
+   - cada trial registra seed, modelo, dt, duração, datasets, proveniência e limitações.
+
+### Nomes públicos dos controllers
+- `H01-informed Human Controller`;
+- `MICrONS/Allen-informed Mouse Controller`;
+- `Atlas/projectome-informed Macaque Controller`;
+- `FlyWire-informed Fly Controller`.
+
+### Cobertura e abstração
+O HUD pode mostrar um índice 0–100 apenas como **índice interno de cobertura de evidência por subsistema**. Nunca chamar esse valor de “percentual do cérebro reconstruído”. Treino/learning curve pode melhorar performance sem alterar cobertura biológica/evidencial.
+
+Níveis:
+- L1: regras/simbólico;
+- L2: rate/mesoscale/atlas-informed;
+- L3: spiking toy;
+- L4: graph-informed + dinâmica modelada.
+
+### Linguagem proibida
+No Minecraft, não escrever:
+- “cérebro humano real jogando Minecraft”;
+- “quatro cérebros biológicos completos”;
+- “o humano pensou” para descrever logs internos;
+- “spikes são pensamentos”.
+
+Usar:
+- “controller emitiu ação”;
+- “estado público do runtime”;
+- “spikes simulados selecionaram política”;
+- “fonte publicada / proxy / modelado / ausente”.
+
+### LLM boundary
+LLM pode atuar como interface ou módulo de planejamento de alta abstração explicitamente marcado. Ele nunca:
+- substitui o solver numérico;
+- pula o Action API;
+- inventa que craft/mineração/ataque aconteceu;
+- aumenta sozinho a classe de evidência;
+- transforma performance de jogo em claim biológico.
+
+Arquivos canônicos desta separação:
+- `src/lib/simulation/cognitive-world-contract.ts`;
+- `src/lib/simulation/neuro-informed-controller-adapters.ts`;
+- `src/lib/simulation/minecraft-headless-benchmark.ts`;
+- `src/lib/neuroscience/lab-contract.ts`;
+- `tests/cognitive-world-lab-contract.test.ts`.
