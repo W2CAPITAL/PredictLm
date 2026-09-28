@@ -46,14 +46,17 @@ function knownSubjects(prompt:string):VisualSubjectSlot[]{
   };
 
   if(/\bnaruto\b/.test(p)){
-    const kuramaMode=wantsKuramaChakraMode(prompt)||/\b(kurama|kyuubi|kyubi|chakra mode|modo kurama)\b/.test(p);
+    const fullKurama=wantsFullKuramaAvatar(prompt);
+    const kuramaMode=!fullKurama&&(wantsKuramaChakraMode(prompt)||/\b(chakra mode|modo kurama)\b/.test(p));
     push({
       id:'naruto-uzumaki',label:'Naruto Uzumaki',role:'character',
-      form:kuramaMode?'Kurama Chakra Mode':'requested Naruto form',
-      palette:kuramaMode?['gold','orange','black accents']:['canonical Naruto palette'],
-      mustShow:kuramaMode
-        ? ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','golden-orange chakra cloak/aura wrapped around Naruto body','requested Naruto costume/form cues']
-        : ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','requested Naruto costume/form cues'],
+      form:fullKurama?'inside/associated with complete Kurama Avatar':kuramaMode?'Kurama Chakra Mode':'requested Naruto form',
+      palette:fullKurama?['canonical Naruto colors','gold/orange Kurama avatar']:kuramaMode?['gold','orange','black accents']:['canonical Naruto palette'],
+      mustShow:fullKurama
+        ? ['recognizable Naruto identity','spiky blond hair','Naruto whisker cheek marks','clear visual association with the gigantic Kurama avatar without duplicating Naruto']
+        : kuramaMode
+          ? ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','golden-orange chakra cloak/aura wrapped around Naruto body','requested Naruto costume/form cues']
+          : ['spiky blond hair','Naruto whisker cheek marks','recognizable Naruto face/silhouette','requested Naruto costume/form cues'],
       reject:['red-haired Naruto','generic shonen hero','Goku','Vegeta','wrong franchise costume','Naruto duplicated as another subject']
     });
   }
