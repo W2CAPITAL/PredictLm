@@ -196,7 +196,7 @@ export function ChatShell({onOpenLegal}:Props){
   const [activity,setActivity]=useState<string[]>([]);
   const [lastFailedPrompt,setLastFailedPrompt]=useState('');
   const [voiceUi,setVoiceUi]=useState<{messageId:string|null;state:'idle'|BrowserVoiceState;label:string}>({messageId:null,state:'idle',label:''});
-  const [feedbackByMessage,setFeedbackByMessage]=useState<Record<string,'positive'|'negative'|'sending'|'error'>>({});
+  const [feedbackByMessage,setFeedbackByMessage]=useState<Record<string,'positive'|'negative'|'sending-positive'|'sending-negative'|'error'>>({});
   const [legalHealth,setLegalHealth]=useState<{
     fetchedAt:string;
     latencyMs?:number;
@@ -323,6 +323,11 @@ export function ChatShell({onOpenLegal}:Props){
     if(screen!=='chat'||!busy)return;
     scrollConversationToBottom('auto');
   },[busy,screen,active?.messages.length]);
+
+  useEffect(()=>()=>{
+    voiceActionId.current+=1;
+    stopBrowserVoice();
+  },[]);
 
   async function refreshLegalHealth(){
     if(legalHealthBusy)return;
@@ -1630,7 +1635,7 @@ export function ChatShell({onOpenLegal}:Props){
   async function sendFeedback(kind:'positive'|'negative',message:string,messageId?:string){
     rateAdaptiveAnswer(message,kind==='positive');
     setModelTick(x=>x+1);
-    if(messageId)setFeedbackByMessage(current=>({...current,[messageId]:'sending'}));
+    if(messageId)setFeedbackByMessage(current=>({...current,[messageId]:kind==='positive'?'sending-positive':'sending-negative'}));
     const prompt=[...(active?.messages||[])].reverse().find(m=>m.role==='user')?.content||'';
     try{
       const response=await fetch('/api/feedback',{
@@ -1787,18 +1792,18 @@ export function ChatShell({onOpenLegal}:Props){
     title={voiceUi.messageId===m.id&&voiceUi.label?voiceUi.label:'Ouvir resposta'}
   >{voiceUi.messageId===m.id&&(voiceUi.state==='starting'||voiceUi.state==='speaking')?<VolumeX size={12}/>:<Volume2 size={12}/>}</button>
   <button
-    className={'grok-feedback-button positive '+(feedbackByMessage[m.id]==='positive'?'active':feedbackByMessage[m.id]==='sending'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    className={'grok-feedback-button positive '+(feedbackByMessage[m.id]==='positive'?'active':feedbackByMessage[m.id]==='sending-positive'?'sending':feedbackByMessage[m.id]==='sending-negative'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
     data-state={feedbackByMessage[m.id]||'idle'}
     aria-pressed={feedbackByMessage[m.id]==='positive'}
     onClick={()=>void sendFeedback('positive',m.content,m.id)}
-    title={feedbackByMessage[m.id]==='positive'?'Marcado como útil':feedbackByMessage[m.id]==='sending'?'Enviando…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta útil'}
+    title={feedbackByMessage[m.id]==='positive'?'Marcado como útil':feedbackByMessage[m.id]==='sending-positive'?'Enviando útil…':feedbackByMessage[m.id]==='sending-negative'?'Enviando não útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta útil'}
   ><ThumbsUp size={12}/></button>
   <button
-    className={'grok-feedback-button negative '+(feedbackByMessage[m.id]==='negative'?'active':feedbackByMessage[m.id]==='sending'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
+    className={'grok-feedback-button negative '+(feedbackByMessage[m.id]==='negative'?'active':feedbackByMessage[m.id]==='sending-positive'?'sending':feedbackByMessage[m.id]==='sending-negative'?'sending':feedbackByMessage[m.id]==='error'?'error':'')}
     data-state={feedbackByMessage[m.id]||'idle'}
     aria-pressed={feedbackByMessage[m.id]==='negative'}
     onClick={()=>void sendFeedback('negative',m.content,m.id)}
-    title={feedbackByMessage[m.id]==='negative'?'Marcado como não útil':feedbackByMessage[m.id]==='sending'?'Enviando…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta incompleta ou errada'}
+    title={feedbackByMessage[m.id]==='negative'?'Marcado como não útil':feedbackByMessage[m.id]==='sending-positive'?'Enviando útil…':feedbackByMessage[m.id]==='sending-negative'?'Enviando não útil…':feedbackByMessage[m.id]==='error'?'Falha ao enviar feedback':'Resposta incompleta ou errada'}
   ><ThumbsDown size={12}/></button>
   {voiceUi.messageId===m.id&&voiceUi.label?<span className={'grok-feedback-label '+voiceUi.state} role="status" aria-live="polite">{voiceUi.state==='speaking'?<i/>:null}{voiceUi.label}</span>:null}
   {feedbackByMessage[m.id]==='positive'?<span className="grok-feedback-label success">Útil ✓</span>:null}
