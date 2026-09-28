@@ -112,6 +112,7 @@ const SOURCES=[
   ['Autom8AI/Open-Higgsfield-AI','main','unverified','reference',['media','higgsfield','workflow']],
   ['higgsfield-ai/cli','main','MIT','reference',['media','cli','image','video','3d','audio']],
   ['Wangnov/grok-skills','main','MIT','distill',['grok','xai','web-search','x-search','research','image','video','ffmpeg','skills']],
+  ['NVIDIA/skills','main','mixed-Apache-2.0-CC-BY-4.0','reference',['nvidia','rag','research','gpu','cudf','dali','cuopt','cudaq','deepstream','omniverse','physical-ai','nemotron','retriever']],
   ['tashfeenahmed/freellmapi','main','MIT','reference',['model-router','openai-compatible','local-api','free-provider-routing']],
   ['melgarafael/DeskcommCRM','main','unverified','reference',['crm','architecture','workflow']],
   ['msitarzewski/agency-agents-app','main','unverified','reference',['agents','ui','orchestration']],
