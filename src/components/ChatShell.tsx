@@ -1151,7 +1151,9 @@ export function ChatShell({onOpenLegal}:Props){
       // the model for ordinary conversation. Specialized/deep/current turns
       // keep the richer PredictLM pipeline below.
       const directStreamEligible=!s.deepThink&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport&&prompt.length<=5000;
+      let directStreamAttempted=false;
       if(directStreamEligible){
+        directStreamAttempted=true;
         setActivity(['Predict Auto · conectando ao modelo']);
         const streamed=await requestStreamingChat({
           messages:[...messages,{role:'user',content:prompt}],
@@ -1161,7 +1163,7 @@ export function ChatShell({onOpenLegal}:Props){
           signal:turnController.signal
         });
         if(streamed.ok)return;
-        if(direct&&kind==='casual'){
+        if(direct&&(kind==='casual'||kind==='playful')){
           s.addMessage({
             role:'assistant',
             content:direct,
@@ -1233,20 +1235,22 @@ export function ChatShell({onOpenLegal}:Props){
         'Conferindo resposta'
       ]);
 
-      let candidate=await requestApiAnswer({
-        prompt,
-        language,
-        kind,
-        messages,
-        researchContext,
-        localAdvisory:'',
-        answerAnchor,
-        brainContext,
-        deep:s.deepThink,
-        clean:cleanEligible,
-        sessionId:active?.id||'',
-        signal:turnController.signal
-      });
+      let candidate=directStreamAttempted
+        ? {ok:false,text:'',data:{},reason:'remote-budget-spent'}
+        : await requestApiAnswer({
+            prompt,
+            language,
+            kind,
+            messages,
+            researchContext,
+            localAdvisory:'',
+            answerAnchor,
+            brainContext,
+            deep:s.deepThink,
+            clean:cleanEligible,
+            sessionId:active?.id||'',
+            signal:turnController.signal
+          });
 
       // Ordinary Chat stays conversational. A rejected clean answer must not
       // promote the turn into Agent Fabric / GitHub Knowledge / skill dumps.
