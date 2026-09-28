@@ -771,7 +771,6 @@ export function ChatShell({onOpenLegal}:Props){
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify(legalSearchRequest),
-          sessionId:active?.id||'',
           signal:turnController.signal
         });
         const data=await r.json().catch(()=>({}));
