@@ -7,6 +7,7 @@ import { providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, saf
 import { circuitReadyProviders, rankHealthyProviders, recordProviderFailure, recordProviderSuccess } from '@/lib/server/provider-health';
 import crypto from 'node:crypto';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {providerAttemptLimit} from '@/lib/server/api-spend-policy';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -276,7 +277,7 @@ export async function POST(req:NextRequest){
       {status:429,headers:{'Cache-Control':'no-store','Retry-After':String(Math.max(1,Math.ceil(lease.retryAfterMs/1000))),'X-Correlation-Id':correlationId}}
     );
   }
-  const candidates=providerList(prompt).slice(0,8);
+  const candidates=providerList(prompt).slice(0,providerAttemptLimit('stream'));
 
   // Do not touch Supabase/learning or any other network when there is no
   // configured streaming provider. This keeps the offline/no-provider path
