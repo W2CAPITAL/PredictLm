@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "57f360ab3d1c4e09",
-  "generatedAt": "2026-09-28T12:35:38.814Z",
-  "sourceCount": 95,
-  "chunkCount": 4983,
+  "knowledgeVersion": "0100c077cfd82227",
+  "generatedAt": "2026-09-28T15:05:25.309Z",
+  "sourceCount": 97,
+  "chunkCount": 5100,
   "chunks": [
     {
       "id": "758b12118f87a395217b",
@@ -5106,9 +5106,2520 @@
       "weight": 1.24
     },
     {
-      "id": "5b8602ca11b29e528dd3",
+      "id": "8bc4b9088396f81fe93a",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "grok-skills",
+      "text": "**Agent skill for xAI's [grok build](https://x.ai/cli) CLI** — web/X search, large-scale research, image & video generation, and green-screen / ffmpeg post-processing, all in one skill.\n\nImage and video generation run through your **logged-in grok session** (SuperGrok / X Premium+) via the built-in `image_gen` / `image_to_video` tools — **no xAI API key, no per-image API cost**. Search works with either the logged-in session or the xAI API.\n\nCross-platform (macOS / Linux / Windows). Installable with [`npx skills`](https://github.com/vercel-labs/skills), so it works in Claude Code, Cursor, Codex, and other skill-aware agents.",
+      "weight": 1.26
+    },
+    {
+      "id": "fd778ba255d5ced5a51b",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Capabilities",
+      "text": "| | Capability | How |\n|---|---|---|\n| 🔍 | Web / X search with citations | `grok-search.mjs` (xAI API) or grok headless |\n| 📚 | Large-scale parallel research | `grok -p` headless + subagents |\n| 🖼️ | Image generation | `image_gen` — logged-in, **zero API cost** |\n| 🎬 | Video generation (text/image-to-video) | `image_to_video` — logged-in |\n| 🟢 | Green-screen / chroma-key removal | ffmpeg (adaptive, per-platform) |\n| ✂️ | Concat / watermark / GIF / frames | ffmpeg |",
+      "weight": 1.26
+    },
+    {
+      "id": "aa337dd21a1930a8312d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Preview the skills in this repo without installing",
+      "text": "npx skills add Wangnov/grok-skills --list\n```\n\nInstalls to `.agents/skills/grok` and symlinks into each detected agent's directory.",
+      "weight": 1.26
+    },
+    {
+      "id": "1e25183f7e169c7621b0",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Requirements",
+      "text": "- **grok build CLI**, logged in (`grok login`, needs SuperGrok / X Premium+) — required for media generation & research.\n  - macOS / Linux: `curl -fsSL https://x.ai/cli/install.sh | bash`\n  - Windows: `irm https://x.ai/cli/install.ps1 | iex`  (or run it inside WSL2)\n- **ffmpeg** — for post-processing (`brew install ffmpeg` / `apt install ffmpeg` / `winget install Gyan.FFmpeg`).\n- **node** — runs the skill's scripts.\n- `XAI_API_KEY` — optional, only for API-based search or paid media fallback.\n\nCheck your environment anytime:\n\n```bash\nnode ~/.agents/skills/grok/scripts/preflight.mjs\n```",
+      "weight": 1.26
+    },
+    {
+      "id": "16203eb0ee784c811d5e",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Generate an image (logged-in, zero API cost)",
+      "text": "node \"$BASE/scripts/grok-media.mjs\" image --prompt \"cyberpunk city at night, neon reflections\" --out city.jpg --aspect-ratio 16:9",
+      "weight": 1.26
+    },
+    {
+      "id": "28b0022e78ea1567c93a",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Animate it into a video",
+      "text": "node \"$BASE/scripts/grok-media.mjs\" video --prompt \"slow push-in, flickering neon\" --image city.jpg --out city.mp4 --duration 6 --resolution 720p",
+      "weight": 1.26
+    },
+    {
+      "id": "cb013855738dd6132de6",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Search with citations (needs XAI_API_KEY)",
+      "text": "node \"$BASE/scripts/grok-search.mjs\" \"who won the latest world cup\" --mode auto\n```\n\nFor green-screen and other ffmpeg work, the skill **guides the agent to probe the environment, install what's missing for the current OS, and write commands that fit the footage** — see [`skills/grok/references/post-processing.md`](skills/grok/references/post-processing.md).",
+      "weight": 1.26
+    },
+    {
+      "id": "b2ea84b56df2b8dc1481",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Design principle",
+      "text": "This skill is **guidance, not a box of hardcoded scripts**. On each use:\n\n> **① Probe the real environment → ② install missing deps for the current OS → ③ write commands to fit the material.**\n\nThe only bundled scripts are cross-platform **node** wrappers around the grok/xAI interaction (reliable file-landing checks, JSON output, citation parsing) — and you can always bypass them with a plain `grok -p \"…\"`. Environment-specific work like ffmpeg is documented as adaptive guidance, not frozen `.sh` files.",
+      "weight": 1.26
+    },
+    {
+      "id": "bf7cdf699075ae632722",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Structure",
+      "text": "```\nskills/grok/\n  SKILL.md                          # router + run principle + common commands\n  references/\n    media-generation.md             # image_gen / image_to_video mechanics & params\n    search-and-research.md          # search + parallel research\n    post-processing.md              # green-screen + ffmpeg (adaptive guidance)\n    xai-search-capabilities.md\n  scripts/\n    preflight.mjs                   # cross-platform env/capability self-check\n    grok-media.mjs                  # image/video generation (logged-in session)\n    grok-search.mjs                 # search (xAI Responses API)\n    search-selftest.mjs\n  examples/video-reel-playbook.md   # batch short-film workflow\n  agents/                           # agent interface definitions\n```",
+      "weight": 1.26
+    },
+    {
+      "id": "523fccfc2857a17c87dd",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "skills/grok/SKILL.md",
+      "text": "---\nname: grok\ndescription: Drive the grok build CLI (run `grok`) for search, research, and media creation. Use for Grok/X web search with citations; large-scale parallel research via grok headless + subagents; generating images (image_gen) and videos (image_to_video) through the logged-in grok session at zero API cost; and ffmpeg post-processing like green-screen / chroma-key removal, concatenation, and watermarking. Cross-platform (macOS/Linux/Windows). Optional xAI search/media API as a paid fallback. Triggers include grok, grok build, 生图, 生成图片, 生成视频, 绿幕抠像, 批量调研, xAI search.\n---",
+      "weight": 1.26
+    },
+    {
+      "id": "718cdd008a1648413175",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Grok — 搜索 · 调研 · 图片 · 视频 · 后处理",
+      "text": "用 `grok`（grok build CLI）+ ffmpeg 完成六件事：**网络/X 搜索、大批量调研、图片生成、视频生成、绿幕/视频后处理、图片后处理**。图片与视频走 grok **登录态内置工具**（`image_gen`/`image_to_video`），消耗订阅额度，**不产生 xAI API 费用**。",
+      "weight": 1.26
+    },
+    {
+      "id": "81dbfd303c4339cbdf39",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "⭐ 运行原则（先读这条）",
+      "text": "**本 skill 是指导，不是一套写死的脚本。** 每次调用按这个顺序做：\n\n1. **先探测真实环境**：`node {baseDir}/scripts/preflight.mjs`（跨平台，报告 OS / grok 登录 / ffmpeg 有哪些 filter 和编码器 / 缺什么该装什么）。\n2. **缺依赖就按当前平台装**——preflight 会给出针对该 OS 的安装命令（该装啥装啥，例如缺 `drawtext` 就装含 freetype 的 build，缺 `libvpx-vp9` 就换 build）。**不要绕开需求去凑合。**\n3. **媒体生成**用封装脚本（`grok-media.mjs`，node，跨平台）；**ffmpeg 后处理**参考 [post-processing.md](references/post-processing.md) 的原理与模板，**根据素材现场编写命令、现场调参**（如抠像的 similarity/blend），而不是套死参数。\n\n> 你（Claude / grok）本来就能读环境、装工具、写命令——请带着判断力临场发挥，把下面的脚本当**可靠封装 / 参考实现**，不是唯一路径。",
+      "weight": 1.26
+    },
+    {
+      "id": "a589f21eef8d319c0498",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "平台支持",
+      "text": "| 平台 | grok CLI | 说明 |\n|---|---|---|\n| macOS / Linux | ✅ | `curl -fsSL https://x.ai/cli/install.sh \\| bash` |\n| Windows | ✅ 原生 PowerShell（`irm https://x.ai/cli/install.ps1 \\| iex`）或 WSL2 | node 脚本跨平台；shell 命令用 PowerShell 语法 |\n\n- 媒体生成需登录（SuperGrok / X Premium+）：`grok login`。\n- ffmpeg 后处理跨平台，命令主体一致；复杂编排建议用 node 调 ffmpeg（免 shell 转义差异）。",
+      "weight": 1.26
+    },
+    {
+      "id": "6ccf2798384731c79ed1",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "能力路由",
+      "text": "| 你要做的事 | 用什么 | 详细参考 |\n|---|---|---|\n| 网络 / X 搜索（带引用） | `grok-search.mjs`（需 key）或 grok headless（登录态） | [search-and-research.md](references/search-and-research.md) |\n| 大批量 / 多主题调研 | `grok -p` headless + subagents（默认启用） | [search-and-research.md](references/search-and-research.md) |\n| 生成图片 | `grok-media.mjs image` | [media-generation.md](references/media-generation.md) |\n| 生成视频（文生/图生） | `grok-media.mjs video` | [media-generation.md](references/media-generation.md) |\n| 绿幕抠像 / 拼接 / 水印 / GIF | **ffmpeg（探测 → 按平台装 → 现场写）** | [post-processing.md](references/post-processing.md) |",
+      "weight": 1.26
+    },
+    {
+      "id": "5e8688a54494bf7d343d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "生成图片（登录态，零 API 费；aspect-ratio: 1:1 2:3 3:2 16:9 9:16 …）",
+      "text": "node \"$BASE/scripts/grok-media.mjs\" image --prompt \"赛博朋克城市夜景，霓虹倒影\" --out city.jpg --aspect-ratio 16:9",
+      "weight": 1.26
+    },
+    {
+      "id": "e81e557b828d3c525b99",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "图生视频（duration 1-15s；resolution 480p/720p/1080p）",
+      "text": "node \"$BASE/scripts/grok-media.mjs\" video --prompt \"镜头缓慢推进\" --image city.jpg --out city.mp4 --duration 6 --resolution 720p",
+      "weight": 1.26
+    },
+    {
+      "id": "89304a060fac86b87ecd",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "文生视频（自动分镜 → 源图 → 动画）",
+      "text": "node \"$BASE/scripts/grok-media.mjs\" video --prompt \"一只猫在爵士酒吧弹钢琴\" --out cat.mp4 --duration 6\n```\n\n**后处理不给死脚本**——先 `preflight.mjs` 看 ffmpeg 现状，再照 [post-processing.md](references/post-processing.md) 的模板按素材写。例如绿幕抠像的核心是：先让 grok 生成 `solid chroma-key green (#00FF00)` 背景素材，再 `ffmpeg -vf \"chromakey=0x00FF00:<sim>:<blend>,despill\"`，similarity/blend 看效果调。",
+      "weight": 1.26
+    },
+    {
+      "id": "cbba945a24214faa3586",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "必须知道的机制",
+      "text": "1. **媒体生成 = prompt 驱动内置工具**。`grok-media.mjs` 用一条严格 prompt 调 `grok -p \"…\" --always-approve`，让 agent 调用 `image_gen`/`image_to_video` 存到 `--out`，并核验落盘、返回 JSON。你也可以直接 `grok -p \"用 image_gen 生成…存为 x.jpg\"` 绕过脚本。\n2. **产物落点**：grok 先写到 `~/.grok/sessions/<cwd>/<id>/`（视频在 `videos/`），再 `cp` 到工作目录；脚本已封装。\n3. **视频自带 AAC 音轨**、H.264、24fps，比例跟随源图 / 请求。\n4. **耗时**：单图约 30–70s，单段视频数分钟；批量任务用 subagents 或 playbook（见 [examples/video-reel-playbook.md](examples/video-reel-playbook.md)）。",
+      "weight": 1.26
+    },
+    {
+      "id": "e473025b02b3e331d303",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "脚本清单（都跨平台 · node）",
+      "text": "- `scripts/preflight.mjs` — 环境/能力自检，报告现状 + 按平台给安装建议\n- `scripts/grok-media.mjs` — 图片/视频生成（grok 登录态驱动，JSON 输出，跨平台解析 grok 路径）\n- `scripts/grok-search.mjs` — 搜索（xAI Responses API，`XAI_API_KEY`）\n- `scripts/search-selftest.mjs` — 搜索脚本自测\n\n> ffmpeg 后处理**刻意不提供固定脚本**——环境相关、参数需按素材调，见 [post-processing.md](references/post-processing.md) 让 agent 现场写。",
+      "weight": 1.26
+    },
+    {
+      "id": "a018027bdaa0e0c4cea3",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/SKILL.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "推荐：npx skills（装到 .agents/skills 并 symlink 到各 agent）",
+      "text": "npx skills add Wangnov/grok-skills                    # 所有检测到的 agent\nnpx skills add Wangnov/grok-skills -g -a claude-code  # 全局 + 指定 Claude Code\n```\n\ngrok build 与 Claude Code 均从 `~/.agents/skills/` 加载、都认 Anthropic Skills 格式。",
+      "weight": 1.26
+    },
+    {
+      "id": "a9e6fce368f7b35e13ef",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/examples/video-reel-playbook.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Playbook：批量短片制作（分镜 → 图 → 视频 → 成片）",
+      "text": "> **用法**：按需改写下面的分镜表与参数，然后交给 grok 一次性自主执行：\n>\n> ```bash\n> grok -p \"Read video-reel-playbook.md completely, treat it as the single source of truth, and execute it end to end.\" --always-approve\n> ```\n>\n> 这是「playbook 模式」——复杂的多素材任务交给 grok 自己排期、命名、组织目录、调 ffmpeg，比逐条脚本调用更省心。已被社区实操验证（时装展示视频）。",
+      "weight": 1.26
+    },
+    {
+      "id": "088a6fb6bc7068ec60a3",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/examples/video-reel-playbook.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "全局约定",
+      "text": "- 工作目录：`./reel_output/`\n- 命名：分镜图 `shot_01.jpg`…，分镜视频 `shot_01.mp4`…，成片 `reel_final.mp4`\n- 图片：`aspect_ratio 16:9`；视频：每段 `6s`、`720p`\n- 每一步产出后 `ls -la` 确认，再进行下一步",
+      "weight": 1.26
+    },
+    {
+      "id": "2aebdda25500b55b2eaa",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/examples/video-reel-playbook.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "分镜表（改这里）",
+      "text": "| # | image_gen prompt（画面） | image_to_video 动作（运镜/动态） |\n|---|---|---|\n| 1 | 产品特写，深色背景，戏剧打光 | 缓慢环绕，光影流动 |\n| 2 | 产品在使用场景中，明亮 | 轻微推进，景深变化 |\n| 3 | 细节微距，材质纹理 | 极慢平移 |\n| 4 | 产品与人的互动，生活化 | 自然手部动作 |\n| 5 | 品牌标志定格，简洁背景 | 轻微缩放收尾 |",
+      "weight": 1.26
+    },
+    {
+      "id": "2575d6a9f67c1301cf2c",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/examples/video-reel-playbook.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "执行步骤（grok 自主完成）",
+      "text": "1. `mkdir -p reel_output`（所有产物落在此目录）。\n2. 逐个分镜：先用 **image_gen**（16:9）生成 `shot_NN.jpg`，再用 **image_to_video**（6s、720p）基于该图生成 `shot_NN.mp4`。\n3. 生成 `file_list.txt`，用 ffmpeg 拼接所有 `shot_*.mp4`（按序）为 `reel_raw.mp4`：\n   `ffmpeg -f concat -safe 0 -i file_list.txt -c copy reel_raw.mp4`\n4. 若提供 `logo.png`，叠加到右下角（overlay）得到 `reel_final.mp4`；否则 `reel_final.mp4 = reel_raw.mp4`。\n5. 报告每个产物的路径与体积。",
+      "weight": 1.26
+    },
+    {
+      "id": "e7188110f84b31f56d5d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/examples/video-reel-playbook.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "变体提示",
+      "text": "- **绿幕合成短片**：把每个分镜的 image_gen prompt 加上 `solid chroma-key green (#00FF00) background`，生成后照 [post-processing.md](../references/post-processing.md) 用 ffmpeg `chromakey` 换背景，再拼接。\n- **竖屏（手机/短视频）**：图片 `aspect_ratio 9:16`，视频保持 `720p`（竖版）。\n- **控制成本/额度**：先只做第 1 个分镜验证风格，满意后再批量生成其余。",
+      "weight": 1.26
+    },
+    {
+      "id": "e5dea3e2ecb1e5e0ea64",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "机制（已实测确认）",
+      "text": "grok build 登录后，会在 agent 会话中**动态注入**两个内置媒体工具（未登录 / 静态文档里看不到它们）：\n\n| 工具 | 作用 | 参数 |\n|---|---|---|\n| `image_gen` | 文生图 | `prompt`、`aspect_ratio` |\n| `image_to_video` | 图生视频 / 文生视频 | 源图 + 动作描述 + `duration` + `resolution_name` |\n\n- TUI 里对应斜杠命令：`/imagine <描述>`、`/imagine-video <描述>`。\n- 产物先写入 `~/.grok/sessions/<encoded-cwd>/<id>/`（图片在会话根、视频在 `videos/`），agent 再 `cp` 到工作目录。\n- 走登录态订阅额度，**不消耗 `XAI_API_KEY`、不产生 API 费用**。\n\n`grok-media.mjs` 把「构造严格 prompt → `grok -p … --always-approve` → 校验文件落盘 → 返回 JSON」全部封装好，你只管给 `--prompt` 和 `--out`。",
+      "weight": 1.26
+    },
+    {
+      "id": "14c510005f38c19eadd2",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "生成图片",
+      "text": "```bash\nnode scripts/grok-media.mjs image --prompt \"赛博朋克城市夜景，霓虹倒影\" --out city.jpg --aspect-ratio 16:9\nnode scripts/grok-media.mjs image --prompt \"极简产品图，一只蓝色马克杯\" --out mug.jpg --count 3\n```\n\n- `--aspect-ratio`：`1:1`(1024×1024) · `16:9`(1280×720) · `9:16` · `2:3` · `3:2` · `4:3` · `3:4`（默认 `1:1`）\n- `--count 1..10`：多图存为 `city-1.jpg`、`city-2.jpg`…\n- 返回：`{ok, files:[{file,bytes}], primary, params, via:\"grok-cli-session\", elapsed_ms}`\n- 实测约 **30–70 秒/张**",
+      "weight": 1.26
+    },
+    {
+      "id": "57223d7bb566d942272c",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "生成视频",
+      "text": "**图生视频（推荐，可控性最好）**——先有一张图，再动画化：\n\n```bash\nnode scripts/grok-media.mjs video --prompt \"镜头缓慢推进，霓虹闪烁\" --image city.jpg --out city.mp4 --duration 6 --resolution 720p\n```\n\n**文生视频**——grok 自动规划分镜 → `image_gen` 生成源图 → `image_to_video` 动画化：\n\n```bash\nnode scripts/grok-media.mjs video --prompt \"一只猫在爵士酒吧弹钢琴\" --out cat.mp4 --duration 6\n```\n\n- `--duration 1..15`（秒）\n- `--resolution 480p|720p|1080p`（`1080p` 仅 image-to-video 支持）\n- 输出：**H.264 + AAC 音轨，24fps**，画面比例跟随源图 / 请求\n- 实测**数分钟/段**——长任务建议放后台（`grok -p` 本身或 shell `&`）",
+      "weight": 1.26
+    },
+    {
+      "id": "e4cf7f0b28ae945d05a0",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "批量工作流（playbook 模式）",
+      "text": "对「25 张分镜图 + 6 段视频 + 拼接成 1 分钟片」这类复杂任务，**不要逐条脚本调用**——把任务写成一个 Markdown playbook，交给 grok 一次性自主执行（它会自己排期、命名、组织目录、调 ffmpeg）：\n\n```bash",
+      "weight": 1.26
+    },
+    {
+      "id": "7ef7ac301062dfc32408",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "plan.md 里写清楚：目标、每个分镜的 image_gen prompt、每段 image_to_video 的动作、拼接与水印步骤、落盘命名规范",
+      "text": "grok -p \"Read plan.md completely, treat it as the single source of truth, and execute it end to end.\" --always-approve\n```\n\n这正是社区「时装展示视频」实操验证过的模式。",
+      "weight": 1.26
+    },
+    {
+      "id": "7d623e98e8df7b5a6ade",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "直接 prompt 驱动（不写脚本）",
+      "text": "一次性 / 交互场景，可直接下指令：\n\n```bash\ngrok -p '用你的 image_gen 工具生成\"雪山日出\"，保存为 sunrise.jpg 到当前目录' --always-approve\n```\n\n脚本 vs 直接 prompt：**要可复用 / 要结构化 JSON 结果 → 用 `grok-media.mjs`；一次性探索 → 直接 prompt。**",
+      "weight": 1.26
+    },
+    {
+      "id": "1d3d6d44454f3edf8e39",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "图片编辑 / 二次生成",
+      "text": "- 会话内可让 grok 以参考图为基础再生成 / 局部调整（`image_gen` 支持参考图输入）。\n- 需要程序化图像编辑 API：`POST https://api.x.ai/v1/images/edits`（`grok-imagine-image-quality`，**需 `XAI_API_KEY`、付费**，最多 3 张源图）——作为可选回退，见 [xai-search-capabilities.md](xai-search-capabilities.md) 同源的 API 说明。\n- 纯像素后处理（裁剪 / 透明 / 格式转换）用 ffmpeg 或 ImageMagick，见 [post-processing.md](post-processing.md)。",
+      "weight": 1.26
+    },
+    {
+      "id": "dd342ea78fa7929f4def",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/media-generation.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "坑与提示",
+      "text": "- **视频自带 AAC 音轨**——后续 concat / 抠像时注意音轨处理。\n- **命名兜底**：`grok-media.mjs` 用「生成前后目录 diff」发现新文件，即使 grok 命名有偏差也能捕获产物。\n- **绿幕**：在 `--prompt` 里明确 `solid chroma-key green (#00FF00) background, evenly lit`，再用 [post-processing.md](post-processing.md) 抠像。\n- **额度**：媒体生成受订阅等级限制（X Premium+ 额度更高）；额度耗尽时工具会报错，脚本返回 `media_tool_unavailable`。\n- **失败排查**：加 `--debug` 查看 grok stderr 与退出码；`--dry-run` 只打印将要发送的 prompt。",
+      "weight": 1.26
+    },
+    {
+      "id": "23efa9739b3b60014e97",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "后处理：绿幕抠像与 ffmpeg —— 环境自适应指南",
+      "text": "> ⚠️ **这是\"怎么做\"的指导，不是要你照抄的死脚本。** 每次调用请按这个顺序：\n> **① 探测真实环境 → ② 缺什么按当前平台装 → ③ 根据素材现场编写命令。**\n> 下面的命令是**参考模板**，参数（尤其抠像的 similarity/blend）要按画面实际效果调。",
+      "weight": 1.26
+    },
+    {
+      "id": "a4d13730b6c9172eee7f",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "0. 先探测，再动手",
+      "text": "在写任何 ffmpeg 命令前，先看清现场（用当前 OS 合适的 shell / 或用 node 跨平台执行）：\n\n```bash\nffmpeg -version                              # 有没有 ffmpeg？（Windows 可能是 ffmpeg.exe）\nffmpeg -hide_banner -filters   | grep -Ei 'chromakey|colorkey|despill|overlay|drawtext'\nffmpeg -hide_banner -encoders  | grep -Ei 'vp9|prores|libx264|gif'\n```\n\n**依据实际输出决定方案**——不同 ffmpeg build 的 filter/编码器不一样，不要假设。缺了就装（下表）或换等价方案。",
+      "weight": 1.26
+    },
+    {
+      "id": "c529bc3a290477c713cf",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "依赖安装速查（该装啥装啥）",
+      "text": "| 平台 | 装 / 修 ffmpeg | 文字水印需要的 freetype |\n|---|---|---|\n| **macOS** | `brew install ffmpeg` | brew 主 formula 默认含；若 `drawtext` 缺失：`brew reinstall ffmpeg` |\n| **Debian/Ubuntu** | `sudo apt install ffmpeg` | 发行版包通常已含 |\n| **Fedora/RHEL** | `sudo dnf install ffmpeg`（需 RPM Fusion） | 同上 |\n| **Windows** | `winget install Gyan.FFmpeg` / `scoop install ffmpeg` / `choco install ffmpeg` | gyan.dev **full** build 含 freetype/fontconfig |\n\n> 探测到缺某能力时的正确反应是**装或换 build**，而不是绕开需求。例：`drawtext` 缺 → 装含 freetype 的 build，或改用图片 logo 水印；`libvpx-vp9` 缺 → 装含 vp9 的 build，或改输出 PNG 序列 / ProRes 4444(mov)。",
+      "weight": 1.26
+    },
+    {
+      "id": "c808f86e0ddb8bfd00ef",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "1. 绿幕 / Chroma Key 抠像",
+      "text": "> 💎 **AI 素材要 alpha 的实战要点**：AI 视频不含 alpha 通道、只能事后抠。两条主路——**① 黑底 luma-as-alpha**（亮度当透明度）能保留半透明与发光、直接出真 alpha webm；**② 绿幕 chromakey** 边缘更锐。**走绿幕抠像时**，主体要**不透明、避开幕色、无外发光、锐利边缘**（半透明 + 全色谱是色键两大天敌）；只需深色背景则用黑底 + `mix-blend-mode:screen`（不抠、发光最保真）。\n>\n> **格式提示**：VP9 webm alpha 编码是好的、浏览器原生支持、比 webp 小。验证是否带 alpha 用 `mkvinfo x.webm | grep AlphaMode`（=1 即成功），别用 ffmpeg 自解码验证（overlay / alphaextract / ffprobe pix_fmt 会因原生 vp9 解码器不读 alpha 而误报无 alpha，trac #11165）；命令行要处理 alpha webm 时加 `-c:v libvpx-vp9`。animated WebP 仅作简单 `<img>` 场景备选。\n\n**原理**：`chromakey=<颜色>:<similarity>:<blend>` 按与关键色的距离把背景变透明；`despill` 去主体边缘溢色。素材质量（均匀打光的纯绿、主体不含绿）决定上限。\n\n**参考命令**（三选一，按需求）：\n\n```bash",
+      "weight": 1.26
+    },
+    {
+      "id": "d30e9ef8d223ed9c6146",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "① 透明 webm（VP9+alpha）—— 浏览器首选、比 webp 小。注：ffprobe 报 yuv420p 是正常的（alpha 存 BlockAdditional）；验证用 mkvinfo，别用 ffmpeg overlay 自解码（#11165）",
+      "text": "ffmpeg -i in.mp4 -vf \"chromakey=0x00FF00:0.30:0.10,despill=type=green\" \\\n  -c:v libvpx-vp9 -pix_fmt yuva420p -auto-alt-ref 0 -an out.webm",
+      "weight": 1.26
+    },
+    {
+      "id": "5f2994ee4345cba251e5",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "③ 合成到新背景（图片背景加 -loop 1；视频背景去掉）",
+      "text": "ffmpeg -loop 1 -i bg.jpg -i in.mp4 \\\n  -filter_complex \"[1:v]chromakey=0x00FF00:0.30:0.10[fg];[0:v][fg]overlay=shortest=1[v]\" \\\n  -map \"[v]\" -shortest -pix_fmt yuv420p out.mp4\n```\n\n**现场调参**（看抠像结果再改，不要套死）：\n- 画面**残留绿** → `similarity` 调高（0.30 → 0.40+）\n- 边缘**生硬/锯齿** → `blend` 调高（0.10 → 0.20）\n- 主体**边缘泛绿** → 加 `despill=type=green`\n- **蓝幕** → 关键色用 `0x0000FF`\n\n**让 grok 先产出好素材**：生成时在 prompt 里写 `solid chroma-key green (#00FF00) background, evenly lit, no green tint on subject`。",
+      "weight": 1.26
+    },
+    {
+      "id": "f927e619001e5bfcb21c",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "文字水印（需 drawtext/freetype；缺则先装含 freetype 的 build）",
+      "text": "ffmpeg -i in.mp4 -vf \"drawtext=text='@handle':x=w-tw-20:y=h-th-20:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5\" -c:a copy out.mp4",
+      "weight": 1.26
+    },
+    {
+      "id": "98dc29857d1f82f7278c",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "视频转 GIF（palettegen/paletteuse 保色）",
+      "text": "ffmpeg -i in.mp4 -vf \"fps=12,scale=480:-1:flags=lanczos,palettegen\" pal.png\nffmpeg -i in.mp4 -i pal.png -lavfi \"fps=12,scale=480:-1:flags=lanczos[x];[x][1:v]paletteuse\" out.gif",
+      "weight": 1.26
+    },
+    {
+      "id": "80091468203cc98dbf1e",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "抽帧 / 裁剪 / 查规格",
+      "text": "ffmpeg -ss 2 -i in.mp4 -frames:v 1 cover.png\nffmpeg -ss 1 -i in.mp4 -t 4 -c:v libx264 -pix_fmt yuv420p -c:a aac clip.mp4\nffprobe -v error -show_streams -show_format in.mp4\n```",
+      "weight": 1.26
+    },
+    {
+      "id": "3519aada2415da1c4341",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "3. 跨平台执行建议",
+      "text": "- **ffmpeg 命令主体是跨平台的**；差异在 **shell（bash / PowerShell / cmd）的引号转义**和**路径分隔符**。\n- **复杂编排优先用 node 调用**（`child_process.spawn('ffmpeg', [...])`）——数组传参**免去 shell 转义**，Windows/macOS/Linux 一套代码通吃。这比写 `.sh` 或 `.ps1` 更稳。\n- 校验文件大小等元信息也用 node（`fs.statSync`），不要用 `stat -f%z`(mac) / `stat -c%s`(linux) 这类**平台专有**命令。\n- 先跑 `preflight.mjs` 看环境现状，再据此选方案。",
+      "weight": 1.26
+    },
+    {
+      "id": "c4982c81801ce3ba9015",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/post-processing.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "音轨注意",
+      "text": "grok 视频**带 AAC 音轨**：抠像透明输出（webm/png）通常丢音轨；`overlay` 合成时想保留主体音轨加 `-map 1:a?`；`concat -c copy` 默认保留（要求各段音频编码一致）；要静音加 `-an`。",
+      "weight": 1.26
+    },
+    {
+      "id": "eaf91f1d424dfcb6449d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "搜索与大批量调研",
+      "text": "有两条路，按凭证情况选：\n\n| 路径 | 凭证 | 特点 |\n|---|---|---|\n| **grok headless 内置搜索** | 登录态（免费） | `web_search`/`x_search` 内置，适合调研、可交给 subagents 并行 |\n| **`grok-search.mjs`** | `XAI_API_KEY`（付费 API） | JSON-first、结构化引用、精确域名/账号/日期过滤 |\n\n> 当前环境若只有登录态、无 `XAI_API_KEY`：**调研走 grok headless**；`grok-search.mjs` 需先配 key。\n\n---",
+      "weight": 1.26
+    },
+    {
+      "id": "79a1a6c0cdc4f5c6f130",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "一、结构化搜索：`grok-search.mjs`（JSON-first + 引用）",
+      "text": "需要 `XAI_API_KEY`（环境变量，或工作目录的 `.env.local` / `.env`）。走 `https://api.x.ai/v1/responses` + server-side `web_search`/`x_search`。\n\n```bash\nnode scripts/grok-search.mjs \"谁赢得了最近一届世界杯\" --mode auto\nnode scripts/grok-search.mjs \"xAI 最新发布\" --mode x --allow-handles @xai --from 2026-01-01\nnode scripts/grok-search.mjs \"RAG 最佳实践\" --mode web --allow-domains arxiv.org,github.com --format text\n```\n\n| 参数 | 说明 |\n|---|---|\n| `--mode auto\\|web\\|x` | 搜索面：两者 / 仅网页 / 仅 X（默认 `auto`） |\n| `--max-turns 1..10` | 检索轮数（默认 3） |\n| `--allow-domains` / `--exclude-domains` | 域名白 / 黑名单（逗号分隔，互斥） |\n| `--allow-handles` / `--exclude-handles` | X 账号白 / 黑名单（`@handle`） |\n| `--from` / `--to` | 日期范围 `YYYY-MM-DD` |\n| `--format json\\|text` | 默认 `json`（含 `answer` + `citations` + `tool_usage`） |\n| `--links-only` | 只要引用链接，不要正文 |\n\n输出契约：`{ok, schema_version, query, mode, answer, citations:[…], filters, tool_usage}`。能力边界见 [xai-search-capabilities.md](xai-search-capabilities.md)。\n\n自测：`node scripts/search-selftest.mjs`（本地）/ `--live`（需 key，打真实请求）。\n\n---",
+      "weight": 1.26
+    },
+    {
+      "id": "cde99b9c88d7b826171e",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "二、登录态调研：grok headless（免费，无需 key）",
+      "text": "grok 会话默认带 `web_search`；`web_fetch` 需 `GROK_WEB_FETCH=1`。适合\"边搜边推理、产出报告\"：\n\n```bash\ngrok -p \"调研 2026 年 AI 视频生成的主要玩家与定价，用 web_search 交叉核对，输出带引用的 Markdown 到 report.md\" --always-approve\n```",
+      "weight": 1.26
+    },
+    {
+      "id": "11c9cd7f73e5645223a2",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "大批量 / 多主题并行",
+      "text": "> 下面是 **bash** 示例（macOS/Linux/WSL）。Windows PowerShell 语法不同（并行用 `ForEach-Object -Parallel`）；**跨平台最稳是用 node `child_process` 编排**，`grok` 命令主体一致。\n\n**方式 A — 单任务 + subagents**（grok 自己拆解并行子任务，最多 8 个）：\n\n```bash\ngrok -p \"把下列 8 个主题各自作为独立子任务并行调研，每个产出一节带引用的小结，汇总到 survey.md：主题1…主题8\" --always-approve\n```\n\n> subagents（`task` 工具）**默认启用**，用 `--no-subagents` 可关闭。子代理并行上限为 8。\n\n**方式 B — shell 编排多个独立 session**（可控、可断点续跑）：\n\n```bash\ntopics=(\"电动车电池\" \"固态电池\" \"钠离子电池\")\nfor t in \"${topics[@]}\"; do\n  grok -p \"调研「$t」最新进展，输出带引用的 ${t}.md\" -s \"research-${t}\" --always-approve &\ndone\nwait\n```\n\n每个子任务用 `-s <name>` 命名独立 session，互不干扰；`&` + `wait` 并行。\n\n**方式 C — 原子搜索编排**（有 `XAI_API_KEY` 时，最省、最结构化）：\n\n```bash\nwhile read -r q; do\n  node scripts/grok-search.mjs \"$q\" --format json >> results.jsonl\ndone < queries.txt\n```",
+      "weight": 1.26
+    },
+    {
+      "id": "491cab20d3dddbd18a8d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "落盘与引用",
+      "text": "- 让 grok 把结果写成 Markdown/JSON 文件，而不是只打印——便于后续合并。\n- 明确要求\"每条结论附引用链接\"，grok headless 的 `web_search` 会带来源。\n- 需要机器可读引用时用 `grok-search.mjs`（`citations` 数组）。\n\n---",
+      "weight": 1.26
+    },
+    {
+      "id": "0ec20b29fff957a9da18",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/search-and-research.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "选型速查",
+      "text": "- **要 JSON + 精确过滤 + 引用数组** → `grok-search.mjs`（配 key）\n- **要免费、要推理综合、要产报告** → grok headless\n- **要规模化并行** → `--subagents` 或 shell 编排多 session",
+      "weight": 1.26
+    },
+    {
+      "id": "d1663d40520ad8a0336d",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/xai-search-capabilities.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Supported modes",
+      "text": "- `auto`: enables both `web_search` and `x_search`\n- `web`: enables only `web_search`\n- `x`: enables only `x_search`",
+      "weight": 1.26
+    },
+    {
+      "id": "003e111bbb4ef13ae0ca",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/xai-search-capabilities.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Defaults",
+      "text": "- image understanding enabled for web and X search\n- video understanding enabled for X search\n- JSON-first output\n- citations preserved in normalized results",
+      "weight": 1.26
+    },
+    {
+      "id": "848226208a05c05de2f1",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/xai-search-capabilities.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Supported controls",
+      "text": "- `--mode auto|web|x`\n- `--max-turns 1..10`\n- `--model <id>`\n- `--allow-domains` / `--exclude-domains`\n- `--allow-handles` / `--exclude-handles`\n- `--from YYYY-MM-DD`\n- `--to YYYY-MM-DD`\n- `--format json|text`\n- `--links-only`\n- `--debug`",
+      "weight": 1.26
+    },
+    {
+      "id": "498e1c1c109ce958a462",
+      "source": "Wangnov/grok-skills",
+      "ref": "0be4f688a639",
+      "path": "skills/grok/references/xai-search-capabilities.md",
+      "license": "MIT",
+      "domains": [
+        "grok",
+        "xai",
+        "web-search",
+        "x-search",
+        "research",
+        "image-generation",
+        "video-generation",
+        "ffmpeg",
+        "skills",
+        "capability-detection"
+      ],
+      "heading": "Notes",
+      "text": "- This skill does not claim raw SERP access\n- This skill does not implement reverse image search\n- Text mode is a convenience surface; JSON is the primary contract",
+      "weight": 1.26
+    },
+    {
+      "id": "95333794811c91daf250",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent - Development Guide",
+      "text": "Instructions for AI coding assistants and developers working on the hermes-agent codebase.\nThis root file holds only what applies everywhere. Each area has its own `AGENTS.md` (aim for\n~8k chars; `agent/subdirectory_hints.py` delivers up to 32k and truncates head/tail with a warning\npast that); see the **routing table** at the end and read the area file before editing in that area.\n\n**Never give up on the right solution.**",
+      "weight": 1.3
+    },
+    {
+      "id": "2d37f530d0f107c88172",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What Hermes Is",
+      "text": "Hermes is a personal AI agent that runs the same agent core across a CLI, a messaging\ngateway (Telegram, Discord, Slack, ~20 platforms), a TUI, and an Electron desktop app. It\nlearns across sessions (memory + skills), delegates to subagents, runs scheduled jobs, and\ndrives a real terminal and browser. It is extended primarily through **plugins and skills**,\nnot by growing the core.\n\nTwo invariants shape almost every design decision and are the lens for reviewing any change:\n\n- **Per-conversation prompt caching is sacred.** A long-lived conversation reuses a cached\n  prefix every turn. Anything that mutates past context, swaps toolsets, reloads memories, or\n  rebuilds the system prompt mid-conversation invalidates that cache and multiplies the user's\n  cost. We do not do it; the ONE exception is context compression. Slash commands that mutate\n  system-prompt state (skills, tools, memory) must be **cache-aware**: default to deferred\n  invalidation (takes effect next session) with an opt-in `--now` flag (`/skills install --now`\n  is the canonical pattern).\n- **The core is a narrow waist; capability lives at the edges.** Every model tool is sent on\n  every API call, so the bar for a ne",
+      "weight": 1.3
+    },
+    {
+      "id": "e7a9a1616e29b9f4493e",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What Hermes Is",
+      "text": "w *core* tool is high. New capability should arrive as a\n  CLI command + skill, a service-gated tool, or a plugin — not as core surface.",
+      "weight": 1.3
+    },
+    {
+      "id": "b513f077e71754832634",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Contribution Rubric — What We Want / What We Don't",
+      "text": "The project's intent layer. It serves humans aiming a contribution AND the automated triage\nsweeper, which may only close on `implemented_on_main`, `cannot_reproduce`, or `incoherent`.\nTaste-based \"out of scope\" closes are a human maintainer's call; the sweeper's job is to\nrecognize design intent and *avoid wrongly closing a legitimate contribution*.\n\nRead the balance right: Hermes ships a **lot**. Most merges are bug fixes to reported\nbehavior, and the product surface (platforms, providers, models, desktop/TUI features)\nexpands aggressively on purpose. The restraint below targets the **core agent + model tool\nschema**, the one place where every addition is paid for on every API call. \"Smallest\nfootprint\" governs *how a capability is wired into the core*, not whether the product may\ngrow: expansive at the edges, conservative at the waist.",
+      "weight": 1.3
+    },
+    {
+      "id": "e466f5afd928d752e931",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "- **Fix real bugs, well.** Reproduce the symptom on current `main`, point to the exact line\n  where it manifests, and fix the whole bug class — sibling call paths included.\n- **Expand reach at the edges.** New adapters, channels, providers, models, desktop/TUI/\n  dashboard features land routinely, including large ones — as long as they integrate with\n  the existing setup/config UX (`hermes tools`, `hermes setup`, auto-install) rather than\n  bolting on a raw env var.\n- **Refactor god-files into clean modules.** Huge mechanical `+N/-N` extraction PRs are\n  wanted work. \"Every line traces to the request\" applies to *feature* PRs; a declared\n  refactor's request IS the extraction.\n- **Keep the core narrow.** Prefer, in order: extend existing code → CLI command + skill →\n  service-gated tool (`check_fn`) → plugin → MCP server in the catalog → new core tool (last\n  resort). See the Footprint Ladder.\n- **Extend, don't duplicate.** Check whether existing infrastructure covers the use case\n  before adding a module/manager/hook. When 3+ open PRs integrate the same *category*\n  (memory backends, providers, notifiers), design an ABC + orchestrator, wrap the existing\n  built-in as the first pro",
+      "weight": 1.3
+    },
+    {
+      "id": "562bcebdc0a25a133aea",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "vider, and turn the competing PRs into plugins against it.\n- **Behavior contracts over snapshots.** Tests assert how two pieces of data relate, never\n  freeze a current value (see Testing).\n- **E2E validation, not just green unit mocks.** Anything touching resolution chains, config\n  propagation, security boundaries, remote backends, or file/network I/O must exercise the\n  real path with real imports against a temp `HERMES_HOME` — two of them (A→B→A) when the\n  change touches profile scope. Mocks hide integration bugs.\n- **Cache-, alternation-, and invariant-safe.** Preserve prompt caching, strict role",
+      "weight": 1.3
+    },
+    {
+      "id": "fd6b00dc845f7a6da8bf",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we want",
+      "text": "alternation (never two same-role messages in a row; never a synthetic user message injected\n  mid-loop), and a system prompt byte-stable for the life of a conversation.\n- **Contributor credit preserved.** Salvage external work by cherry-picking (rebase-merge) so\n  authorship survives; build on top rather than reimplementing.",
+      "weight": 1.3
+    },
+    {
+      "id": "8548067ab6e220140e88",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "- **Speculative infrastructure.** Hooks/callbacks/extension points with no concrete consumer.\n  Adding a hook is easy; removing one after plugins depend on it is hard. A hook with a real,\n  stated use case is NOT speculative even if the consumer ships separately.\n- **New `HERMES_*` env vars for non-secret config.** `.env` is for secrets only. Behavioral\n  settings (timeouts, thresholds, flags, display prefs) go in `config.yaml`; bridge to an\n  internal env var in code if the mechanism needs one. Reject \"set X in your .env\" docs\n  unless X is a credential.\n- **A new core tool when terminal + file (or a skill) already do the job.** If the only\n  barrier is file visibility on a remote backend, fix the mount, not the toolset.\n- **Lazy-reading escape hatches on instructional tools.** No `offset`/`limit` pagination on\n  tools that load content the agent must read fully (skills, prompts, playbooks) — models\n  read page 1 and skip the rest.\n- **\"Fixes\" that destroy the feature they secure.** Read the original intent\n  (`git log -p -S`) before restricting behavior; find a fix that preserves the feature.\n- **Outbound telemetry / usage attribution without opt-in gating.** No analytics,\n  thir",
+      "weight": 1.3
+    },
+    {
+      "id": "94d7fa309cd3e88a2964",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "d-party identifier tagging, or attribution tags until a generic user-facing opt-in\n  (config gate + setup prompt + `hermes tools` toggle) exists. Park behind a label.\n- **Change-detector tests, cache-breaking mid-conversation, dead code wired in without E2E\n  proof, plugins that touch core files.** Plugins work within the ABCs/hooks we provide; if\n  one needs more, widen the generic plugin surface, never special-case it in core.\n- **Third-party products integrated into the core tree.** Observability backends, vendor\n  SaaS connectors, analytics dashboards, and other \"someone else's product\" plugins do NOT",
+      "weight": 1.3
+    },
+    {
+      "id": "85a74cb826f7b4c12603",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "What we don't want (rejected even when well-built)",
+      "text": "land under `plugins/` — every one becomes our burden against a fast-moving core for a\n  backend we don't own. Ship as a **standalone plugin repo** (`~/.hermes/plugins/` or pip\n  entry point), promoted in the Nous Research Discord `#plugins-skills-and-skins`. This is a\n  coupling decision, not a quality bar; such PRs are closed with a pointer to publish.",
+      "weight": 1.3
+    },
+    {
+      "id": "98ee92b8040f3a0bb593",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
+      "text": "The most common reason a well-written PR is closed is a **wrong premise** or treating an\n**intentional design as a gap**. These patterns tell a reviewer what to scrutinize and tell\nthe sweeper when a PR is NOT safe to close (when in doubt, leave it open for a human):\n\n- **\"Intentional design, not a gap.\"** Ask whether the isolation IS the design. Profiles are\n  independent islands on purpose: a PR adding live config inheritance from the default\n  profile was closed because coupling profiles is exactly what the design prevents (`--clone`\n  already covers \"start from my default\"). Read `git log -p -S \"<symbol>\"` before assuming\n  something is unfinished.\n- **\"The premise doesn't hold against how X actually works.\"** Trace the real runtime before\n  accepting a rationale. Real closes: a rate-limit \"re-probe during cooldown\" PR (the breaker\n  trips only on a *confirmed-empty* bucket, so re-probing hammers a bucket proven empty); a\n  usage fix whose new branch **never executes** because an earlier guard already popped the\n  state. If you can't point to the exact line where the bug manifests AND show the fix changes\n  that line's behavior, the premise is unverified.\n- **\"The absence was d",
+      "weight": 1.3
+    },
+    {
+      "id": "d3227c03e8123bc068b2",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
+      "text": "eliberate.\"** Restoring \"missing\" `__init__.py` files made a test tree\n  importable as a dotted package that shadowed the real plugin and deleted its `register()`\n  at import time. The omission was load-bearing.\n- **\"Overreached / resurrected an approach we moved past.\"** Scope creep beyond the agreed\n  base, or reviving a direction maintainers closed, is rejected even when it works. Offer the\n  rest as a focused follow-up.\n\nThroughline: **verify the claim AND the intent against the codebase before writing or merging\na fix.** A reproduction on current `main` plus a line-level account beats a plausible",
+      "weight": 1.3
+    },
+    {
+      "id": "2fe5634f247dee9fae24",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "The Footprint Ladder (new capability decision)",
+      "text": "Choose the highest (least-footprint) rung that correctly solves the problem:\n\n1. **Extend existing code** — a variation of something that exists. Zero new surface.\n2. **CLI command + skill** — config/state/infra expressible as shell commands; the agent runs\n   `hermes <subcommand>` guided by a skill. Default for subscriptions, scheduled tasks,\n   service setup (`hermes webhook`, `hermes cron`, `hermes tools`).\n3. **Service-gated tool (`check_fn`)** — needs structured params/returns AND only appears when\n   a prerequisite is configured (Home Assistant tools, memory-provider tools). This rung gates\n   reachability/opt-in process-wide; a capability that varies per SESSION (who is watching) is\n   a named toolset folded in by the toolset resolver, not a `check_fn` — see \"Surface capability\n   is a property of the SESSION\" below.\n4. **Plugin** — third-party/niche/user-specific; lives in `~/.hermes/plugins/` or a pip\n   package, discovered at runtime.\n5. **MCP server (in the catalog)** — genuinely a tool but not core-fundamental. Zero permanent\n   core-schema footprint, reusable by any MCP host, reached via the built-in MCP client.\n6. **New core tool** — only when fundamental, broadly use",
+      "weight": 1.3
+    },
+    {
+      "id": "12cb32afec48c9059bad",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "The Footprint Ladder (new capability decision)",
+      "text": "ful to nearly every user, and\n   unreachable via terminal + file or an MCP server (terminal, read_file, web_search,\n   browser_navigate).",
+      "weight": 1.3
+    },
+    {
+      "id": "fd7811f45a038afbcf69",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Surface capability is a property of the SESSION, never of the process env",
+      "text": "A tool that works only because of *who is on the other end* (desktop panes, in-app browser,\nmessage reactions, Projects) must resolve availability from the **session's own source**, not\nfrom an env var on the backend. Client and backend are separate machines: the desktop app may\ndrive a locally spawned backend, one over SSH, one behind URL + token, or Hermes Cloud, and\nonly the first two carry `HERMES_DESKTOP=1`. An env-keyed gate is a silent no-op on the other\ntopologies — the tool is stripped from the schema while the platform hint tells the model it\nis \"inside the Hermes desktop app\". The pattern:\n\n- **The toolset is the surface gate.** Keep such tools off `_HERMES_CORE_TOOLS` and in a named\n  toolset (`desktop_ui`, `project`); the GUI gateway's `_load_enabled_toolsets(platform)`\n  folds it in when the session's platform says GUI. One resolver, every topology.\n- **`check_fn` answers reachability or opt-in, not surface.** \"Is the bridge wired?\" — fine.\n  \"Was I spawned by Electron?\" — not. `check_fn` results are TTL-cached process-wide\n  (`tools/registry.py`); a per-session answer does not belong there.\n- **Ask which identity you mean.** `HERMES_DESKTOP=1` legitimately means \"thi",
+      "weight": 1.3
+    },
+    {
+      "id": "7643c0cf1b35b6798a3b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Surface capability is a property of the SESSION, never of the process env",
+      "text": "s backend was\n  spawned by the app\" (cron ticker, web-dist handling). It does NOT mean \"a GUI is watching\";\n  the embedded terminal pane (`hermes --tui` against that backend) is the counterexample.\n\nTest: if the capability still makes sense with the client on another machine, it is\nsession-scoped. Assert the GUI session gets the tool **with the env var absent**.",
+      "weight": 1.3
+    },
+    {
+      "id": "c72c755e3bc2c0be1a2e",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Development Environment",
+      "text": "```bash\nsource ./activate   # provisions/syncs PM tools + dependencies, then activates\n```\nSelect an isolated development `HERMES_HOME` and `HERMES_RUNTIME_DIR` first;\nsee `website/docs/reference/package-management.md#developer-workflow`.\nPowerShell: `. .\\activate.ps1`. `deactivate` restores the prior environment.\nFor tests, use the independent test environment in `CONTRIBUTING.md` (or Nix);\nPM activation's `PYTHONPATH` does not survive the test runner's environment scrub.\n`scripts/run_tests.sh` probes `.venv`, then `venv`, then `$HOME/.hermes/hermes-agent/venv`\n(worktrees sharing the main checkout's venv).",
+      "weight": 1.3
+    },
+    {
+      "id": "ad5a9865ebc56b998921",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": "Counts shift constantly; the filesystem is canonical. Load-bearing entry points:\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent facade; the turn loop lives in agent/turn_*.py\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # TOOLSETS dict, _HERMES_CORE_TOOLS\n├── cli.py                # HermesCLI (REPL, slash dispatch) + hermes_cli/cli_*_mixin.py\n├── hermes_state.py       # SessionDB facade; hermes_state_*.py siblings\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # turn_*.py loop phases, providers, memory, compression, prompt builder\n├── hermes_cli/           # CLI subcommands, setup, config, plugins loader, skins, updater\n│   └── web_routers/      # Dashboard FastAPI routers (one per surface); web_server.py mounts them\n├── tools/                # Tool implementations, auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity",
+      "weight": 1.3
+    },
+    {
+      "id": "4c957129ecf1a836e24a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": ")\n├── gateway/              # run.py facade + run_*.py phases + session*.py + platforms/\n│   ├── platforms/        # One adapter per platform; see platforms/ADDING_A_PLATFORM.md\n│   └── builtin_hooks/    # Always-registered gateway hooks (extension point; none shipped)\n├── plugins/              # memory/, context_engine/, model-providers/, kanban/, image_gen/, ...\n├── skills/               # Built-in skills (by category)   optional-skills/: shipped, not active\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n├── tui_gateway/          # Python JSON-RPC backend for TUI + Desktop — server.py + methods_*.py",
+      "weight": 1.3
+    },
+    {
+      "id": "b44591af033580e68cf6",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Project Structure",
+      "text": "├── apps/desktop/         # Electron desktop app (+ apps/shared JSON-RPC client)   web/: dashboard SPA\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains)\n├── cron/                 # jobs.py + scheduler.py (+ scheduler_*.py)\n├── evals/                # Offline benchmarks (codebase_navigability/, compaction/, ...)\n├── scripts/              # run_tests.sh, release.py, check_compat_pointers.py, ci/\n├── website/              # Docusaurus docs (developer-guide/ holds the long-form area docs)\n└── tests/                # Pytest suite (~39k tests / ~3.7k files, Sep 2026)\n```\n\n**User state:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (secrets only),\n`~/.hermes/logs/` (`agent.log` INFO+, `errors.log` WARNING+, `gateway.log`); all\nprofile-aware via `get_hermes_home()`. Browse logs with `hermes logs [--follow] [--level] [--session]`.\n\n**Dependency chain:** `tools/registry.py` (no deps) ← `tools/*.py` (register at import) ←\n`model_tools.py` (discovery) ← `run_agent.py`, `cli.py`, `batch_runner.py`, `environments/`.",
+      "weight": 1.3
+    },
+    {
+      "id": "198ce44504ce4b78ae34",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "Every former god file is a **facade** (public entry points + the names other packages import)\nplus **siblings** `<stem>_<topic>.py` in the same directory, each owning one topic. Largest\nfamilies: `hermes_state.py` (21), `gateway/run.py` (15), `tools/mcp_tool.py` (15),\n`hermes_cli/kanban.py` (14), `hermes_cli/web_server.py` (13 + 24 routers), `hermes_cli/auth.py`\n(12), `tools/browser_tool.py` (11), `cli.py` (12 `hermes_cli/cli_*_mixin.py`), `run_agent.py`\n(`agent/turn_*.py`, `agent_init.py`, `conversation_loop.py`).\n\n- **Find code by topic, not by facade:** `grep -rn \"def name\" <dir>/<stem>_*.py`. Reading the\n  facade first is the expensive way (`evals/codebase_navigability/`).\n- **Siblings may import each other and late-import the facade** inside functions. A facade\n  never imports a sibling at module level *and* gets imported by that sibling at module level.\n- **Patch where production reads.** Siblings often do `from <facade> import name` inside the\n  function so `monkeypatch.setattr(facade, \"name\", ...)` is the seam; a patch on the defining\n  module passes silently. Check the call site's binding before writing a patch target\n  (blind repointing to defining modules broke 130+ test",
+      "weight": 1.3
+    },
+    {
+      "id": "9e4acd460e1aac8ece0e",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "s).\n- **Compat pointers are OFF LIMITS in-tree.** Old import paths kept alive for external plugins\n  (`PLUGIN-COMPAT` blocks, `COMPAT_MANIFEST.md`, `compat_manifest.json`) must not be used by\n  in-tree code or tests; `scripts/check_compat_pointers.py` runs in CI, and\n  `-W error::hermes_cli.plugin_compat.HermesPluginCompatWarning` catches them in the suite.\n  They are removed 2026-09-14 by reverting one commit. Import from the defining module.\n- **Don't recreate god files.** A file passing ~2,000 lines or a function passing ~300 lines /\n  cyclomatic complexity 30 is the signal to split along `<stem>_<topic>` FIRST, in its own",
+      "weight": 1.3
+    },
+    {
+      "id": "65832de22bf748f0339b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
+      "text": "commit. New behaviour goes in a new or topical sibling — never appended to a facade.\n- **No `if/elif` ladders ≥ 4 branches keyed on a name/kind** — use a dict/table → handler\n  (`_SLASH_DISPATCH` in `cli.py`, `_command_handler_table` in the gateway are the shape).\n- **No re-export shims for internal moves** (\"keep the old name importable\"). Internal paths\n  are not API; external compat is handled ONCE by the compat layer, not per PR.\n- **Moving a symbol means fixing its docs in the same PR:** grep `website/docs`,\n  `skills/`, and every `AGENTS.md` for the old `path.py` + symbol (23 doc files went stale\n  after the refactor). `evals/codebase_navigability/static_metrics.py <tree> <label>` measures\n  file/function/CC/elif distributions before/after a large PR in ~2 min.",
+      "weight": 1.3
+    },
+    {
+      "id": "498214dc09b31fac526c",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "- No \"defense-in-depth\" wrappers, `try/except: pass` around code that cannot fail, or flags\n  nobody sets. Docstrings/comments keep the WHY, cut the WHAT.\n- **Never infer process identity from argv substrings** (`\"serve\" in cmdline`) — the bug class\n  behind ~10 fleet-update issues (#90778, #87594, #78089, #76129, #91964). Use the canonical\n  matchers `gateway.status.looks_like_gateway_command_line` and\n  `hermes_cli.update_cmd._hermes_holder_subcommand`; flag sets are DERIVED from the parser\n  (`_holder_value_flags()`), never hand-written; match FULL cmdlines and truncate only for\n  display. Details: `hermes_cli/AGENTS.md`.\n- **Never hardcode `~/.hermes`.** `get_hermes_home()` for code paths, `display_hermes_home()`\n  for user-facing text (both from `hermes_constants`). Hardcoding breaks profiles (5 bugs in\n  PR #3575). Profile operations themselves are HOME-anchored\n  (`_get_profiles_root()` = `Path.home()/.hermes/profiles`) so `hermes -p x profile list`\n  sees all profiles — intentional, not a bug.\n- **One process may serve many profiles; code that runs outside a turn binds the owning\n  profile scope explicitly.** A profile = home + secret scope + terminal scope, bound by\n  `gat",
+      "weight": 1.3
+    },
+    {
+      "id": "ab3d35d0c6dde5c9cbb6",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "eway/run.py::_profile_runtime_scope` (turn), `tui_gateway/server.py::@_profile_scoped` +\n  `model_switch.py::_session_profile_runtime_scope` (RPC, teardown), `cron/scheduler_provider.py::\n  _profile_cron_scope` (ticker), `gateway/run_agent_cache.py::_run_release_in_profile_scope`\n  (eviction). `os.environ`, module globals and import-time values hold the *launch* profile's, so\n  an unbound read is a silent default-profile leak, never an error: home/config/`.env`-derived\n  module constants are a bug class — key slots by `hermes_home_key()` or resolve at call time.\n  Needs a binding: boot probes (`check_fn`, MCP discovery, hooks), session end/eviction, tickers,",
+      "weight": 1.3
+    },
+    {
+      "id": "11ea0f43fd428f133248",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "deferred callbacks, RPC methods, config readers, thread hops (`spawn_context_thread`), child\n  spawns (`served_profile_child_env`, never `os.environ.copy()`). Fail-closed reads exist only after\n  `set_multiplex_active(True)`. Prove live with two homes (A→B→A) under multiplex, not one temp\n  `HERMES_HOME`. Advisory lint: `scripts/check_profile_scope_patterns.py`.\n- **Machine facts and resource lookup go through `hermes_platform`.** `hermes_platform.host` is the\n  one answer for OS family, native architecture (`IsWow64Process2` → `platform.machine()`; never\n  `PROCESSOR_ARCHITECTURE` alone, it reads AMD64 under x64-on-ARM64 emulation), CPU identity, and\n  WSL/container/Termux. Facts are cached per process and take **no environment-variable input**, so\n  a hardware recognizer (`host/products.py`) cannot be set from a shell. Distinguish the control\n  host (where this Python runs) from the terminal execution target (SSH/container) and the Desktop\n  client (another machine): `host.*` answers only the first. A new bare `shutil.which` or a\n  hand-written known-path table outside `hermes_platform/` fails\n  `tests/test_managed_runtime_resolution.py` unless allowlisted with a reason; resolver",
+      "weight": 1.3
+    },
+    {
+      "id": "9738eeafa93d41502fc7",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Code Shape Rules (all languages)",
+      "text": "s land in\n  `hermes_platform/resolver/`. Lookup never installs, downloads, or starts anything.\n- **Argparse alias dispatch:** `add_parser(\"list\", aliases=[\"ls\"])` sets `dest` to the literal\n  the user typed (`\"ls\"`). Dispatch must accept both (caught PTY-testing `hermes webhook ls`).\n- **Don't wire in dead code without E2E validation.** Unshipped code was dead for a reason;\n  E2E the real resolution chain with real imports against a temp `HERMES_HOME` first.",
+      "weight": 1.3
+    },
+    {
+      "id": "7a1e5ca6e4225b854a61",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "TypeScript style (desktop, TUI, website, future TS packages)",
+      "text": "Small nanostores over component state when state is shared or read by distant UI; each\nfeature owns its atoms (chat near chat, shared in `src/store`); rendering components use\n`useStore`, non-rendering actions read `$atom.get()`; never thread state through three\ncomponents when the leaf can subscribe; persistence sits beside the atom that owns it. Route\nroots stay thin (compose routes + shell, never controllers). No monolithic hooks — one narrow\njob each; colocated action modules over god hooks. Pure side-effect callbacks use the terse\nvoid form `onState={st => void setGatewayState(st)}`; async handlers make intent explicit\n`onClick={() => void save()}`. Interfaces for public props and shared object shapes (not\n`type X = {...}`); extend React primitives (`React.ComponentProps<'button'>`, `Omit`, `Pick`).\nTable-driven beats condition ladders for ids/routes/views. `src/app` owns routes/pages,\n`src/store` shared atoms, `src/lib` pure helpers.",
+      "weight": 1.3
+    },
+    {
+      "id": "995cf8230bba9a59bf0c",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Dependency Pinning Policy",
+      "text": "All dependencies carry upper bounds (litellm compromise #2796/#2810; Mini Shai-Hulud worm,\nMay 2026). PyPI: `>=floor,<next_major` (`\"httpx>=0.28.1,<1\"`); pre-1.0: `<0.(minor+2)`\n(`>=0.29,<0.32`). Git URLs: 40-char commit SHA. GitHub Actions: SHA + `# vN` comment. CI-only\nPython requirements: `==exact`. A bare `>=X.Y.Z` is rejected by CI and reviewers.\nAfter changing `pyproject.toml`, run `hermes pm lock`, re-source `./activate`, and commit\n`pyproject.toml` with `uv.lock`. Reference: #2810 (bounds), #9801 (SHA pinning + audit CI).\n\nPM owns Hermes Python dependency changes. Use `pm.sync_venv(['extra'], explicit=True)`\nfor declared runtime extras, `hermes pm install` for setup/sync, and `hermes pm repair`\nfor damaged dependencies. Do not mutate Hermes environments with raw pip or uv.\nUse `pm.build_environment` for fresh build outputs and `pm.ensure_environment` for\nisolated tool environments. Callers receive an interpreter or tool path, not uv.\nNix's declarative uv2nix builds and unrelated user projects remain independently owned.\n\nThe `[tool.uv] exclude-newer = \"14 days\"` quarantine covers **Hermes's own dependencies only**\n(every registry package in core's `uv.lock`). Plugin `python",
+      "weight": 1.3
+    },
+    {
+      "id": "29d331874b275311e84b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Dependency Pinning Policy",
+      "text": "_dependencies` follow the plugin's own\npolicy: when PM generates the plugin workspace (`pm/workspace.py::_core_release_quarantine`) the\nglobal cutoff moves onto each core-locked package, so plugin-only packages are not filtered and a\nplugin still cannot drag a core package past the window. Teknium's ruling: \"plugins dont have to\nabide by our 14 day rule … Only hermes' dependencies themselves have to.\" We recommend (not require)\nplugin authors adopt their own quarantine — the developer guide and `plugin-catalog/README.md` carry\nthat guidance.",
+      "weight": 1.3
+    },
+    {
+      "id": "f954fecd81fe8db277d6",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Commits, Merges, PRs",
+      "text": "- **Squash merges from stale branches silently revert recent fixes.** Before squash-merging,\n  bring the branch to `main` (`git fetch origin main && git reset --hard origin/main`, re-apply\n  the PR's commits). Verify with `git diff HEAD~1..HEAD` after merging — unexpected deletions\n  are a red flag.\n- Salvage by cherry-pick so contributor authorship survives (see rubric).\n- Tests per fix: 1–2 INVARIANT tests (behaviour contract, proven red on base), never\n  change-detectors; ≤ 2 tests is the salvage bar too. Reject/rewrite in salvaged diffs:\n  appendages to facades, new god helpers, compat aliases, wrappers.",
+      "weight": 1.3
+    },
+    {
+      "id": "ea83f5345f4180eba183",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "**ALWAYS use `scripts/run_tests.sh`**, never bare `pytest`. It enforces CI parity: credential\nvars unset, `TZ=UTC`, `LANG=C.UTF-8`, `HERMES_HOME` → temp dir, and per-file subprocess\nisolation via `scripts/run_tests_parallel.py` (no xdist; workers scale with CPU count) so\nmodule-level dicts/ContextVars cannot leak between files. Direct `pytest` on a big machine\nwith API keys set has caused repeated \"works locally, fails in CI\" incidents (and the reverse).\n\nPrepare a test interpreter with the checkout's bootstrapped Python:\n\n```bash\npython -m pm.build_env --source . --out .venv --group dev --group test\n```\n\nThis is a fresh build, not an in-place sync. If the disposable output exists,\nstop its processes and intentionally remove it before regeneration. The runner\nclears `PYTHONPATH`, so PM shell activation alone does not supply pytest. For a\nfresh output outside the checkout, set `HERMES_PYTHON` to its interpreter.\n\n```bash\nscripts/run_tests.sh                                    # full suite\nscripts/run_tests.sh tests/gateway/                     # one directory\nscripts/run_tests.sh tests/agent/test_foo.py -k test_x  # runner is file-granular; -k narrows\nscripts/run_tests.sh -v --tb=lo",
+      "weight": 1.3
+    },
+    {
+      "id": "45f537cbfef699800498",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "ng                       # pytest flags pass through\n```\n\n- **Flake policy:** a failing FILE is retried once in a fresh subprocess (`--file-retries`;\n  `HERMES_TEST_FILE_RETRIES=0` disables); a worker killed by signal or the file timeout is never\n  retried (relaunching a runaway doubles the damage). Pass-on-retry is green but printed under `⚠ FLAKY`\n  with both outputs — a bug to fix, not noise. Timing tests must not assume a quiet runner:\n  wall-clock bounds ≥ 2s, event-based sync, no `assert not _wait_until(...)` races.\n- **Placement mirrors the source tree.** A test lives in `tests/<top-level source dir>/` (`tests/hermes_cli/`,",
+      "weight": 1.3
+    },
+    {
+      "id": "81ddc7c0fcb6bbe9cbd8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "`tests/agent/`, `tests/hermes_state/`, `tests/gateway/relay/`, ...); installer/updater script tests\n  under `tests/scripts/{install,desktop_update}/`. Only tests of root-level modules (`batch_runner`,\n  `utils`, `hermes_constants`, packaging) sit directly in `tests/`. No issue numbers in filenames —\n  cite the issue in the module docstring (`test_89315_x.py` → `test_x.py`, \"Regression for #89315\").\n- **Placement (CI lanes):** `scripts/ci/classify_changes.py` picks jobs by changed files. A Python test\n  asserting about `package.json`, `package-lock.json`, `tsconfig.json`, or `.ts/.tsx/.js/\n  .mjs/.cjs` sources will not run on a JS-only PR (green on PR, red on `main` where the\n  classifier fails open). Such tests belong in the vitest suite, not `tests/*.py`.\n- **Tests must not write to `~/.hermes/`.** The autouse `_isolate_hermes_home` fixture in\n  `tests/conftest.py` redirects `HERMES_HOME`; never hardcode `~/.hermes/` in tests. Profile\n  tests also mock `Path.home()` so `_get_profiles_root()` / `_get_default_hermes_home()` stay\n  in the temp dir (pattern: `tests/hermes_cli/test_profiles.py`):\n  ```python\n  @pytest.fixture\n  def profile_env(tmp_path, monkeypatch):\n      home = tmp_p",
+      "weight": 1.3
+    },
+    {
+      "id": "cb5adcb99a480e776579",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Testing (applies everywhere)",
+      "text": "ath / \".hermes\"; home.mkdir()\n      monkeypatch.setattr(Path, \"home\", lambda: tmp_path)\n      monkeypatch.setenv(\"HERMES_HOME\", str(home))\n      return home\n  ```\n  Tests that `patch.object(Path, \"home\", ...)` must ALSO set `HERMES_HOME` — code reads the\n  env var, not `Path.home()/.hermes`.",
+      "weight": 1.3
+    },
+    {
+      "id": "51f4d95954ccebd06d88",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "Behaviour that genuinely differs per host is tested ON that host with `@pytest.mark.platforms(\"linux\")`\n/ `platforms(\"macos\")` / `platforms(\"windows\")`, never by patching `sys.platform`. Host-independent things stay\nunmarked: pure functions that take the platform as data (`hidden_windows_child_options(opts,\nis_windows=True)`) and declaration/packaging invariants (\"pyproject declares `tzdata` with a\n`sys_platform == 'win32'` marker\"). Setting a module-level `IS_WINDOWS` flag and calling\n`windows_detach_flags()` IS a fake. The line: **if the test needs the interpreter to believe it\nis on another OS to pass, it belongs on that OS.** A test that walks several platforms in\nsequence is split — host-native arm on Linux, other arms as their own marked tests.\n\nOne marker per test, with any number of spec strings (any-of semantics) plus\noptional arch filters. To gate on several OSes, pass several specs to ONE\nmarker — never stack several `platforms()` decorators on one test (the\nconftest rejects that at collection):\n\n```python\n@pytest.mark.platforms(\"linux\", \"macos\")  # ONE marker, two specs: runs on either\ndef test_posix_signal_path(): ...\n```\n\nOther single-marker forms (each is a complete",
+      "weight": 1.3
+    },
+    {
+      "id": "2e83366404e3158237f5",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "marker on its own):\n`platforms(\"windows\")` (native Windows only), `platforms(\"not macos\")`\n(anywhere except macOS), `platforms(\"windows\", arch=\"arm64\")` (native Windows\non arm64), `platforms(\"posix\")` (Linux or macOS).\n\nSpecs: `linux`, `macos`, `windows`, `posix`, `any`, and `not <spec>`.\nThe historic `linux_only` / `macos_only` / `windows_only` markers have been\nfully replaced — `platforms` is the only host-gating marker in the tree.\n\n**Live Windows process-topology E2E: the `wine2e` lane.** For claims about\nreal Windows process behavior that mocks cannot reproduce (venv-holder\nscans, process-tree parentage, launcher/worker chains, detach semantics),",
+      "weight": 1.3
+    },
+    {
+      "id": "bff3125cbc3d0e8197a5",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "there is an on-demand workflow `windows-venv-e2e.yml` that runs\n`tests/hermes_cli/test_venv_holder_windows_live.py` on a real\n`windows-latest` runner — spawning actual processes and driving the real\ndetection code, no mocked psutil. It fires ONLY on pushes to `wine2e/**`\nbranches (inert on PRs and main; costs nothing on normal work). The proven\nworkflow: write probes that pin CORRECT behavior, push to a `wine2e/`\nbranch to reproduce the bugs live on unfixed code, build the fix, iterate\nuntil the lane is green, then open the PR — the live receipt on the exact\nhead is the Windows proof reviewers ask for. Extend the live suite when\ntouching that subsystem; assert against the gateway ANCESTOR found by\nargv, not the direct parent (the venv shim makes every spawn a\nlauncher/worker chain).\n\n**Use the marker, never a bare `skipif`.** `scripts/ci/list_os_marked_tests.py`\ndecides which files an OS lane imports by resolving the quoted specs inside\n`platforms(...)` (`\"posix\"` reaches the macOS lane, `\"not linux\"` reaches\nboth others), and the lane then selects with `-m platforms` while the\nconftest's per-test host skips do the actual gating. A test gated with\n`@pytest.mark.skipif(sys.platform",
+      "weight": 1.3
+    },
+    {
+      "id": "f167e31d7ea14935c579",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't fake the host OS",
+      "text": "!= \"win32\")` therefore runs on no host at\nall, silently — it is never imported by the lane that would run it, and the\nfull-suite lanes skip it. `skipif(sys.platform == \"win32\")` becomes\n`platforms(\"posix\")`; a non-host condition (`os.geteuid() == 0`) stays a\nseparate `skipif` beside the marker. A misspelt spec is a collection error,\nnot a skip. Don't stack a module-level `pytestmark =\nplatforms(...)` on a file whose tests carry their own host marker — the\nconftest hard-rejects tests carrying two `platforms()` markers (a test\nskipped on every host, reported green everywhere).\nEqually, don't `pytest.skip()` the non-host rows of a `@parametrize` over",
+      "weight": 1.3
+    },
+    {
+      "id": "0575e4a453eceac81bd8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Don't write change-detector tests",
+      "text": "A change-detector fails whenever data *expected to change* is updated — model catalogs,\n`_config_version`, enumeration counts, hardcoded model lists. It adds no coverage and taxes\nevery routine update. Don't: `assert \"gemini-2.5-pro\" in _PROVIDER_MODELS[\"gemini\"]`,\n`assert DEFAULT_CONFIG[\"_config_version\"] == 21`, `assert len(models) == 8`. Do: `assert\n\"gemini\" in _PROVIDER_MODELS and len(_PROVIDER_MODELS[\"gemini\"]) >= 1` (plumbing works);\n`assert raw[\"_config_version\"] == DEFAULT_CONFIG[\"_config_version\"]` (migration reaches\nlatest); `assert not (set(moonshot_models) & coding_plan_only_models)` (no leak); every\ncatalog model has a context-length entry (relationship). If it reads like a snapshot, delete\nit; if it reads like a contract between two pieces of data, keep it. Reviewers reject new\nchange-detectors; authors convert them before re-review.",
+      "weight": 1.3
+    },
+    {
+      "id": "6e3d8bdecb4fd1d39602",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Never read source code in tests",
+      "text": "A test that reads a `.py`/`.ts`/`.tsx` file's text tests the *shape of the source*, not\nbehavior — banned outright. It passes when the implementation is subtly broken (regex matches\na mis-wired call site) and fails on correct refactors; it can't run against bundled/minified\nartifacts; it blocks structural cleanup; it gives false confidence. Don't\n`fs.readFileSync('main.ts')` + `assert.match(source, /spawn\\(...hiddenWindowsChildOptions/)`.\nDo extract the logic into a pure/DI-testable function and call it:\n```ts\nexport function hiddenWindowsChildOptions(options = {}, isWindows = process.platform === 'win32') {\n  if (!isWindows || 'windowsHide' in options) return options\n  return { ...options, windowsHide: true }\n}\n```\nIf the logic lives inline in a god-file and extraction feels disruptive, that is the signal to\nextract, not to regex around it.",
+      "weight": 1.3
+    },
+    {
+      "id": "b256d96712bf7907a886",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": "| Area | Read | Covers |\n|---|---|---|\n| `run_agent.py`, `agent/` | `agent/AGENTS.md` | AIAgent + mixins, turn phases, caching integrity, message-flow invariants, compression, model/aux resolution |\n| `cli.py`, `hermes_cli/`, `main.py` | `hermes_cli/AGENTS.md` | CLI mixins, `_SLASH_DISPATCH`, slash registry, config system + loaders, skins, `hermes update` pipeline, profiles / multiplex |\n| `gateway/` | `gateway/AGENTS.md` | Adapters, two message guards, streaming contract, background notifications, gateway vs desktop lifecycle, token locks, scoped secrets |\n| `tools/`, `toolsets.py`, `model_tools.py` | `tools/AGENTS.md` | Adding tools, registry, toolsets, delegation, cross-tool references, backends |\n| `plugins/`, `hermes_cli/plugins*.py` | `plugins/AGENTS.md` | Plugin kinds, native compat contract, in-tree policy, Sep-2026 compat window |\n| `tui_gateway/`, `ui-tui/` | `tui_gateway/AGENTS.md` | Process model, JSON-RPC transport, key surfaces, slash flow, dev commands |\n| `web/`, `hermes_cli/web_routers/` | `web/AGENTS.md` | Dashboard embeds the real TUI; what React may and may not rebuild |\n| `apps/desktop/` | `apps/desktop/AGENTS.md`, `apps/desktop/src/AGENTS.md` | Desktop judgmen",
+      "weight": 1.3
+    },
+    {
+      "id": "6666c3281086a74cd904",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": "t guide; `serve` backend, slash palette curation, Bot Mode canonical chat |\n| `skills/`, `optional-skills/`, `agent/curator*.py` | `skills/AGENTS.md` | Frontmatter, HARDLINE authoring standards, curator |\n| `cron/`, kanban (`hermes_cli/kanban*.py`, `tools/kanban_tools.py`, `plugins/kanban/`) | `cron/AGENTS.md` | Scheduler invariants, job fields, kanban board/dispatcher |\n| `gateway/platforms/` new adapter | `gateway/platforms/ADDING_A_PLATFORM.md` | Step-by-step adapter guide |\n| profiles / multiplex / secret scope (any area) | `gateway/AGENTS.md` § Profile scope, `website/docs/user-guide/multi-profile-gateways.md` § What is isolated per profile | which execution points bind scope, what is isolated per profile |",
+      "weight": 1.3
+    },
+    {
+      "id": "a0dd735df1a524d0151e",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "AGENTS.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Routing Table — working in X → read X/AGENTS.md",
+      "text": "Long-form background lives in `website/docs/developer-guide/` (agent-loop, prompt-assembly,\ncontext-compression-and-caching, gateway-internals, tools-runtime, plugins/, cron-internals,\nsession-storage, ...). Workflow rules (PR/issue/review/salvage process) live in the\n`hermes-agent-dev` skill, not here.",
+      "weight": 1.3
+    },
+    {
+      "id": "09b50170c2cb30755ab2",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent ☤",
+      "text": "<p align=\"center\">\n  <a href=\"https://hermes-agent.nousresearch.com/\">Hermes Agent</a> | <a href=\"https://hermes-agent.nousresearch.com/\">Hermes Desktop</a>\n</p>\n<p align=\"center\">\n  <a href=\"https://hermes-agent.nousresearch.com/docs/\"><img src=\"https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge\" alt=\"Documentation\"></a>\n  <a href=\"https://discord.gg/NousResearch\"><img src=\"https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white\" alt=\"Discord\"></a>\n  <a href=\"https://github.com/NousResearch/hermes-agent/blob/main/LICENSE\"><img src=\"https://img.shields.io/badge/License-MIT-green?style=for-the-badge\" alt=\"License: MIT\"></a>\n  <a href=\"https://nousresearch.com\"><img src=\"https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge\" alt=\"Built by Nous Research\"></a>\n  <a href=\"README.zh-CN.md\"><img src=\"https://img.shields.io/badge/Lang-中文-red?style=for-the-badge\" alt=\"中文\"></a>\n  <a href=\"README.ur-pk.md\"><img src=\"https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge\" alt=\"اردو\"></a>\n  <a href=\"README.es.md\"><img src=\"https://img.shields.io/badge/Lang-Español-orange?styl",
+      "weight": 1.3
+    },
+    {
+      "id": "27f5536b2166d0f16c85",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent ☤",
+      "text": "e=for-the-badge\" alt=\"Español\"></a>\n</p>\n\n**The self-improving AI agent built by [Nous Research](https://nousresearch.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.\n\nUse any model you want — [Nous Portal](https://portal.nousresearch.com), OpenRouter, OpenAI, your own endpoint, and [many others](https://hermes-agent.nousresearch.com/docs/integrations/providers). Switch with `hermes model` — no code changes, no lock-in.",
+      "weight": 1.3
+    },
+    {
+      "id": "2e57b0340c14d7faec38",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent ☤",
+      "text": "<table>\n<tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>\n<tr><td><b>Lives where you do</b></td><td>Telegram, Discord, Slack, WhatsApp, Signal, and CLI — all from a single gateway process. Voice memo transcription, cross-platform conversation continuity.</td></tr>\n<tr><td><b>A closed learning loop</b></td><td>Agent-curated memory with periodic nudges. Autonomous skill creation after complex tasks. Skills self-improve during use. FTS5 session search with LLM summarization for cross-session recall. <a href=\"https://github.com/plastic-labs/honcho\">Honcho</a> dialectic user modeling. Compatible with the <a href=\"https://agentskills.io\">agentskills.io</a> open standard.</td></tr>\n<tr><td><b>Scheduled automations</b></td><td>Built-in cron scheduler with delivery to any platform. Daily reports, nightly backups, weekly audits — all in natural language, running unattended.</td></tr>\n<tr><td><b>Delegates and parallelizes</b></td><td>Spawn isolated subagents for parallel workstreams. Write Python scripts that call tools via RPC, collapsing multi-step p",
+      "weight": 1.3
+    },
+    {
+      "id": "2c2a9579c22c4e9db35b",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Hermes Agent ☤",
+      "text": "ipelines into zero-context-cost turns.</td></tr>\n<tr><td><b>Runs anywhere, not just your laptop</b></td><td>Seven terminal backends — local, Docker, SSH, Singularity, Modal, Daytona, and Vercel Sandbox. Daytona and Modal offer serverless persistence — your agent's environment hibernates when idle and wakes on demand, costing nearly nothing between sessions. Run it on a $5 VPS or a GPU cluster.</td></tr>\n<tr><td><b>Research-ready</b></td><td>Batch trajectory generation, trajectory compression for training the next generation of tool-calling models.</td></tr>\n</table>\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "be02e8c007814c4a5b23",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Windows (native, PowerShell)",
+      "text": "> **Heads up:** Native Windows runs Hermes without WSL — CLI, gateway, TUI, and tools all work natively. If you'd rather use WSL2, the Linux/macOS one-liner above works there too. Found a bug? Please [file issues](https://github.com/NousResearch/hermes-agent/issues).\n\nRun this in PowerShell:\n\n```powershell\niex (irm https://hermes-agent.nousresearch.com/install.ps1)\n```\n\nThe source installer delegates Python 3.14, Node.js, npm, ripgrep, FFmpeg,\nand Python dependencies to PM. If Git is absent, it stages the verified Git\nfor Windows archive in Hermes' tool store. It does not replace your system Git.\nSee [installation methods](https://hermes-agent.nousresearch.com/docs/getting-started/installation)\nfor the separate MSIX/App Installer package and its update ownership.\n\n> **Android / Termux:** A signed APT repository is available for aarch64 devices, with a `stable` channel (tagged releases) and a prerelease `canary` channel. The package includes Python, Node.js, and the TUI. Use the [Termux guide](https://hermes-agent.nousresearch.com/docs/getting-started/termux), not the desktop/server installer script.\n>\n> **Windows:** Native Windows is fully supported — the PowerShell one-liner above",
+      "weight": 1.3
+    },
+    {
+      "id": "ad7d74e6976b5aaf3d3a",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Windows (native, PowerShell)",
+      "text": "installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\\hermes`; WSL2 installs under `~/.hermes` as on Linux.\n\nAfter installation:\n\n```bash\nsource ~/.bashrc    # reload shell (or: source ~/.zshrc)\nhermes              # start chatting!\n```",
+      "weight": 1.3
+    },
+    {
+      "id": "8ac9afe77e246d81a420",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Windows Defender or antivirus flags `uv.exe` as malware",
+      "text": "If your antivirus (Bitdefender, Windows Defender, etc.) quarantines `uv.exe` from the Hermes `bin` folder (`%LOCALAPPDATA%\\hermes\\bin\\uv.exe`), this is a **false positive**. The file is Astral's `uv` — the Rust Python package manager Hermes bundles to manage its Python environment. ML-based antivirus engines commonly flag unsigned Rust binaries that download and install packages.\n\n**To verify your copy is authentic:**\n\n```powershell",
+      "weight": 1.3
+    },
+    {
+      "id": "41dc843acc0f685f21ae",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Run verification",
+      "text": "$uv = \"$env:LOCALAPPDATA\\hermes\\bin\\uv.exe\"\n$ver = (& $uv --version).Split(' ')[1]\n[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n$zip = \"$env:TEMP\\uv.zip\"\nInvoke-WebRequest \"https://github.com/astral-sh/uv/releases/download/$ver/uv-x86_64-pc-windows-msvc.zip\" -OutFile $zip -UseBasicParsing\ngh attestation verify $zip --repo astral-sh/uv\nExpand-Archive $zip \"$env:TEMP\\uv_x\" -Force\n(Get-FileHash \"$env:TEMP\\uv_x\\uv.exe\").Hash -eq (Get-FileHash $uv).Hash\n```\n\nIf attestation says \"Verification succeeded\" and the last line prints `True`, you're good.\n\n**To whitelist Hermes:**\n- **Windows Defender:** Run PowerShell as Admin → `Add-MpPreference -ExclusionPath \"$env:LOCALAPPDATA\\hermes\\bin\"`\n- **Bitdefender:** Add an exception in the Bitdefender console (Protection > Antivirus > Settings > Manage Exceptions)\n- Whitelist the **folder**, not the file hash — Hermes updates `uv` and the hash changes every version\n\nFor more context, see the upstream Astral reports: [astral-sh/uv#13553](https://github.com/astral-sh/uv/issues/13553), [astral-sh/uv#15011](https://github.com/astral-sh/uv/issues/15011), [astral-sh/uv#10079](https://github.com/astral-sh/uv/issues/10079",
+      "weight": 1.3
+    },
+    {
+      "id": "62426c61e4034077fbfc",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Getting Started",
+      "text": "```bash\nhermes              # Interactive CLI — start a conversation\nhermes model        # Choose your LLM provider and model\nhermes tools        # Configure which tools are enabled\nhermes config set   # Set individual config values\nhermes config get   # Print individual config values\nhermes gateway      # Start the messaging gateway (Telegram, Discord, etc.)\nhermes setup        # Run the full setup wizard (configures everything at once)\nhermes claw migrate # Migrate from OpenClaw (if coming from OpenClaw)\nhermes update       # Update to the latest version\nhermes doctor       # Diagnose any issues\n```\n\n📖 **[Full documentation →](https://hermes-agent.nousresearch.com/docs/)**\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "fa666ddb9983405dc006",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Skip the API-key collection — Nous Portal",
+      "text": "Hermes works with whatever provider you want — that's not changing. But if you'd rather not collect five separate API keys for the model, web search, image generation, TTS, and a cloud browser, **[Nous Portal](https://portal.nousresearch.com)** covers all of them under one subscription:\n\n- **300+ models** — pick any of them with `/model <name>`\n- **Tool Gateway** — web search, image generation (FAL), text-to-speech (OpenAI), cloud browser (Browser Use), all routed through your sub. No extra accounts.\n\nOne command from a fresh install:\n\n```bash\nhermes setup --portal\n```\n\nThat logs you in via OAuth, sets Nous as your provider, and turns on the Tool Gateway. Check what's wired up any time with `hermes portal info`. Full details on the [Tool Gateway docs page](https://hermes-agent.nousresearch.com/docs/user-guide/features/tool-gateway).\n\nYou can still bring your own keys per-tool whenever you want — the gateway is per-backend, not all-or-nothing.\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "8bff5d66091b29289a31",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "CLI vs Messaging Quick Reference",
+      "text": "Hermes has two entry points: start the terminal UI with `hermes`, or run the gateway and talk to it from Telegram, Discord, Slack, WhatsApp, Signal, or Email. Once you're in a conversation, many slash commands are shared across both interfaces.\n\n| Action                         | CLI                                           | Messaging platforms                                                              |\n| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- |\n| Start chatting                 | `hermes`                                      | Run `hermes gateway setup` + `hermes gateway start`, then send the bot a message |\n| Start fresh conversation       | `/new` or `/reset`                            | `/new` or `/reset`                                                               |\n| Change model                   | `/model [provider:model]`                     | `/model [provider:model]`                                                        |\n| Set a personality              | `/personality [name]`                         | `/personality [name]`",
+      "weight": 1.3
+    },
+    {
+      "id": "8a7426b716256eb7f702",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "CLI vs Messaging Quick Reference",
+      "text": "|\n| Retry or undo the last turn    | `/retry`, `/undo`                             | `/retry`, `/undo`                                                                |\n| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]`                                        |\n| Browse skills                  | `/skills` or `/<skill-name>`                  | `/<skill-name>`                                                                  |\n| Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                    |",
+      "weight": 1.3
+    },
+    {
+      "id": "f4f695141fe0577eeec8",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "CLI vs Messaging Quick Reference",
+      "text": "| Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                            |\n\nFor the full command lists, see the [CLI guide](https://hermes-agent.nousresearch.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://hermes-agent.nousresearch.com/docs/user-guide/messaging).\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "56622cc1d4d9d33e7193",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Documentation",
+      "text": "All documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:\n\n| Section                                                                                             | What's Covered                                             |\n| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |\n| [Quickstart](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |\n| [CLI Usage](https://hermes-agent.nousresearch.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |\n| [Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |\n| [Messaging Gateway](https://hermes-agent.nousresearch.com/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |\n| [Security](https://hermes-agent.nousresearch.com/docs/user-guide/security)",
+      "weight": 1.3
+    },
+    {
+      "id": "0612d94887a772cd14b6",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Documentation",
+      "text": "| Command approval, DM pairing, container isolation          |\n| [Tools & Toolsets](https://hermes-agent.nousresearch.com/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |\n| [Skills System](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |\n| [Memory](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |\n| [MCP Integration](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |",
+      "weight": 1.3
+    },
+    {
+      "id": "d63f2b2b5e1fb4490b81",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Documentation",
+      "text": "| [Cron Scheduling](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |\n| [Context Files](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |\n| [Architecture](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |\n| [Contributing](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |\n| [CLI Reference](https://hermes-agent.nousresearch.com/docs/reference/cli-commands)                  | All commands and flags                                     |\n| [Environment Variables](https://hermes-agent.nousresearch.com/docs/reference/environment-variables) | Complete env var reference                                 |\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "802d35921e8b7b085152",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Migrating from OpenClaw",
+      "text": "If you're coming from OpenClaw, Hermes can automatically import your settings, memories, skills, and API keys.\n\n**During first-time setup:** The setup wizard (`hermes setup`) automatically detects `~/.openclaw` and offers to migrate before configuration begins.\n\n**Anytime after install:**\n\n```bash\nhermes claw migrate              # Interactive migration (full preset)\nhermes claw migrate --dry-run    # Preview what would be migrated\nhermes claw migrate --preset user-data   # Migrate without secrets\nhermes claw migrate --overwrite  # Overwrite existing conflicts\n```\n\nWhat gets imported:\n\n- **SOUL.md** — persona file\n- **Memories** — MEMORY.md and USER.md entries\n- **Skills** — user-created skills → `~/.hermes/skills/openclaw-imports/`\n- **Command allowlist** — approval patterns\n- **Messaging settings** — platform configs, allowed users, working directory\n- **API keys** — allowlisted secrets (Telegram, OpenRouter, OpenAI, Anthropic, ElevenLabs)\n- **TTS assets** — workspace audio files\n- **Workspace instructions** — AGENTS.md (with `--workspace-target`)\n\nSee `hermes claw migrate --help` for all options, or use the `openclaw-migration` skill for an interactive agent-guided migration wit",
+      "weight": 1.3
+    },
+    {
+      "id": "0e16fcf2ecd8dc8e4451",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Contributing",
+      "text": "We welcome contributions! See the [Contributing Guide](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) for development setup, code style, and PR process.\n\nStart with the [PM developer workflow](website/docs/reference/package-management.md#developer-workflow)\nfor activation, daily use, dependency changes, and leaving the environment.\n[Development Setup](CONTRIBUTING.md#development-setup) covers the separate test environment and verification commands.\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "0bd745e4cc9ada20219f",
+      "source": "NousResearch/hermes-agent",
+      "ref": "e408d363393c",
+      "path": "README.md",
+      "license": "MIT",
+      "domains": [
+        "agents",
+        "memory",
+        "skills",
+        "learning-loop",
+        "subagents",
+        "provider-router",
+        "tool-guardrails",
+        "verification",
+        "sessions"
+      ],
+      "heading": "Community",
+      "text": "- 💬 [Discord](https://discord.gg/NousResearch)\n- 📚 [Skills Hub](https://agentskills.io)\n- 🐛 [Issues](https://github.com/NousResearch/hermes-agent/issues)\n- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Linux desktop-control MCP server for Hermes and other MCP hosts, with AT-SPI accessibility trees, Wayland/X11 input, screenshots, and compositor window targeting.\n- 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Community WeChat bridge: Run Hermes Agent and OpenClaw on the same WeChat account.\n\n---",
+      "weight": 1.3
+    },
+    {
+      "id": "450df798086644b136ae",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
       "license": "MIT",
       "domains": [
@@ -5126,9 +7637,9 @@
       "weight": 1.28
     },
     {
-      "id": "637055b78d2bc84a0ccc",
+      "id": "624f18cd8d548538880b",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
       "license": "MIT",
       "domains": [
@@ -5146,9 +7657,9 @@
       "weight": 1.28
     },
     {
-      "id": "f2913eba85375bde49c5",
+      "id": "4233f9c81a8eb8cd3b9b",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
       "license": "MIT",
       "domains": [
@@ -5166,9 +7677,9 @@
       "weight": 1.28
     },
     {
-      "id": "7a22537c54501c624500",
+      "id": "306b78e620760672de7f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-structured-error-taxonomy.md",
       "license": "MIT",
       "domains": [
@@ -5186,9 +7697,9 @@
       "weight": 1.28
     },
     {
-      "id": "2f32ee9da6874f8b69fb",
+      "id": "b9282ff564433e2990ee",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
       "license": "MIT",
       "domains": [
@@ -5206,9 +7717,9 @@
       "weight": 1.28
     },
     {
-      "id": "cc8734726cb2a158a92c",
+      "id": "f203cc7843bd272b1d09",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
       "license": "MIT",
       "domains": [
@@ -5226,9 +7737,9 @@
       "weight": 1.28
     },
     {
-      "id": "e35b173c0e454cedfb40",
+      "id": "d36e945c6aea7e03a860",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
       "license": "MIT",
       "domains": [
@@ -5246,9 +7757,9 @@
       "weight": 1.28
     },
     {
-      "id": "0dc87a6fc3000fdb6279",
+      "id": "54e44d0ad12b96b13557",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
       "license": "MIT",
       "domains": [
@@ -5266,9 +7777,9 @@
       "weight": 1.28
     },
     {
-      "id": "e4155bd7b811c8acf1b7",
+      "id": "8d3f76a03e35747751ae",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-11-tool-schemas-in-prompt-assembly.md",
       "license": "MIT",
       "domains": [
@@ -5286,9 +7797,9 @@
       "weight": 1.28
     },
     {
-      "id": "333404034602fc2d27ef",
+      "id": "0cb569afbd908adb26b5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5306,9 +7817,9 @@
       "weight": 1.28
     },
     {
-      "id": "e8af93fb9be05f539088",
+      "id": "c1804598e0e0d7a3125d",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5326,9 +7837,9 @@
       "weight": 1.28
     },
     {
-      "id": "c89b8c314fb1dfbead4a",
+      "id": "38dfbf7596f211f31867",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5346,9 +7857,9 @@
       "weight": 1.28
     },
     {
-      "id": "9949853634351a0fd703",
+      "id": "b5c5960917764f60bdc5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5366,9 +7877,9 @@
       "weight": 1.28
     },
     {
-      "id": "9f69e86873d0ffdfb1a8",
+      "id": "32a9abda66b89e9534a8",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5386,9 +7897,9 @@
       "weight": 1.28
     },
     {
-      "id": "bacb395e5ca56a683f09",
+      "id": "8ef5e2b40e23b2c36cb8",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5406,9 +7917,9 @@
       "weight": 1.28
     },
     {
-      "id": "7d4713e532e86712af7d",
+      "id": "b5260be00d7017419137",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5426,9 +7937,9 @@
       "weight": 1.28
     },
     {
-      "id": "2985eb6c589cc0a6bb17",
+      "id": "2df0428eb775377d6967",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5446,9 +7957,9 @@
       "weight": 1.28
     },
     {
-      "id": "9f470b07a6410a10782a",
+      "id": "99bfc7f71cc67e9663ed",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5466,9 +7977,9 @@
       "weight": 1.28
     },
     {
-      "id": "c7b6310435678e7882e4",
+      "id": "758e6dfed09bee2d0a8c",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5486,9 +7997,9 @@
       "weight": 1.28
     },
     {
-      "id": "944cce4ba881cb2d0988",
+      "id": "e19f892078a81ea55cf4",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5506,9 +8017,9 @@
       "weight": 1.28
     },
     {
-      "id": "eb870f738757f8f2b787",
+      "id": "1824a8f6896461eacb24",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-06-18-agent-lifecycle-and-ownership-contracts.md",
       "license": "MIT",
       "domains": [
@@ -5526,9 +8037,9 @@
       "weight": 1.28
     },
     {
-      "id": "ccc365dc336ac69e91fe",
+      "id": "216d751cefab83455565",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5546,9 +8057,9 @@
       "weight": 1.28
     },
     {
-      "id": "2af9f0a0f5a51a0e2da8",
+      "id": "a8995290befa68fe971e",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5566,9 +8077,9 @@
       "weight": 1.28
     },
     {
-      "id": "32686e007f0ac6e6c660",
+      "id": "e78a2b1b68090e1c63a5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5586,9 +8097,9 @@
       "weight": 1.28
     },
     {
-      "id": "c4d816bacb1bb55fd291",
+      "id": "70c4190e50c0ee728d99",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5606,9 +8117,9 @@
       "weight": 1.28
     },
     {
-      "id": "83416b33a40d074af076",
+      "id": "267becfdb0e2c91453e1",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5626,9 +8137,9 @@
       "weight": 1.28
     },
     {
-      "id": "7ab12568002e9db7d90b",
+      "id": "a6d0c8cd69a32c7c7aec",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-13-session-content-search-opt-in.md",
       "license": "MIT",
       "domains": [
@@ -5646,9 +8157,9 @@
       "weight": 1.28
     },
     {
-      "id": "f9ca3cb4d316d660cdca",
+      "id": "5b2a7ec9c3a047adcb9b",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5666,9 +8177,9 @@
       "weight": 1.28
     },
     {
-      "id": "99e0cdf1019a183f0d3d",
+      "id": "f6b6c76f281925492d74",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5686,9 +8197,9 @@
       "weight": 1.28
     },
     {
-      "id": "24bb8c840bc00987e236",
+      "id": "00866377b705a852550e",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5706,9 +8217,9 @@
       "weight": 1.28
     },
     {
-      "id": "ba99b8bc730f598aa094",
+      "id": "07677252a4c250524cb0",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5726,9 +8237,9 @@
       "weight": 1.28
     },
     {
-      "id": "5979f1c8dc83a410f38a",
+      "id": "480e6b965183262aaee6",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5746,9 +8257,9 @@
       "weight": 1.28
     },
     {
-      "id": "0442ce7acc3596416c9b",
+      "id": "8e4d1f27cc81a2d0964b",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5766,9 +8277,9 @@
       "weight": 1.28
     },
     {
-      "id": "7de7e897abca9f72eec1",
+      "id": "7574995f58fa2be33fe8",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5786,9 +8297,9 @@
       "weight": 1.28
     },
     {
-      "id": "6fd85cc95cae72234695",
+      "id": "9a8d9294b4dbd40e33d2",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": ".agents/notes/archived/architecture/2026-08-25-sparse-first-party-prompt-section-orders.md",
       "license": "MIT",
       "domains": [
@@ -5806,9 +8317,9 @@
       "weight": 1.28
     },
     {
-      "id": "5b2bb20d453a2f095b3f",
+      "id": "1c882d48d266ddfb10be",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5826,9 +8337,9 @@
       "weight": 1.28
     },
     {
-      "id": "e929bd01201aed4dd2fe",
+      "id": "2fc5781f980494ada358",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5846,9 +8357,9 @@
       "weight": 1.28
     },
     {
-      "id": "c7c1c1e5b36cb4befec4",
+      "id": "4d7fc1b09b0fe81662cb",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5866,9 +8377,9 @@
       "weight": 1.28
     },
     {
-      "id": "24451ba989989c75d171",
+      "id": "f42cd9407580b86c9f0f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5886,9 +8397,9 @@
       "weight": 1.28
     },
     {
-      "id": "d421cac3d764900e3c0e",
+      "id": "1e04527390a4c83d4a51",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5906,9 +8417,9 @@
       "weight": 1.28
     },
     {
-      "id": "2aacd3b2b92f8911e092",
+      "id": "7f41b9b5191643ecd26a",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5926,9 +8437,9 @@
       "weight": 1.28
     },
     {
-      "id": "a3c95463b305d2c03a84",
+      "id": "1c7eb2d19fdce18c4c87",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5946,9 +8457,9 @@
       "weight": 1.28
     },
     {
-      "id": "7b914702e5e7399a8fc9",
+      "id": "507017ead9c0bc5cedf8",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5966,9 +8477,9 @@
       "weight": 1.28
     },
     {
-      "id": "c8a06e567bd484f5d222",
+      "id": "cf530323b799e5885ab2",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -5986,9 +8497,9 @@
       "weight": 1.28
     },
     {
-      "id": "7e6f5565ddbee3100f86",
+      "id": "acdf496d95a2084ee088",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6006,9 +8517,9 @@
       "weight": 1.28
     },
     {
-      "id": "3109288d4e6a0c5e5101",
+      "id": "9459c2b2361f3bda8377",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6026,9 +8537,9 @@
       "weight": 1.28
     },
     {
-      "id": "a44df2f9e71a1231e9df",
+      "id": "51f5c3210b29db99f00a",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6046,9 +8557,9 @@
       "weight": 1.28
     },
     {
-      "id": "2230c861b955f0d6e8d0",
+      "id": "b1a5baa349f3191415e3",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6066,9 +8577,9 @@
       "weight": 1.28
     },
     {
-      "id": "2030474ccee4849bf398",
+      "id": "2b035c09cad7b9a86982",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6086,9 +8597,9 @@
       "weight": 1.28
     },
     {
-      "id": "4161715fd7fed92f5e6a",
+      "id": "9867fed982c56e389739",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6106,9 +8617,9 @@
       "weight": 1.28
     },
     {
-      "id": "7e429c27849cc4ad7e46",
+      "id": "16b1b53305ac4f8a3b0e",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6126,9 +8637,9 @@
       "weight": 1.28
     },
     {
-      "id": "d246b3c7290426ed6297",
+      "id": "100497e01ce7032711ad",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6146,9 +8657,9 @@
       "weight": 1.28
     },
     {
-      "id": "ca2b240dbd1b9b2f8bd2",
+      "id": "8a5198ce5706d8546e9f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6166,9 +8677,9 @@
       "weight": 1.28
     },
     {
-      "id": "0435ddc23c13af9b8504",
+      "id": "9eb86db0b6e1ad6b6673",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6186,9 +8697,9 @@
       "weight": 1.28
     },
     {
-      "id": "07fbfdb646aec93d8e9b",
+      "id": "05826cab607c34deedf5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6206,9 +8717,9 @@
       "weight": 1.28
     },
     {
-      "id": "8ccd21dc378ab71c98f1",
+      "id": "253927c0e7fe057f8290",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6226,9 +8737,9 @@
       "weight": 1.28
     },
     {
-      "id": "72de40555c7df4d69199",
+      "id": "947d8fbc2649c71b8551",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6246,9 +8757,9 @@
       "weight": 1.28
     },
     {
-      "id": "b8c43bd8091ad0b4cdc7",
+      "id": "136d6c9019669a263fb4",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "AGENTS.md",
       "license": "MIT",
       "domains": [
@@ -6266,9 +8777,9 @@
       "weight": 1.28
     },
     {
-      "id": "361e1eb558f0fdc2081a",
+      "id": "c62e50503d431710701d",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6286,9 +8797,9 @@
       "weight": 1.28
     },
     {
-      "id": "514eab76f94143879dca",
+      "id": "f2e2464f396ee48ca3bb",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6306,9 +8817,9 @@
       "weight": 1.28
     },
     {
-      "id": "258f022eb5e5b36051f4",
+      "id": "eb030ae8587a1b124794",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6326,9 +8837,9 @@
       "weight": 1.28
     },
     {
-      "id": "bb5bd146ef655dbf8d27",
+      "id": "4103f8e3620d4efa0cfd",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6346,9 +8857,9 @@
       "weight": 1.28
     },
     {
-      "id": "e638ea9457344a961be4",
+      "id": "2b4caa3b7437d2c2b008",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6366,9 +8877,9 @@
       "weight": 1.28
     },
     {
-      "id": "c29914f7099ba3b85a13",
+      "id": "77b3dd972c21c2fe34ad",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6386,9 +8897,9 @@
       "weight": 1.28
     },
     {
-      "id": "8dbd4477f08905244a24",
+      "id": "bfe6b8d1cc87fb3dd0ec",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6406,9 +8917,9 @@
       "weight": 1.28
     },
     {
-      "id": "8b12e432c45db44b6aec",
+      "id": "dd027e66e3489332b279",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -6426,9 +8937,9 @@
       "weight": 1.28
     },
     {
-      "id": "a8ce0d57cc177e98364f",
+      "id": "dea4e98f05fcc5d71555",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6446,9 +8957,9 @@
       "weight": 1.28
     },
     {
-      "id": "f40a732c89ca0d17e093",
+      "id": "3530fc829784f7b153a0",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6466,9 +8977,9 @@
       "weight": 1.28
     },
     {
-      "id": "a1fca882174c8b5c8cda",
+      "id": "8c8bcbfb5084cf95b8cf",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6486,9 +8997,9 @@
       "weight": 1.28
     },
     {
-      "id": "be1e033d43abddc40531",
+      "id": "d08fb874c062bf53cd92",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6506,9 +9017,9 @@
       "weight": 1.28
     },
     {
-      "id": "be59a4f330ecc68a2ef4",
+      "id": "2ba6e1af01aa2c2f5d83",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6526,9 +9037,9 @@
       "weight": 1.28
     },
     {
-      "id": "71786741fef1733f1096",
+      "id": "112f34563ddb5c7c1637",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6546,9 +9057,9 @@
       "weight": 1.28
     },
     {
-      "id": "12c1a79eb193a01015fb",
+      "id": "0f10b4a1c495bcaaf9b0",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6566,9 +9077,9 @@
       "weight": 1.28
     },
     {
-      "id": "e90b2e1fd84a51152a28",
+      "id": "bca8a23fba5676d59a9f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6586,9 +9097,9 @@
       "weight": 1.28
     },
     {
-      "id": "58bcd593838a4ef3230e",
+      "id": "809da8581f67c1e8896f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6606,9 +9117,9 @@
       "weight": 1.28
     },
     {
-      "id": "b86e42427d004001c137",
+      "id": "62d15b9858e302548e2e",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6626,9 +9137,9 @@
       "weight": 1.28
     },
     {
-      "id": "ba52a630d3e2db933bfc",
+      "id": "0cc91c37cba8f077717c",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6646,9 +9157,9 @@
       "weight": 1.28
     },
     {
-      "id": "fe3855c2982226fa4149",
+      "id": "a5e3964078699cceb91a",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6666,9 +9177,9 @@
       "weight": 1.28
     },
     {
-      "id": "47e3375f4b369706f2ff",
+      "id": "9fab56a5b5271767702f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6686,9 +9197,9 @@
       "weight": 1.28
     },
     {
-      "id": "945727dcb929e5f94f19",
+      "id": "66aa471ac77395fd6571",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6706,9 +9217,9 @@
       "weight": 1.28
     },
     {
-      "id": "fa4ebd165345f628307e",
+      "id": "24698536ce335ce78bc2",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6726,9 +9237,9 @@
       "weight": 1.28
     },
     {
-      "id": "5912f98d6704116422e2",
+      "id": "01923dabcd1fddc8359e",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6746,9 +9257,9 @@
       "weight": 1.28
     },
     {
-      "id": "16cbf0c118dc4aac9610",
+      "id": "be55d84ba410e96afbd2",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6766,9 +9277,9 @@
       "weight": 1.28
     },
     {
-      "id": "3342ddaf2211e421d13d",
+      "id": "9276cf2d1767c19021c5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6786,9 +9297,9 @@
       "weight": 1.28
     },
     {
-      "id": "984f593b4149fc60572e",
+      "id": "1cc22375a43c4107d8d6",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6806,9 +9317,9 @@
       "weight": 1.28
     },
     {
-      "id": "b4c8e8085e5ba4c8922a",
+      "id": "ec01af3908e2ba275834",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6826,9 +9337,9 @@
       "weight": 1.28
     },
     {
-      "id": "4f9a343889547234cd27",
+      "id": "7e3ba323fef575dc22f4",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6846,9 +9357,9 @@
       "weight": 1.28
     },
     {
-      "id": "2d58dd1f89f0af8a8468",
+      "id": "e1bdabd8f590ab98a9d6",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/architecture.md",
       "license": "MIT",
       "domains": [
@@ -6866,9 +9377,9 @@
       "weight": 1.28
     },
     {
-      "id": "cc578e1e0c78d92e51f3",
+      "id": "d84166abd196f399f106",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6886,9 +9397,9 @@
       "weight": 1.28
     },
     {
-      "id": "b0709feefe83b1ebf572",
+      "id": "b0bfbbf7845e53022e2a",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6906,9 +9417,9 @@
       "weight": 1.28
     },
     {
-      "id": "232842c21b9b58045551",
+      "id": "21bf10060d060b436061",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6926,9 +9437,9 @@
       "weight": 1.28
     },
     {
-      "id": "3d41384feb7315ea5d73",
+      "id": "22d887d3dcec45f2dfec",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6946,9 +9457,9 @@
       "weight": 1.28
     },
     {
-      "id": "1fa42789e939f3024fb1",
+      "id": "640ad270f089b74144d3",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6966,9 +9477,9 @@
       "weight": 1.28
     },
     {
-      "id": "97d71e9f6bd9b831a6e5",
+      "id": "6622f3dace9a5f9bce69",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -6986,9 +9497,9 @@
       "weight": 1.28
     },
     {
-      "id": "5400ed0bcfcb0fe36019",
+      "id": "894293d150c4e4ba9d37",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7006,9 +9517,9 @@
       "weight": 1.28
     },
     {
-      "id": "127c5a55e075cba655ea",
+      "id": "06a50bcce94d05b56a7b",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7026,9 +9537,9 @@
       "weight": 1.28
     },
     {
-      "id": "47a42b146ed5fa0a516f",
+      "id": "1f0070bb747a494e4b8d",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7046,9 +9557,9 @@
       "weight": 1.28
     },
     {
-      "id": "b856dc4c0ce4ff9974f3",
+      "id": "c6a5437b30d78f9983dd",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7066,9 +9577,9 @@
       "weight": 1.28
     },
     {
-      "id": "dbab599c480ce37e47e7",
+      "id": "16c3a81c880e355e3570",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7086,9 +9597,9 @@
       "weight": 1.28
     },
     {
-      "id": "afe2641d9a441b6f43f1",
+      "id": "88dd3933ef7d189e7776",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7106,9 +9617,9 @@
       "weight": 1.28
     },
     {
-      "id": "4bdf347caf806b128a4c",
+      "id": "bd4e2ae1a8b1f4380aa3",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7126,9 +9637,9 @@
       "weight": 1.28
     },
     {
-      "id": "5eb26bab05d6b18251ed",
+      "id": "295e05a724e98367b672",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7146,9 +9657,9 @@
       "weight": 1.28
     },
     {
-      "id": "86861ca5aea12cc69ba1",
+      "id": "99ecc32a48a00866cb12",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7166,9 +9677,9 @@
       "weight": 1.28
     },
     {
-      "id": "12d56e44907cb60ce1dd",
+      "id": "a0424c6f472d5f327d77",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7186,9 +9697,9 @@
       "weight": 1.28
     },
     {
-      "id": "6d3b21b4d17bdb739a44",
+      "id": "16804fe20aba022ebcc2",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7206,9 +9717,9 @@
       "weight": 1.28
     },
     {
-      "id": "9908e3046484d90446a7",
+      "id": "b4b928c2a211df54786f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7226,9 +9737,9 @@
       "weight": 1.28
     },
     {
-      "id": "4e40e2cf18dc82d12b54",
+      "id": "f9bebf938eb79be8c46f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7246,9 +9757,9 @@
       "weight": 1.28
     },
     {
-      "id": "e96fd22ee64385c7a716",
+      "id": "aa1f59ef714f352404b9",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7266,9 +9777,9 @@
       "weight": 1.28
     },
     {
-      "id": "2b22b97d2aa71ef28fae",
+      "id": "9ef67e9d67c518cb9c2f",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -7286,9 +9797,9 @@
       "weight": 1.28
     },
     {
-      "id": "b8f038d21319c3957aa9",
+      "id": "984cb2179cf246b3bea5",
       "source": "deepseek-ai/deepseek-harness",
-      "ref": "21638c56315a",
+      "ref": "4878cdabd87d",
       "path": "docs/development.md",
       "license": "MIT",
       "domains": [
@@ -38320,9 +40831,9 @@
       "weight": 1.06
     },
     {
-      "id": "984a69ae81aa8b28867b",
+      "id": "0fcea0563edf991263ff",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38335,9 +40846,9 @@
       "weight": 1.03
     },
     {
-      "id": "e97969757de26ab2616c",
+      "id": "f217ac9dee7b39dd69fe",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38350,9 +40861,9 @@
       "weight": 1.03
     },
     {
-      "id": "0d95addac6897ef4515e",
+      "id": "5ad99c3f988f02174f26",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38365,9 +40876,9 @@
       "weight": 1.03
     },
     {
-      "id": "fbe69aefb35900389d19",
+      "id": "600867202375df2f1b13",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38380,9 +40891,9 @@
       "weight": 1.03
     },
     {
-      "id": "836b8af6196919f6f676",
+      "id": "e1d388cf41c82bd90668",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38395,9 +40906,9 @@
       "weight": 1.03
     },
     {
-      "id": "62ce2c65dda205015d9f",
+      "id": "968a5856343523188ddf",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38410,9 +40921,9 @@
       "weight": 1.03
     },
     {
-      "id": "d9f1da4aae3636de83c3",
+      "id": "83ad8842c3ab9ad63faf",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38425,9 +40936,9 @@
       "weight": 1.03
     },
     {
-      "id": "6cb94b897840c3ca29f6",
+      "id": "43ac2a7a3a1de9ca3e5e",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38440,9 +40951,9 @@
       "weight": 1.03
     },
     {
-      "id": "40ac1049509e7587ebb2",
+      "id": "fc1e3e05f5faaf70f250",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38455,9 +40966,9 @@
       "weight": 1.03
     },
     {
-      "id": "eafe36fca40cc4bf2456",
+      "id": "d6177768a3d47aa732c4",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38470,9 +40981,9 @@
       "weight": 1.03
     },
     {
-      "id": "fbc43043ecd26a30913f",
+      "id": "561335e6194ae67800f4",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38485,9 +40996,9 @@
       "weight": 1.03
     },
     {
-      "id": "b81ef74b45fd7bcb0519",
+      "id": "125b55dc8b351b4280eb",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38500,9 +41011,9 @@
       "weight": 1.03
     },
     {
-      "id": "02fd04f2634aa75a8ffe",
+      "id": "ca6f2fd3ec407d32e9f3",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38515,9 +41026,9 @@
       "weight": 1.03
     },
     {
-      "id": "8001cbb23f7ca601c4cb",
+      "id": "f43273b2419785fb089d",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -38530,9 +41041,9 @@
       "weight": 1.03
     },
     {
-      "id": "f4be0a45b948813dab91",
+      "id": "af3c15a3e101a9d55906",
       "source": "ComposioHQ/composio",
-      "ref": "8f3088b78b83",
+      "ref": "e182bc83c32e",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44582,9 +47093,9 @@
       "weight": 1.04
     },
     {
-      "id": "25cd610862fe3ef5f75a",
+      "id": "1d594e2d73c3baa4b954",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44598,9 +47109,9 @@
       "weight": 1.05
     },
     {
-      "id": "fea1d356ed81be56a3bf",
+      "id": "948daf42c2865fd9006c",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44614,9 +47125,9 @@
       "weight": 1.05
     },
     {
-      "id": "992d0928f69ba10ad68b",
+      "id": "4e688b3cf5e172635b07",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44630,9 +47141,9 @@
       "weight": 1.05
     },
     {
-      "id": "3a62491013929e26934f",
+      "id": "9e649fa0e938d6a4b7d6",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44646,9 +47157,9 @@
       "weight": 1.05
     },
     {
-      "id": "7375c882026d97a58260",
+      "id": "51a3e5dfcc50c37a509f",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44662,9 +47173,9 @@
       "weight": 1.05
     },
     {
-      "id": "ed0f4083f66306fe141c",
+      "id": "f9743f115ad421bc7c8e",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44678,9 +47189,9 @@
       "weight": 1.05
     },
     {
-      "id": "a21411ad794f8147a0ba",
+      "id": "a8d0000f61747f985aeb",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44694,9 +47205,9 @@
       "weight": 1.05
     },
     {
-      "id": "2988684201c44c02a35e",
+      "id": "f1e159d140b2858a289f",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44710,9 +47221,9 @@
       "weight": 1.05
     },
     {
-      "id": "3fd115f808125553d594",
+      "id": "f356f2c28cc3c0410810",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44726,9 +47237,9 @@
       "weight": 1.05
     },
     {
-      "id": "9667608117df3480ed64",
+      "id": "db3dc8537b8b32949526",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44742,9 +47253,9 @@
       "weight": 1.05
     },
     {
-      "id": "2fe38cf662e31dc309e3",
+      "id": "eccbd9b86613ed2c6e4f",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -44758,9 +47269,9 @@
       "weight": 1.05
     },
     {
-      "id": "f9fddc91d400c81bed47",
+      "id": "2d8b5940ee063620654c",
       "source": "OpenHands/OpenHands",
-      "ref": "c3c252ad6196",
+      "ref": "f174ba846523",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -46034,9 +48545,9 @@
       "weight": 1.02
     },
     {
-      "id": "887c9c497ad5e62fb2ab",
+      "id": "6597e653ccec18cebf02",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46049,9 +48560,9 @@
       "weight": 1.03
     },
     {
-      "id": "1b852b9fd54d80ddd0c5",
+      "id": "fd1869661835710d0498",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46064,9 +48575,9 @@
       "weight": 1.03
     },
     {
-      "id": "90ae2cb44bf975b91be1",
+      "id": "f4555f74df0c0c4e0a0d",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46079,9 +48590,9 @@
       "weight": 1.03
     },
     {
-      "id": "3c86d5938a63c449cae4",
+      "id": "de4ad89a9c009de650b6",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46094,9 +48605,9 @@
       "weight": 1.03
     },
     {
-      "id": "5f706ecc78cf9d8be8f0",
+      "id": "5b7b7fecc13ffdd4ced6",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46109,9 +48620,9 @@
       "weight": 1.03
     },
     {
-      "id": "b100a1155465864adebe",
+      "id": "6741fad2c49f9a20fdd6",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46124,9 +48635,9 @@
       "weight": 1.03
     },
     {
-      "id": "def738985b926de73602",
+      "id": "59c800991754e43f67a2",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46139,9 +48650,9 @@
       "weight": 1.03
     },
     {
-      "id": "bc4059aa72da1d5d76fb",
+      "id": "acab77f736659655b0d2",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46154,9 +48665,9 @@
       "weight": 1.03
     },
     {
-      "id": "23e2f60ac5576a73a994",
+      "id": "433baf8b9df979e2ae9c",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46169,9 +48680,9 @@
       "weight": 1.03
     },
     {
-      "id": "381d628ea8725e85219e",
+      "id": "5e6c92ea0039c7764949",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46184,9 +48695,9 @@
       "weight": 1.03
     },
     {
-      "id": "a85fc8efbe9a0ff42cbf",
+      "id": "33d50c6c02efa23bdc6a",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -46199,9 +48710,9 @@
       "weight": 1.03
     },
     {
-      "id": "31105701658968a71174",
+      "id": "c36675625a128c7f2113",
       "source": "CodebuffAI/freebuff",
-      "ref": "2fbeda44db3d",
+      "ref": "d94526c00d42",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [

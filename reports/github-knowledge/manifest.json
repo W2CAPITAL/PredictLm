@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T12:35:38.814Z",
-  "knowledgeVersion": "57f360ab3d1c4e09",
-  "chunkCount": 4983,
+  "generatedAt": "2026-09-28T15:05:25.309Z",
+  "knowledgeVersion": "0100c077cfd82227",
+  "chunkCount": 5100,
   "sources": [
     {
       "repo": "dbreunig/building-with-jev-skill",
@@ -40,6 +40,24 @@
       "error": null
     },
     {
+      "repo": "Wangnov/grok-skills",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "0be4f688a6398b664fbbbb730b18d37cab2ca068",
+      "files": 7,
+      "chunks": 54,
+      "error": null
+    },
+    {
+      "repo": "NVIDIA/skills",
+      "mode": "reference-only",
+      "license": "mixed-Apache-2.0-CC-BY-4.0",
+      "commit": null,
+      "files": 0,
+      "chunks": 0,
+      "error": null
+    },
+    {
       "repo": "realasfngl/Grok-Api",
       "mode": "quarantine",
       "license": "unverified",
@@ -52,9 +70,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "34f55df1af8d14484d5e44a6b93fd1c31541724b",
+      "commit": "e408d363393ccb72267e67bcccf4f8954b438cd9",
       "files": 2,
-      "chunks": 0,
+      "chunks": 63,
       "error": null
     },
     {
@@ -70,7 +88,7 @@
       "repo": "deepseek-ai/deepseek-harness",
       "mode": "allow",
       "license": "MIT",
-      "commit": "21638c56315ae6a2b552d6091945d3144c9af32e",
+      "commit": "4878cdabd87d4041bdaff61d04c966883b9fd07a",
       "files": 9,
       "chunks": 110,
       "error": null
@@ -637,7 +655,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "8f3088b78b8369e2246c52adc9d14717aa71e85b",
+      "commit": "e182bc83c32ed46e561ef63a1ee4d3d7a1aed1f9",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -673,7 +691,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "c3c252ad6196de1237324b81b7d19146acce444c",
+      "commit": "f174ba8465233e46e66ab2c5667b358f1d6676d6",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -709,7 +727,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "2fbeda44db3d1d5e63230d63f0a923a196cd082a",
+      "commit": "d94526c00d428f9267d19bff1d5328200e1dcfe5",
       "files": 1,
       "chunks": 12,
       "error": null
