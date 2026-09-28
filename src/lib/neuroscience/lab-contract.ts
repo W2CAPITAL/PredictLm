@@ -1,4 +1,5 @@
 import {LAB_SCIENCE_BANNER,type NeuroControllerId} from '@/lib/simulation/cognitive-world-contract';
+export {LAB_SCIENCE_BANNER};
 
 export type LabSpecies=NeuroControllerId;
 export type LabTaskId=
