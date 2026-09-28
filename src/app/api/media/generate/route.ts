@@ -285,9 +285,19 @@ export async function POST(req:Request){
     const unityImageGuidance=/\b(unity|unity3d|game environment|game scene|voxel|3d scene|level design|game asset)\b/i.test(sourcePrompt)
       ? '\n\n3D SCENE CONTRACT:\n'+unityFabricContext()
       : '';
+    const fullKuramaAvatar=wantsFullKuramaAvatar(sourcePrompt);
+    const providerIntentEntities=isNarutoKuramaVsSasukeSusanooPrompt(sourcePrompt)
+      ? imageIntent.entities.filter(entity=>{
+          const label=String(entity.label||'').toLowerCase();
+          if(label.includes('naruto')&&label.includes('kurama'))return false;
+          if(label.includes('sasuke')&&label.includes('susanoo'))return false;
+          if(!fullKuramaAvatar&&/kurama|nine[- ]?tails|nove caudas/i.test(label)&&!/naruto/i.test(label))return false;
+          return true;
+        })
+      : imageIntent.entities;
     const providerPrompt=groundedPrompt+
       '\n\nIMAGE INTENT RESOLUTION: '+imageIntentSummary(imageIntent)+
-      (imageIntent.entities.length?'\nENTITY LOCKS: '+imageIntent.entities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | '):'')+
+      (providerIntentEntities.length?'\nENTITY LOCKS: '+providerIntentEntities.map(x=>x.label+(x.form?' ['+x.form+']':'')+(x.franchise?' · '+x.franchise:'')).join(' | '):'')+
       (imageIntent.styleHints.length?'\nSTYLE LOCKS: '+imageIntent.styleHints.join(' · '):'')+
       (userInline.length
         ? '\n\nUSER-SUPPLIED REFERENCE LOCK: '+userInline.length+' reference image(s) were supplied directly by the user. They have the highest visual priority for identity, face/body design, costume, colors, silhouette and requested form.'
