@@ -10,6 +10,7 @@ import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
+export const maxDuration=60;
 
 type Msg={role:'user'|'assistant'|'system';content:string};
 type Provider={
@@ -210,38 +211,57 @@ async function openProvider(provider:Provider,messages:Msg[],signal:AbortSignal)
   return response;
 }
 
-async function collectOpenAIStream(
+async function consumeOpenAIStream(
   response:Response,
-  signal:AbortSignal
+  signal:AbortSignal,
+  onToken:(token:string)=>void
 ){
+  const contentType=String(response.headers.get('content-type')||'').toLowerCase();
+
+  // Some OpenAI-compatible endpoints ignore stream=true and return one JSON
+  // object. Keep compatibility, but the first-token timer remains active until
+  // that object actually arrives.
+  if(contentType.includes('application/json')&&!contentType.includes('text/event-stream')){
+    const data=await response.json().catch(()=>({}));
+    const content=String(data?.choices?.[0]?.message?.content||data?.response||'').trim();
+    if(content)onToken(content);
+    return content;
+  }
+
   const reader=response.body!.getReader();
   const decoder=new TextDecoder();
   let buffer='';
   let accumulated='';
   let receivedBytes=0;
 
-  while(true){
-    if(signal.aborted)throw new DOMException('Aborted','AbortError');
-    const {done,value}=await reader.read();
-    if(done)break;
-    receivedBytes+=value?.byteLength||0;
-    if(receivedBytes>1_048_576)throw new Error('upstream-stream-too-large');
-    buffer+=decoder.decode(value,{stream:true});
-    const lines=buffer.split(/\r?\n/);
-    buffer=lines.pop()||'';
+  try{
+    while(true){
+      if(signal.aborted)throw new DOMException('Aborted','AbortError');
+      const {done,value}=await reader.read();
+      if(done)break;
+      receivedBytes+=value?.byteLength||0;
+      if(receivedBytes>1_048_576)throw new Error('upstream-stream-too-large');
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split(/\r?\n/);
+      buffer=lines.pop()||'';
 
-    for(const rawLine of lines){
-      const line=rawLine.trim();
-      if(!line.startsWith('data:'))continue;
-      const payload=line.slice(5).trim();
-      if(!payload||payload==='[DONE]')continue;
-      let data:any;
-      try{data=JSON.parse(payload)}catch{continue}
-      const token=String(data?.choices?.[0]?.delta?.content||'');
-      if(token)accumulated+=token;
+      for(const rawLine of lines){
+        const line=rawLine.trim();
+        if(!line.startsWith('data:'))continue;
+        const payload=line.slice(5).trim();
+        if(!payload||payload==='[DONE]')continue;
+        let data:any;
+        try{data=JSON.parse(payload)}catch{continue}
+        const token=String(data?.choices?.[0]?.delta?.content||'');
+        if(!token)continue;
+        accumulated+=token;
+        onToken(token);
+      }
     }
+    return accumulated.trim();
+  }finally{
+    try{reader.releaseLock()}catch{}
   }
-  return accumulated.trim();
 }
 
 function emitValidatedAnswer(
@@ -310,35 +330,119 @@ export async function POST(req:NextRequest){
       try{
         for(const provider of candidates){
           if(requestSignal.aborted)break;
+
           const providerController=new AbortController();
           const onAbort=()=>providerController.abort();
           requestSignal.addEventListener('abort',onAbort,{once:true});
-          const timer=setTimeout(()=>providerController.abort(),10000);
+
+          const configuredFirstChunkMs=Number(process.env.PREDICTLM_CHAT_FIRST_CHUNK_TIMEOUT_MS||'10000');
+          const firstChunkTimeoutMs=Number.isFinite(configuredFirstChunkMs)
+            ? Math.max(2500,Math.min(30000,Math.floor(configuredFirstChunkMs)))
+            : 10000;
+
+          let firstChunkSeen=false;
+          let committed=false;
+          let buffered='';
+          let firstChunkTimer:ReturnType<typeof setTimeout>|null=setTimeout(
+            ()=>providerController.abort(new Error('first-chunk-timeout')),
+            firstChunkTimeoutMs
+          );
+
+          const clearFirstChunkTimer=()=>{
+            if(firstChunkTimer!==null){
+              clearTimeout(firstChunkTimer);
+              firstChunkTimer=null;
+            }
+          };
+
           try{
             const upstream=await openProvider(provider,messages,providerController.signal);
-            const content=await collectOpenAIStream(upstream,providerController.signal);
-            if(!content){
-              errors.push(provider.name+': empty-stream');
-              continue;
-            }
             const currentPrompt=[...messages].reverse().find(x=>x.role==='user')?.content||'';
-            const gate=publicAnswerGate(content,language as any,currentPrompt);
-            const issue=gate.ok?conversationAnswerIssue(currentPrompt,gate.content):gate.reason;
-            const alignment=gate.ok?responseTopicAlignment(currentPrompt,gate.content):{relevant:false};
-            if(!gate.ok||issue||!alignment.relevant){
-              recordProviderFailure(provider,new Error('answer-rejected-'+String(issue||'off-topic')));
-              errors.push('rejected');
-              continue;
+
+            const content=await consumeOpenAIStream(
+              upstream,
+              providerController.signal,
+              token=>{
+                if(!firstChunkSeen){
+                  firstChunkSeen=true;
+                  clearFirstChunkTimer();
+                }
+
+                if(committed){
+                  controller.enqueue(encoder.encode(sse({content:token})));
+                  return;
+                }
+
+                buffered+=token;
+
+                // Keep only a small pre-stream safety buffer. We no longer wait
+                // for the entire provider answer before rendering it.
+                if(buffered.length>=180||/[.!?]\s|\n/.test(buffered)){
+                  const prefixGate=publicAnswerGate(buffered,language as any,currentPrompt);
+                  if(!prefixGate.ok)throw new Error('quality-rejected-prefix:'+prefixGate.reason);
+                  controller.enqueue(encoder.encode(sse({
+                    meta:{provider:provider.name,model:provider.model,streaming:true,validatedPrefix:true}
+                  })));
+                  controller.enqueue(encoder.encode(sse({content:buffered})));
+                  buffered='';
+                  committed=true;
+                }
+              }
+            );
+
+            clearFirstChunkTimer();
+
+            if(!content){
+              throw new Error('empty-stream');
             }
+
+            if(!committed){
+              const gate=publicAnswerGate(content,language as any,currentPrompt);
+              const issue=gate.ok?conversationAnswerIssue(currentPrompt,gate.content):gate.reason;
+              const clearlyOffTopic=gate.ok?responseClearlyOffTopic(currentPrompt,gate.content):false;
+              if(!gate.ok||issue||clearlyOffTopic){
+                errors.push(provider.name+': quality-rejected');
+                continue;
+              }
+              emitValidatedAnswer(gate.content,provider,controller,encoder);
+            }else{
+              if(buffered)controller.enqueue(encoder.encode(sse({content:buffered})));
+              controller.enqueue(encoder.encode(sse({
+                done:true,provider:provider.name,model:provider.model,streaming:true
+              })));
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            }
+
             recordProviderSuccess(provider);
             completed=true;
-            emitValidatedAnswer(gate.content,provider,controller,encoder);
             break;
           }catch(error:any){
+            clearFirstChunkTimer();
+            const message=String(error?.message||error||'');
+            const qualityRejected=message.startsWith('quality-rejected');
+            if(qualityRejected){
+              // Content quality is not provider health. Do not open the circuit.
+              errors.push(provider.name+': quality-rejected');
+              continue;
+            }
+
             recordProviderFailure(provider,error);
-            errors.push('upstream-failure');
+
+            if(committed){
+              // Never splice a second provider into an answer already shown.
+              controller.enqueue(encoder.encode(sse({
+                error:'STREAM_INTERRUPTED',
+                partial:true,
+                correlationId
+              })));
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              completed=true;
+              break;
+            }
+
+            errors.push(provider.name+': upstream-failure');
           }finally{
-            clearTimeout(timer);
+            clearFirstChunkTimer();
             requestSignal.removeEventListener('abort',onAbort);
           }
         }
