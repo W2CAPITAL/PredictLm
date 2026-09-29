@@ -219,7 +219,7 @@ export function ChatShell({onOpenLegal}:Props){
     chat:'Chat',
     library:'Library',
     imagine:'Imagine',
-    simulation:'Simulação',
+    simulation:'Minecraft',
     vision:'Visão',
     plugins:'Plugins'
   };
@@ -1674,13 +1674,11 @@ export function ChatShell({onOpenLegal}:Props){
 
       {searching&&<div className="grok-search"><Search size={14}/><input autoFocus value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar conversas"/></div>}
 
-      <nav className="grok-nav">
+      <nav className="grok-nav" aria-label="Navegação principal">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
-        <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Simulação</button>
-        <button onClick={()=>{window.location.href='/dossie-studio'}}><span><FileText size={16}/></span>Dossiês</button>
+        <button onClick={()=>{window.location.href='/dossie-studio'}}><span><FileText size={16}/></span>Jurídico</button>
+        <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Minecraft</button>
         <button className={screen==='imagine'?'active':''} onClick={()=>{setScreen('imagine');closeSidebarOnMobile()}}><span><ImageIcon size={16}/></span>Imagine</button>
-        <button className={screen==='vision'?'active':''} onClick={()=>{setScreen('vision');closeSidebarOnMobile()}}><span><Eye size={16}/></span>Visão</button>
-        <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><span><Library size={16}/></span>Library</button>
       </nav>
 
       <div className="grok-history-label grok-history-head"><span>Recentes</span><button onClick={()=>{s.createChat();setScreen('chat')}} title="Nova conversa"><Plus size={12}/></button></div>
@@ -1692,8 +1690,9 @@ export function ChatShell({onOpenLegal}:Props){
       </div>)}</div>
 
       <div className="grok-sidebar-bottom">
-        <button className={screen==='plugins'?'active':''} onClick={()=>{setScreen('plugins');closeSidebarOnMobile()}}><FolderOpen size={16}/> Plugins</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Resposta automática · nuvem + local</small></span></div>
+        <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><Library size={16}/> Biblioteca</button>
+        <button onClick={()=>{window.location.href='/portfolio'}}><FolderOpen size={16}/> Projeto</button>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Chat + jurídico + Minecraft</small></span></div>
       </div>
     </aside>
     {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
@@ -1719,9 +1718,9 @@ export function ChatShell({onOpenLegal}:Props){
         <div className="grok-dashboard-grid">
           <div className="grok-home-core">
             <div className="grok-hero-copy">
-              <span>SUA PLATAFORMA DE IA JURÍDICA</span>
-              <h1>O que vamos <em>explorar hoje?</em></h1>
-              <p>Pesquise, analise, construa e automatize fluxos jurídicos com inteligência artificial, seus dados e fontes oficiais.</p>
+              <span>ASSISTENTE IA · JURÍDICO + MINECRAFT</span>
+              <h1>Resolva trabalho real. <em>Teste agentes no Minecraft.</em></h1>
+              <p>Chat com fallback multi-provedor, inteligência processual com DataJud/DJEN e um laboratório Minecraft reproduzível para agentes autônomos.</p>
             </div>
 
             <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/>
@@ -1729,9 +1728,9 @@ export function ChatShell({onOpenLegal}:Props){
             <div className="grok-home-cards">
               <button className="grok-home-card violet" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}>
                 <span className="grok-home-card-icon"><Activity size={22}/></span>
-                <b>Minecraft Cognitivo</b>
-                <p>Humano, macaco, camundongo e mosca jogam o mesmo Minecraft persistente, com visão individual, exploração, crafting, combate, Nether e End.</p>
-                <strong>Abrir Minecraft <ChevronDown size={14}/></strong>
+                <b>Minecraft Agent Lab</b>
+                <p>Humano, macaco, camundongo e mosca compartilham o mesmo mundo voxel persistente, com POV individual, exploração, crafting, combate, Nether e End.</p>
+                <strong>Abrir laboratório <ChevronDown size={14}/></strong>
               </button>
             </div>
 

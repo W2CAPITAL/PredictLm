@@ -1,19 +1,34 @@
 # PredictLM
 
-PredictLM now uses **one primary Chat AI surface**. Research, Processos/DataJud/DJEN, Build and the multi-species Cognitive Mesh are internal capabilities selected from the user's request. Project files, validation, packaging and memory still exist, but the user no longer needs to switch into a separate Build/Research/Processos/cognitive chat just to use them.
+PredictLM is a portfolio-grade AI application with **four public surfaces only**:
 
-The product is local-first and does not require Ollama or an API key for its main workflow.
+1. **Chat** — multi-provider assistant with bounded failover, local/browser fallback, research and Build.
+2. **Jurídico** — CNJ/DataJud + DJEN → process timeline → analysis/dossier.
+3. **Minecraft Agent Lab** — reproducible voxel environment where four bounded controllers act in the same persistent world.
+4. **Imagine** — image generation/editing pipeline with identity checks and provider validation.
 
-## Current benchmark and cognitive status
+Everything else — neuro-science experiments, influencer tooling, provider catalogs and internal skills — is treated as **internal/lab infrastructure**, not as a separate product promise. The code is preserved for research and regression coverage, but it is intentionally absent from the primary navigation.
 
-A production baseline captured on **2026-09-26** is frozen at:
+The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. When `PREDICTLM_ACCESS_TOKEN` is configured, the deployment uses an authenticated access gate plus centralized API rate limiting. If a production deployment has no access token yet, the portfolio/Minecraft UI remains viewable but protected remote APIs are disabled instead of exposing provider credits.
+
+## Portfolio story
+
+A concise way to describe the project:
+
+> I built an AI assistant with bounded multi-provider failover, browser-local inference, authenticated API routes and a legal-intelligence workflow that turns CNJ/DataJud + DJEN evidence into a process timeline and dossier. I also built a reproducible Minecraft agent lab to benchmark autonomous controllers in a persistent voxel world.
+
+The main engineering signals are failure recovery, provider routing, API security, deterministic tests, legal-data provenance, browser rendering/performance and runnable project export. See `docs/PORTFOLIO.md` for a 60-second demo script and architecture summary.
+
+## Historical regression baseline
+
+The repository intentionally preserves a **pre-repair production baseline** captured on **2026-09-26**. These numbers are regression evidence, not a claim about the current build:
 
 - **13 captured real chat cases**
 - **2.00 / 10 mean score**
 - **23.1% pass rate** at a >=6/10 threshold
 - baseline: `reports/evals/production-baseline-2026-09-26.md`
 
-The dominant failure was retrieval contamination: unrelated GitHub/skill snippets could replace the answer. The repair track now validates streamed drafts before exposing tokens, tightens topic alignment, isolates hostile/casual turns from broad RAG and converts captured failures into regression tests.
+The dominant failure in that snapshot was retrieval contamination: unrelated GitHub/skill snippets could replace the answer. The repair track added streamed-draft validation, tighter topic alignment, bounded provider failover and regression cases for the captured failures. Current release readiness is determined by CI/typecheck/tests/build plus real-provider smoke tests, not by re-labeling this frozen historical score.
 
 PredictLM also contains a persistent **cognitive architecture**: self-model, working/episodic/autobiographical/semantic memory, attention, inhibition, metacognition-as-uncertainty-control, prediction error, homeostatic software drives and a gated self-improvement loop.
 
