@@ -1,8 +1,23 @@
 # PredictLM
 
-PredictLM now uses **one primary Chat AI surface**. Research, Processos/DataJud/DJEN, Build and the multi-species Cognitive Mesh are internal capabilities selected from the user's request. Project files, validation, packaging and memory still exist, but the user no longer needs to switch into a separate Build/Research/Processos/cognitive chat just to use them.
+PredictLM is a portfolio-grade AI application with **four public surfaces only**:
 
-The product is local-first and does not require Ollama or an API key for its main workflow.
+1. **Chat** — multi-provider assistant with bounded failover, local/browser fallback, research and Build.
+2. **Jurídico** — CNJ/DataJud + DJEN → process timeline → analysis/dossier.
+3. **Minecraft Agent Lab** — reproducible voxel environment where four bounded controllers act in the same persistent world.
+4. **Imagine** — image generation/editing pipeline with identity checks and provider validation.
+
+Everything else — neuro-science experiments, influencer tooling, provider catalogs and internal skills — is treated as **internal/lab infrastructure**, not as a separate product promise. The code is preserved for research and regression coverage, but it is intentionally absent from the primary navigation.
+
+The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. Production deployments are protected by an authenticated access gate and centralized API rate limiting.
+
+## Portfolio story
+
+A concise way to describe the project:
+
+> I built an AI assistant with bounded multi-provider failover, browser-local inference, authenticated API routes and a legal-intelligence workflow that turns CNJ/DataJud + DJEN evidence into a process timeline and dossier. I also built a reproducible Minecraft agent lab to benchmark autonomous controllers in a persistent voxel world.
+
+The main engineering signals are failure recovery, provider routing, API security, deterministic tests, legal-data provenance, browser rendering/performance and runnable project export. See `docs/PORTFOLIO.md` for a 60-second demo script and architecture summary.
 
 ## Current benchmark and cognitive status
 
