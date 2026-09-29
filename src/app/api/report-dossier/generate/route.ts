@@ -9,6 +9,7 @@ import {
   repairReportPrompt
 } from '@/lib/report-intelligence';
 import {callProviderText,rankProviders} from '@/lib/server/provider-mesh';
+import {cognitiveSurfaceFromPrompt} from '@/lib/cognitive/cognitive-surface';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -42,6 +43,8 @@ export async function POST(req:Request){
     if(!request)return Response.json({error:'Informe o objetivo do relatório em "request".'},{status:400});
 
     const blueprint=inferReportBlueprint(request,sourceText);
+    const cognitive=cognitiveSurfaceFromPrompt(request+'\n'+sourceText.slice(0,3600),'report').context;
+    const runBrain=(provider:any,prompt:string,maxTokens=2200)=>runOne(provider,[cognitive,prompt].filter(Boolean).join('\n\n'),maxTokens);
     const providers=rankProviders(request+' relatório '+blueprint.label,true).slice(0,4);
     if(!providers.length){
       return Response.json({
@@ -89,17 +92,17 @@ export async function POST(req:Request){
           '...'
         ]:[])
       ].join('\n');
-      const bundle=await runOne(providers[0],bundlePrompt,3600);
+      const bundle=await runBrain(providers[0],bundlePrompt,3600);
       forge=(bundle.match(/<<<FORGE>>>\s*([\s\S]*?)(?=<<<AEGIS>>>|$)/i)?.[1]||bundle).trim();
       aegis=(bundle.match(/<<<AEGIS>>>\s*([\s\S]*?)(?=<<<PARALLAX>>>|$)/i)?.[1]||'').trim();
       parallax=(bundle.match(/<<<PARALLAX>>>\s*([\s\S]*?)(?=<<<COUNCIL_X10>>>|$)/i)?.[1]||'').trim();
       council=useCouncil?(bundle.match(/<<<COUNCIL_X10>>>\s*([\s\S]*)$/i)?.[1]||'').trim():'';
     }else{
       const jobs=[
-        runOne(providers[0],forgeReportPrompt(request,sourceText,blueprint)),
-        runOne(providers[1]||providers[0],aegisReportPrompt(request,sourceText,blueprint)),
-        runOne(providers[2]||providers[0],parallaxReportPrompt(request,sourceText,blueprint)),
-        ...(useCouncil?[runOne(providers[3]||providers[0],councilReportPrompt(request,sourceText,blueprint),3400)]:[])
+        runBrain(providers[0],forgeReportPrompt(request,sourceText,blueprint)),
+        runBrain(providers[1]||providers[0],aegisReportPrompt(request,sourceText,blueprint)),
+        runBrain(providers[2]||providers[0],parallaxReportPrompt(request,sourceText,blueprint)),
+        ...(useCouncil?[runBrain(providers[3]||providers[0],councilReportPrompt(request,sourceText,blueprint),3400)]:[])
       ];
       const settled=await Promise.allSettled(jobs);
       forge=settled[0].status==='fulfilled'?settled[0].value:'FORGE indisponível nesta execução.';
@@ -111,7 +114,7 @@ export async function POST(req:Request){
     }
 
     const chairProvider=providers[0];
-    let markdown=await runOne(chairProvider,chairReportPrompt({
+    let markdown=await runBrain(chairProvider,chairReportPrompt({
       request,sourceText,blueprint,forge,aegis,parallax,council
     }),5200);
     markdown=markdown
@@ -133,7 +136,7 @@ export async function POST(req:Request){
     if((rendered.quality.score<85||rendered.quality.errors>0)&&rendered.quality.issues.length){
       const issues=rendered.quality.issues.map(x=>x.level.toUpperCase()+': '+x.message).slice(0,14);
       try{
-        let fixed=await runOne(chairProvider,repairReportPrompt(markdown,issues,request),5200);
+        let fixed=await runBrain(chairProvider,repairReportPrompt(markdown,issues,request),5200);
         fixed=fixed.replace(/^\s*```(?:markdown|md)?\s*/i,'').replace(/\s*```\s*$/,'').trim();
         const candidate=renderReportHtml(fixed,{
           maxWordsPerSection:Math.max(160,Math.min(900,Number(body?.maxWordsPerSection)||420)),
