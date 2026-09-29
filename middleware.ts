@@ -120,6 +120,13 @@ export async function middleware(req:NextRequest){
     return NextResponse.redirect(login);
   }
 
+  if(pathname.startsWith('/api/')&&sessionOk&&!['GET','HEAD','OPTIONS'].includes(req.method)){
+    const origin=String(req.headers.get('origin')||'');
+    if(!origin||origin!==req.nextUrl.origin){
+      return NextResponse.json({error:'Origem inválida.',code:'CSRF_ORIGIN_REJECTED'},{status:403,headers:{'Cache-Control':'no-store'}});
+    }
+  }
+
   if(pathname.startsWith('/api/')){
     const policy=ratePolicy(pathname);
     const subject=directOk?'bearer':'session';
