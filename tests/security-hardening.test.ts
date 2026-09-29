@@ -43,6 +43,8 @@ test('security-sensitive surfaces have explicit guards',()=>{
   const dossier=fs.readFileSync(path.join(root,'src/components/DossierStudio.tsx'),'utf8');
   const ci=fs.readFileSync(path.join(root,'.github/workflows/ci.yml'),'utf8');
   assert.match(middleware,/PREDICTLM_ACCESS_TOKEN/);
+  assert.match(middleware,/ACCESS_CONTROL_NOT_CONFIGURED/);
+  assert.match(middleware,/publicApi=pathname===\'\/api\/health\'/);
   assert.match(middleware,/predict_take_rate_limit/);
   assert.match(publish,/confirmPublish===true/);
   assert.match(docs,/500_000/);
