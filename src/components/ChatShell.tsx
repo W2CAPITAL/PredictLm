@@ -6,9 +6,6 @@ import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
 import { adaptiveInstructionContext, adaptiveMemoryStats, captureAdaptiveInstruction, isAdaptiveInstruction, rateAdaptiveAnswer } from '@/lib/adaptive-memory';
 import { answerQuality, classifyConversation, directConversationReply, filterRelevantResearchItems, generativeOfflineReply, isHighRiskIntrusionRequest, practicalHowToReply, responseTopicAlignment, signalsKnowledgeGap, stableFactualReply, shouldSearchConversation, synthesizeResearch } from '@/lib/chat-intelligence';
-import { animateStoryboardToWebm } from '@/lib/media/local-motion';
-import { buildStoryboardFrames } from '@/lib/media/video-pipelines';
-import { autoVariationSeed, buildQualityImagePrompt } from '@/lib/media/prompt-quality';
 import { trainingRuntimeStats } from '@/lib/training/context';
 import { resolveCnjFromContext } from '@/lib/legal/cnj';
 import { legalChatAnswer, legalDossierSummary, legalSources } from '@/lib/legal/presentation';
@@ -946,129 +943,15 @@ export function ChatShell({onOpenLegal}:Props){
 
       if(mediaKind){
         const subject=mediaSubject(prompt);
-        const seed=autoVariationSeed();
-        if(mediaKind==='image'){
-          setActivity(['Interpretando a imagem','Preparando referências visuais e identidade','Gerando composição']);
-          const enhanced=buildQualityImagePrompt(subject,{style:'Cinematic',attempt:0});
-          const r=await fetch('/api/media/generate',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:enhanced,width:1536,height:1536,seed,model:'flux',referenceMode:'auto'})
-          });
-          const data=await r.json();
-          if(!r.ok||!data?.url)throw new Error(data?.error||'A geração de imagem não retornou um arquivo.');
-          let imageUrl=String(data.url);
-          let upscale:any={upscaled:false,provider:'none'};
-          setActivity(['Imagem base criada em alta resolução','Super Resolution · tentando upscale 2×','Validando o resultado']);
-          try{
-            if(data.provider==='entity-self-reference'){
-              upscale={upscaled:false,provider:'entity-self-reference',exact:true};
-            }else{
-            const up=await fetch('/api/media/upscale',{
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({sourceUrl:imageUrl,scale:2,model:'realesrgan-x4plus',faceEnhance:true})
-            });
-            const upData=await up.json().catch(()=>({}));
-            if(up.ok&&upData?.upscaled&&upData?.url){
-              imageUrl=String(upData.url);
-              upscale=upData;
-            }
-            }
-          }catch{}
-          fetch('/api/media/library',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-              kind:'image',
-              status:'ready',
-              provider:data.provider||'chat-media',
-              model:data.model||'flux',
-              prompt:subject,
-              enhancedPrompt:enhanced,
-              style:'Cinematic',
-              aspectRatio:'1:1',
-              width:1536,
-              height:1536,
-              seed,
-              url:imageUrl,
-              meta:{surface:'chat',storageMode:'metadata-only',upscale:{upscaled:!!upscale?.upscaled,provider:upscale?.provider||'none',model:upscale?.model||null,scale:upscale?.scale||1}}
-            })
-          }).catch(()=>{});
-          s.addMessage({
-            role:'assistant',
-            content:'Imagem gerada a partir do seu pedido. Use **Imagine** quando quiser controlar estilo, proporção, vídeo e regeneração avançada.',
-            engine:'PredictLM · Media',
-            media:[{kind:'image',url:imageUrl,label:subject}],
-            actions:[
-              'Prompt interpretado',
-              'Base gerada em 1536×1536',
-              'Qualidade/anti-artefatos aplicada',
-              upscale?.upscaled?'Super Resolution '+String(upscale.scale||2)+'× · '+String(upscale.model||'upscaler'):'Upscaler externo indisponível · imagem base preservada',
-              ...(instructionLearned?['Instrução persistente aprendida localmente']:[]),
-              'Metadados enviados para a Media Library'
-            ],
-            status:'done'
-          });
-          return;
-        }
-
-        const frames=buildStoryboardFrames(subject,'Cinematic','16:9');
-        const urls:string[]=[];
-        for(let i=0;i<frames.length;i++){
-          setActivity(['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando cena '+(i+1)+'/'+frames.length]);
-          const enhanced=buildQualityImagePrompt(frames[i].prompt,{
-            style:'Cinematic',
-            attempt:i,
-            purpose:'keyframe',
-            previousPrompt:i?frames[i-1].prompt:undefined
-          });
-          const r=await fetch('/api/media/generate',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({prompt:enhanced,width:1344,height:768,seed:seed+frames[i].seedOffset,model:'flux',referenceMode:'auto'})
-          });
-          const data=await r.json();
-          if(!r.ok||!data?.url)throw new Error(data?.error||('Falha ao gerar a cena '+(i+1)+'.'));
-          urls.push(String(data.url));
-        }
-        setActivity(['3 cenas criadas','Carregando keyframes','Renderizando vídeo no navegador']);
-        const blob=await animateStoryboardToWebm({
-          imageUrls:urls,
-          width:1344,
-          height:768,
-          durationMs:9000,
-          onFrameLoaded:(loaded,total)=>setActivity(['3 cenas criadas','Keyframes '+loaded+'/'+total+' carregados','Renderizando vídeo no navegador']),
-          onProgress:value=>setActivity(['3 cenas criadas','Keyframes carregados','Renderizando vídeo · '+Math.round(value*100)+'%'])
-        });
-        const videoUrl=URL.createObjectURL(blob);
-        fetch('/api/media/library',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            kind:'video',
-            status:'ready',
-            provider:'predict-chat-storyboard',
-            model:'predict-storyboard-v1',
-            prompt:subject,
-            enhancedPrompt:subject,
-            style:'Cinematic',
-            aspectRatio:'16:9',
-            width:1344,
-            height:768,
-            seed,
-            url:null,
-            meta:{surface:'chat',storageMode:'metadata-only',bytes:blob.size,mime:blob.type,frames:urls}
-          })
-        }).catch(()=>{});
+        try{sessionStorage.setItem('predictlm:simple-imagine-prefill',subject)}catch{}
+        setScreen('imagine');
         s.addMessage({
           role:'assistant',
-          content:'Vídeo criado em **3 cenas** e renderizado localmente no navegador. O binário não foi enviado ao Supabase.',
-          engine:'PredictLM · Media',
-          media:[{kind:'video',url:videoUrl,label:subject,temporary:true}],
-          actions:['Prompt de vídeo interpretado','Storyboard de 3 cenas planejado','3 keyframes gerados','Vídeo WebM renderizado no navegador','Metadados enviados para a Media Library'],
+          content:'Abri o Imagine com o seu pedido preenchido. A geração de imagem agora fica isolada do Chat para manter a conversa leve e evitar carregar o pipeline de mídia antes da hora.',
+          engine:'PredictLM · Imagine',
           status:'done'
         });
+        setActivity([]);
         return;
       }
 
