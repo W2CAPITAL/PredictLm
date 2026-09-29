@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import JSZip from 'jszip';
 import { Activity, AlertTriangle, ArrowLeft, Bell, CheckCircle2, Clock3, Eye, Brain, Bug, ChevronDown, Code2, FileText, FolderOpen, Globe2, Image as ImageIcon, Library, Menu, PanelLeft, Plus, RefreshCw, Scale, Search, Send, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, Trash2, Volume2, VolumeX, X, Zap } from 'lucide-react';
 import { useAssistantStore } from '@/lib/assistant-store';
 import { answerLocally, browserCapabilities, cancelNeuralLoad, cancelNeuralWork, loadNeuralModel, neuralStatus, unloadNeuralModel, type NeuralTier } from '@/lib/browser-brain';
@@ -27,21 +26,13 @@ import type { LegalProcessBundle } from '@/lib/legal/types';
 import { LEGAL_TRIBUNALS } from '@/lib/legal/tribunals';
 import { useStudio } from '@/lib/store';
 import { AnimalVisionPanel } from '@/components/AnimalVisionPanel';
-import { GrokImaginePanel } from '@/components/GrokImaginePanel';
+import { SimpleImaginePanel } from '@/components/SimpleImaginePanel';
 import { GrokPluginsPanel } from '@/components/GrokPluginsPanel';
-import { GrokSimulationPanel } from '@/components/GrokSimulationPanel';
 import { advanceBrowserDigitalBrainContext } from '@/lib/digital-brain';
 import { detectReportIntent, renderReportHtml } from '@/lib/predict-dossier-html';
 import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserTextTracked, stopBrowserVoice, type BrowserVoiceState } from '@/lib/voice/browser-voice';
-import { resolveBuildTurn } from '@/lib/build-turn';
-import { orchestrateBuild } from '@/lib/build-orchestrator';
-import { runLocalSmokeTest } from '@/lib/local-tools';
-import { runLocalCouncil } from '@/lib/council';
-import { runBuildDiffReview } from '@/lib/build-diff-review';
-import { repairWorkspaceFiles } from '@/lib/workspace-repair';
-import { buildRunnableProject } from '@/lib/project-packager';
 import { loadCognitiveState, saveCognitiveState } from '@/lib/cognitive/cognitive-memory';
 import { advanceCognitiveWorkspace, cognitivePromptContext } from '@/lib/cognitive/cognitive-workspace';
 import { chatTrustIssue } from '@/lib/chat-trust-boundary';
@@ -236,7 +227,7 @@ export function ChatShell({onOpenLegal}:Props){
   useEffect(()=>{
     try{
       const requested=new URLSearchParams(window.location.search).get('screen');
-      if(requested==='simulation')setScreen('simulation');
+      if(requested==='simulation')setScreen('chat');
     }catch{}
   },[]);
 
@@ -610,6 +601,25 @@ export function ChatShell({onOpenLegal}:Props){
   }
 
   async function runBuildInsideChat(task:string){
+    const [
+      {resolveBuildTurn},
+      {orchestrateBuild},
+      {runLocalSmokeTest},
+      {runLocalCouncil},
+      {runBuildDiffReview},
+      {repairWorkspaceFiles},
+      {buildRunnableProject},
+      {default:JSZip}
+    ]=await Promise.all([
+      import('@/lib/build-turn'),
+      import('@/lib/build-orchestrator'),
+      import('@/lib/local-tools'),
+      import('@/lib/council'),
+      import('@/lib/build-diff-review'),
+      import('@/lib/workspace-repair'),
+      import('@/lib/project-packager'),
+      import('jszip')
+    ]);
     const initial=useStudio.getState();
     const before=Object.values(initial.files);
     const turn=resolveBuildTurn(task,before,initial.messages);
@@ -781,17 +791,10 @@ export function ChatShell({onOpenLegal}:Props){
     s.addMessage({role:'user',content:prompt});
 
     if(simulationLaunch){
-      try{
-        sessionStorage.setItem('predictlm:simulation-explicit-start','1');
-        const handoff=simulationCommandHandoff(prompt);
-        if(handoff)sessionStorage.setItem('predictlm:simulation-command',handoff);
-      }catch{}
-      setScreen('simulation');
       s.addMessage({
         role:'assistant',
-        content:'Minecraft Cognitive World ativado. O único modo de Simulação é o mundo Minecraft persistente, com os cérebros Humano, Macaco, Camundongo e Mosca jogando no mesmo mundo e com POV individual.',
+        content:'O Minecraft foi retirado da interface principal porque deixava o app pesado demais. O laboratório continua preservado no código como módulo experimental, mas não é carregado junto com o Chat. Posso continuar a tarefa aqui sem abrir essa engine.',
         engine:'Predict Auto',
-        actions:['Minecraft Cognitive World aberto','Quatro cérebros autônomos ativos','POV individual conectado ao ciclo observar → decidir → agir → memorizar'],
         status:'done'
       });
       setActivity([]);
@@ -1676,8 +1679,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       <nav className="grok-nav" aria-label="Navegação principal">
         <button className={screen==='chat'?'active':''} onClick={()=>openChat()}><span><Send size={16}/></span>Chat</button>
-        <button onClick={()=>{window.location.href='/dossie-studio'}}><span><FileText size={16}/></span>Jurídico</button>
-        <button className={screen==='simulation'?'active':''} onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}><span><Activity size={16}/></span>Minecraft</button>
+        <button onClick={()=>{setInput('Consulte e explique o processo ');setScreen('chat');closeSidebarOnMobile()}}><span><FileText size={16}/></span>Jurídico</button>
         <button className={screen==='imagine'?'active':''} onClick={()=>{setScreen('imagine');closeSidebarOnMobile()}}><span><ImageIcon size={16}/></span>Imagine</button>
       </nav>
 
@@ -1692,7 +1694,7 @@ export function ChatShell({onOpenLegal}:Props){
       <div className="grok-sidebar-bottom">
         <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><Library size={16}/> Biblioteca</button>
         <button onClick={()=>{window.location.href='/portfolio'}}><FolderOpen size={16}/> Projeto</button>
-        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Chat + jurídico + Minecraft</small></span></div>
+        <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Chat geral + jurídico</small></span></div>
       </div>
     </aside>
     {sidebar?<button className="grok-mobile-backdrop" aria-label="Fechar menu" onClick={()=>setSidebar(false)}/>:null}
@@ -1710,27 +1712,27 @@ export function ChatShell({onOpenLegal}:Props){
       {busy&&screen==='chat'?<div className="grok-mobile-busy" role="status" aria-live="polite"><span className="grok-mobile-busy-spinner"/><span>{activity.at(-1)||'Gerando resposta…'}</span></div>:null}
 
       {screen==='library'?<LibraryScreen sessions={s.sessions} openChat={openChat} deleteChat={s.deleteSession} createChat={()=>{s.createChat();setScreen('chat')}}/>:
-      screen==='imagine'?<GrokImaginePanel/>:
+      screen==='imagine'?<SimpleImaginePanel/>:
       screen==='vision'?<AnimalVisionPanel onChat={text=>{s.addMessage({role:'user',content:'Identificar o animal da foto',status:'done'});s.addMessage({role:'assistant',content:text,engine:'Visão',status:'done'});setScreen('chat');}}/>:
-      screen==='simulation'?<GrokSimulationPanel/>:
+      screen==='simulation'?<section className="grok-library"><div className="grok-library-head"><div><span>Laboratório interno</span><h1>Minecraft fora da interface principal</h1><p>O módulo foi retirado do carregamento público para manter o Chat leve e responsivo.</p></div><button onClick={()=>setScreen('chat')}>Voltar ao Chat</button></div></section>:
       screen==='plugins'?<GrokPluginsPanel/>:
       !hasMessages?<section className="grok-home grok-home-dashboard">
         <div className="grok-dashboard-grid">
           <div className="grok-home-core">
             <div className="grok-hero-copy">
-              <span>ASSISTENTE IA · JURÍDICO + MINECRAFT</span>
-              <h1>Resolva trabalho real. <em>Teste agentes no Minecraft.</em></h1>
-              <p>Chat com fallback multi-provedor, inteligência processual com DataJud/DJEN e um laboratório Minecraft reproduzível para agentes autônomos.</p>
+              <span>ASSISTENTE IA · JURÍDICO + GERAL</span>
+              <h1>Consulte processos. <em>Pergunte qualquer coisa.</em></h1>
+              <p>IA geral com foco jurídico: consulta DataJud e DJEN, organiza a linha do tempo e explica o processo em linguagem direta. Build, pesquisa e tutor são acionados pelo próprio Chat quando necessários.</p>
             </div>
 
-            <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/>
+            <Composer value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/>
 
             <div className="grok-home-cards">
-              <button className="grok-home-card violet" onClick={()=>{setScreen('simulation');closeSidebarOnMobile()}}>
-                <span className="grok-home-card-icon"><Activity size={22}/></span>
-                <b>Minecraft Agent Lab</b>
-                <p>Humano, macaco, camundongo e mosca compartilham o mesmo mundo voxel persistente, com POV individual, exploração, crafting, combate, Nether e End.</p>
-                <strong>Abrir laboratório <ChevronDown size={14}/></strong>
+              <button className="grok-home-card violet" onClick={()=>{setInput('Consulte e explique o processo ');setScreen('chat')}}>
+                <span className="grok-home-card-icon"><Scale size={22}/></span>
+                <b>Consulta processual</b>
+                <p>Use o número CNJ para consultar DataJud + DJEN, organizar movimentações e receber uma explicação direta do processo.</p>
+                <strong>Consultar no Chat <ChevronDown size={14}/></strong>
               </button>
             </div>
 
@@ -1809,7 +1811,7 @@ export function ChatShell({onOpenLegal}:Props){
   {feedbackByMessage[m.id]==='negative'?<span className="grok-feedback-label negative">Não útil ✓</span>:null}
   {feedbackByMessage[m.id]==='error'?<span className="grok-feedback-label error">Falhou</span>:null}
 </div>:null}</div></article>)}{lastFailedPrompt&&!busy?<div className="grok-retry-bar"><button onClick={()=>void send(lastFailedPrompt)}><RefreshCw size={12}/>Tentar novamente</button><button onClick={()=>sendFeedback('negative','Falha técnica no turno anterior')}><Bug size={12}/>Reportar erro</button></div>:null}{busy&&<article className="grok-message assistant"><div className="grok-avatar"><Sparkles size={14}/></div><div className="grok-message-body"><div className="grok-message-meta"><b>PredictLM</b><span>gerando</span></div><details className="grok-reasoning grok-reasoning-live"><summary><Brain size={11}/><span>Status</span><i className="grok-live-dot"/><ChevronDown className="grok-reasoning-chevron" size={11}/></summary>{activity.length>0?<div className="grok-activity">{activity.map((x,i)=><div key={x}><span>{i===activity.length-1?'…':'→'}</span>{x}</div>)}</div>:<p>Preparando a resposta final.</p>}</details></div></article>}<div ref={bottom}/></div>
-        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenSimulation={()=>setScreen('simulation')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/></div>
+        <div className="grok-bottom-composer"><Composer compact value={input} setValue={setInput} send={send} cancelTurn={cancelCurrentTurn} busy={busy} modeLabel={modeLabel} web={s.webEnabled} setWeb={s.setWebEnabled} deep={s.deepThink} setDeep={s.setDeepThink} plusOpen={plusOpen} setPlusOpen={setPlusOpen} modelMenu={modelMenu} setModelMenu={setModelMenu} enableAutoLocal={enableAutoLocal} enableNeural={enableNeural} caps={caps} neural={neural} memoryStats={memoryStats} learningStats={learningStats} autoLearningStats={autoLearningStats} webllm={webllm} enableWebLLM={enableWebLLM} configureFreeLLMAPI={configureFreeLLMAPI} cloud={s.cloudEnabled} setCloud={s.setCloudEnabled} localRuntime={s.localRuntimeEnabled} toggleLocalRuntime={toggleLocalRuntime} localRuntimeLabel={localRuntimeLabel} unloadNeural={unloadNeural} onOpenBuild={()=>{setInput('Crie ou continue o projeto atual: ');setScreen('chat')}} onOpenResearch={()=>{s.setWebEnabled(true);setScreen('chat')}} onOpenVision={()=>setScreen('vision')} onOpenMedia={()=>setScreen('imagine')} onOpenLegal={()=>{setInput('Consulte e analise o processo ');setScreen('chat')}}/></div>
       </section>}
 
       {loadState&&<div className="grok-model-load"><div><b>Carregando {loadState.tier}</b><span>{loadState.status}</span></div><strong>{loadState.progress!=null?Math.round(loadState.progress)+'%':'…'}</strong><button onClick={cancelModelLoad}>Cancelar</button></div>}
@@ -1819,12 +1821,12 @@ export function ChatShell({onOpenLegal}:Props){
 }
 
 function Composer(props:any){
-  const {value,setValue,send,cancelTurn,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,autoLearningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenVision,onOpenSimulation,onOpenLegal,compact}=props;
+  const {value,setValue,send,cancelTurn,busy,modeLabel,web,setWeb,deep,setDeep,plusOpen,setPlusOpen,modelMenu,setModelMenu,enableAutoLocal,unloadNeural,neural,webllm,memoryStats,learningStats,autoLearningStats,onOpenBuild,onOpenResearch,onOpenMedia,onOpenVision,onOpenLegal,compact}=props;
   const localReady=!!(neural?.loaded||webllm?.loaded);
   return <div className={'grok-composer-shell '+(compact?'compact':'')}>
     <textarea value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte qualquer coisa"/>
     <div className="grok-composer-actions">
-      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Criar / editar projeto</b><small>Build executado dentro do Chat</small></span></button><button onClick={onOpenSimulation}><Activity size={14}/><span><b>Minecraft cognitivo</b><small>4 cérebros · POV individual · mundo persistente</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Abrir Media Studio</small></span></button></div>}</div>
+      <div className="grok-plus-wrap"><button className="grok-plus" onClick={()=>setPlusOpen((v:boolean)=>!v)}><Plus size={18}/></button>{plusOpen&&<div className="grok-plus-menu"><button onClick={onOpenLegal}><Scale size={14}/><span><b>Consultar processo</b><small>DataJud + DJEN dentro do Chat</small></span></button><button onClick={onOpenBuild}><Code2 size={14}/><span><b>Criar / editar projeto</b><small>Build executado dentro do Chat</small></span></button><button onClick={()=>{setWeb(true);setPlusOpen(false)}}><Globe2 size={14}/><span><b>Pesquisar no Chat</b><small>Usar fontes atuais nesta conversa</small></span></button><button onClick={onOpenVision}><Eye size={14}/><span><b>Identificar animal</b><small>Analisar uma foto</small></span></button><button onClick={onOpenMedia}><ImageIcon size={14}/><span><b>Imagine</b><small>Gerar imagem sob demanda</small></span></button></div>}</div>
       <div className="grok-composer-right">
         <button className={web?'active':''} onClick={()=>setWeb(!web)}><Globe2 size={13}/>Web</button>
         <button className={deep?'active':''} onClick={()=>setDeep(!deep)}><Brain size={13}/>{deep?'Deep':'Fast'}</button>
