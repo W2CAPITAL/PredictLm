@@ -389,6 +389,10 @@
     {
       "id": "tutor-mode",
       "path": "skills/tutor-mode/SKILL.md"
+    },
+    {
+      "id": "graphify-brain",
+      "path": "skills/graphify-brain/SKILL.md"
     }
   ],
   "pluginsAndCapabilities": [
@@ -1031,6 +1035,14 @@
       "description": "Imagem com provider cascade, Deep Think/Research, identity/reference grounding e vídeo temporal real Auto; storyboard/motion local é fallback honesto e separado.",
       "source": "Agnes + OpenMontage + Toonflow + Infinity + Custom Diffusion + IMAGDressing + LTX Video + SANA + visual-reference grounding",
       "runtime": "built-in"
+    },
+    {
+      "id": "graphify-brain",
+      "name": "Graphify Brain",
+      "category": "Architecture",
+      "description": "Mapeia o repositório como grafo consultável, preserva relações EXTRACTED/INFERRED e usa query/path/explain para reduzir mudanças cegas.",
+      "source": "skills/graphify-brain/SKILL.md + Graphify-Labs/graphify (Apache-2.0/MIT)",
+      "runtime": "bridge"
     }
   ],
   "pluginPolicy": {
@@ -1066,7 +1078,7 @@
     "agentCatalog": 23,
     "orchestrationAgents": 11,
     "speciesCores": 4,
-    "skillModules": 23,
-    "pluginsAndCapabilities": 80
+    "skillModules": 24,
+    "pluginsAndCapabilities": 81
   }
 }
