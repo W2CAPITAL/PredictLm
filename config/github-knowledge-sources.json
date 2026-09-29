@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "policy": {
     "maxFileBytes": 140000,
     "maxFilesPerRepo": 120,
@@ -17,6 +17,30 @@
     "maxChunksPerRepo": 260
   },
   "sources": [
+    {
+      "repo": "Graphify-Labs/graphify",
+      "branch": "v8",
+      "license": "Apache-2.0",
+      "mode": "allow",
+      "include": [
+        "README.md",
+        "ARCHITECTURE.md",
+        "AGENTS.md",
+        "graphify/"
+      ],
+      "domains": [
+        "knowledge-graph",
+        "code-intelligence",
+        "ast",
+        "tree-sitter",
+        "architecture",
+        "impact-analysis",
+        "mcp",
+        "skills"
+      ],
+      "weight": 1.32,
+      "reason": "Graphify maps code/docs/config into a queryable graph. Use graph navigation to scope code changes and preserve EXTRACTED versus INFERRED provenance; graph output guides inspection but does not replace source/tests."
+    },
     {
       "repo": "dbreunig/building-with-jev-skill",
       "branch": "main",
