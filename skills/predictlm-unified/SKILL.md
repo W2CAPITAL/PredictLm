@@ -705,6 +705,22 @@ Conversas autocontidas e perguntas imaginativas não devem atravessar o pipeline
 - o gate de qualidade valida aderência depois da geração, mas não deve impor regras de how-to em hipóteses criativas.
 
 
+## Brag launch-video direction
+
+O repositório MIT `latent-spaces/brag` é uma referência aprovada para **vídeos comerciais e de lançamento**, não um provider obrigatório.
+
+Pipeline adaptado:
+- inspecionar o produto e o happy path antes de escrever o roteiro;
+- decidir hook nos primeiros 2–3s;
+- mostrar UI/fluxo real e específico em vez de motion graphics genéricos;
+- planejar 15–25s com copy legível;
+- separar storyboard/composition brief da implementação do renderer;
+- fazer capability preflight antes de escolher Hyperframes, FFmpeg ou provider temporal;
+- considerar sucesso somente depois de existir vídeo reproduzível verificado;
+- escolher deliberadamente poster frame e escrever share copy curta.
+
+No PredictLM, `skills/brag-launch-video/SKILL.md` aplica esse contrato de forma provider-agnostic e usa Fly/Mouse/Macaque/Human apenas como controle leve de direção/QA. Hyperframes continua opcional: ausência dele nunca bloqueia outro renderer real.
+
 ## Arcads media continuity reference
 
 The MIT-licensed `krusemediallc/arcads-claude-code` skill pack is now an approved media knowledge source.
