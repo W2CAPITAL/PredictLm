@@ -14,6 +14,13 @@ test('primary navigation focuses on chat legal and Imagine',()=>{
   assert.doesNotMatch(nav,/>Simulação</);
 });
 
+test('lightweight Imagine has a browser fallback without preloading it',()=>{
+  const imagine=fs.readFileSync(new URL('../src/components/SimpleImaginePanel.tsx',import.meta.url),'utf8');
+  assert.match(imagine,/import\('@heyputer\/puter\.js'\)/);
+  assert.match(imagine,/puter\.ai\.txt2img/);
+  assert.match(imagine,/referenceMode:'off'/);
+});
+
 test('Minecraft stays outside the public client bundle',()=>{
   const shell=fs.readFileSync(new URL('../src/components/ChatShell.tsx',import.meta.url),'utf8');
   assert.doesNotMatch(shell,/from '@\/components\/GrokSimulationPanel'/);
