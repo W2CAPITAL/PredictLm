@@ -81,7 +81,6 @@ export function responseClearlyOffTopic(prompt:string,content:string){
   // Recipe/procedural answers are the common case: "omelete" may become
   // "bata dois ovos..." without ever echoing the word "omelete".
   if(isGenericHowTo(prompt)&&answerLooksProcedural(content))return false;
-  if(c.length<=260&&!signalsKnowledgeGap(content))return false;
 
   // Only turn weak lexical alignment into rejection when the answer carries
   // strong evidence of a different technical/product topic. Public-answer
@@ -100,7 +99,12 @@ export function responseClearlyOffTopic(prompt:string,content:string){
     if(terms.some(term=>c.includes(clean(term))))answerDomains.add(index);
   });
   const unrelated=[...answerDomains].filter(index=>!promptDomains.has(index));
-  return unrelated.length>=2;
+  if(unrelated.length>=2)return true;
+
+  // Short direct answers and compact procedures are allowed to omit the noun
+  // from the question as long as they do not show cross-domain contamination.
+  if(c.length<=260&&!signalsKnowledgeGap(content))return false;
+  return false;
 }
 
 export function conversationAnswerIssue(prompt:string,content:string){
