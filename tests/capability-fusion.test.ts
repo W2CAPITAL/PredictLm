@@ -59,8 +59,8 @@ test('Game Studio plan validates the Life Simulation loop',()=>{
 
 test('Minecraft and Unity sources map to the Simulation runtime they actually improve',()=>{
   const audit=fusionImplementationAudit();
-  const byRepo=new Map(audit.rows.map(row=>[row.repo,row]));
-  const minecraftRepos=[
+  const byRepo=new Map<string,(typeof audit.rows)[number]>(audit.rows.map(row=>[row.repo,row]));
+  const minecraftRepos:string[]=[
     'fogleman/Craft',
     'dgreenheck/minecraft-threejs-clone',
     '0xfabian/mc',
@@ -76,16 +76,20 @@ test('Minecraft and Unity sources map to the Simulation runtime they actually im
   for(const repo of minecraftRepos){
     const row=byRepo.get(repo);
     assert.ok(row,repo+' missing from audit');
-    assert.ok(row!.surfaces.includes('simulation'),repo+' must affect Simulation');
-    assert.ok(row!.modules.includes('src/lib/simulation/minecraft-sandbox.ts'),repo+' must map to voxel runtime');
+    const surfaces=row!.surfaces as readonly string[];
+    const modules=row!.modules as readonly string[];
+    assert.ok(surfaces.includes('simulation'),repo+' must affect Simulation');
+    assert.ok(modules.includes('src/lib/simulation/minecraft-sandbox.ts'),repo+' must map to voxel runtime');
   }
   const unity=byRepo.get('jbruening/UnEngine');
   assert.ok(unity);
-  assert.ok(unity!.surfaces.includes('simulation'));
-  assert.ok(unity!.surfaces.includes('build'));
-  assert.ok(unity!.surfaces.includes('media'));
-  assert.ok(unity!.surfaces.includes('video'));
-  assert.ok(unity!.modules.includes('src/lib/unity-fabric.ts'));
+  const unitySurfaces=unity!.surfaces as readonly string[];
+  const unityModules=unity!.modules as readonly string[];
+  assert.ok(unitySurfaces.includes('simulation'));
+  assert.ok(unitySurfaces.includes('build'));
+  assert.ok(unitySurfaces.includes('media'));
+  assert.ok(unitySurfaces.includes('video'));
+  assert.ok(unityModules.includes('src/lib/unity-fabric.ts'));
 });
 
 
@@ -94,7 +98,9 @@ test('official MiroFish is a first-class reference for Simulation with a native 
   const row=audit.rows.find(item=>item.repo==='666ghj/MiroFish');
   assert.ok(row);
   assert.equal(row!.mode,'reference');
-  assert.ok(row!.surfaces.includes('simulation'));
-  assert.ok(row!.surfaces.includes('memory'));
-  assert.ok(row!.modules.includes('src/lib/simulation/mirofish-fabric.ts'));
+  const surfaces=row!.surfaces as readonly string[];
+  const modules=row!.modules as readonly string[];
+  assert.ok(surfaces.includes('simulation'));
+  assert.ok(surfaces.includes('memory'));
+  assert.ok(modules.includes('src/lib/simulation/mirofish-fabric.ts'));
 });
