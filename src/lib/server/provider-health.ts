@@ -101,7 +101,11 @@ export function rankHealthyProviders<T extends ProviderHealthIdentity>(providers
 
 export function circuitReadyProviders<T extends ProviderHealthIdentity>(providers:T[],now=Date.now()){
   const ranked=rankHealthyProviders(providers,now);
-  return ranked.filter(provider=>!providerHealthState(provider,now).cooling);
+  const ready=ranked.filter(provider=>!providerHealthState(provider,now).cooling);
+  // A circuit breaker may change priority, but it must never make a configured
+  // provider disappear completely. If every endpoint is cooling down, probe the
+  // provider whose cooldown expires first. A successful probe resets its state.
+  return ready.length?ready:ranked.slice(0,1);
 }
 
 export function providerHealthSnapshot<T extends ProviderHealthIdentity>(providers:T[],now=Date.now()){
