@@ -160,7 +160,12 @@ export function cognitiveSurfaceContext(state:CognitiveState,surface:CognitiveSu
 }
 
 export function cognitiveSurfaceFromPrompt(prompt:string,surface:CognitiveSurface){
-  const state=advanceCognitiveWorkspace(createCognitiveState(),prompt);
+  // Stateless server routes use a stable seed so the controller does not
+  // invalidate caches merely because Date.now() changed. Browser Chat still
+  // uses its persisted CognitiveState and keeps normal temporal continuity.
+  const base=createCognitiveState();
+  base.mouse={...base.mouse,lastUpdated:0};
+  const state=advanceCognitiveWorkspace(base,prompt);
   return {
     state,
     control:cognitiveSurfaceControl(state,surface),
