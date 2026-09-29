@@ -266,8 +266,9 @@ export async function GET(){
   return Response.json({
     ok,
     service:'predictlm-studio',
-    version:'5.3',
-    surfaces:{chat:true,build:true,research:true,imagine:true,plugins:true,processos:true},
+    version:'5.4',
+    surfaces:{chat:true,legal:true,minecraft:true,imagine:true,portfolio:true},
+    internalSurfaces:{build:true,research:true,library:true,vision:true,plugins:true,neuroscience:true,social:true},
     zeroApi:{
       deepThink:true,
       council:true,
