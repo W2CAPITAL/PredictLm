@@ -24,7 +24,7 @@ jobs:
       - name: Upgrade security-sensitive runtime dependencies
         run: |
           npm install --save-exact next@16.3.7 react@19.2.8 react-dom@19.2.8 @huggingface/transformers@4.3.0
-          npm audit fix --omit=dev
+          npm audit fix
       - name: Verify production dependency audit
         run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
