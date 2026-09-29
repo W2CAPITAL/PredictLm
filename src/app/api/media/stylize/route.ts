@@ -88,7 +88,8 @@ export async function POST(req:Request){
       provider:'animeganv3-bridge',
       model:String(data?.model||process.env.ANIMEGAN_MODEL||'animeganv3')
     },{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return NextResponse.json({stylized:false,error:String(error?.message||'Falha no stylizer.')},{status:500});
+  }catch(error){
+    console.error('media/stylize failed',error);
+    return NextResponse.json({stylized:false,error:'Falha no stylizer.'},{status:500});
   }
 }
