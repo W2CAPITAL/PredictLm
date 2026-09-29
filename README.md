@@ -9,7 +9,7 @@ PredictLM is a portfolio-grade AI application with **four public surfaces only**
 
 Everything else — neuro-science experiments, influencer tooling, provider catalogs and internal skills — is treated as **internal/lab infrastructure**, not as a separate product promise. The code is preserved for research and regression coverage, but it is intentionally absent from the primary navigation.
 
-The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. Production deployments are protected by an authenticated access gate and centralized API rate limiting.
+The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. When `PREDICTLM_ACCESS_TOKEN` is configured, the deployment uses an authenticated access gate plus centralized API rate limiting. If a production deployment has no access token yet, the portfolio/Minecraft UI remains viewable but protected remote APIs are disabled instead of exposing provider credits.
 
 ## Portfolio story
 
