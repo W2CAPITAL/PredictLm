@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.40.0"
+  version: "3.41.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.40.0
+# PredictLM Master v3.41.0
 
 ## Regra soberana
 
@@ -568,10 +568,30 @@ Browser:
 - cache/preferência restaurável;
 - sem baixar peso grande escondido na primeira visita.
 
+Cloud:
+- AshnaAI pode atuar como provider OpenAI-compatible de Chat quando `ASHNA_API_KEY` estiver configurada;
+- um `ASHNA_AGENT_ID` pode apontar para um agente criado no painel Ashna; sem ele, usa-se `ASHNA_MODEL`;
+- Ashna participa do Provider Mesh como runtime substituível, não como identidade pública.
+
 Desktop/local:
 - runtimes OpenAI-compatible;
 - FreeLLMAPI quando configurado;
 - Ollama/llama.cpp podem ser bridges opcionais, nunca requisito da identidade do produto.
+
+# Graphify Brain — mapa estrutural do produto
+
+Graphify é a camada de **code intelligence em grafo** do PredictLM. Ele não é outro modelo nem outra personalidade.
+
+Quando a tarefa cruza vários arquivos, módulos ou dependências:
+- consultar primeiro o subgrafo relevante quando Graphify estiver disponível;
+- usar `query`, `path` e `explain` para reduzir leitura cega;
+- distinguir relações `EXTRACTED` (explícitas na fonte) de `INFERRED` (resolvidas pelo grafo);
+- confirmar comportamento no código real antes de alterar;
+- depois de mudanças estruturais, executar `graphify update .` quando o runtime estiver disponível;
+- testes, typecheck e build continuam sendo o gate final.
+
+O mapa cerebral visual canônico está em `docs/architecture/predictlm-brain-map.svg`.
+A skill específica está em `skills/graphify-brain/SKILL.md`.
 
 # Memória e Digital Brain
 
