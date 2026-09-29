@@ -4,7 +4,7 @@ import {GET,POST} from '../src/app/api/chat/route';
 import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
 import {conversationAnswerIssue} from '../src/lib/chat-intelligence';
 
-const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','DEEPSEEK_BASE_URL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_BASE_URL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ANTHROPIC_BASE_URL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL','FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL','PREDICTLM_PROVIDER_ORDER','VERCEL_OIDC_TOKEN'];
+const providerEnv=['AI_BASE_URL','AI_API_KEY','AI_MODEL','AI_GATEWAY_API_KEY','AI_GATEWAY_MODEL','OPENAI_API_KEY','OPENAI_MODEL','XAI_API_KEY','XAI_MODEL','GROQ_API_KEY','GROQ_MODEL','OPENROUTER_API_KEY','OPENROUTER_MODEL','OPENCODE_API_KEY','OPENCODE_MODEL','NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL','DEEPSEEK_API_KEY','DEEPSEEK_MODEL','DEEPSEEK_BASE_URL','KIMI_API_KEY','KIMI_MODEL','ZAI_API_KEY','ZAI_MODEL','MINIMAX_API_KEY','MINIMAX_MODEL','GEMINI_API_KEY','GEMINI_MODEL','GEMINI_BASE_URL','ANTHROPIC_API_KEY','ANTHROPIC_MODEL','ANTHROPIC_BASE_URL','ARK_API_KEY','ARK_MODEL','OLLAMA_BASE_URL','OLLAMA_MODEL','FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL','PREDICTLM_PROVIDER_ORDER','VERCEL_OIDC_TOKEN','ASHNA_API_KEY','ASHNA_BASE_URL','ASHNA_MODEL','ASHNA_AGENT_ID'];
 
 function isolateFreeLLM(){
   for(const key of providerEnv)delete process.env[key];
@@ -56,6 +56,39 @@ async function ask(prompt:string,mode:'clean'|'full'='clean',messages:any[]=[]){
   const response=await POST(req);
   return {response,data:await response.json()};
 }
+
+test('AshnaAI uses the documented OpenAI-compatible chat endpoint',async()=>{
+  for(const key of providerEnv)delete process.env[key];
+  process.env.ASHNA_API_KEY='ashna-test-key';
+  process.env.ASHNA_BASE_URL='https://api.ashna.ai/v1/api';
+  process.env.ASHNA_MODEL='glm-5.3-flash';
+  process.env.PREDICTLM_PROVIDER_ORDER='ashna';
+  resetProviderHealthForTests();
+  const original=globalThis.fetch;
+  const calls:any[]=[];
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    const url=String(input);
+    assert.equal(url,'https://api.ashna.ai/v1/api/chat/completions');
+    const headers=init?.headers as Record<string,string>;
+    assert.equal(String(headers?.Authorization||''),'Bearer ashna-test-key');
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,'glm-5.3-flash');
+    calls.push({url,body});
+    return new Response(JSON.stringify({choices:[{message:{content:'Resposta pela AshnaAI.'}}]}),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try{
+    const {response,data}=await ask('Explique o que é um contrato.');
+    assert.equal(response.status,200);
+    assert.equal(data.provider,'ashna');
+    assert.equal(data.model,'glm-5.3-flash');
+    assert.match(data.content,/AshnaAI/);
+    assert.equal(calls.length,1);
+  }finally{
+    globalThis.fetch=original;
+    for(const key of providerEnv)delete process.env[key];
+    resetProviderHealthForTests();
+  }
+});
 
 test('FreeLLMAPI uses the OpenAI-compatible /v1 contract',async()=>{
   isolateFreeLLM();
