@@ -105,9 +105,16 @@ export async function middleware(req:NextRequest){
   const accessToken=String(process.env.PREDICTLM_ACCESS_TOKEN||'').trim();
   if(!accessToken){
     if(process.env.NODE_ENV!=='production')return NextResponse.next();
-    if(pathname.startsWith('/api/'))return NextResponse.json({error:'Acesso seguro não configurado.',code:'ACCESS_CONTROL_NOT_CONFIGURED'},{status:503});
-    const login=req.nextUrl.clone();login.pathname='/access';login.searchParams.set('returnTo',pathname+req.nextUrl.search);
-    return NextResponse.redirect(login);
+    const publicApi=pathname==='/api/health'||pathname==='/api/legal/health';
+    if(pathname.startsWith('/api/')&&!publicApi){
+      return NextResponse.json({
+        error:'Recursos remotos protegidos não estão habilitados neste deployment.',
+        code:'ACCESS_CONTROL_NOT_CONFIGURED'
+      },{status:503,headers:{'Cache-Control':'no-store'}});
+    }
+    // Keep the portfolio/Minecraft UI viewable even when the deployment owner has
+    // not configured a credential yet. Expensive/sensitive APIs remain disabled.
+    return NextResponse.next();
   }
 
   const direct=bearer(req);
