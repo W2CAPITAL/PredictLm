@@ -19,7 +19,8 @@
     "selfimprove:plan": "node scripts/selfimprove/plan.mjs",
     "selfimprove:snapshot": "node scripts/selfimprove/snapshot.mjs",
     "eval:build-export": "node --import tsx scripts/evals/build-export-smoke.ts",
-    "grok:preflight": "node scripts/grok/preflight.mjs"
+    "grok:preflight": "node scripts/grok/preflight.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.src.json"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.2.1",
