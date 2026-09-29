@@ -396,6 +396,11 @@ export async function POST(req:NextRequest){
               throw new Error('empty-stream');
             }
 
+            // Provider health tracks transport/API availability, not semantic
+            // acceptance. A complete non-empty response proves the endpoint is
+            // reachable even if the answer is rejected by the quality gate.
+            recordProviderSuccess(provider);
+
             if(!committed){
               const gate=publicAnswerGate(content,language as any,currentPrompt);
               const issue=gate.ok?conversationAnswerIssue(currentPrompt,gate.content):gate.reason;
@@ -413,7 +418,6 @@ export async function POST(req:NextRequest){
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             }
 
-            recordProviderSuccess(provider);
             completed=true;
             break;
           }catch(error:any){
