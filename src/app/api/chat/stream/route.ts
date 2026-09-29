@@ -54,6 +54,16 @@ function providerList(prompt=''):Provider[]{
     });
   }
 
+  if(process.env.ASHNA_API_KEY){
+    push({
+      name:'ashna',
+      base:process.env.ASHNA_BASE_URL||'https://api.ashna.ai/v1/api',
+      key:process.env.ASHNA_API_KEY,
+      model:process.env.ASHNA_AGENT_ID||process.env.ASHNA_MODEL||'glm-5.3-flash',
+      headers:{'X-Title':'PredictLM'}
+    });
+  }
+
   if(process.env.GROQ_API_KEY){
     push({
       name:'groq',
@@ -124,7 +134,7 @@ function providerList(prompt=''):Provider[]{
   const explicit=process.env.PREDICTLM_STREAM_PROVIDER_ORDER||process.env.PREDICTLM_PROVIDER_ORDER;
   const route=jevRouteDecision(prompt,{hasTools:false});
   const preferred=(explicit
-    ||'vercel-gateway,gemini,openai,deepseek,nvidia,groq,openrouter,freellmapi')
+    ||'ashna,vercel-gateway,gemini,openai,deepseek,nvidia,groq,openrouter,freellmapi')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(provider:Provider)=>{
     const index=preferred.indexOf(provider.name);
