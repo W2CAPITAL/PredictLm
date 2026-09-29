@@ -191,7 +191,7 @@ export function DossierStudio(){
 
       <section className="ds-preview">
         <div className="ds-pane-head"><Sparkles size={14}/><b>Preview HTML</b><span>{rendered.dossier.sections.length} seções</span></div>
-        <iframe ref={frame} title="Preview do dossiê" srcDoc={rendered.html}/>
+        <iframe ref={frame} title="Preview do dossiê" srcDoc={rendered.html} sandbox="" referrerPolicy="no-referrer"/>
       </section>
     </div>
 
