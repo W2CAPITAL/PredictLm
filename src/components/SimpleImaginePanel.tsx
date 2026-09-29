@@ -39,11 +39,24 @@ export function SimpleImaginePanel(){
     return style==='Auto'?text:text+'\n\nEstilo visual: '+style+'. Preserve fielmente o sujeito, a ação, a composição e os detalhes pedidos.';
   },[prompt,style]);
 
+  async function validateImageUrl(url:string){
+    if(!url)throw new Error('O provider não retornou uma imagem.');
+    await new Promise<void>((resolve,reject)=>{
+      const image=new window.Image();
+      image.onload=()=>resolve();
+      image.onerror=()=>reject(new Error('O provider retornou uma imagem que não abriu no navegador.'));
+      image.src=url;
+    });
+    return url;
+  }
+
   async function generate(nextSeed=seed){
     if(!effectivePrompt||loading)return;
     setLoading(true);
     setError('');
     setResult(null);
+    let primaryError='';
+
     try{
       const response=await fetch('/api/media/generate',{
         method:'POST',
@@ -62,14 +75,7 @@ export function SimpleImaginePanel(){
         throw new Error(String(data?.detail||data?.error||'O provider não entregou uma imagem válida'));
       }
 
-      const url=String(data.url);
-      await new Promise<void>((resolve,reject)=>{
-        const image=new window.Image();
-        image.onload=()=>resolve();
-        image.onerror=()=>reject(new Error('O provider retornou uma URL de imagem que não abriu no navegador.'));
-        image.src=url;
-      });
-
+      const url=await validateImageUrl(String(data.url));
       setResult({
         url,
         provider:String(data.provider||'imagem'),
@@ -77,8 +83,34 @@ export function SimpleImaginePanel(){
         seed:nextSeed,
         prompt:prompt.trim()
       });
+      return;
     }catch(err:any){
-      setError(String(err?.message||'Falha ao gerar imagem.'));
+      primaryError=String(err?.message||'Provider principal indisponível.');
+    }
+
+    try{
+      const mod:any=await import('@heyputer/puter.js');
+      const puter:any=mod?.puter||mod?.default?.puter||mod?.default||null;
+      if(!puter?.ai?.txt2img)throw new Error('Fallback de imagem do Puter indisponível.');
+
+      const [w,h]=ratio.label.split(':').map(Number);
+      const generated:any=await puter.ai.txt2img(effectivePrompt,{
+        model:'replicate:black-forest-labs/flux-schnell',
+        ratio:{w:w||1,h:h||1},
+        seed:nextSeed
+      });
+      const raw=generated?.src||generated?.url||(typeof generated?.toString==='function'?generated.toString():'');
+      const url=await validateImageUrl(String(raw||''));
+      setResult({
+        url,
+        provider:'puter-replicate',
+        model:'black-forest-labs/flux-schnell',
+        seed:nextSeed,
+        prompt:prompt.trim()
+      });
+    }catch(err:any){
+      const fallbackError=String(err?.message||'Fallback Puter indisponível.');
+      setError(primaryError+' · Fallback: '+fallbackError);
     }finally{
       setLoading(false);
     }
