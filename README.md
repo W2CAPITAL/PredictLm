@@ -8,6 +8,8 @@
 
 A Next.js AI system that keeps one conversational surface while routing complex work into verified, capability-specific pipelines.
 
+**Public surface:** Chat · Jurídico · Imagine
+
 [Architecture](ARCHITECTURE.md) · [Commercial film brief](docs/commercial/predictlm-launch-film.md) · [Agent contract](AGENTS.md) · [PredictLM Master](skills/predictlm-master/SKILL.md)
 
 </div>
