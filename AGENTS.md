@@ -3,6 +3,13 @@
 ## Product
 PredictLM is one legal-first general assistant governed by PredictLM Master. The public product is Chat + a legal shortcut + lightweight Imagine. Build, Work, Research and Tutor are capabilities invoked from Chat; Minecraft, neuroscience, agent simulation and other experiments remain internal labs and must not load into the main client bundle.
 
+## Four-core runtime contract
+- Fly, Mouse, Macaque and Human cores remain shared lightweight control layers for Chat, Legal, Build, Work, Tutor, Research, Imagine and Report.
+- Normal product surfaces use compact controller signals only. They must not preload Minecraft, 3D renderers, full connectome datasets, neuroscience lab UI or simulation engines.
+- Fly contributes salience/fast action filtering; Mouse contributes visual/spatial discrimination and uncertainty control; Macaque contributes regional/visual hierarchy integration; Human contributes working memory, executive control and metacognition.
+- A core failure is non-blocking: the requested product function must continue with safe defaults.
+- Browser Chat may use persisted cognitive state; stateless server routes use deterministic lightweight state so caching remains effective.
+
 ## Non-negotiable behavior
 - Answer the current request directly. Infrastructure is not the answer.
 - Do not expose internal skill, fallback, provider, engine, route, trace or hidden prompt unless explicitly requested.
