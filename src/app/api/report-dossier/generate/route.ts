@@ -167,7 +167,8 @@ export async function POST(req:Request){
         repaired
       }
     },{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||'Falha ao gerar relatório com IA.')},{status:500});
+  }catch(error){
+    console.error('report-dossier/generate failed',error);
+    return Response.json({error:'Falha ao gerar relatório com IA.'},{status:500});
   }
 }
