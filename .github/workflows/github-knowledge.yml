@@ -3,6 +3,7 @@ name: GitHub Knowledge Sync
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "config/github-knowledge-sources.json"
       - "scripts/knowledge/sync-github.mjs"
