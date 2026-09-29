@@ -27,6 +27,7 @@ test('legal work and advanced capabilities stay inside Chat',()=>{
   assert.match(shell,/PredictLM · Processos/);
   assert.match(shell,/Build no Chat/);
   assert.match(shell,/isTutorRequest/);
+  assert.match(shell,/detectWorkRequest/);
 });
 
 test('experimental breadth stays documented but outside the primary product promise',()=>{
