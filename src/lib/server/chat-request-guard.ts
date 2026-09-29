@@ -14,11 +14,14 @@ const WINDOW_MS=60_000;
 const MAX_REQUESTS_PER_WINDOW=30;
 const MAX_IN_FLIGHT=3;
 
-function clientKey(req:Request,sessionScope=''){
-  if(sessionScope)return'session:'+sessionScope;
-  const forwarded=String(req.headers.get('x-forwarded-for')||'').split(',')[0]?.trim();
+function clientKey(req:Request,_sessionScope=''){
+  // Never trust a client-provided session id as a rate-limit identity.
+  const vercel=String(req.headers.get('x-vercel-forwarded-for')||'').split(',')[0]?.trim();
+  const cloudflare=String(req.headers.get('cf-connecting-ip')||'').trim();
   const real=String(req.headers.get('x-real-ip')||'').trim();
-  const ip=(forwarded||real||'anonymous').replace(/[^a-zA-Z0-9:._-]/g,'').slice(0,96);
+  const forwarded=String(req.headers.get('x-forwarded-for')||'').split(',')[0]?.trim();
+  const selected=process.env.VERCEL?(vercel||real):(cloudflare||real||forwarded);
+  const ip=String(selected||'anonymous').replace(/[^a-zA-Z0-9:._-]/g,'').slice(0,96);
   return'client:'+ip;
 }
 
