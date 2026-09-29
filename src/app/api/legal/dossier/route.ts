@@ -31,8 +31,9 @@ export async function GET(req:Request){
       url.searchParams.get('number')||url.searchParams.get('processo')||'',
       modeOf(url.searchParams.get('mode'))
     );
-  }catch(error:any){
-    return Response.json({error:String(error?.message||error)},{status:400,headers:{'Cache-Control':'no-store'}});
+  }catch(error){
+    console.error('legal/dossier failed',error);
+    return Response.json({error:'Falha ao gerar dossiê jurídico.'},{status:400,headers:{'Cache-Control':'no-store'}});
   }
 }
 
