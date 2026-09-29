@@ -86,6 +86,7 @@ export const REQUESTED_FUSION_REPOS=[
   'tamaratran/fast-jev-compaction',
   'dbreunig/building-with-jev-skill',
   'Wangnov/grok-skills',
+  'latent-spaces/brag',
   'NVIDIA/skills'
 ] as const;
 
@@ -161,6 +162,7 @@ export const FUSION_SOURCES:FusionSource[]=[
   {repo:'tamaratran/fast-jev-compaction',license:'unverified',mode:'reference',areas:['memory','social'],ideas:['verbatim-first compaction','preserve identity anchors and active campaign facts']},
   {repo:'dbreunig/building-with-jev-skill',license:'unverified',mode:'reference',areas:['build','social'],ideas:['JEV skill implementation patterns','bounded context engineering']},
   {repo:'Wangnov/grok-skills',license:'MIT',mode:'adapt',areas:['research','media','video','browser'],ideas:['xAI web/X search with normalized citations','capability preflight before choosing local tools','logged-in Grok CLI as local-only media path','verify generated media artifacts before success','adaptive ffmpeg chroma-key/concat/watermark pipeline']},
+  {repo:'latent-spaces/brag',license:'MIT',mode:'adapt',areas:['media','video','launch','social'],ideas:['inspect the real product before scripting','hook-first 15–25s launch storytelling','show real user flow instead of generic SaaS filler','readability floors for on-screen copy','storyboard/composition brief separated from renderer implementation','verify a playable render before success','deliberate poster frame and share-copy delivery']},
   {repo:'NVIDIA/skills',license:'mixed Apache-2.0/CC-BY-4.0',mode:'reference',areas:['build','research','media','video','simulation'],ideas:['RAG deploy/eval and NeMo Retriever patterns','AI-Q research as an explicit remote backend','cuDF/DALI acceleration only on compatible NVIDIA GPU workloads','cuOpt routing/optimization behind GPU service boundaries','DeepStream analytics on GPU hosts','Omniverse USD performance/SimReady/realtime viewer as external GPU paths','Nemotron customization and skill governance as explicit tooling']},
   {repo:'snarepigeonrouter/Cap-Cut-Pro',license:'unverified',mode:'reference',areas:['video'],ideas:['quarantined provenance; do not use cracked/bypass packages as a production dependency']},
   {repo:'Hommy-master/capcut-mate',license:'unverified',mode:'reference',areas:['video','social'],ideas:['reference-only editing workflow until provenance/license/runtime contract is verified']}
