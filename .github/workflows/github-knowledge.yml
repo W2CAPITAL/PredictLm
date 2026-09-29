@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   sync:
@@ -34,18 +35,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run build
-      - name: Commit index update
+      - name: Propose generated update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet -- src/data/github-knowledge-index.json reports/github-knowledge/manifest.json; then
-            echo "No knowledge changes"
+            echo "No generated changes"
             exit 0
           fi
-          git config user.name "predictlm-knowledge-bot"
+          BRANCH="automation/github-knowledge-sync"
+          git config user.name "predictlm-security-bot"
           git config user.email "actions@users.noreply.github.com"
+          git checkout -B "$BRANCH"
           git add src/data/github-knowledge-index.json reports/github-knowledge/manifest.json
           git commit -m "chore(knowledge): refresh GitHub index"
-          git restore package-lock.json package.json 2>/dev/null || true
-          git clean -fd --exclude=src/data/github-knowledge-index.json --exclude=reports/github-knowledge/manifest.json
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+          git push --force origin HEAD:"$BRANCH"
+          PR_NUMBER="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$PR_NUMBER" ]; then
+            gh pr create --base main --head "$BRANCH" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+          else
+            gh pr edit "$PR_NUMBER" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+          fi
