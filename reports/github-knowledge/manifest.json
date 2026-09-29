@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-29T00:35:22.652Z",
-  "knowledgeVersion": "de49b729781b857e",
-  "chunkCount": 5056,
+  "generatedAt": "2026-09-29T06:34:56.028Z",
+  "knowledgeVersion": "12811a1e008d2537",
+  "chunkCount": 5040,
   "sources": [
     {
       "repo": "dbreunig/building-with-jev-skill",
@@ -70,9 +70,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "449fae030aa6b51105db3e440610c867e6b91024",
+      "commit": "39faafb61688282a372ff2d59191581588e9a003",
       "files": 2,
-      "chunks": 19,
+      "chunks": 0,
       "error": null
     },
     {
@@ -97,9 +97,9 @@
       "repo": "Alishahryar1/free-claude-code",
       "mode": "allow",
       "license": "MIT",
-      "commit": "105bfab8c2fa92b56c1077b103a8a5417a4f174e",
+      "commit": "0c3a1de257ce9cede7d81ac13a71018531d6d33d",
       "files": 1,
-      "chunks": 33,
+      "chunks": 34,
       "error": null
     },
     {
@@ -439,7 +439,7 @@
       "repo": "AIGeniusInstitute/deepthink",
       "mode": "allow",
       "license": "MIT",
-      "commit": "2d8bc0db10f61739326499456b940738646fbdd1",
+      "commit": "baaec44627100a5f4e1463c8e72ae3868fc89f7c",
       "files": 1,
       "chunks": 117,
       "error": null
@@ -637,7 +637,7 @@
       "repo": "conorbronsdon/avoid-ai-writing",
       "mode": "allow",
       "license": "MIT",
-      "commit": "7cd166c32e91573734f6ed37f4aa4d9e23b18400",
+      "commit": "e369d149a9cf842bf4594dcccd08ded48a68d994",
       "files": 1,
       "chunks": 58,
       "error": null
@@ -655,7 +655,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "132c0e0ea83f0fb131189689c095e514f841e892",
+      "commit": "c7e7da1e0542a1fbe82629bcf96c9da1d3f9da25",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -691,9 +691,9 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "ec3081ae1be83f78de509920bbbc942ced0b77c6",
+      "commit": "94e156a8c7b7a468d7c60bda3a38757bfbfd4a79",
       "files": 1,
-      "chunks": 12,
+      "chunks": 14,
       "error": null
     },
     {
@@ -727,7 +727,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "0c8fa864774e716b4e711aafc612fa9b49aaecbf",
+      "commit": "29e831c9e4094e1daeee9fd5ba60d0f00a1ac9c5",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -880,7 +880,7 @@
       "repo": "presenton/presenton",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "f9d3eba1a25712e25766b35a7af3b25f93ec1c01",
+      "commit": "0449eaa7c9acf7fc0d4ce68b4787fea484c024af",
       "files": 1,
       "chunks": 61,
       "error": null
@@ -1258,7 +1258,7 @@
       "repo": "FTShare-Lab/FTShare-MCP",
       "mode": "allow",
       "license": "MIT",
-      "commit": "15a9479a3b22b7c63b198d031780828dec5751a9",
+      "commit": "1ab492169881595490165e132a9b9fbdaa38df1c",
       "files": 2,
       "chunks": 34,
       "error": null
@@ -1276,7 +1276,7 @@
       "repo": "FTShare-Lab/FTShare-skill",
       "mode": "allow",
       "license": "MIT",
-      "commit": "65f14cc9838322986eef0527947e67e940291792",
+      "commit": "c8719e20fe872ec38821a58b4d3c26ee6fcc7e97",
       "files": 120,
       "chunks": 260,
       "error": null
