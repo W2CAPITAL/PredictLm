@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {POST} from '../src/app/api/chat/stream/route';
-import {resetProviderHealthForTests} from '../src/lib/server/provider-health';
+import {providerHealthState,resetProviderHealthForTests} from '../src/lib/server/provider-health';
 
 const envKeys=[
   'FREELLMAPI_BASE_URL','FREELLMAPI_API_KEY','FREELLMAPI_MODEL',
@@ -116,6 +116,60 @@ test('stream chat falls through from failed Groq to Vercel AI Gateway',async()=>
       'https://api.groq.com/openai/v1/chat/completions',
       'https://ai-gateway.vercel.sh/v1/chat/completions'
     ]);
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
+
+test('stream chat forwards content before the upstream stream closes',async()=>{
+  clearProviders();
+  process.env.GROQ_API_KEY='groq-test';
+  process.env.GROQ_MODEL='openai/gpt-oss-120b';
+  const original=globalThis.fetch;
+  const encoder=new TextEncoder();
+  let upstreamController:ReadableStreamDefaultController<Uint8Array>|null=null;
+  let upstreamClosed=false;
+
+  globalThis.fetch=async(input:any)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
+    const stream=new ReadableStream<Uint8Array>({
+      start(controller){
+        upstreamController=controller;
+        const first='A luz azul se espalha com mais eficiência na atmosfera do que comprimentos de onda maiores, então, durante o dia, mais luz azul chega aos nossos olhos vinda de várias direções. ';
+        controller.enqueue(encoder.encode('data: '+JSON.stringify({choices:[{delta:{content:first}}]})+'\n\n'));
+      }
+    });
+    return new Response(stream,{status:200,headers:{'Content-Type':'text/event-stream'}});
+  };
+
+  try{
+    const response=await POST(request([{role:'user',content:'Explique por que o céu parece azul'}]));
+    assert.equal(response.status,200);
+    const reader=response.body!.getReader();
+    const decoder=new TextDecoder();
+
+    const first=await Promise.race([
+      reader.read(),
+      new Promise<never>((_,reject)=>setTimeout(()=>reject(new Error('client did not receive streamed data')),1000))
+    ]);
+    assert.equal(first.done,false);
+    assert.equal(upstreamClosed,false);
+    const firstText=decoder.decode(first.value||new Uint8Array());
+    assert.match(firstText,/provider|content/);
+
+    upstreamController!.enqueue(encoder.encode('data: '+JSON.stringify({choices:[{delta:{content:'Isso é o espalhamento de Rayleigh.'}}]})+'\n\n'));
+    upstreamController!.enqueue(encoder.encode('data: [DONE]\n\n'));
+    upstreamController!.close();
+    upstreamClosed=true;
+
+    let rest='';
+    while(true){
+      const part=await reader.read();
+      if(part.done)break;
+      rest+=decoder.decode(part.value,{stream:true});
+    }
+    assert.match(firstText+rest,/espalhamento|luz azul/i);
   }finally{
     globalThis.fetch=original;
     clearProviders();
@@ -259,6 +313,12 @@ test('stream chat rejects a flat literal McQueen answer and tries another provid
       'https://api.groq.com/openai/v1/chat/completions',
       'https://ai-gateway.vercel.sh/v1/chat/completions'
     ]);
+    const groqHealth=providerHealthState({
+      name:'groq',
+      base:'https://api.groq.com/openai/v1',
+      model:'openai/gpt-oss-120b'
+    });
+    assert.equal(groqHealth.cooling,false,'quality rejection must not trip provider circuit');
   }finally{
     globalThis.fetch=original;
     clearProviders();
