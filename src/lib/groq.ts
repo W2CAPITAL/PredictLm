@@ -4,7 +4,7 @@
  */
 
 export async function generateAppSimple(prompt: string, history: any[]) {
-  const apiKey = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   
   if (!apiKey) {
     throw new Error('GROQ_API_KEY não encontrada. Por favor, configure-a no arquivo .env.');
