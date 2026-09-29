@@ -21,7 +21,8 @@ export async function POST(req:Request){
       filedTo:String(body?.filedTo||'')
     });
     return Response.json(result,{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||'Falha na busca DataJud.')},{status:400,headers:{'Cache-Control':'no-store'}});
+  }catch(error){
+    console.error('legal/search failed',error);
+    return Response.json({error:'Falha na busca DataJud.'},{status:400,headers:{'Cache-Control':'no-store'}});
   }
 }
