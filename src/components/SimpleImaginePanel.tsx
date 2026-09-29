@@ -56,13 +56,29 @@ export function SimpleImaginePanel(){
     setError('');
     setResult(null);
     let primaryError='';
+    let generationPrompt=effectivePrompt;
+
+    try{
+      const [{loadCognitiveState,saveCognitiveState},{advanceCognitiveWorkspace},{buildCreativeMediaControl}]=await Promise.all([
+        import('@/lib/cognitive/cognitive-memory'),
+        import('@/lib/cognitive/cognitive-workspace'),
+        import('@/lib/cognitive/creative-media')
+      ]);
+      const previous=await loadCognitiveState();
+      const next=advanceCognitiveWorkspace(previous,effectivePrompt);
+      await saveCognitiveState(next);
+      const creative=buildCreativeMediaControl(next,effectivePrompt);
+      generationPrompt=effectivePrompt+'\n\n'+creative.publicBrief;
+    }catch{
+      // Cognitive control is an enhancement; image generation must remain usable if local state is unavailable.
+    }
 
     try{
       const response=await fetch('/api/media/generate',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          prompt:effectivePrompt,
+          prompt:generationPrompt,
           width:ratio.width,
           height:ratio.height,
           seed:nextSeed,
@@ -94,7 +110,7 @@ export function SimpleImaginePanel(){
       if(!puter?.ai?.txt2img)throw new Error('Fallback de imagem do Puter indisponível.');
 
       const [w,h]=ratio.label.split(':').map(Number);
-      const generated:any=await puter.ai.txt2img(effectivePrompt,{
+      const generated:any=await puter.ai.txt2img(generationPrompt,{
         model:'replicate:black-forest-labs/flux-schnell',
         ratio:{w:w||1,h:h||1},
         seed:nextSeed
