@@ -267,8 +267,8 @@ export async function GET(){
     ok,
     service:'predictlm-studio',
     version:'5.4',
-    surfaces:{chat:true,legal:true,minecraft:true,imagine:true,portfolio:true},
-    internalSurfaces:{build:true,research:true,library:true,vision:true,plugins:true,neuroscience:true,social:true},
+    surfaces:{chat:true,legal:true,imagine:true,portfolio:true},
+    internalSurfaces:{build:true,research:true,minecraft:true,library:true,vision:true,plugins:true,neuroscience:true,social:true},
     zeroApi:{
       deepThink:true,
       council:true,
