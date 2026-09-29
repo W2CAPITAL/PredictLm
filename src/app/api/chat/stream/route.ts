@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { conversationAnswerIssue, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { conversationAnswerIssue, isPlayfulPrompt, responseClearlyOffTopic, responseTopicAlignment } from '@/lib/chat-intelligence';
 import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevRouteDecision } from '@/lib/jev-policy';
 import { publicAnswerGate } from '@/lib/public-answer-gate';
