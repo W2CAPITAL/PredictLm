@@ -19,16 +19,16 @@ A concise way to describe the project:
 
 The main engineering signals are failure recovery, provider routing, API security, deterministic tests, legal-data provenance, browser rendering/performance and runnable project export. See `docs/PORTFOLIO.md` for a 60-second demo script and architecture summary.
 
-## Current benchmark and cognitive status
+## Historical regression baseline
 
-A production baseline captured on **2026-09-26** is frozen at:
+The repository intentionally preserves a **pre-repair production baseline** captured on **2026-09-26**. These numbers are regression evidence, not a claim about the current build:
 
 - **13 captured real chat cases**
 - **2.00 / 10 mean score**
 - **23.1% pass rate** at a >=6/10 threshold
 - baseline: `reports/evals/production-baseline-2026-09-26.md`
 
-The dominant failure was retrieval contamination: unrelated GitHub/skill snippets could replace the answer. The repair track now validates streamed drafts before exposing tokens, tightens topic alignment, isolates hostile/casual turns from broad RAG and converts captured failures into regression tests.
+The dominant failure in that snapshot was retrieval contamination: unrelated GitHub/skill snippets could replace the answer. The repair track added streamed-draft validation, tighter topic alignment, bounded provider failover and regression cases for the captured failures. Current release readiness is determined by CI/typecheck/tests/build plus real-provider smoke tests, not by re-labeling this frozen historical score.
 
 PredictLM also contains a persistent **cognitive architecture**: self-model, working/episodic/autobiographical/semantic memory, attention, inhibition, metacognition-as-uncertainty-control, prediction error, homeostatic software drives and a gated self-improvement loop.
 
