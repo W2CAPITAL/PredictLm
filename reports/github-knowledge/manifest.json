@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T23:45:29.718Z",
-  "knowledgeVersion": "d845a42a4b6d44ee",
-  "chunkCount": 5100,
+  "generatedAt": "2026-09-29T00:35:22.652Z",
+  "knowledgeVersion": "de49b729781b857e",
+  "chunkCount": 5056,
   "sources": [
     {
       "repo": "dbreunig/building-with-jev-skill",
@@ -70,9 +70,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "bf84561b9d418c84ae380ef6e50dea504b539816",
+      "commit": "449fae030aa6b51105db3e440610c867e6b91024",
       "files": 2,
-      "chunks": 63,
+      "chunks": 19,
       "error": null
     },
     {
@@ -691,7 +691,7 @@
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "f174ba8465233e46e66ab2c5667b358f1d6676d6",
+      "commit": "ec3081ae1be83f78de509920bbbc942ced0b77c6",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -727,7 +727,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "341ec019f555adc2451a2d04e4851bfb6125fac4",
+      "commit": "0c8fa864774e716b4e711aafc612fa9b49aaecbf",
       "files": 1,
       "chunks": 12,
       "error": null

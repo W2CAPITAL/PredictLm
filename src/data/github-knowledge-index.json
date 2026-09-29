@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "knowledgeVersion": "d845a42a4b6d44ee",
-  "generatedAt": "2026-09-28T23:45:29.718Z",
+  "knowledgeVersion": "de49b729781b857e",
+  "generatedAt": "2026-09-29T00:35:22.652Z",
   "sourceCount": 97,
-  "chunkCount": 5100,
+  "chunkCount": 5056,
   "chunks": [
     {
       "id": "758b12118f87a395217b",
@@ -6294,933 +6294,9 @@
       "weight": 1.26
     },
     {
-      "id": "612a344eac83f987fc96",
+      "id": "60f87b2bafcf006f8afa",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Hermes Agent - Development Guide",
-      "text": "Instructions for AI coding assistants and developers working on the hermes-agent codebase.\nThis root file holds only what applies everywhere. Each area has its own `AGENTS.md` (aim for\n~8k chars; `agent/subdirectory_hints.py` delivers up to 32k and truncates head/tail with a warning\npast that); see the **routing table** at the end and read the area file before editing in that area.\n\n**Never give up on the right solution.**",
-      "weight": 1.3
-    },
-    {
-      "id": "a67fb46d53c62486c2f8",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What Hermes Is",
-      "text": "Hermes is a personal AI agent that runs the same agent core across a CLI, a messaging\ngateway (Telegram, Discord, Slack, ~20 platforms), a TUI, and an Electron desktop app. It\nlearns across sessions (memory + skills), delegates to subagents, runs scheduled jobs, and\ndrives a real terminal and browser. It is extended primarily through **plugins and skills**,\nnot by growing the core.\n\nTwo invariants shape almost every design decision and are the lens for reviewing any change:\n\n- **Per-conversation prompt caching is sacred.** A long-lived conversation reuses a cached\n  prefix every turn. Anything that mutates past context, swaps toolsets, reloads memories, or\n  rebuilds the system prompt mid-conversation invalidates that cache and multiplies the user's\n  cost. We do not do it; the ONE exception is context compression. Slash commands that mutate\n  system-prompt state (skills, tools, memory) must be **cache-aware**: default to deferred\n  invalidation (takes effect next session) with an opt-in `--now` flag (`/skills install --now`\n  is the canonical pattern).\n- **The core is a narrow waist; capability lives at the edges.** Every model tool is sent on\n  every API call, so the bar for a ne",
-      "weight": 1.3
-    },
-    {
-      "id": "a2e618616ba11c884b0d",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What Hermes Is",
-      "text": "w *core* tool is high. New capability should arrive as a\n  CLI command + skill, a service-gated tool, or a plugin — not as core surface.",
-      "weight": 1.3
-    },
-    {
-      "id": "ea771e7a167cd51a43d4",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Contribution Rubric — What We Want / What We Don't",
-      "text": "The project's intent layer. It serves humans aiming a contribution AND the automated triage\nsweeper, which may only close on `implemented_on_main`, `cannot_reproduce`, or `incoherent`.\nTaste-based \"out of scope\" closes are a human maintainer's call; the sweeper's job is to\nrecognize design intent and *avoid wrongly closing a legitimate contribution*.\n\nRead the balance right: Hermes ships a **lot**. Most merges are bug fixes to reported\nbehavior, and the product surface (platforms, providers, models, desktop/TUI features)\nexpands aggressively on purpose. The restraint below targets the **core agent + model tool\nschema**, the one place where every addition is paid for on every API call. \"Smallest\nfootprint\" governs *how a capability is wired into the core*, not whether the product may\ngrow: expansive at the edges, conservative at the waist.",
-      "weight": 1.3
-    },
-    {
-      "id": "64ddc2333cc658b2b884",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we want",
-      "text": "- **Fix real bugs, well.** Reproduce the symptom on current `main`, point to the exact line\n  where it manifests, and fix the whole bug class — sibling call paths included.\n- **Expand reach at the edges.** New adapters, channels, providers, models, desktop/TUI/\n  dashboard features land routinely, including large ones — as long as they integrate with\n  the existing setup/config UX (`hermes tools`, `hermes setup`, auto-install) rather than\n  bolting on a raw env var.\n- **Refactor god-files into clean modules.** Huge mechanical `+N/-N` extraction PRs are\n  wanted work. \"Every line traces to the request\" applies to *feature* PRs; a declared\n  refactor's request IS the extraction.\n- **Keep the core narrow.** Prefer, in order: extend existing code → CLI command + skill →\n  service-gated tool (`check_fn`) → plugin → MCP server in the catalog → new core tool (last\n  resort). See the Footprint Ladder.\n- **Extend, don't duplicate.** Check whether existing infrastructure covers the use case\n  before adding a module/manager/hook. When 3+ open PRs integrate the same *category*\n  (memory backends, providers, notifiers), design an ABC + orchestrator, wrap the existing\n  built-in as the first pro",
-      "weight": 1.3
-    },
-    {
-      "id": "4ec04915b868fcf3ad5a",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we want",
-      "text": "vider, and turn the competing PRs into plugins against it.\n- **Behavior contracts over snapshots.** Tests assert how two pieces of data relate, never\n  freeze a current value (see Testing).\n- **E2E validation, not just green unit mocks.** Anything touching resolution chains, config\n  propagation, security boundaries, remote backends, or file/network I/O must exercise the\n  real path with real imports against a temp `HERMES_HOME` — two of them (A→B→A) when the\n  change touches profile scope. Mocks hide integration bugs.\n- **Cache-, alternation-, and invariant-safe.** Preserve prompt caching, strict role",
-      "weight": 1.3
-    },
-    {
-      "id": "eeb2aea328b761d98db8",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we want",
-      "text": "alternation (never two same-role messages in a row; never a synthetic user message injected\n  mid-loop), and a system prompt byte-stable for the life of a conversation.\n- **Contributor credit preserved.** Salvage external work by cherry-picking (rebase-merge) so\n  authorship survives; build on top rather than reimplementing.",
-      "weight": 1.3
-    },
-    {
-      "id": "8a06b38c465c9fa757b2",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we don't want (rejected even when well-built)",
-      "text": "- **Speculative infrastructure.** Hooks/callbacks/extension points with no concrete consumer.\n  Adding a hook is easy; removing one after plugins depend on it is hard. A hook with a real,\n  stated use case is NOT speculative even if the consumer ships separately.\n- **New `HERMES_*` env vars for non-secret config.** `.env` is for secrets only. Behavioral\n  settings (timeouts, thresholds, flags, display prefs) go in `config.yaml`; bridge to an\n  internal env var in code if the mechanism needs one. Reject \"set X in your .env\" docs\n  unless X is a credential.\n- **A new core tool when terminal + file (or a skill) already do the job.** If the only\n  barrier is file visibility on a remote backend, fix the mount, not the toolset.\n- **Lazy-reading escape hatches on instructional tools.** No `offset`/`limit` pagination on\n  tools that load content the agent must read fully (skills, prompts, playbooks) — models\n  read page 1 and skip the rest.\n- **\"Fixes\" that destroy the feature they secure.** Read the original intent\n  (`git log -p -S`) before restricting behavior; find a fix that preserves the feature.\n- **Outbound telemetry / usage attribution without opt-in gating.** No analytics,\n  thir",
-      "weight": 1.3
-    },
-    {
-      "id": "0050d27ab034afe05f82",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we don't want (rejected even when well-built)",
-      "text": "d-party identifier tagging, or attribution tags until a generic user-facing opt-in\n  (config gate + setup prompt + `hermes tools` toggle) exists. Park behind a label.\n- **Change-detector tests, cache-breaking mid-conversation, dead code wired in without E2E\n  proof, plugins that touch core files.** Plugins work within the ABCs/hooks we provide; if\n  one needs more, widen the generic plugin surface, never special-case it in core.\n- **Third-party products integrated into the core tree.** Observability backends, vendor\n  SaaS connectors, analytics dashboards, and other \"someone else's product\" plugins do NOT",
-      "weight": 1.3
-    },
-    {
-      "id": "d584d8f2fbf93fe90372",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "What we don't want (rejected even when well-built)",
-      "text": "land under `plugins/` — every one becomes our burden against a fast-moving core for a\n  backend we don't own. Ship as a **standalone plugin repo** (`~/.hermes/plugins/` or pip\n  entry point), promoted in the Nous Research Discord `#plugins-skills-and-skins`. This is a\n  coupling decision, not a quality bar; such PRs are closed with a pointer to publish.",
-      "weight": 1.3
-    },
-    {
-      "id": "b650b3a9173cc16307f3",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
-      "text": "The most common reason a well-written PR is closed is a **wrong premise** or treating an\n**intentional design as a gap**. These patterns tell a reviewer what to scrutinize and tell\nthe sweeper when a PR is NOT safe to close (when in doubt, leave it open for a human):\n\n- **\"Intentional design, not a gap.\"** Ask whether the isolation IS the design. Profiles are\n  independent islands on purpose: a PR adding live config inheritance from the default\n  profile was closed because coupling profiles is exactly what the design prevents (`--clone`\n  already covers \"start from my default\"). Read `git log -p -S \"<symbol>\"` before assuming\n  something is unfinished.\n- **\"The premise doesn't hold against how X actually works.\"** Trace the real runtime before\n  accepting a rationale. Real closes: a rate-limit \"re-probe during cooldown\" PR (the breaker\n  trips only on a *confirmed-empty* bucket, so re-probing hammers a bucket proven empty); a\n  usage fix whose new branch **never executes** because an earlier guard already popped the\n  state. If you can't point to the exact line where the bug manifests AND show the fix changes\n  that line's behavior, the premise is unverified.\n- **\"The absence was d",
-      "weight": 1.3
-    },
-    {
-      "id": "e51256e9c3b527ba40c1",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Before you call it a bug — verify the premise (and when NOT to close)",
-      "text": "eliberate.\"** Restoring \"missing\" `__init__.py` files made a test tree\n  importable as a dotted package that shadowed the real plugin and deleted its `register()`\n  at import time. The omission was load-bearing.\n- **\"Overreached / resurrected an approach we moved past.\"** Scope creep beyond the agreed\n  base, or reviving a direction maintainers closed, is rejected even when it works. Offer the\n  rest as a focused follow-up.\n\nThroughline: **verify the claim AND the intent against the codebase before writing or merging\na fix.** A reproduction on current `main` plus a line-level account beats a plausible",
-      "weight": 1.3
-    },
-    {
-      "id": "ac2d76ff08413ad465ca",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "The Footprint Ladder (new capability decision)",
-      "text": "Choose the highest (least-footprint) rung that correctly solves the problem:\n\n1. **Extend existing code** — a variation of something that exists. Zero new surface.\n2. **CLI command + skill** — config/state/infra expressible as shell commands; the agent runs\n   `hermes <subcommand>` guided by a skill. Default for subscriptions, scheduled tasks,\n   service setup (`hermes webhook`, `hermes cron`, `hermes tools`).\n3. **Service-gated tool (`check_fn`)** — needs structured params/returns AND only appears when\n   a prerequisite is configured (Home Assistant tools, memory-provider tools). This rung gates\n   reachability/opt-in process-wide; a capability that varies per SESSION (who is watching) is\n   a named toolset folded in by the toolset resolver, not a `check_fn` — see \"Surface capability\n   is a property of the SESSION\" below.\n4. **Plugin** — third-party/niche/user-specific; lives in `~/.hermes/plugins/` or a pip\n   package, discovered at runtime.\n5. **MCP server (in the catalog)** — genuinely a tool but not core-fundamental. Zero permanent\n   core-schema footprint, reusable by any MCP host, reached via the built-in MCP client.\n6. **New core tool** — only when fundamental, broadly use",
-      "weight": 1.3
-    },
-    {
-      "id": "9f7304622a218745b89f",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "The Footprint Ladder (new capability decision)",
-      "text": "ful to nearly every user, and\n   unreachable via terminal + file or an MCP server (terminal, read_file, web_search,\n   browser_navigate).",
-      "weight": 1.3
-    },
-    {
-      "id": "80233bd1b53e8401025c",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Surface capability is a property of the SESSION, never of the process env",
-      "text": "A tool that works only because of *who is on the other end* (desktop panes, in-app browser,\nmessage reactions, Projects) must resolve availability from the **session's own source**, not\nfrom an env var on the backend. Client and backend are separate machines: the desktop app may\ndrive a locally spawned backend, one over SSH, one behind URL + token, or Hermes Cloud, and\nonly the first two carry `HERMES_DESKTOP=1`. An env-keyed gate is a silent no-op on the other\ntopologies — the tool is stripped from the schema while the platform hint tells the model it\nis \"inside the Hermes desktop app\". The pattern:\n\n- **The toolset is the surface gate.** Keep such tools off `_HERMES_CORE_TOOLS` and in a named\n  toolset (`desktop_ui`, `project`); the GUI gateway's `_load_enabled_toolsets(platform)`\n  folds it in when the session's platform says GUI. One resolver, every topology.\n- **`check_fn` answers reachability or opt-in, not surface.** \"Is the bridge wired?\" — fine.\n  \"Was I spawned by Electron?\" — not. `check_fn` results are TTL-cached process-wide\n  (`tools/registry.py`); a per-session answer does not belong there.\n- **Ask which identity you mean.** `HERMES_DESKTOP=1` legitimately means \"thi",
-      "weight": 1.3
-    },
-    {
-      "id": "9bc88fa7d9997419bf1a",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Surface capability is a property of the SESSION, never of the process env",
-      "text": "s backend was\n  spawned by the app\" (cron ticker, web-dist handling). It does NOT mean \"a GUI is watching\";\n  the embedded terminal pane (`hermes --tui` against that backend) is the counterexample.\n\nTest: if the capability still makes sense with the client on another machine, it is\nsession-scoped. Assert the GUI session gets the tool **with the env var absent**.",
-      "weight": 1.3
-    },
-    {
-      "id": "47573986911ef31711e4",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Development Environment",
-      "text": "```bash\nsource ./activate   # provisions/syncs PM tools + dependencies, then activates\n```\nSelect an isolated development `HERMES_HOME` and `HERMES_RUNTIME_DIR` first;\nsee `website/docs/reference/package-management.md#developer-workflow`.\nPowerShell: `. .\\activate.ps1`. `deactivate` restores the prior environment.\nFor tests, use the independent test environment in `CONTRIBUTING.md` (or Nix);\nPM activation's `PYTHONPATH` does not survive the test runner's environment scrub.\n`scripts/run_tests.sh` probes `.venv`, then `venv`, then `$HOME/.hermes/hermes-agent/venv`\n(worktrees sharing the main checkout's venv).",
-      "weight": 1.3
-    },
-    {
-      "id": "495c2d923e13e078b8af",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Project Structure",
-      "text": "Counts shift constantly; the filesystem is canonical. Load-bearing entry points:\n\n```\nhermes-agent/\n├── run_agent.py          # AIAgent facade; the turn loop lives in agent/turn_*.py\n├── model_tools.py        # Tool orchestration, discover_builtin_tools(), handle_function_call()\n├── toolsets.py           # TOOLSETS dict, _HERMES_CORE_TOOLS\n├── cli.py                # HermesCLI (REPL, slash dispatch) + hermes_cli/cli_*_mixin.py\n├── hermes_state.py       # SessionDB facade; hermes_state_*.py siblings\n├── hermes_constants.py   # get_hermes_home(), display_hermes_home() — profile-aware paths\n├── hermes_logging.py     # agent.log / errors.log / gateway.log (profile-aware)\n├── batch_runner.py       # Parallel batch processing\n├── agent/                # turn_*.py loop phases, providers, memory, compression, prompt builder\n├── hermes_cli/           # CLI subcommands, setup, config, plugins loader, skins, updater\n│   └── web_routers/      # Dashboard FastAPI routers (one per surface); web_server.py mounts them\n├── tools/                # Tool implementations, auto-discovered via tools/registry.py\n│   └── environments/     # Terminal backends (local, docker, ssh, modal, daytona, singularity",
-      "weight": 1.3
-    },
-    {
-      "id": "3ed066044c464f436882",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Project Structure",
-      "text": ")\n├── gateway/              # run.py facade + run_*.py phases + session*.py + platforms/\n│   ├── platforms/        # One adapter per platform; see platforms/ADDING_A_PLATFORM.md\n│   └── builtin_hooks/    # Always-registered gateway hooks (extension point; none shipped)\n├── plugins/              # memory/, context_engine/, model-providers/, kanban/, image_gen/, ...\n├── skills/               # Built-in skills (by category)   optional-skills/: shipped, not active\n├── ui-tui/               # Ink (React) terminal UI — `hermes --tui`\n├── tui_gateway/          # Python JSON-RPC backend for TUI + Desktop — server.py + methods_*.py",
-      "weight": 1.3
-    },
-    {
-      "id": "f46370982761191e66a2",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Project Structure",
-      "text": "├── apps/desktop/         # Electron desktop app (+ apps/shared JSON-RPC client)   web/: dashboard SPA\n├── acp_adapter/          # ACP server (VS Code / Zed / JetBrains)\n├── cron/                 # jobs.py + scheduler.py (+ scheduler_*.py)\n├── evals/                # Offline benchmarks (codebase_navigability/, compaction/, ...)\n├── scripts/              # run_tests.sh, release.py, ci/\n├── website/              # Docusaurus docs (developer-guide/ holds the long-form area docs)\n└── tests/                # Pytest suite (~39k tests / ~3.7k files, Sep 2026)\n```\n\n**User state:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (secrets only),\n`~/.hermes/logs/` (`agent.log` INFO+, `errors.log` WARNING+, `gateway.log`); all\nprofile-aware via `get_hermes_home()`. Browse logs with `hermes logs [--follow] [--level] [--session]`.\n\n**Dependency chain:** `tools/registry.py` (no deps) ← `tools/*.py` (register at import) ←\n`model_tools.py` (discovery) ← `run_agent.py`, `cli.py`, `batch_runner.py`, `environments/`.",
-      "weight": 1.3
-    },
-    {
-      "id": "417a97232898502060e2",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
-      "text": "Every former god file is a **facade** (public entry points + the names other packages import)\nplus **siblings** `<stem>_<topic>.py` in the same directory, each owning one topic. Largest\nfamilies: `hermes_state.py` (21), `gateway/run.py` (15), `tools/mcp_tool.py` (15),\n`hermes_cli/kanban.py` (14), `hermes_cli/web_server.py` (13 + 24 routers), `hermes_cli/auth.py`\n(12), `tools/browser_tool.py` (11), `cli.py` (12 `hermes_cli/cli_*_mixin.py`), `run_agent.py`\n(`agent/turn_*.py`, `agent_init.py`, `conversation_loop.py`).\n\n- **Find code by topic, not by facade:** `grep -rn \"def name\" <dir>/<stem>_*.py`. Reading the\n  facade first is the expensive way (`evals/codebase_navigability/`).\n- **Siblings may import each other and late-import the facade** inside functions. A facade\n  never imports a sibling at module level *and* gets imported by that sibling at module level.\n- **Patch where production reads.** Siblings often do `from <facade> import name` inside the\n  function so `monkeypatch.setattr(facade, \"name\", ...)` is the seam; a patch on the defining\n  module passes silently. Check the call site's binding before writing a patch target\n  (blind repointing to defining modules broke 130+ test",
-      "weight": 1.3
-    },
-    {
-      "id": "f839acce9893a423b0c8",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
-      "text": "s).\n- **Don't recreate god files.** A file passing ~2,000 lines or a function passing ~300 lines /\n  cyclomatic complexity 30 is the signal to split along `<stem>_<topic>` FIRST, in its own\n  commit. New behaviour goes in a new or topical sibling — never appended to a facade.\n- **No `if/elif` ladders ≥ 4 branches keyed on a name/kind** — use a dict/table → handler\n  (`_SLASH_DISPATCH` in `cli.py`, `_command_handler_table` in the gateway are the shape).\n- **No re-export shims for internal moves** (\"keep the old name importable\"). Internal paths\n  are not API: plugins build on `ctx` and the documented ABCs. The one-time Sep 2026",
-      "weight": 1.3
-    },
-    {
-      "id": "26f935c24061cb850ef5",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Facade + siblings layout (Sep 2026 decomposition)",
-      "text": "decomposition compat layer for external plugins has been removed; never reintroduce one.\n- **Moving a symbol means fixing its docs in the same PR:** grep `website/docs`,\n  `skills/`, and every `AGENTS.md` for the old `path.py` + symbol (23 doc files went stale\n  after the refactor). `evals/codebase_navigability/static_metrics.py <tree> <label>` measures\n  file/function/CC/elif distributions before/after a large PR in ~2 min.",
-      "weight": 1.3
-    },
-    {
-      "id": "5ef4536fcc92ebe54972",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Code Shape Rules (all languages)",
-      "text": "- No \"defense-in-depth\" wrappers, `try/except: pass` around code that cannot fail, or flags\n  nobody sets. Docstrings/comments keep the WHY, cut the WHAT.\n- **Never infer process identity from argv substrings** (`\"serve\" in cmdline`) — the bug class\n  behind ~10 fleet-update issues (#90778, #87594, #78089, #76129, #91964). Use the canonical\n  matchers `gateway.status.looks_like_gateway_command_line` and\n  `hermes_cli.update_cmd._hermes_holder_subcommand`; flag sets are DERIVED from the parser\n  (`_holder_value_flags()`), never hand-written; match FULL cmdlines and truncate only for\n  display. Details: `hermes_cli/AGENTS.md`.\n- **Never hardcode `~/.hermes`.** `get_hermes_home()` for code paths, `display_hermes_home()`\n  for user-facing text (both from `hermes_constants`). Hardcoding breaks profiles (5 bugs in\n  PR #3575). Profile operations themselves are HOME-anchored\n  (`_get_profiles_root()` = `Path.home()/.hermes/profiles`) so `hermes -p x profile list`\n  sees all profiles — intentional, not a bug.\n- **One process may serve many profiles; code that runs outside a turn binds the owning\n  profile scope explicitly.** A profile = home + secret scope + terminal scope, bound by\n  `gat",
-      "weight": 1.3
-    },
-    {
-      "id": "64205303dc6e3f70c618",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Code Shape Rules (all languages)",
-      "text": "eway/run.py::_profile_runtime_scope` (turn), `tui_gateway/server.py::@_profile_scoped` +\n  `model_switch.py::_session_profile_runtime_scope` (RPC, teardown), `cron/scheduler_provider.py::\n  _profile_cron_scope` (ticker), `gateway/run_agent_cache.py::_run_release_in_profile_scope`\n  (eviction). `os.environ`, module globals and import-time values hold the *launch* profile's, so\n  an unbound read is a silent default-profile leak, never an error: home/config/`.env`-derived\n  module constants are a bug class — key slots by `hermes_home_key()` or resolve at call time.\n  Needs a binding: boot probes (`check_fn`, MCP discovery, hooks), session end/eviction, tickers,",
-      "weight": 1.3
-    },
-    {
-      "id": "c207245b93fd2ea29f9c",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Code Shape Rules (all languages)",
-      "text": "deferred callbacks, RPC methods, config readers, thread hops (`spawn_context_thread`), child\n  spawns (`served_profile_child_env`, never `os.environ.copy()`). Fail-closed reads exist only after\n  `set_multiplex_active(True)`. Prove live with two homes (A→B→A) under multiplex, not one temp\n  `HERMES_HOME`. Advisory lint: `scripts/check_profile_scope_patterns.py`.\n- **Machine facts and resource lookup go through `hermes_platform`.** `hermes_platform.host` is the\n  one answer for OS family, native architecture (`IsWow64Process2` → `platform.machine()`; never\n  `PROCESSOR_ARCHITECTURE` alone, it reads AMD64 under x64-on-ARM64 emulation), CPU identity, and\n  WSL/container/Termux. Facts are cached per process and take **no environment-variable input**, so\n  a hardware recognizer (`host/products.py`) cannot be set from a shell. Distinguish the control\n  host (where this Python runs) from the terminal execution target (SSH/container) and the Desktop\n  client (another machine): `host.*` answers only the first. A new bare `shutil.which` or a\n  hand-written known-path table outside `hermes_platform/` fails\n  `tests/test_managed_runtime_resolution.py` unless allowlisted with a reason; resolver",
-      "weight": 1.3
-    },
-    {
-      "id": "5a257621a8cbcf904f77",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Code Shape Rules (all languages)",
-      "text": "s land in\n  `hermes_platform/resolver/`. Lookup never installs, downloads, or starts anything.\n- **Argparse alias dispatch:** `add_parser(\"list\", aliases=[\"ls\"])` sets `dest` to the literal\n  the user typed (`\"ls\"`). Dispatch must accept both (caught PTY-testing `hermes webhook ls`).\n- **Don't wire in dead code without E2E validation.** Unshipped code was dead for a reason;\n  E2E the real resolution chain with real imports against a temp `HERMES_HOME` first.",
-      "weight": 1.3
-    },
-    {
-      "id": "35795fb93ec01cd111ac",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "TypeScript style (desktop, TUI, website, future TS packages)",
-      "text": "Small nanostores over component state when state is shared or read by distant UI; each\nfeature owns its atoms (chat near chat, shared in `src/store`); rendering components use\n`useStore`, non-rendering actions read `$atom.get()`; never thread state through three\ncomponents when the leaf can subscribe; persistence sits beside the atom that owns it. Route\nroots stay thin (compose routes + shell, never controllers). No monolithic hooks — one narrow\njob each; colocated action modules over god hooks. Pure side-effect callbacks use the terse\nvoid form `onState={st => void setGatewayState(st)}`; async handlers make intent explicit\n`onClick={() => void save()}`. Interfaces for public props and shared object shapes (not\n`type X = {...}`); extend React primitives (`React.ComponentProps<'button'>`, `Omit`, `Pick`).\nTable-driven beats condition ladders for ids/routes/views. `src/app` owns routes/pages,\n`src/store` shared atoms, `src/lib` pure helpers.",
-      "weight": 1.3
-    },
-    {
-      "id": "676e3bd5fcd59281deb5",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Dependency Pinning Policy",
-      "text": "All dependencies carry upper bounds (litellm compromise #2796/#2810; Mini Shai-Hulud worm,\nMay 2026). PyPI: `>=floor,<next_major` (`\"httpx>=0.28.1,<1\"`); pre-1.0: `<0.(minor+2)`\n(`>=0.29,<0.32`). Git URLs: 40-char commit SHA. GitHub Actions: SHA + `# vN` comment. CI-only\nPython requirements: `==exact`. A bare `>=X.Y.Z` is rejected by CI and reviewers.\nAfter changing `pyproject.toml`, run `hermes pm lock`, re-source `./activate`, and commit\n`pyproject.toml` with `uv.lock`. Reference: #2810 (bounds), #9801 (SHA pinning + audit CI).\n\nPM owns Hermes Python dependency changes. Use `pm.sync_venv(['extra'], explicit=True)`\nfor declared runtime extras, `hermes pm install` for setup/sync, and `hermes pm repair`\nfor damaged dependencies. Do not mutate Hermes environments with raw pip or uv.\nUse `pm.build_environment` for fresh build outputs and `pm.ensure_environment` for\nisolated tool environments. Callers receive an interpreter or tool path, not uv.\nNix's declarative uv2nix builds and unrelated user projects remain independently owned.\n\nThe `[tool.uv] exclude-newer = \"14 days\"` quarantine covers **Hermes's own dependencies only**\n(every registry package in core's `uv.lock`). Plugin `python",
-      "weight": 1.3
-    },
-    {
-      "id": "3d5636dfdf82dbbd94c9",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Dependency Pinning Policy",
-      "text": "_dependencies` follow the plugin's own\npolicy: when PM generates the plugin workspace (`pm/workspace.py::_core_release_quarantine`) the\nglobal cutoff moves onto each core-locked package, so plugin-only packages are not filtered and a\nplugin still cannot drag a core package past the window. Teknium's ruling: \"plugins dont have to\nabide by our 14 day rule … Only hermes' dependencies themselves have to.\" We recommend (not require)\nplugin authors adopt their own quarantine — the developer guide and `plugin-catalog/README.md` carry\nthat guidance.",
-      "weight": 1.3
-    },
-    {
-      "id": "f39b96792aefbacd948b",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Commits, Merges, PRs",
-      "text": "- **Squash merges from stale branches silently revert recent fixes.** Before squash-merging,\n  bring the branch to `main` (`git fetch origin main && git reset --hard origin/main`, re-apply\n  the PR's commits). Verify with `git diff HEAD~1..HEAD` after merging — unexpected deletions\n  are a red flag.\n- Salvage by cherry-pick so contributor authorship survives (see rubric).\n- Tests per fix: 1–2 INVARIANT tests (behaviour contract, proven red on base), never\n  change-detectors; ≤ 2 tests is the salvage bar too. Reject/rewrite in salvaged diffs:\n  appendages to facades, new god helpers, compat aliases, wrappers.",
-      "weight": 1.3
-    },
-    {
-      "id": "766af0028ed8e2e9690b",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Testing (applies everywhere)",
-      "text": "**ALWAYS use `scripts/run_tests.sh`**, never bare `pytest`. It enforces CI parity: credential\nvars unset, `TZ=UTC`, `LANG=C.UTF-8`, `HERMES_HOME` → temp dir, and per-file subprocess\nisolation via `scripts/run_tests_parallel.py` (no xdist; workers scale with CPU count) so\nmodule-level dicts/ContextVars cannot leak between files. Direct `pytest` on a big machine\nwith API keys set has caused repeated \"works locally, fails in CI\" incidents (and the reverse).\n\nPrepare a test interpreter with the checkout's bootstrapped Python:\n\n```bash\npython -m pm.build_env --source . --out .venv --group dev --group test\n```\n\nThis is a fresh build, not an in-place sync. If the disposable output exists,\nstop its processes and intentionally remove it before regeneration. The runner\nclears `PYTHONPATH`, so PM shell activation alone does not supply pytest. For a\nfresh output outside the checkout, set `HERMES_PYTHON` to its interpreter.\n\n```bash\nscripts/run_tests.sh                                    # full suite\nscripts/run_tests.sh tests/gateway/                     # one directory\nscripts/run_tests.sh tests/agent/test_foo.py -k test_x  # runner is file-granular; -k narrows\nscripts/run_tests.sh -v --tb=lo",
-      "weight": 1.3
-    },
-    {
-      "id": "d6539fa0967fdd44fbf1",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Testing (applies everywhere)",
-      "text": "ng                       # pytest flags pass through\n```\n\n- **Flake policy:** a failing FILE is retried once in a fresh subprocess (`--file-retries`;\n  `HERMES_TEST_FILE_RETRIES=0` disables); a worker killed by signal or the file timeout is never\n  retried (relaunching a runaway doubles the damage). Pass-on-retry is green but printed under `⚠ FLAKY`\n  with both outputs — a bug to fix, not noise. Timing tests must not assume a quiet runner:\n  wall-clock bounds ≥ 2s, event-based sync, no `assert not _wait_until(...)` races.\n- **Placement mirrors the source tree.** A test lives in `tests/<top-level source dir>/` (`tests/hermes_cli/`,",
-      "weight": 1.3
-    },
-    {
-      "id": "509e3249deb9f9cab009",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Testing (applies everywhere)",
-      "text": "`tests/agent/`, `tests/hermes_state/`, `tests/gateway/relay/`, ...); installer/updater script tests\n  under `tests/scripts/{install,desktop_update}/`. Only tests of root-level modules (`batch_runner`,\n  `utils`, `hermes_constants`, packaging) sit directly in `tests/`. No issue numbers in filenames —\n  cite the issue in the module docstring (`test_89315_x.py` → `test_x.py`, \"Regression for #89315\").\n- **Placement (CI lanes):** `scripts/ci/classify_changes.py` picks jobs by changed files. A Python test\n  asserting about `package.json`, `package-lock.json`, `tsconfig.json`, or `.ts/.tsx/.js/\n  .mjs/.cjs` sources will not run on a JS-only PR (green on PR, red on `main` where the\n  classifier fails open). Such tests belong in the vitest suite, not `tests/*.py`.\n- **Tests must not write to `~/.hermes/`.** The autouse `_isolate_hermes_home` fixture in\n  `tests/conftest.py` redirects `HERMES_HOME`; never hardcode `~/.hermes/` in tests. Profile\n  tests also mock `Path.home()` so `_get_profiles_root()` / `_get_default_hermes_home()` stay\n  in the temp dir (pattern: `tests/hermes_cli/test_profiles.py`):\n  ```python\n  @pytest.fixture\n  def profile_env(tmp_path, monkeypatch):\n      home = tmp_p",
-      "weight": 1.3
-    },
-    {
-      "id": "db4ec5637d056ee68f34",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Testing (applies everywhere)",
-      "text": "ath / \".hermes\"; home.mkdir()\n      monkeypatch.setattr(Path, \"home\", lambda: tmp_path)\n      monkeypatch.setenv(\"HERMES_HOME\", str(home))\n      return home\n  ```\n  Tests that `patch.object(Path, \"home\", ...)` must ALSO set `HERMES_HOME` — code reads the\n  env var, not `Path.home()/.hermes`.",
-      "weight": 1.3
-    },
-    {
-      "id": "8eaa87a10a1d7734ada7",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Don't fake the host OS",
-      "text": "Behaviour that genuinely differs per host is tested ON that host with `@pytest.mark.platforms(\"linux\")`\n/ `platforms(\"macos\")` / `platforms(\"windows\")`, never by patching `sys.platform`. Host-independent things stay\nunmarked: pure functions that take the platform as data (`hidden_windows_child_options(opts,\nis_windows=True)`) and declaration/packaging invariants (\"pyproject declares `tzdata` with a\n`sys_platform == 'win32'` marker\"). Setting a module-level `IS_WINDOWS` flag and calling\n`windows_detach_flags()` IS a fake. The line: **if the test needs the interpreter to believe it\nis on another OS to pass, it belongs on that OS.** A test that walks several platforms in\nsequence is split — host-native arm on Linux, other arms as their own marked tests.\n\nOne marker per test, with any number of spec strings (any-of semantics) plus\noptional arch filters. To gate on several OSes, pass several specs to ONE\nmarker — never stack several `platforms()` decorators on one test (the\nconftest rejects that at collection):\n\n```python\n@pytest.mark.platforms(\"linux\", \"macos\")  # ONE marker, two specs: runs on either\ndef test_posix_signal_path(): ...\n```\n\nOther single-marker forms (each is a complete",
-      "weight": 1.3
-    },
-    {
-      "id": "6a84446002e4eebdac7a",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Don't fake the host OS",
-      "text": "marker on its own):\n`platforms(\"windows\")` (native Windows only), `platforms(\"not macos\")`\n(anywhere except macOS), `platforms(\"windows\", arch=\"arm64\")` (native Windows\non arm64), `platforms(\"posix\")` (Linux or macOS).\n\nSpecs: `linux`, `macos`, `windows`, `posix`, `any`, and `not <spec>`.\nThe historic `linux_only` / `macos_only` / `windows_only` markers have been\nfully replaced — `platforms` is the only host-gating marker in the tree.\n\n**Live Windows process-topology E2E: the `wine2e` lane.** For claims about\nreal Windows process behavior that mocks cannot reproduce (venv-holder\nscans, process-tree parentage, launcher/worker chains, detach semantics),",
-      "weight": 1.3
-    },
-    {
-      "id": "7d13525be79d5141d704",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Don't fake the host OS",
-      "text": "there is an on-demand workflow `windows-venv-e2e.yml` that runs\n`tests/hermes_cli/test_venv_holder_windows_live.py` on a real\n`windows-latest` runner — spawning actual processes and driving the real\ndetection code, no mocked psutil. It fires ONLY on pushes to `wine2e/**`\nbranches (inert on PRs and main; costs nothing on normal work). The proven\nworkflow: write probes that pin CORRECT behavior, push to a `wine2e/`\nbranch to reproduce the bugs live on unfixed code, build the fix, iterate\nuntil the lane is green, then open the PR — the live receipt on the exact\nhead is the Windows proof reviewers ask for. Extend the live suite when\ntouching that subsystem; assert against the gateway ANCESTOR found by\nargv, not the direct parent (the venv shim makes every spawn a\nlauncher/worker chain).\n\n**Use the marker, never a bare `skipif`.** `scripts/ci/list_os_marked_tests.py`\ndecides which files an OS lane imports by resolving the quoted specs inside\n`platforms(...)` (`\"posix\"` reaches the macOS lane, `\"not linux\"` reaches\nboth others), and the lane then selects with `-m platforms` while the\nconftest's per-test host skips do the actual gating. A test gated with\n`@pytest.mark.skipif(sys.platform",
-      "weight": 1.3
-    },
-    {
-      "id": "d47af2b66ce014edc771",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Don't fake the host OS",
-      "text": "!= \"win32\")` therefore runs on no host at\nall, silently — it is never imported by the lane that would run it, and the\nfull-suite lanes skip it. `skipif(sys.platform == \"win32\")` becomes\n`platforms(\"posix\")`; a non-host condition (`os.geteuid() == 0`) stays a\nseparate `skipif` beside the marker. A misspelt spec is a collection error,\nnot a skip. Don't stack a module-level `pytestmark =\nplatforms(...)` on a file whose tests carry their own host marker — the\nconftest hard-rejects tests carrying two `platforms()` markers (a test\nskipped on every host, reported green everywhere).\nEqually, don't `pytest.skip()` the non-host rows of a `@parametrize` over",
-      "weight": 1.3
-    },
-    {
-      "id": "e26fde95df3bb2557b8c",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Don't write change-detector tests",
-      "text": "A change-detector fails whenever data *expected to change* is updated — model catalogs,\n`_config_version`, enumeration counts, hardcoded model lists. It adds no coverage and taxes\nevery routine update. Don't: `assert \"gemini-2.5-pro\" in _PROVIDER_MODELS[\"gemini\"]`,\n`assert DEFAULT_CONFIG[\"_config_version\"] == 21`, `assert len(models) == 8`. Do: `assert\n\"gemini\" in _PROVIDER_MODELS and len(_PROVIDER_MODELS[\"gemini\"]) >= 1` (plumbing works);\n`assert raw[\"_config_version\"] == DEFAULT_CONFIG[\"_config_version\"]` (migration reaches\nlatest); `assert not (set(moonshot_models) & coding_plan_only_models)` (no leak); every\ncatalog model has a context-length entry (relationship). If it reads like a snapshot, delete\nit; if it reads like a contract between two pieces of data, keep it. Reviewers reject new\nchange-detectors; authors convert them before re-review.",
-      "weight": 1.3
-    },
-    {
-      "id": "67694819f444862ae156",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Never read source code in tests",
-      "text": "A test that reads a `.py`/`.ts`/`.tsx` file's text tests the *shape of the source*, not\nbehavior — banned outright. It passes when the implementation is subtly broken (regex matches\na mis-wired call site) and fails on correct refactors; it can't run against bundled/minified\nartifacts; it blocks structural cleanup; it gives false confidence. Don't\n`fs.readFileSync('main.ts')` + `assert.match(source, /spawn\\(...hiddenWindowsChildOptions/)`.\nDo extract the logic into a pure/DI-testable function and call it:\n```ts\nexport function hiddenWindowsChildOptions(options = {}, isWindows = process.platform === 'win32') {\n  if (!isWindows || 'windowsHide' in options) return options\n  return { ...options, windowsHide: true }\n}\n```\nIf the logic lives inline in a god-file and extraction feels disruptive, that is the signal to\nextract, not to regex around it.",
-      "weight": 1.3
-    },
-    {
-      "id": "fb17e05780c247801c82",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Routing Table — working in X → read X/AGENTS.md",
-      "text": "| Area | Read | Covers |\n|---|---|---|\n| `run_agent.py`, `agent/` | `agent/AGENTS.md` | AIAgent + mixins, turn phases, caching integrity, message-flow invariants, compression, model/aux resolution |\n| `cli.py`, `hermes_cli/`, `main.py` | `hermes_cli/AGENTS.md` | CLI mixins, `_SLASH_DISPATCH`, slash registry, config system + loaders, skins, `hermes update` pipeline, profiles / multiplex |\n| `gateway/` | `gateway/AGENTS.md` | Adapters, two message guards, streaming contract, background notifications, gateway vs desktop lifecycle, token locks, scoped secrets |\n| `tools/`, `toolsets.py`, `model_tools.py` | `tools/AGENTS.md` | Adding tools, registry, toolsets, delegation, cross-tool references, backends |\n| `plugins/`, `hermes_cli/plugins*.py` | `plugins/AGENTS.md` | Plugin kinds, native compat contract, in-tree policy |\n| `tui_gateway/`, `ui-tui/` | `tui_gateway/AGENTS.md` | Process model, JSON-RPC transport, key surfaces, slash flow, dev commands |\n| `web/`, `hermes_cli/web_routers/` | `web/AGENTS.md` | Dashboard embeds the real TUI; what React may and may not rebuild |\n| `apps/desktop/` | `apps/desktop/AGENTS.md`, `apps/desktop/src/AGENTS.md` | Desktop judgment guide; `serve` backend",
-      "weight": 1.3
-    },
-    {
-      "id": "9653b59dd8f4564c607a",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Routing Table — working in X → read X/AGENTS.md",
-      "text": ", slash palette curation, Bot Mode canonical chat |\n| `skills/`, `optional-skills/`, `agent/curator*.py` | `skills/AGENTS.md` | Frontmatter, HARDLINE authoring standards, curator |\n| `cron/`, kanban (`hermes_cli/kanban*.py`, `tools/kanban_tools.py`, `plugins/kanban/`) | `cron/AGENTS.md` | Scheduler invariants, job fields, kanban board/dispatcher |\n| `gateway/platforms/` new adapter | `gateway/platforms/ADDING_A_PLATFORM.md` | Step-by-step adapter guide |\n| profiles / multiplex / secret scope (any area) | `gateway/AGENTS.md` § Profile scope, `website/docs/user-guide/multi-profile-gateways.md` § What is isolated per profile | which execution points bind scope, what is isolated per profile |",
-      "weight": 1.3
-    },
-    {
-      "id": "34c8e0e0cd989cd88cde",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
-      "path": "AGENTS.md",
-      "license": "MIT",
-      "domains": [
-        "agents",
-        "memory",
-        "skills",
-        "learning-loop",
-        "subagents",
-        "provider-router",
-        "tool-guardrails",
-        "verification",
-        "sessions"
-      ],
-      "heading": "Routing Table — working in X → read X/AGENTS.md",
-      "text": "Long-form background lives in `website/docs/developer-guide/` (agent-loop, prompt-assembly,\ncontext-compression-and-caching, gateway-internals, tools-runtime, plugins/, cron-internals,\nsession-storage, ...). Workflow rules (PR/issue/review/salvage process) live in the\n`hermes-agent-dev` skill, not here.",
-      "weight": 1.3
-    },
-    {
-      "id": "fd2741dc4f4f6a36151b",
-      "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7239,9 +6315,9 @@
       "weight": 1.3
     },
     {
-      "id": "1c01a81ba982f5282e8c",
+      "id": "865944f1b385281171f7",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7260,9 +6336,9 @@
       "weight": 1.3
     },
     {
-      "id": "2448bec2ba55c7202867",
+      "id": "f5e65cd6cd4714a30caa",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7281,9 +6357,9 @@
       "weight": 1.3
     },
     {
-      "id": "bbb86d06b5cf00779a2a",
+      "id": "309210eb513bf1111721",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7302,9 +6378,9 @@
       "weight": 1.3
     },
     {
-      "id": "c3576b5f977b1e79857c",
+      "id": "93af931dacdbcd17e9f0",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7323,9 +6399,9 @@
       "weight": 1.3
     },
     {
-      "id": "7f560c9dfe300389d46f",
+      "id": "1f69183dffa599cd6fa1",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7344,9 +6420,9 @@
       "weight": 1.3
     },
     {
-      "id": "2db642ed93e52109967a",
+      "id": "e00c4592c304ee08416c",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7365,9 +6441,9 @@
       "weight": 1.3
     },
     {
-      "id": "130fbc6e708475f84cdf",
+      "id": "ef3c4ea386bba5f78540",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7386,9 +6462,9 @@
       "weight": 1.3
     },
     {
-      "id": "4e1f7b60946f5d29239a",
+      "id": "fc7d3c5739f63ca02f2f",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7407,9 +6483,9 @@
       "weight": 1.3
     },
     {
-      "id": "290597a28072bd4c28b9",
+      "id": "44c3c1d6e808cca34c4c",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7428,9 +6504,9 @@
       "weight": 1.3
     },
     {
-      "id": "3f54577054b963dda1ad",
+      "id": "db16b19b8e56611aacc6",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7449,9 +6525,9 @@
       "weight": 1.3
     },
     {
-      "id": "05dae9ab738eda65809e",
+      "id": "8a34a5ea22b644fc4606",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7470,9 +6546,9 @@
       "weight": 1.3
     },
     {
-      "id": "a166b6313fa08aa5397c",
+      "id": "b1e4b976a79fb798265b",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7491,9 +6567,9 @@
       "weight": 1.3
     },
     {
-      "id": "5355f2ff23789d279e86",
+      "id": "cc6d0c8bc9eb70c429b1",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7512,9 +6588,9 @@
       "weight": 1.3
     },
     {
-      "id": "15a5827883bc15899ccd",
+      "id": "03778383756df54c45fb",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7533,9 +6609,9 @@
       "weight": 1.3
     },
     {
-      "id": "e34c36ace5469f917a80",
+      "id": "dd5d788c20331c327b45",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7554,9 +6630,9 @@
       "weight": 1.3
     },
     {
-      "id": "6a21b7f0db7b511c265c",
+      "id": "b70ac1ed72ef29def659",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7575,9 +6651,9 @@
       "weight": 1.3
     },
     {
-      "id": "be0e9fc1034fed025d8a",
+      "id": "bfc854660b7d44518bad",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -7596,9 +6672,9 @@
       "weight": 1.3
     },
     {
-      "id": "ba2e29c8a90405d64a8d",
+      "id": "8effb57eebe963ae50e4",
       "source": "NousResearch/hermes-agent",
-      "ref": "bf84561b9d41",
+      "ref": "449fae030aa6",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47093,9 +46169,9 @@
       "weight": 1.04
     },
     {
-      "id": "1d594e2d73c3baa4b954",
+      "id": "d9498daf4e8afb14764c",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47109,9 +46185,9 @@
       "weight": 1.05
     },
     {
-      "id": "948daf42c2865fd9006c",
+      "id": "9738847fdd26ab38fc6a",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47125,9 +46201,9 @@
       "weight": 1.05
     },
     {
-      "id": "4e688b3cf5e172635b07",
+      "id": "a490a4b6f2dc0a80c6e3",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47141,9 +46217,9 @@
       "weight": 1.05
     },
     {
-      "id": "9e649fa0e938d6a4b7d6",
+      "id": "f319f5d48ed3e8991b33",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47157,9 +46233,9 @@
       "weight": 1.05
     },
     {
-      "id": "51a3e5dfcc50c37a509f",
+      "id": "a949a922975f39cddef5",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47173,9 +46249,9 @@
       "weight": 1.05
     },
     {
-      "id": "f9743f115ad421bc7c8e",
+      "id": "de6a0b520ed881fab65d",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47189,9 +46265,9 @@
       "weight": 1.05
     },
     {
-      "id": "a8d0000f61747f985aeb",
+      "id": "e1274b5ebee70ecb96ae",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47205,9 +46281,9 @@
       "weight": 1.05
     },
     {
-      "id": "f1e159d140b2858a289f",
+      "id": "ffe3b37e3cb7d42a6fce",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47221,9 +46297,9 @@
       "weight": 1.05
     },
     {
-      "id": "f356f2c28cc3c0410810",
+      "id": "f4dcf4bd87f8b167b810",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47237,9 +46313,9 @@
       "weight": 1.05
     },
     {
-      "id": "db3dc8537b8b32949526",
+      "id": "f5cd22cc2042080a1e23",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47253,9 +46329,9 @@
       "weight": 1.05
     },
     {
-      "id": "eccbd9b86613ed2c6e4f",
+      "id": "142f02da0f917a7c869a",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -47269,9 +46345,9 @@
       "weight": 1.05
     },
     {
-      "id": "2d8b5940ee063620654c",
+      "id": "5a046286a8b18d507c85",
       "source": "OpenHands/OpenHands",
-      "ref": "f174ba846523",
+      "ref": "ec3081ae1be8",
       "path": "README.md",
       "license": "MIT",
       "domains": [
@@ -48545,9 +47621,9 @@
       "weight": 1.02
     },
     {
-      "id": "69687a440480d329d818",
+      "id": "82c80c183e328e59b68f",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48560,9 +47636,9 @@
       "weight": 1.03
     },
     {
-      "id": "d772ba26da49ed3a9817",
+      "id": "edc84d1a68d52de5c7c9",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48575,9 +47651,9 @@
       "weight": 1.03
     },
     {
-      "id": "03dd363f165d95ea304f",
+      "id": "368bc8c85a9133987d51",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48590,9 +47666,9 @@
       "weight": 1.03
     },
     {
-      "id": "a3d658ce27afaa30a51d",
+      "id": "cfcb4d1da043d1ff6552",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48605,9 +47681,9 @@
       "weight": 1.03
     },
     {
-      "id": "631344ff25bc12b9b0a1",
+      "id": "5b129ccf9bf9017f82c0",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48620,9 +47696,9 @@
       "weight": 1.03
     },
     {
-      "id": "e8139b38a976ec2a6877",
+      "id": "77ee45be24b029237049",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48635,9 +47711,9 @@
       "weight": 1.03
     },
     {
-      "id": "dcddf641c520a40f3b4f",
+      "id": "8da97b9a1ad0da8a02f1",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48650,9 +47726,9 @@
       "weight": 1.03
     },
     {
-      "id": "51969e1afce249613939",
+      "id": "32b4b56bed4b542e44d6",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48665,9 +47741,9 @@
       "weight": 1.03
     },
     {
-      "id": "35b88afb11cc3d0171ad",
+      "id": "d473dc7972b10bab15d2",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48680,9 +47756,9 @@
       "weight": 1.03
     },
     {
-      "id": "3c3c3ca5adc744fd9c2b",
+      "id": "9e4d57f951f7f840846f",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48695,9 +47771,9 @@
       "weight": 1.03
     },
     {
-      "id": "54ed3732ef16b0112738",
+      "id": "b1496a73c2a04d12aed1",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
@@ -48710,9 +47786,9 @@
       "weight": 1.03
     },
     {
-      "id": "8475b897252de95c39c3",
+      "id": "296d5b05a3ef58bf9185",
       "source": "CodebuffAI/freebuff",
-      "ref": "341ec019f555",
+      "ref": "0c8fa864774e",
       "path": "README.md",
       "license": "Apache-2.0",
       "domains": [
