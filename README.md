@@ -1,89 +1,78 @@
 <div align="center">
 
+<img src="docs/commercial/predictlm-commercial-poster.svg" alt="PredictLM — general AI with a legal-first execution path" width="100%" />
+
+<br />
+
 # PredictLM
 
 ### General AI with a legal-first execution path
 
-**Chat · Brazilian legal-process intelligence · Build/Work · Research/Tutor · Media**
+**One assistant. Verified workflows.**
 
-A Next.js AI system that keeps one conversational surface while routing complex work into verified, capability-specific pipelines.
+**Chat · Jurídico · Imagine**
 
-**Public surface:** Chat · Jurídico · Imagine
+<br />
 
-[Architecture](ARCHITECTURE.md) · [Commercial film brief](docs/commercial/predictlm-launch-film.md) · [Agent contract](AGENTS.md) · [PredictLM Master](skills/predictlm-master/SKILL.md)
+[![PredictLM CI](https://github.com/W2CAPITAL/PredictLm/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/W2CAPITAL/PredictLm/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-16.3.7-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2.8-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Security](https://img.shields.io/badge/security-fail--closed-238636)
+![Default language](https://img.shields.io/badge/default-PT--BR-009739)
+
+<br />
+
+[**Architecture**](ARCHITECTURE.md) ·
+[**Security**](SECURITY.md) ·
+[**Commercial film**](docs/commercial/predictlm-launch-film.md) ·
+[**Agent contract**](AGENTS.md) ·
+[**Master skill**](skills/predictlm-master/SKILL.md)
 
 </div>
 
-<p align="center">
-  <img src="docs/commercial/predictlm-commercial-poster.svg" alt="PredictLM commercial launch film poster" width="100%" />
-</p>
+---
+
+## Product
+
+PredictLM is built around one idea: **the user should not have to learn the application's internal architecture to get serious work done**.
+
+Instead of splitting general chat, legal work, code execution, research, tutoring and media into disconnected products, PredictLM keeps one conversational entry point and activates specialized execution paths only when the task requires them.
+
+<table>
+<tr>
+<td width="33%"><b>Chat</b><br/><sub>General questions, Build, Work, Research and Tutor.</sub></td>
+<td width="33%"><b>Jurídico</b><br/><sub>CNJ → DataJud + DJEN → normalized timeline → clear explanation.</sub></td>
+<td width="33%"><b>Imagine</b><br/><sub>Lightweight image/media entry point, loaded only when requested.</sub></td>
+</tr>
+</table>
+
+> **Public surface:** Chat · Jurídico · Imagine  
+> Build, Work, Tutor and Research are capabilities invoked from Chat, not extra top-level products.
+
+Minecraft, neuroscience experiments, simulation engines, influencer tooling, large connectome tooling and specialist legacy UIs remain **internal/lab infrastructure**. They stay outside the **primary navigation** and must not inflate the initial client bundle.
 
 ---
 
-## Why PredictLM exists
+## What makes PredictLM different
 
-Most AI products split the experience into disconnected modes: one screen for chat, another for research, another for coding, another for domain work.
-
-PredictLM takes the opposite approach.
-
-The user talks to **one assistant**. The application classifies the job, assembles only the context that matters, selects the execution path, runs the capability, verifies the output and returns to the same conversation.
-
-For Brazilian legal-process work, that means a CNJ number can become a sourced DataJud + DJEN timeline and a plain-language explanation. For software work, the same Chat can inspect a project, plan a change, implement it, review the diff, run deterministic checks and package a runnable project.
-
-The design goal is not “more modes”. It is **fewer product surfaces, stronger execution contracts**.
-
----
-
-## Product surface
-
-| Surface | Purpose | Loading policy |
-| --- | --- | --- |
-| **Chat** | General questions, legal work, Build, Work, Research and Tutor | Primary surface |
-| **Jurídico** | Chat shortcut for CNJ / DataJud / DJEN workflows | Uses Chat |
-| **Imagine** | Lightweight direct image generation | Loaded on demand |
-
-Minecraft, neuroscience experiments, simulation engines, influencer tooling, large connectome tooling and legacy specialist UIs remain **internal/lab infrastructure**. They are intentionally kept out of the **primary navigation** and must not inflate the initial client bundle.
+| Principle | What it means in practice |
+| --- | --- |
+| **One assistant** | The public identity remains PredictLM regardless of which provider or internal capability executes the task. |
+| **Evidence before confidence** | Legal and research flows preserve source failures and distinguish evidence from inference. |
+| **Execution, not theater** | Build ends in reviewed files and deterministic checks; media is not called “generated” until an artifact exists. |
+| **Provider independence** | Models and media providers are replaceable infrastructure, not the product architecture. |
+| **Heavy features stay lazy** | Experimental labs, media modules and browser/local ML must not punish normal Chat startup. |
+| **Verification is part of the feature** | Typecheck, tests, production build and export smoke are expected completion gates. |
 
 ---
 
-## Commercial launch film
-
-PredictLM now carries a Brag-inspired launch-video contract for product commercials.
-
-The creative source of truth is:
-
-- [`docs/commercial/predictlm-launch-film.md`](docs/commercial/predictlm-launch-film.md) — exact 15-second commercial brief;
-- [`skills/brag-launch-video/SKILL.md`](skills/brag-launch-video/SKILL.md) — reusable launch-video direction skill;
-- [`src/lib/media/video-pipelines.ts`](src/lib/media/video-pipelines.ts) — runtime detection and prompt integration.
-
-The commercial story is deliberately product-first:
-
-```text
-PredictLM
-  -> Chat
-  -> CNJ
-  -> DataJud + DJEN
-  -> normalized timeline
-  -> clear legal explanation
-  -> Build / Work / Tutor / Research
-  -> VERIFY
-  -> Imagine
-```
-
-**Tagline:** `One assistant. Verified workflows.`
-
-The launch workflow is adapted from the MIT-licensed [latent-spaces/brag](https://github.com/latent-spaces/brag): inspect the real product, choose a hook, show the working user flow, storyboard, create a composition brief, preflight the available renderer/provider, render, verify the playable asset, select a poster frame and write share copy.
-
-Brag is a **creative-direction layer**, not a hard runtime dependency. PredictLM does not require Hyperframes to boot and does not claim a video exists until a real renderer/provider returns a verified playable artifact.
-
----
-
-## Architecture
+## Core architecture
 
 ```mermaid
-flowchart LR
+flowchart TB
     U[User] --> C[ChatShell]
-    C --> R{Intent Router}
+    C --> R{Intent + capability router}
 
     R --> G[General Chat]
     R --> L[Legal]
@@ -93,70 +82,71 @@ flowchart LR
     R --> Q[Research]
     R --> I[Imagine / Media]
 
-    L --> DJ[DataJud]
-    L --> DN[DJEN]
-    L --> OP[Official portal fallback]
-    DJ --> TL[Normalized timeline]
-    DN --> TL
-    OP --> TL
-    TL --> LA[Plain-language answer]
-
-    B --> EX[Explore]
-    EX --> AR[Architecture]
-    AR --> IM[Implement]
-    IM --> RV[Independent review]
-    RV --> PK[Runnable package]
-
     G --> PM[Provider Mesh]
     W --> PM
     T --> PM
     Q --> PM
 
-    C --> CC[Four-core control]
+    L --> CNJ[CNJ resolver]
+    CNJ --> DJ[DataJud]
+    CNJ --> DN[DJEN]
+    DJ --> TL[Normalized timeline]
+    DN --> TL
+    TL --> EX[Plain-language explanation]
+
+    B --> BX[Inspect]
+    BX --> BA[Architecture]
+    BA --> BI[Implement]
+    BI --> BR[Independent review]
+    BR --> BV[Verify + export]
+
+    C --> CC[Lightweight four-core control]
     CC --> F[Fly]
     CC --> M[Mouse]
     CC --> MK[Macaque]
     CC --> H[Human]
 
     I --> MD[Media Director]
-    MD --> BR[Brag launch direction]
-    BR --> VP[Temporal provider / compositor]
-    VP --> VQ[Playable-asset verification]
+    MD --> BG[Brag launch direction]
+    BG --> VP[Available video/image provider or compositor]
+    VP --> VQ[Artifact verification]
 ```
 
-### Core design rule
+### Architectural rule
 
-**Routing and verification stay deterministic where possible; generation stays replaceable.**
+> **Routing and verification should stay deterministic where possible; generation should stay replaceable.**
 
-A provider may change. The product contract should not.
+A model can change. A provider can rate-limit. A media backend can disappear. The product contract should survive all three.
 
 ---
 
-## Legal pipeline
+## Legal intelligence
 
-The legal path is intentionally evidence-first.
+PredictLM's legal path focuses on **public Brazilian process consultation and explanation**.
 
 ```text
-CNJ input
-  -> validate + resolve tribunal
-  -> DataJud query
-  -> DJEN publications
-  -> official portal fallback when useful
+CNJ number
+  -> validate format
+  -> resolve tribunal
+  -> query DataJud
+  -> query DJEN
+  -> optional official-source fallback
   -> normalize events
   -> preserve partial success
-  -> interpret current posture
+  -> interpret procedural posture
   -> explain in plain language
 ```
 
-Key rules:
+### Legal invariants
 
-- an empty public API result does **not** prove that a process does not exist;
-- DataJud, DJEN and an official portal are treated as independent sources;
-- a failed source remains an explicit failure instead of silently becoming “zero results”;
-- external filing, signature, payment and privileged-account actions remain human-gated;
-- public legal evidence is separated from inference.
+- An empty public source does **not** prove that a process does not exist.
+- DataJud and DJEN are treated as independent evidence sources.
+- One source failing must not erase useful evidence returned by another.
+- Missing data remains missing data; it is not silently converted into a legal conclusion.
+- Filing, signature, payment and privileged-account actions remain human-gated.
+- Source facts and model interpretation are deliberately separated.
 
-Primary code:
+**Primary implementation**
 
 ```text
 src/app/api/legal/
@@ -170,80 +160,84 @@ src/lib/legal/cnj.ts
 
 ## Build inside Chat
 
-Build is an execution pipeline, not a separate public tab.
+Build is an execution pipeline, not a separate tab.
 
 ```text
 request
   -> inspect current workspace
-  -> explorer passes
+  -> identify relevant files
   -> architecture plan
-  -> relevant-file selection
   -> implementation
-  -> independent changed-code review
+  -> changed-code review
   -> bounded repair
-  -> local smoke / council / diff review
-  -> runnable ZIP
+  -> smoke / council / diff review
+  -> runnable package
 ```
 
-Incremental prompts preserve project state. A follow-up such as “deixe responsivo”, “corrija o login” or “troque a cor” patches the current project instead of silently starting over.
+Incremental requests preserve the current project. A follow-up such as “deixe responsivo”, “corrija o login” or “mude apenas esta tela” patches the existing workspace instead of silently regenerating it from zero.
 
-The server route is `src/app/api/agent/route.ts`; browser orchestration enters through `ChatShell`.
+**Primary implementation**
+
+```text
+src/app/api/agent/route.ts
+src/lib/build-orchestrator.ts
+src/lib/build-diff-review.ts
+src/lib/agent-runtime/
+src/components/ChatShell.tsx
+```
 
 ---
 
 ## Four-core cognitive control
 
-PredictLM keeps four compact, neuroscience-informed **software controllers** available across Chat, Legal, Build, Work, Tutor, Research, Imagine and Report.
+PredictLM keeps four compact neuroscience-informed **software controllers** available across Chat, Legal, Build, Work, Tutor, Research, Imagine and Report.
 
-| Core | Primary software role | Reference boundary |
+| Core | Runtime role | Reference boundary |
 | --- | --- | --- |
-| **Fly** | salience, fast filtering, exploration, action selection | FlyWire-derived structural motifs |
-| **Mouse** | visual/spatial discrimination, functional coupling, uncertainty control | MICrONS + Allen references |
-| **Macaque** | visual hierarchy, regional integration, composition priors | cortical atlas/projectome proxy |
-| **Human** | working memory, executive control, recurrent integration, metacognition | H01-informed cortical fragment + explicitly labelled proxy coverage |
+| **Fly** | Salience, fast filtering, bounded exploration, action selection | FlyWire-derived structural motifs |
+| **Mouse** | Visual/spatial discrimination, coupling, uncertainty control | MICrONS + Allen references |
+| **Macaque** | Visual hierarchy, regional integration, composition priors | Cortical atlas/projectome proxy |
+| **Human** | Working memory, executive control, recurrent integration, metacognition | H01-informed fragment + explicitly labelled proxy coverage |
 
-These are control signals, **not simulated biological minds and not evidence of consciousness**.
+These are **control signals**, not simulated biological minds and not evidence of consciousness.
 
-Performance rules:
+### Performance contract
 
-- normal product surfaces consume compact controller summaries;
-- Chat may persist local cognitive state;
-- stateless server routes use deterministic state for cache stability;
-- a cognitive-layer failure is non-blocking;
-- Minecraft, 3D renderers, raw connectome datasets and Cognitive Lab UI are never required to answer a normal Chat turn.
-
-Implementation:
-
-```text
-src/lib/cognitive/cognitive-surface.ts
-src/lib/cognitive/cognitive-workspace.ts
-src/lib/cognitive/fly-core.ts
-src/lib/cognitive/mouse-core.ts
-src/lib/cognitive/macaque-core.ts
-src/lib/cognitive/human-core.ts
-```
+- Normal product surfaces consume compact summaries only.
+- Chat may persist local cognitive state.
+- Stateless server routes use deterministic state to preserve cache stability.
+- Cognitive-layer failure is non-blocking.
+- Minecraft, 3D renderers, raw connectome datasets and Cognitive Lab UI are not required for normal Chat.
 
 ---
 
 ## Provider Mesh
 
-Hosted PredictLM prefers server-side remote inference. Browser/local runtimes remain optional fallback capabilities.
+PredictLM can route work across configured remote providers while keeping provider identity out of the public product.
 
-The mesh supports multiple OpenAI-compatible and provider-specific endpoints while keeping API credentials out of client code. Routing is task-aware and health-aware; failed providers enter cooldown instead of being hammered repeatedly.
+```text
+task
+  -> classify
+  -> rank configured providers
+  -> health / cooldown policy
+  -> attempt primary route
+  -> bounded rescue route
+  -> sanitize output
+  -> public-answer gate
+```
 
-Relevant implementation:
+Server credentials stay outside the client bundle. Failed providers can enter cooldown instead of being called repeatedly.
+
+**Relevant implementation**
 
 ```text
 src/app/api/chat/route.ts
 src/app/api/chat/stream/route.ts
 src/lib/server/provider-mesh.ts
 src/lib/server/provider-health.ts
-src/lib/jev-policy.ts
+src/lib/chat-trust-boundary.ts
+src/lib/public-answer-gate.ts
 ```
-
-The route can classify work as code, legal, research, creative, reasoning, quick or general and select from the actually configured providers.
-
-No provider name is the public identity. The assistant is **PredictLM**.
 
 ---
 
@@ -251,98 +245,90 @@ No provider name is the public identity. The assistant is **PredictLM**.
 
 ### Public Imagine
 
-The current public Imagine surface deliberately optimizes for the smallest reliable contract:
+The public Imagine path is deliberately small:
 
 ```text
 prompt
-  -> lightweight four-core creative control
-  -> /api/media/generate
+  -> lightweight creative control
+  -> image route
   -> validate returned pixels
-  -> browser fallback when available
+  -> optional browser fallback
   -> display result
 ```
 
-Cognitive/media modules are dynamically imported only when generation is requested.
+Cognitive/media modules are loaded dynamically only when generation is requested.
 
-### Temporal video
+### Commercial / launch video
 
-The repository also contains a real temporal-video path for configured environments:
-
-```text
-prompt
-  -> Media Director
-  -> optional Brag launch-video direction
-  -> continuity + motion contract
-  -> capability-aware provider route
-  -> submit / poll
-  -> playable asset
-  -> verification
-```
-
-Configured adapters can include Gemini Veo, ComfyUI workflows and external Veo / Seedance / Sora bridges. A browser motion/storyboard fallback remains explicitly labelled as fallback; it is never represented as neural video synthesis.
-
-For commercial/product-video intent, `buildGenerativeVideoPrompt()` automatically adds the Brag contract.
-
----
-
-## Brag integration
-
-The upstream Brag workflow contributes a useful separation of concerns:
+Product-video requests use a Brag-inspired direction layer:
 
 ```text
-creative truth                         execution truth
----------------------------            ------------------------------
-inspect project                        detect available runtime
-choose hook                            choose provider/compositor
-identify real user flow        ->      render
-write storyboard                       await terminal state
-write composition brief                verify video
-plan poster/share copy                 deliver asset
+inspect real product
+  -> choose hook
+  -> choose real user flow
+  -> storyboard
+  -> composition brief
+  -> capability preflight
+  -> render
+  -> verify playable artifact
+  -> poster
+  -> share copy
 ```
 
-PredictLM extends that model with:
+Source: [`latent-spaces/brag`](https://github.com/latent-spaces/brag), MIT-licensed, adapted through [`skills/brag-launch-video/SKILL.md`](skills/brag-launch-video/SKILL.md).
 
-- provider-agnostic execution;
-- hosted/runtime capability preflight;
-- no mandatory Hyperframes dependency;
-- four-core media direction;
-- legal/product claim boundaries;
-- strict “artifact exists before success” verification.
+### No Higgsfield dependency
 
-Source attribution: [`skills/brag-launch-video/SOURCE-NOTES.md`](skills/brag-launch-video/SOURCE-NOTES.md).
+**Higgsfield is not required to run PredictLM, use Brag, build the documentation, or execute the commercial workflow.**
+
+The media architecture is provider-agnostic. A deployment can use whichever real path is actually available and configured — a temporal model, a self-hosted compositor, or a verified FFmpeg/composition path. Higgsfield may remain an optional external adapter/reference elsewhere in the repository, but **the core product does not depend on it**.
+
+A storyboard is not a video. A submitted provider job is not a video. A video is considered complete only after a playable artifact is verified.
+
+**Commercial assets**
+
+- [Launch-film brief](docs/commercial/predictlm-launch-film.md)
+- [Commercial poster](docs/commercial/predictlm-commercial-poster.svg)
+- [Brag launch-video skill](skills/brag-launch-video/SKILL.md)
+- [Source notes / attribution](skills/brag-launch-video/SOURCE-NOTES.md)
 
 ---
 
 ## Reliability model
 
-PredictLM is intentionally built around partial failure.
+PredictLM is designed around partial failure instead of pretending every dependency is always healthy.
 
-Examples:
+| Failure | Expected behavior |
+| --- | --- |
+| DataJud unavailable, DJEN available | Preserve DJEN evidence and expose the DataJud failure. |
+| Primary LLM provider rate-limited | Use a bounded healthy rescue route when configured. |
+| Browser/local neural runtime unavailable | Keep hosted Chat usable. |
+| Cognitive state unavailable | Continue with safe deterministic defaults. |
+| Image provider returns invalid output | Reject before presentation. |
+| Async video job never yields a playable file | Do not mark the task complete. |
+| External research contains raw/debug payloads | Sanitize or reject at the trust boundary. |
 
-- DataJud fails but DJEN succeeds → keep DJEN evidence;
-- one AI provider rate-limits → try a healthy configured route;
-- local neural runtime cannot load → Chat remains usable through remote providers;
-- cognitive persistence fails → use safe controller defaults;
-- image provider returns a bad URL → reject it before presenting the result;
-- video provider accepts a job but never produces a playable asset → the job is **not** considered completed.
-
-The system optimizes for **honest degradation**, not fake success.
+The goal is **honest degradation** rather than fake success.
 
 ---
 
-## Security boundaries
+## Security posture
 
-- secrets stay server-side;
-- production remote APIs can be gated by `PREDICTLM_ACCESS_TOKEN`;
-- API rate limiting is centralized;
-- external research is untrusted input;
-- provider responses are sanitized before public output;
-- generated code is reviewed before packaging;
-- no CAPTCHA/WAF bypass;
-- no third-party e-CPF or privileged-account automation;
-- Brag/project inspection must never leak `.env`, credentials, PII or internal URLs into public media.
+PredictLM is designed to fail closed around remote APIs and explicit external actions.
 
-See `AGENTS.md` for the runtime rules.
+<div align="center">
+
+[![Security policy](https://img.shields.io/badge/policy-SECURITY.md-6f42c1)](SECURITY.md)
+![Secrets](https://img.shields.io/badge/secrets-server--only-238636)
+![Sessions](https://img.shields.io/badge/session-HttpOnly%20%2B%20SameSite%3DStrict-0969DA)
+![SSRF](https://img.shields.io/badge/SSRF-DNS%20%2B%20redirect%20validation-8250DF)
+![Supply chain](https://img.shields.io/badge/CI-npm%20audit%20%2B%20tests-1F6FEB)
+
+</div>
+
+Key controls include signed expiring access sessions, same-origin checks for mutating session-authenticated APIs, rate limiting, DNS-aware URL validation, server-only provider credentials, prompt/output trust boundaries, explicit confirmation before external publishing and PR-gated automated learning changes.
+
+Read the full threat model, deployment checklist and disclosure guidance in **[SECURITY.md](SECURITY.md)**.
 
 ---
 
@@ -351,39 +337,31 @@ See `AGENTS.md` for the runtime rules.
 ```text
 PredictLm/
 ├── src/
-│   ├── app/
-│   │   └── api/
-│   │       ├── agent/            # Build execution
-│   │       ├── chat/             # General AI + streaming
-│   │       ├── legal/            # DataJud / DJEN
-│   │       ├── media/            # Image + temporal video routes
-│   │       ├── report-dossier/   # AI report generation
-│   │       └── health/           # deterministic product self-tests
+│   ├── app/api/
+│   │   ├── agent/            # Build execution
+│   │   ├── chat/             # General AI + streaming
+│   │   ├── legal/            # DataJud / DJEN
+│   │   ├── media/            # Image + temporal video
+│   │   ├── report-dossier/   # AI reports
+│   │   └── health/           # deterministic health checks
 │   ├── components/
-│   │   ├── ChatShell.tsx
-│   │   └── SimpleImaginePanel.tsx
 │   └── lib/
-│       ├── cognitive/            # four-core control
-│       ├── legal/                # legal normalization/presentation
-│       ├── media/                # image/video direction
-│       ├── server/               # provider mesh / health
-│       └── fusion/               # capability fabric
+│       ├── cognitive/
+│       ├── legal/
+│       ├── media/
+│       ├── server/
+│       └── fusion/
 ├── skills/
 │   ├── predictlm-master/
 │   ├── brag-launch-video/
-│   ├── grok-imagine-parity/
 │   └── ...
-├── docs/
-│   └── commercial/
+├── docs/commercial/
+├── supabase/migrations/
 ├── tests/
 ├── scripts/
-│   ├── evals/
-│   ├── knowledge/
-│   ├── learning/
-│   ├── selfimprove/
-│   └── training/
 ├── AGENTS.md
-└── ARCHITECTURE.md
+├── ARCHITECTURE.md
+└── SECURITY.md
 ```
 
 ---
@@ -392,28 +370,28 @@ PredictLm/
 
 | Layer | Technology |
 | --- | --- |
-| Web | Next.js 16.3 |
-| UI | React 19.2 |
+| Web | Next.js 16.3.7 |
+| UI | React 19.2.8 |
+| Language | TypeScript |
 | State | Zustand |
-| Code editing | CodeMirror |
-| Local/browser ML | Transformers.js + optional WebLLM paths |
+| Code editor | CodeMirror |
+| Browser ML | Transformers.js + optional browser-local paths |
 | Packaging | JSZip |
-| AI routing | server-side Provider Mesh + JEV-inspired policy |
-| Legal | DataJud + DJEN + official-source normalization |
-| Media | image provider cascade + temporal video adapters |
+| AI routing | Server-side Provider Mesh |
+| Legal | DataJud + DJEN normalization |
+| Media | Provider cascade + optional temporal adapters/compositors |
 | Tests | Node test runner + TSX |
-| Type safety | TypeScript |
 | CI | GitHub Actions |
 
 ---
 
-## Run locally
+## Run
 
-Requirements:
+### Requirements
 
 - Node.js 20+;
 - npm;
-- at least one configured remote provider for cloud inference, or an optional compatible local/browser path.
+- at least one configured remote AI provider for hosted inference, or an optional compatible local/browser path.
 
 ```bash
 git clone https://github.com/W2CAPITAL/PredictLm.git
@@ -423,11 +401,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open the Next.js development URL printed by the CLI.
-
-### Minimal hosted configuration
-
-A production deployment should at minimum configure its access/rate-limit secrets and one remote AI route.
+### Minimal production security configuration
 
 ```bash
 PREDICTLM_ACCESS_TOKEN=
@@ -439,15 +413,22 @@ AI_API_KEY=
 AI_MODEL=
 ```
 
-Provider-specific variables are documented in `.env.example`. Never prefix server credentials with `NEXT_PUBLIC_`.
+For distributed rate limiting:
 
-Legal consultation requires the appropriate DataJud configuration. Media providers are optional and independently configurable.
+```bash
+PREDICT_SUPABASE_URL=
+PREDICT_SUPABASE_SERVICE_ROLE_KEY=
+```
+
+Provider-specific settings live in [`.env.example`](.env.example). Server secrets must never use the `NEXT_PUBLIC_` prefix.
+
+Before a production rollout, follow the checklist in [`SECURITY.md`](SECURITY.md).
 
 ---
 
 ## Quality gates
 
-The repository treats validation as part of the feature, not a postscript.
+A change is not “done” because it looks correct.
 
 ```bash
 npm run typecheck
@@ -456,13 +437,13 @@ npm run build
 npm run eval:build-export
 ```
 
-CI additionally runs:
+CI also runs:
 
 ```bash
 npm audit --omit=dev --audit-level=high
 ```
 
-Useful suites:
+Additional suites:
 
 ```bash
 npm run eval:production
@@ -471,28 +452,32 @@ npm run knowledge:sync
 npm run train:validate
 ```
 
-A change should not be described as complete just because it “looks right”. For core product work, the expected evidence is typecheck + tests + production build; Build changes also pass the export smoke evaluation.
+```text
+compile
+  -> test
+  -> production build
+  -> deterministic export smoke
+  -> merge
+```
 
 ---
 
 ## Knowledge and skills
 
-PredictLM treats external repositories as **versioned knowledge/architecture references**, not magical model training.
-
-The knowledge pipeline is:
+External repositories are treated as **versioned knowledge or architecture references**, not as unquestioned authority and not as automatic executable code.
 
 ```text
 curated source registry
-  -> license/provenance policy
-  -> selected text/code paths
+  -> provenance / license policy
+  -> selected files
   -> chunk + deduplicate
-  -> local searchable index
-  -> bounded context injection
+  -> searchable knowledge
+  -> bounded runtime context
 ```
 
-Brag is registered as an MIT `distill`/allow source for launch-video direction. Bundled upstream music/SFX/assets are intentionally excluded from ingestion.
+Brag is registered as an MIT source for launch-video direction. Its bundled binary media assets are intentionally excluded from ingestion.
 
-Canonical behavior remains owned by:
+Canonical behavior is still owned by:
 
 ```text
 AGENTS.md
@@ -503,50 +488,39 @@ tests/
 
 ---
 
-## Self-improvement boundary
-
-PredictLM contains a bounded engineering-learning loop:
-
-```text
-OBSERVE
-  -> VERIFY
-  -> LEARN
-  -> DESIGN
-  -> EXPERIMENT
-  -> ANALYZE
-  -> COMPARE
-  -> PROMOTE
-```
-
-Feedback can inform operational lessons. Arbitrary user/model text cannot silently become executable production code or unrestricted durable policy.
-
-Code promotion remains test/evaluation gated.
-
----
-
 ## Engineering principles
 
-1. **One product surface beats a menu of disconnected demos.**
-2. **A source failure is data about the run, not permission to invent.**
-3. **A provider response is a candidate until it passes output validation.**
-4. **Heavy experiments stay lazy or internal.**
-5. **User/project continuity outranks template regeneration.**
+1. **One public product surface beats a collection of demos.**
+2. **Evidence outranks confidence.**
+3. **Provider output is a candidate until it passes validation.**
+4. **Heavy capabilities stay lazy or internal.**
+5. **Project continuity outranks template regeneration.**
 6. **Verification is part of execution.**
 7. **External repositories contribute patterns with provenance, not authority.**
 8. **A storyboard is not a video; a prompt is not an image; a plan is not implementation.**
-9. **If the system cannot prove it produced the artifact, it does not claim success.**
+9. **If the system cannot prove an artifact exists, it does not claim success.**
 
 ---
 
-## Current scope
+## Project status
 
-PredictLM is an actively evolving engineering project. The public product focuses on:
+PredictLM is an actively evolving engineering project.
+
+**Current public focus**
 
 - open-domain Chat;
 - Brazilian legal-process consultation and explanation;
 - Chat-native Build / Work / Tutor / Research;
 - lightweight Imagine.
 
-More expensive simulation/neuroscience/media experiments remain available as internal modules or optional adapters, but are not required to use the core application.
+Experimental simulation, neuroscience and specialist media tooling remain available as internal modules or optional adapters without defining the public product.
 
-For deeper internals, read [`ARCHITECTURE.md`](ARCHITECTURE.md). For the runtime contract, read [`AGENTS.md`](AGENTS.md).
+<div align="center">
+
+### PredictLM
+
+**One assistant. Verified workflows.**
+
+[Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · [Commercial film](docs/commercial/predictlm-launch-film.md)
+
+</div>
