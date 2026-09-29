@@ -1,7 +1,7 @@
 # PredictLM — Agent Rules
 
 ## Product
-PredictLM is one legal-first general assistant governed by PredictLM Master. The public product is Chat + a legal shortcut + lightweight Imagine. Build, Research and Tutor are capabilities invoked from Chat; Minecraft, neuroscience, agent simulation and other experiments remain internal labs and must not load into the main client bundle.
+PredictLM is one legal-first general assistant governed by PredictLM Master. The public product is Chat + a legal shortcut + lightweight Imagine. Build, Work, Research and Tutor are capabilities invoked from Chat; Minecraft, neuroscience, agent simulation and other experiments remain internal labs and must not load into the main client bundle.
 
 ## Non-negotiable behavior
 - Answer the current request directly. Infrastructure is not the answer.
