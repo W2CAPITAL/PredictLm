@@ -258,7 +258,7 @@ prompt
 
 Cognitive/media modules are loaded dynamically only when generation is requested.
 
-### Commercial / launch video
+## Commercial launch film
 
 Product-video requests use a Brag-inspired direction layer:
 
