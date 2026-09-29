@@ -29,14 +29,24 @@ function upstreamUrl(
   return root+encodeURIComponent(prompt)+'?'+q.toString();
 }
 
+function pollinationsRequest(url:string){
+  try{
+    const host=new URL(url).hostname.toLowerCase();
+    return host==='pollinations.ai'||host.endsWith('.pollinations.ai');
+  }catch{return false}
+}
+
 async function fetchImage(url:string,timeoutMs:number){
+  const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
   return fetch(url,{
     signal:AbortSignal.timeout(Math.max(1200,timeoutMs)),
     cache:'no-store',
     headers:{
       Accept:'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
       'User-Agent':'PredictLM-Media/6.3',
-      ...(process.env.POLLINATIONS_API_KEY?{'Authorization':'Bearer '+process.env.POLLINATIONS_API_KEY}:{})
+      ...(pollinationsKey&&pollinationsRequest(url)
+        ? {'Authorization':'Bearer '+pollinationsKey}
+        : {})
     }
   });
 }
