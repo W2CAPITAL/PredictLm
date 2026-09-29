@@ -1691,6 +1691,7 @@ export function ChatShell({onOpenLegal}:Props){
 
       <div className="grok-sidebar-bottom">
         <button className={screen==='library'?'active':''} onClick={()=>{setScreen('library');closeSidebarOnMobile()}}><Library size={16}/> Biblioteca</button>
+        <button onClick={()=>{window.location.href='/portfolio'}}><FolderOpen size={16}/> Projeto</button>
         <div className="grok-profile"><div>P</div><span><b>Predict Auto</b><small>Chat + jurídico + Minecraft</small></span></div>
       </div>
     </aside>
