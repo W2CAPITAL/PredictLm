@@ -12,6 +12,8 @@ function req(prompt='Naruto vs Sasuke'){
 
 test('media render retries when a provider returns HTTP 200 without image bytes',async()=>{
   const original=globalThis.fetch;
+  const oldKey=process.env.POLLINATIONS_API_KEY;
+  process.env.POLLINATIONS_API_KEY='pollinations-test';
   const calls:string[]=[];
   const png=new Uint8Array(1400);
   png.set([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a],0);
@@ -33,11 +35,14 @@ test('media render retries when a provider returns HTTP 200 without image bytes'
     assert.equal(calls.length,2);
   }finally{
     globalThis.fetch=original;
+    if(oldKey===undefined)delete process.env.POLLINATIONS_API_KEY; else process.env.POLLINATIONS_API_KEY=oldKey;
   }
 });
 
 test('media render returns the exact terminal error after all image attempts are invalid',async()=>{
   const original=globalThis.fetch;
+  const oldKey=process.env.POLLINATIONS_API_KEY;
+  process.env.POLLINATIONS_API_KEY='pollinations-test';
   globalThis.fetch=async()=>new Response(JSON.stringify({ok:true}),{
     status:200,
     headers:{'Content-Type':'application/json'}
@@ -51,6 +56,28 @@ test('media render returns the exact terminal error after all image attempts are
     assert.ok(body.attempts>=2);
   }finally{
     globalThis.fetch=original;
+    if(oldKey===undefined)delete process.env.POLLINATIONS_API_KEY; else process.env.POLLINATIONS_API_KEY=oldKey;
+  }
+});
+
+test('media render refuses unauthenticated Pollinations instead of making a doomed request',async()=>{
+  const original=globalThis.fetch;
+  const oldKey=process.env.POLLINATIONS_API_KEY;
+  const oldBase=process.env.PREDICT_PUBLIC_IMAGE_URL;
+  delete process.env.POLLINATIONS_API_KEY;
+  process.env.PREDICT_PUBLIC_IMAGE_URL='https://gen.pollinations.ai/image/';
+  let calls=0;
+  globalThis.fetch=async()=>{calls++;return new Response('unexpected')};
+  try{
+    const response=await GET(req('Naruto vs Sasuke'));
+    const body=await response.json();
+    assert.equal(response.status,503);
+    assert.equal(body.code,'NO_IMAGE_RENDER_PROVIDER');
+    assert.equal(calls,0);
+  }finally{
+    globalThis.fetch=original;
+    if(oldKey===undefined)delete process.env.POLLINATIONS_API_KEY; else process.env.POLLINATIONS_API_KEY=oldKey;
+    if(oldBase===undefined)delete process.env.PREDICT_PUBLIC_IMAGE_URL; else process.env.PREDICT_PUBLIC_IMAGE_URL=oldBase;
   }
 });
 
@@ -76,11 +103,13 @@ test('media render falls back from a configured public base to default public im
   const original=globalThis.fetch;
   const oldBase=process.env.PREDICT_PUBLIC_IMAGE_URL;
   const oldAttempts=process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS;
+  const oldKey=process.env.POLLINATIONS_API_KEY;
   const calls:string[]=[];
   const png=new Uint8Array(1500);
   png.set([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a],0);
   process.env.PREDICT_PUBLIC_IMAGE_URL='https://broken.example/image/';
   process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS='4';
+  process.env.POLLINATIONS_API_KEY='pollinations-test';
   globalThis.fetch=async(input:any)=>{
     const url=String(input);
     calls.push(url);
@@ -98,5 +127,6 @@ test('media render falls back from a configured public base to default public im
     globalThis.fetch=original;
     if(oldBase===undefined)delete process.env.PREDICT_PUBLIC_IMAGE_URL; else process.env.PREDICT_PUBLIC_IMAGE_URL=oldBase;
     if(oldAttempts===undefined)delete process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS; else process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS=oldAttempts;
+    if(oldKey===undefined)delete process.env.POLLINATIONS_API_KEY; else process.env.POLLINATIONS_API_KEY=oldKey;
   }
 });
