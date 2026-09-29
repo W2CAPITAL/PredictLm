@@ -46,6 +46,15 @@ export function configuredProviders(){
       model:process.env.AI_GATEWAY_MODEL||'google/gemini-3.8-flash'
     });
   }
+  if(process.env.ASHNA_API_KEY){
+    push({
+      name:'ashna',
+      base:process.env.ASHNA_BASE_URL||'https://api.ashna.ai/v1/api',
+      key:process.env.ASHNA_API_KEY,
+      model:process.env.ASHNA_AGENT_ID||process.env.ASHNA_MODEL||'glm-5.3-flash',
+      headers:{'X-Title':'PredictLM'}
+    });
+  }
   if(process.env.OPENAI_API_KEY){
     push({
       name:'openai',
@@ -106,7 +115,7 @@ export function configuredProviders(){
     if(serverCanReach(base))push({name:'ollama',base,key:process.env.OLLAMA_API_KEY||'ollama',model:process.env.OLLAMA_MODEL});
   }
 
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'ashna,vercel-gateway,anthropic,openai,xai,gemini,deepseek,kimi,zai,nvidia,groq,openrouter,server,opencode,minimax,ark,freellmapi,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const idx=preferred.indexOf(name);return idx<0?999:idx};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
