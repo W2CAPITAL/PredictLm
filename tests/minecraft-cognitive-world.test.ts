@@ -25,7 +25,7 @@ import {mobModelComplexity,mobVoxelModel} from '../src/lib/simulation/minecraft-
 
 test('Simulation surface keeps Minecraft as the only public simulation mode',()=>{
   const ui=fs.readFileSync(new URL('../src/components/GrokSimulationPanel.tsx',import.meta.url),'utf8');
-  assert.match(ui,/Minecraft Agent Lab/);
+  assert.match(ui,/MINECRAFT AGENT LAB/i);
   assert.match(ui,/Mundo persistente para agentes/);
   assert.match(ui,/MinecraftSimulationPanel/);
   assert.doesNotMatch(ui,/simulationView/);
