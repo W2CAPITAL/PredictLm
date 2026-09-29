@@ -12,7 +12,8 @@ const envKeys=[
   'NVIDIA_API_KEY','NVIDIA_MODEL','NVIDIA_BASE_URL',
   'OPENROUTER_API_KEY','OPENROUTER_MODEL',
   'OPENAI_API_KEY','OPENAI_MODEL','OPENAI_BASE_URL',
-  'PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER'
+  'PREDICTLM_STREAM_PROVIDER_ORDER','PREDICTLM_PROVIDER_ORDER',
+  'ASHNA_API_KEY','ASHNA_BASE_URL','ASHNA_MODEL','ASHNA_AGENT_ID'
 ];
 
 function clearProviders(){
@@ -50,6 +51,34 @@ function isAutoLearningFetch(input:any){
 function autoLearningResponse(){
   return new Response('[]',{status:200,headers:{'Content-Type':'application/json'}});
 }
+
+test('stream chat accepts AshnaAI as OpenAI-compatible provider',async()=>{
+  clearProviders();
+  process.env.ASHNA_API_KEY='ashna-stream-test';
+  process.env.ASHNA_BASE_URL='https://api.ashna.ai/v1/api';
+  process.env.ASHNA_MODEL='glm-5.3-flash';
+  process.env.PREDICTLM_STREAM_PROVIDER_ORDER='ashna';
+  const original=globalThis.fetch;
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
+    if(isAutoLearningFetch(input))return autoLearningResponse();
+    assert.equal(String(input),'https://api.ashna.ai/v1/api/chat/completions');
+    assert.equal(String((init?.headers as any)?.Authorization||''),'Bearer ashna-stream-test');
+    const body=JSON.parse(String(init?.body||'{}'));
+    assert.equal(body.model,'glm-5.3-flash');
+    assert.equal(body.stream,true);
+    return upstream(['Ashna ','stream ','ok.']);
+  };
+  try{
+    const response=await POST(request([{role:'user',content:'Diga oi'}]));
+    const text=await response.text();
+    assert.equal(response.status,200);
+    assert.match(text,/"provider":"ashna"/);
+    assert.match(text,/Ashna stream ok/);
+  }finally{
+    globalThis.fetch=original;
+    clearProviders();
+  }
+});
 
 test('stream chat sends history to Groq and emits only a semantically validated draft',async()=>{
   clearProviders();
