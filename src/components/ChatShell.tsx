@@ -29,7 +29,8 @@ import { browserKnowledgeContext } from '@/lib/fusion/knowledge-fabric';
 import { capabilityFusionContext } from '@/lib/fusion/capability-fabric';
 import { speakBrowserTextTracked, stopBrowserVoice, type BrowserVoiceState } from '@/lib/voice/browser-voice';
 import { loadCognitiveState, saveCognitiveState } from '@/lib/cognitive/cognitive-memory';
-import { advanceCognitiveWorkspace, cognitivePromptContext } from '@/lib/cognitive/cognitive-workspace';
+import { advanceCognitiveWorkspace } from '@/lib/cognitive/cognitive-workspace';
+import {cognitiveSurfaceContext,type CognitiveSurface} from '@/lib/cognitive/cognitive-surface';
 import { chatTrustIssue } from '@/lib/chat-trust-boundary';
 
 interface Props{
@@ -750,12 +751,28 @@ export function ChatShell({onOpenLegal}:Props){
     const buildIntent=detectBuildRequest(prompt)||detectBuildContinuation(prompt,hasActiveProject);
     const kind=classifyConversation(prompt,history);
     const language=resolveConversationLanguage(prompt,history);
+    const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
+    const cognitiveSurface:CognitiveSurface=buildIntent
+      ? 'build'
+      : (processNumber||legalSearchRequest||djenOabRequest)
+        ? 'legal'
+        : tutorIntent
+          ? 'tutor'
+          : workIntent
+            ? 'work'
+            : reportIntent.wantsReport
+              ? 'report'
+              : needsWeb
+                ? 'research'
+                : mediaKind
+                  ? 'imagine'
+                  : 'chat';
     let cognitiveMeshContext='';
     try{
       const previousCognitive=await loadCognitiveState();
       const nextCognitive=advanceCognitiveWorkspace(previousCognitive,prompt);
       await saveCognitiveState(nextCognitive);
-      cognitiveMeshContext=cognitivePromptContext(nextCognitive).slice(0,10000);
+      cognitiveMeshContext=cognitiveSurfaceContext(nextCognitive,cognitiveSurface).slice(0,2600);
     }catch{}
     const brainContext=[
       advanceBrowserDigitalBrainContext(prompt).context,
@@ -768,7 +785,6 @@ export function ChatShell({onOpenLegal}:Props){
     const deepRequested=s.deepThink||workIntent;
     const safeLocalDeep=deepRequested&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
-    const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
     const showExecutionDetails=deepRequested||needsWeb;
 
     if(learningInstruction){
