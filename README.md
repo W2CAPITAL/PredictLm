@@ -1,23 +1,22 @@
 # PredictLM
 
-PredictLM is a portfolio-grade AI application with **four public surfaces only**:
+PredictLM is a legal-first general AI application with **three public surfaces only**:
 
-1. **Chat** — multi-provider assistant with bounded failover, local/browser fallback, research and Build.
-2. **Jurídico** — CNJ/DataJud + DJEN → process timeline → analysis/dossier.
-3. **Minecraft Agent Lab** — reproducible voxel environment where four bounded controllers act in the same persistent world.
-4. **Imagine** — image generation/editing pipeline with identity checks and provider validation.
+1. **Chat** — the main entry point for general questions, legal work, Build, research and Tutor.
+2. **Jurídico** — a Chat shortcut for CNJ/DataJud + DJEN consultation, normalized process timeline and plain-language explanation.
+3. **Imagine** — lightweight image generation loaded only when requested.
 
-Everything else — neuro-science experiments, influencer tooling, provider catalogs and internal skills — is treated as **internal/lab infrastructure**, not as a separate product promise. The code is preserved for research and regression coverage, but it is intentionally absent from the primary navigation.
+Everything else — Minecraft/agent simulation, neuro-science experiments, influencer tooling, provider catalogs and internal skills — is treated as **internal/lab infrastructure**, not as a separate product promise. The code is preserved for research and regression coverage, but it is intentionally absent from the primary navigation and initial client bundle.
 
-The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. When `PREDICTLM_ACCESS_TOKEN` is configured, the deployment uses an authenticated access gate plus centralized API rate limiting. If a production deployment has no access token yet, the portfolio/Minecraft UI remains viewable but protected remote APIs are disabled instead of exposing provider credits.
+The product is local-first where practical, does not require Ollama, and uses server-side credentials only for optional cloud providers. When `PREDICTLM_ACCESS_TOKEN` is configured, the deployment uses an authenticated access gate plus centralized API rate limiting. If a production deployment has no access token yet, public informational UI remains viewable but protected remote APIs are disabled instead of exposing provider credits.
 
 ## Portfolio story
 
 A concise way to describe the project:
 
-> I built an AI assistant with bounded multi-provider failover, browser-local inference, authenticated API routes and a legal-intelligence workflow that turns CNJ/DataJud + DJEN evidence into a process timeline and dossier. I also built a reproducible Minecraft agent lab to benchmark autonomous controllers in a persistent voxel world.
+> I built a general AI assistant with a legal-first workflow that turns CNJ/DataJud + DJEN evidence into a normalized process timeline and plain-language explanation. Build, research and Tutor are activated by intent inside the same Chat, while expensive experimental modules stay outside the initial bundle.
 
-The main engineering signals are failure recovery, provider routing, API security, deterministic tests, legal-data provenance, browser rendering/performance and runnable project export. See `docs/PORTFOLIO.md` for a 60-second demo script and architecture summary.
+The main engineering signals are failure recovery, provider routing, API security, deterministic tests, legal-data provenance, lazy-loaded capabilities and runnable project export. See `docs/PORTFOLIO.md` for a 60-second demo script and architecture summary.
 
 ## Historical regression baseline
 
@@ -86,26 +85,11 @@ The web product intentionally does **not** expose 7B as a browser button. A larg
 
 The neural model is only one layer. PredictLM combines it with local memory, curated knowledge packs, web retrieval and tools. Repositories and guides improve the system as **knowledge/skills/context**; they are not falsely treated as if reading a repository trained a foundation model.
 
-## Imagine — Best-of-N character pipeline
+## Imagine — lightweight public generator
 
-Named characters and anime/franchise requests no longer use first-image-wins.
+The public Imagine surface now prioritizes one reliable operation: **prompt → provider → valid image**. It is loaded only when opened and does not preload video/storyboard, Minecraft, semantic-review or identity-memory clients into the main Chat bundle.
 
-```text
-prompt
-→ subject/form scene plan
-→ user refs / approved Visual ID Memory / auto refs
-→ 2–3 bounded candidates
-→ technical + semantic identity review
-→ rerank
-→ targeted edit/repair of the best candidate
-→ final identity gate
-→ optional stylize/upscale
-→ persist approved result
-```
-
-For anime/specific-franchise requests, semantic identity outranks isolated pixel polish. A beautiful wrong character loses to a slightly less polished candidate that actually matches the requested identity/form. An approved remote image may become the lightweight Visual ID reference for the same canonical identity in later scenes.
-
-The pipeline borrows public design patterns from modern image systems—multi-image grounding/editing, image-input repair, and persistent identity consistency—without claiming access to proprietary model internals.
+Advanced identity grounding, editing, video and review code remains available as internal/experimental infrastructure. It can be reintroduced selectively after the direct image path is stable instead of blocking basic generation.
 
 ## Minecraft Cognitive World vs Neuroscience Lab
 
