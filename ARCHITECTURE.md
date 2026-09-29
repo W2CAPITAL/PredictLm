@@ -33,6 +33,19 @@ PredictLM uses a deterministic JEV-inspired policy for `fast | balanced | strong
 
 The configured Vercel AI Gateway quality floor currently defaults to a Gemini-class model. Provider identity remains internal.
 
+## Hosted provider adapters
+
+The Provider Mesh supports replaceable OpenAI-compatible providers. **AshnaAI** is available through:
+
+```text
+ASHNA_API_KEY
+ASHNA_BASE_URL=https://api.ashna.ai/v1/api
+ASHNA_MODEL=glm-5.3-flash
+ASHNA_AGENT_ID=
+```
+
+If `ASHNA_AGENT_ID` is configured, the custom Ashna agent id is sent in the OpenAI-compatible `model` field. Provider identity remains internal to the public PredictLM product.
+
 ## Unified cognitive mesh
 
 Normal Chat advances one persistent multi-species workspace:
@@ -57,6 +70,29 @@ The intelligence stack is:
 5. **Build orchestrator** — explicit multi-pass product/software lifecycle.
 6. **Tools** — research, project graph, smoke tests, security, preview inspect and packaging.
 7. **Optional cloud providers** — boosts rather than hard dependencies.
+
+## Graph brain / code intelligence
+
+PredictLM can use **Graphify** as a structural navigation layer over the repository.
+
+```text
+source tree
+  -> tree-sitter / structural extraction
+  -> graph.json
+  -> query / path / explain
+  -> scoped source inspection
+  -> implementation
+  -> graphify update
+  -> tests / typecheck / build
+```
+
+The graph is deliberately treated as navigation evidence, not runtime truth. Graphify distinguishes explicit `EXTRACTED` edges from resolved `INFERRED` edges; inferred relationships are confirmed against source before a consequential edit.
+
+Canonical assets:
+
+- `skills/graphify-brain/SKILL.md`
+- `docs/architecture/predictlm-brain-map.svg`
+- curated source registry entry for `Graphify-Labs/graphify`
 
 ## Build orchestration
 
