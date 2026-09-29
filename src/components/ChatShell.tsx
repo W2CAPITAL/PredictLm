@@ -55,6 +55,14 @@ function detectBuildContinuation(prompt:string,hasActiveProject:boolean){
   return /^(continue|continua|prossiga|segue|termine|finalize|corrija|arrume|conserte|melhore|adicione|inclua|remova|tire|altere|mude|troque|deixe|faca|faça|exporte|gere o zip|rosa|azul|verde|vermelho|escuro|claro|maior|menor|responsivo|mobile)\b/.test(p);
 }
 
+function detectWorkRequest(prompt:string){
+  const p=prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ').replace(/\s+/g,' ').trim();
+  const explicit=/\b(modo work|work mode|ative o work|ativar o work|use o work|usar o work|work profundo|trabalho profundo)\b/.test(p);
+  const multiStep=/\b(execute|realize|prepare|organize|investigue|revise|analise|pesquise|resolva|faca)\b/.test(p)
+    &&/\b(em etapas|passo a passo completo|do inicio ao fim|do comeco ao fim|multietapas|varios arquivos|varios documentos|multiplas fontes|tarefa longa|trabalho completo)\b/.test(p);
+  return explicit||multiStep;
+}
+
 function detectLegalSearchRequest(prompt:string){
   const raw=String(prompt||'');
   const normalized=raw.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,' ');
@@ -732,6 +740,7 @@ export function ChatShell({onOpenLegal}:Props){
     const djenOabRequest=processNumber?null:detectDjenOabRequest(prompt);
     const fraudIntent=isFraudAnalysisRequest(prompt);
     const tutorIntent=isTutorRequest(prompt);
+    const workIntent=detectWorkRequest(prompt);
     const learningInstruction=isGlobalLearningInstruction(prompt);
     const mediaKind=detectChatMediaRequest(prompt);
     const simulationLaunch=detectSimulationLaunchRequest(prompt);
@@ -756,10 +765,11 @@ export function ChatShell({onOpenLegal}:Props){
     ].filter(Boolean).join('\n\n');
     const currentNeural=neuralStatus();
     const currentWebLLM=webLLMStatus();
-    const safeLocalDeep=s.deepThink&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
+    const deepRequested=s.deepThink||workIntent;
+    const safeLocalDeep=deepRequested&&((currentNeural.loaded&&currentNeural.backend==='webgpu')||currentWebLLM.loaded);
     const direct=directConversationReply(prompt,history,{loaded:currentNeural.loaded||currentWebLLM.loaded,tier:currentNeural.tier||currentWebLLM.tier});
     const needsWeb=shouldSearchConversation(kind,s.webEnabled,prompt);
-    const showExecutionDetails=s.deepThink||needsWeb;
+    const showExecutionDetails=deepRequested||needsWeb;
 
     if(learningInstruction){
       captureAdaptiveInstruction(prompt);
@@ -796,13 +806,15 @@ export function ChatShell({onOpenLegal}:Props){
           ? ['Classificando sinais de fraude','Verificando links, credenciais e pagamento','Buscando contexto independente quando habilitado','Separando sinal de prova','Preparando triagem defensiva']
         : tutorIntent
           ? ['TUTOR · identificando objetivo de aprendizagem','PROBE · verificando o que precisa ser testado','TEACH/PRACTICE · recuperando contexto relevante','ASSESS · preparando checagem de domínio','REVIEW · preservando próximos passos']
+        : workIntent
+          ? ['WORK · entendendo a tarefa completa','Organizando etapas e contexto','Executando a rota profunda','Verificando o resultado']
         : mediaKind==='video'
           ? ['Interpretando o vídeo','Planejando 3 cenas coerentes','Gerando keyframes','Renderizando vídeo local','Preparando resultado']
           : mediaKind==='image'
             ? ['Interpretando a imagem','Aplicando qualidade e anti-artefatos','Gerando composição','Validando o resultado']
             : safeLocalDeep
               ? ['Recuperando contexto relevante','Entendendo o pedido','Preparando resposta','Conferindo relevância','Finalizando resposta']
-              : s.deepThink
+              : deepRequested
                 ? ['Recuperando contexto relevante','Entendendo o pedido','Conferindo contexto relevante']
                 : ['Analisando contexto']
     );
@@ -1020,7 +1032,7 @@ export function ChatShell({onOpenLegal}:Props){
       // history -> API -> SSE tokens. No RAG/skills/gates are inserted before
       // the model for ordinary conversation. Specialized/deep/current turns
       // keep the richer PredictLM pipeline below.
-      const directStreamEligible=!s.deepThink&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport&&prompt.length<=5000;
+      const directStreamEligible=!deepRequested&&!needsWeb&&!tutorIntent&&!reportIntent.wantsReport&&prompt.length<=5000;
       if(directStreamEligible){
         setActivity(['Predict Auto · conectando ao modelo']);
         const streamed=await requestStreamingChat({
@@ -1060,7 +1072,7 @@ export function ChatShell({onOpenLegal}:Props){
         ((kind==='hypothetical'||kind==='howto'||kind==='playful')?offlineAnchor:null);
 
       const continuationLike=/^(?:e\b|mas\b|ent[aã]o\b|isso\b|ele\b|ela\b|eles\b|elas\b|continue\b|continua\b|e sobre\b)/i.test(prompt.trim());
-      const cleanEligible=!needsWeb&&prompt.length<=900&&(
+      const cleanEligible=!deepRequested&&!needsWeb&&prompt.length<=900&&(
         kind==='hypothetical'||kind==='playful'||kind==='factual'||kind==='howto'||(kind==='general'&&!continuationLike)
       );
 
@@ -1083,7 +1095,7 @@ export function ChatShell({onOpenLegal}:Props){
               webCount:apiSources.length,
               provider:true,
               anchor:!!answerAnchor,
-              deep:s.deepThink
+              deep:deepRequested
             }):undefined,
             actions:[
               'Resposta gerada e validada',
@@ -1112,7 +1124,7 @@ export function ChatShell({onOpenLegal}:Props){
         localAdvisory:'',
         answerAnchor,
         brainContext,
-        deep:s.deepThink,
+        deep:deepRequested,
         clean:cleanEligible,
         sessionId:active?.id||'',
         signal:turnController.signal
@@ -1122,7 +1134,7 @@ export function ChatShell({onOpenLegal}:Props){
       // promote the turn into Agent Fabric / GitHub Knowledge / skill dumps.
       // Full orchestration is reserved for explicit DeepThink or turns that
       // genuinely require current/researched evidence.
-      const shouldUseFullRoute=s.deepThink||needsWeb;
+      const shouldUseFullRoute=deepRequested||needsWeb;
       if(!candidate.ok&&shouldUseFullRoute){
         setActivity([
           needsWeb?'Usando evidência atualizada':'Aprofundando análise',
@@ -1138,7 +1150,7 @@ export function ChatShell({onOpenLegal}:Props){
           localAdvisory:'',
           answerAnchor,
           brainContext,
-          deep:s.deepThink,
+          deep:deepRequested,
           clean:false,
           sessionId:active?.id||'',
           signal:turnController.signal
@@ -1150,7 +1162,7 @@ export function ChatShell({onOpenLegal}:Props){
       // If server-side providers are unavailable, keep normal chat intelligent
       // by trying the already-installed browser cloud API before local/template
       // fallbacks. This path remains isolated from RAG and skills.
-      if(!s.deepThink&&!needsWeb&&kind!=='casual'&&kind!=='context'){
+      if(!deepRequested&&!needsWeb&&kind!=='casual'&&kind!=='context'){
         setActivity(['Tentando uma segunda rota de conversa']);
         const puter=await requestPuterChat({
           prompt,
@@ -1181,7 +1193,7 @@ export function ChatShell({onOpenLegal}:Props){
       const tryLocalBrain=async()=>{
         try{
           const local=await answerLocally(prompt,messages,{
-            deep:s.deepThink,
+            deep:deepRequested,
             language,
             researchContext,
             knowledge:needsWeb||kind==='technical'||reportIntent.wantsReport||!!processNumber,
@@ -1218,7 +1230,7 @@ export function ChatShell({onOpenLegal}:Props){
                   webCount:localSources.length,
                   localBrain:true,
                   anchor:!!localFallback,
-                  deep:s.deepThink
+                  deep:deepRequested
                 }):undefined,
                 actions:[
                   'Resposta local validada',
@@ -1247,7 +1259,7 @@ export function ChatShell({onOpenLegal}:Props){
         setActivity(['Tentando execução local','Conferindo resposta local']);
         try{
           const runtimeReply=await answerViaLocalRuntime(prompt,messages,{
-            deep:s.deepThink,
+            deep:deepRequested,
             preferred:'auto',
             language,
             researchContext,
@@ -1265,7 +1277,7 @@ export function ChatShell({onOpenLegal}:Props){
               engine:'Predict Auto',
               sources:filterDisplayedSources(prompt,runtimeReply.sources||[],8),
               ...(report?.media?.length?{media:report.media}:{}),
-              reasoningSummary:buildReasoningSummary({kind,webCount:runtimeReply.sources?.length||0,localBrain:true,deep:s.deepThink}),
+              reasoningSummary:buildReasoningSummary({kind,webCount:runtimeReply.sources?.length||0,localBrain:true,deep:deepRequested}),
               actions:[
                 'Resposta local gerada e validada',
                 ...(report?['Relatório validado · qualidade '+report.quality.score+'/100','Conteúdo completo disponível no Dossiê Studio']:[])
