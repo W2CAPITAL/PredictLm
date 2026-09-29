@@ -2,7 +2,7 @@
 
 PredictLM is a legal-first general AI application with **three public surfaces only**:
 
-1. **Chat** — the main entry point for general questions, legal work, Build, research and Tutor.
+1. **Chat** — the main entry point for general questions, legal work, Build, Work, research and Tutor.
 2. **Jurídico** — a Chat shortcut for CNJ/DataJud + DJEN consultation, normalized process timeline and plain-language explanation.
 3. **Imagine** — lightweight image generation loaded only when requested.
 
