@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
   issues: read
 
 jobs:
@@ -32,17 +33,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run build
-      - name: Commit approved global lessons
+      - name: Propose generated update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet -- src/data/global-lessons.json; then
-            echo "No global lesson changes"
+            echo "No generated changes"
             exit 0
           fi
-          git config user.name "predictlm-learning-bot"
+          BRANCH="automation/global-learning-sync"
+          git config user.name "predictlm-security-bot"
           git config user.email "actions@users.noreply.github.com"
+          git checkout -B "$BRANCH"
           git add src/data/global-lessons.json
           git commit -m "chore(learning): refresh approved global lessons"
-          git restore package-lock.json package.json 2>/dev/null || true
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+          git push --force origin HEAD:"$BRANCH"
+          PR_NUMBER="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$PR_NUMBER" ]; then
+            gh pr create --base main --head "$BRANCH" --title "chore(learning): refresh approved global lessons" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+          else
+            gh pr edit "$PR_NUMBER" --title "chore(learning): refresh approved global lessons" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+          fi
