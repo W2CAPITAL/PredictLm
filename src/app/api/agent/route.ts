@@ -13,6 +13,7 @@ import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
 import { jevRouteDecision, jevSelectWorkspaceFiles } from '@/lib/jev-policy';
+import { cognitiveSurfaceFromPrompt } from '@/lib/cognitive/cognitive-surface';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -151,6 +152,7 @@ export async function POST(req:Request){
     const manifest=compactWorkspaceManifest(files);
     const master=predictLMMasterContext(task,deep);
     const fusion=capabilityFusionContext(task,'build');
+    const cognitive=cognitiveSurfaceFromPrompt(task,'build').context;
     const unityContext=/\b(unity|unity3d|gameobject|monobehaviour|rigidbody|collider|unity webgl)\b/i.test(task)
       ? unityFabricContext()
       : '';
@@ -162,6 +164,7 @@ export async function POST(req:Request){
       projectInstructions,
       skillContext,
       fusion,
+      cognitive,
       unityContext
     ].filter(Boolean).join('\n\n');
 
@@ -189,6 +192,7 @@ export async function POST(req:Request){
       projectInstructions,
       skillContext,
       fusion,
+      cognitive,
       unityContext
     ].filter(Boolean).join('\n\n');
     const architect=await callWithFallback(providers,[
@@ -215,6 +219,7 @@ export async function POST(req:Request){
       skillContext,
       projectInstructions,
       fusion,
+      cognitive,
       unityContext,
       'AGENTIC RUN: '+runPlan.roles.join(' → ')+'.',
       'ARCHITECT PLAN:\n'+compactText(JSON.stringify(architecture),1800)
@@ -239,6 +244,7 @@ export async function POST(req:Request){
       'Do not redesign the whole product. Validate findings before reporting them. No chain-of-thought.',
       projectInstructions,
       fusion,
+      cognitive,
       unityContext
     ].filter(Boolean).join('\n\n');
 
@@ -260,6 +266,7 @@ export async function POST(req:Request){
         skillContext,
         projectInstructions,
         fusion,
+        cognitive,
         unityContext,
         'You are the repair/finalizer. Fix only validated review findings and missing requirements.',
         'Return the full corrected BuildPayload JSON. Do not explain the review process.'
