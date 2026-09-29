@@ -1,4 +1,4 @@
-import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, isPlayfulPrompt, responseClearlyOffTopic, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
