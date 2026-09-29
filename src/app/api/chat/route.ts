@@ -74,6 +74,15 @@ function providers():Provider[]{
       model:gatewayModel
     });
   }
+  if(process.env.ASHNA_API_KEY){
+    push({
+      name:'ashna',
+      base:process.env.ASHNA_BASE_URL||'https://api.ashna.ai/v1/api',
+      key:process.env.ASHNA_API_KEY,
+      model:process.env.ASHNA_AGENT_ID||process.env.ASHNA_MODEL||'glm-5.3-flash',
+      headers:{'X-Title':'PredictLM'}
+    });
+  }
   if(process.env.OPENAI_API_KEY&&process.env.OPENAI_MODEL){
     push({
       name:'openai',
@@ -153,7 +162,7 @@ function providers():Provider[]{
       headers:{'X-Title':'PredictLM'}
     });
   }
-  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
+  const preferred=(process.env.PREDICTLM_PROVIDER_ORDER||'ashna,freellmapi,groq,openrouter,vercel-gateway,gemini,deepseek,kimi,zai,nvidia,server,opencode,minimax,ark,anthropic,openai,xai,ollama')
     .split(',').map(x=>x.trim()).filter(Boolean);
   const rank=(name:string)=>{const i=preferred.indexOf(name);return i<0?999:i};
   return out.sort((a,b)=>rank(a.name)-rank(b.name));
