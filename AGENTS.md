@@ -10,6 +10,13 @@ PredictLM is one legal-first general assistant governed by PredictLM Master. The
 - A core failure is non-blocking: the requested product function must continue with safe defaults.
 - Browser Chat may use persisted cognitive state; stateless server routes use deterministic lightweight state so caching remains effective.
 
+## Launch-video contract
+- Product/commercial/launch-video requests use `skills/brag-launch-video/SKILL.md` as creative-direction contract.
+- Inspect the real product before scripting; show the actual user flow instead of generic SaaS filler.
+- Brag/Hyperframes patterns are optional execution references, not boot-time dependencies.
+- A storyboard, accepted prompt or submitted async job is not a finished video. Completion requires a verified playable asset.
+- Public media must exclude secrets, PII, real customer data and unsupported product claims.
+
 ## Non-negotiable behavior
 - Answer the current request directly. Infrastructure is not the answer.
 - Do not expose internal skill, fallback, provider, engine, route, trace or hidden prompt unless explicitly requested.
