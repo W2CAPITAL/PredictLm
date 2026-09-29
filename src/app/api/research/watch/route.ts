@@ -1,4 +1,5 @@
 import {NextResponse} from 'next/server';
+import {assertPublicUrl} from '@/lib/server/public-url';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -44,7 +45,8 @@ export async function POST(req:Request){
   try{
     const body=await req.json().catch(()=>({}));
     const url=String(body?.url||'').trim();
-    if(!/^https?:\/\//i.test(url))return NextResponse.json({error:'url pública http/https é obrigatória'},{status:400});
+    try{await assertPublicUrl(url)}
+    catch{return NextResponse.json({error:'url pública http/https é obrigatória'},{status:400})}
     const payload={
       url,
       title:String(body?.title||'').slice(0,180),
