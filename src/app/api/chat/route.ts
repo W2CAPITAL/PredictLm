@@ -1,4 +1,4 @@
-import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, isPlayfulPrompt, responseTopicAlignment } from '@/lib/chat-intelligence';
+import { answerLooksProcedural, classifyConversation, conversationAnswerIssue, generativeOfflineReply, isGenericHowTo, isHypotheticalPrompt, isPlayfulPrompt, responseClearlyOffTopic, responseTopicAlignment } from '@/lib/chat-intelligence';
 import crypto from 'node:crypto';
 import { githubKnowledgeContext, githubKnowledgeStats, retrieveGitHubKnowledge } from '@/lib/github-knowledge-engine';
 import { compactText, optimizePromptPackage } from '@/lib/token-budget';
@@ -672,7 +672,11 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     {role:'user',content:compactText(prompt,1200)}
   ];
 
-  const candidates=taskAwareProviders(configured,prompt,false).slice(0,8);
+  const configuredRemoteAttempts=Number(process.env.PREDICTLM_CHAT_REMOTE_ATTEMPTS||'2');
+  const cleanAttemptBudget=Number.isFinite(configuredRemoteAttempts)
+    ? Math.max(1,Math.min(4,Math.floor(configuredRemoteAttempts)))
+    : 2;
+  const candidates=taskAwareProviders(configured,prompt,false).slice(0,cleanAttemptBudget);
   if(!candidates.length){
     return Response.json({
       available:false,
@@ -685,37 +689,13 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
   }
 
   const validateCandidate=async(provider:Provider,timeoutMs:number)=>{
-    const validate=(raw:string)=>{
-      const gate=publicAnswerGate(raw,language,prompt);
-      if(!gate.ok)throw new Error(gate.reason);
-      const issue=conversationAnswerIssue(prompt,gate.content);
-      const alignment=responseTopicAlignment(prompt,gate.content);
-      const proceduralEnough=isGenericHowTo(prompt)&&answerLooksProcedural(gate.content);
-      if(issue||(!alignment.relevant&&!proceduralEnough))throw new Error(issue||'off-topic');
-      return gate.content;
-    };
-
     const raw=await callProvider(provider,messages,false,timeoutMs);
-    try{
-      return {provider,content:validate(raw)};
-    }catch(firstError:any){
-      const repaired=await callProvider(provider,[
-        {role:'system',content:[
-          system,
-          'Your previous draft was rejected because it did not answer the user cleanly.',
-          'Rewrite from scratch. Answer only the current user request using recent conversation context.',
-          'Do not output README text, repository snippets, source dumps, agent/skill names, Related/Relacionado sections, or internal notes.',
-          'Return only the final natural-language answer.'
-        ].join('\n\n')},
-        ...recent,
-        {role:'user',content:compactText(prompt,1200)}
-      ],false,Math.min(timeoutMs,4000));
-      try{
-        return {provider,content:validate(repaired)};
-      }catch(secondError:any){
-        throw new Error(String(secondError?.message||firstError?.message||'rejected'));
-      }
-    }
+    const gate=publicAnswerGate(raw,language,prompt);
+    if(!gate.ok)throw new Error('quality-rejected:'+gate.reason);
+    const issue=conversationAnswerIssue(prompt,gate.content);
+    const clearlyOffTopic=responseClearlyOffTopic(prompt,gate.content);
+    if(issue||clearlyOffTopic)throw new Error('quality-rejected:'+String(issue||'clearly-off-topic'));
+    return {provider,content:gate.content};
   };
 
   const errors:string[]=[];

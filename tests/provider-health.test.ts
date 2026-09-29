@@ -42,10 +42,12 @@ test('when every provider is cooling the earliest recovery is attempted first',(
 });
 
 
-test('strict circuit breaker returns no provider while every endpoint is cooling',()=>{
+test('circuit breaker never empties a configured provider pool',()=>{
   resetProviderHealthForTests();
   recordProviderFailure(a,new Error('a 502 bad gateway'),1000);
   recordProviderFailure(b,new Error('b 503 service unavailable'),1000);
-  assert.deepEqual(circuitReadyProviders([a,b],2000),[]);
+  // Both are cooling, so exactly one half-open probe is allowed: the provider
+  // with the earliest recovery time.
+  assert.deepEqual(circuitReadyProviders([a,b],2000).map(x=>x.name),['a']);
   assert.deepEqual(circuitReadyProviders([a,b],180000).map(x=>x.name),['a','b']);
 });

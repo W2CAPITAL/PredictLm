@@ -1,5 +1,5 @@
 import { INVALID_IMAGE_PROVIDER_MESSAGE } from '@/lib/media/media-errors';
-import {compactImagePromptForTransport,imageRouteBudget,publicImageBaseCandidates} from '@/lib/media/image-runtime';
+import {compactImagePromptForTransport,imageRouteBudget,normalizePollinationsImageModel,publicImageBaseCandidates} from '@/lib/media/image-runtime';
 import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 
 export const runtime='nodejs';
@@ -29,14 +29,24 @@ function upstreamUrl(
   return root+encodeURIComponent(prompt)+'?'+q.toString();
 }
 
+function pollinationsRequest(url:string){
+  try{
+    const host=new URL(url).hostname.toLowerCase();
+    return host==='pollinations.ai'||host.endsWith('.pollinations.ai');
+  }catch{return false}
+}
+
 async function fetchImage(url:string,timeoutMs:number){
+  const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
   return fetch(url,{
     signal:AbortSignal.timeout(Math.max(1200,timeoutMs)),
     cache:'no-store',
     headers:{
       Accept:'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
       'User-Agent':'PredictLM-Media/6.3',
-      ...(process.env.POLLINATIONS_API_KEY?{'Authorization':'Bearer '+process.env.POLLINATIONS_API_KEY}:{})
+      ...(pollinationsKey&&pollinationsRequest(url)
+        ? {'Authorization':'Bearer '+pollinationsKey}
+        : {})
     }
   });
 }
@@ -87,7 +97,15 @@ export async function GET(req:Request){
     .slice(0,3);
 
   const configuredBase=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
-  const bases=publicImageBaseCandidates(configuredBase);
+  const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
+  const bases=publicImageBaseCandidates(configuredBase,Boolean(pollinationsKey));
+  if(!bases.length){
+    return Response.json({
+      error:'Nenhum fallback de imagem autenticado/configurado.',
+      code:'NO_IMAGE_RENDER_PROVIDER',
+      retryable:false
+    },{status:503,headers:{'Cache-Control':'no-store'}});
+  }
   const rawModelPlan=references.length
     ? [
         {model,refs:references},
@@ -109,7 +127,7 @@ export async function GET(req:Request){
     modelPlan.flatMap(entry=>bases.map(base=>({
       name:'public-image-render',
       base,
-      model:entry.model,
+      model:/pollinations\.ai/i.test(base)?normalizePollinationsImageModel(entry.model):entry.model,
       refs:entry.refs
     })))
   ).slice(0,maxAttempts);

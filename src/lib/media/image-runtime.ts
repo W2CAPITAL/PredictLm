@@ -65,10 +65,33 @@ export function imageRouteBudget(startedAt:number,totalMs=52_000){
   return {total,remaining,canTry,timeout};
 }
 
-export function publicImageBaseCandidates(configured:string){
-  const defaults=['https://gen.pollinations.ai/image/'];
-  const rows=[String(configured||'').trim(),...defaults]
+function isPollinationsBase(input:string){
+  try{
+    const host=new URL(input).hostname.toLowerCase();
+    return host==='pollinations.ai'||host.endsWith('.pollinations.ai');
+  }catch{return false}
+}
+
+export function publicImageBaseCandidates(configured:string,pollinationsAuthenticated=false){
+  const configuredBase=String(configured||'').trim();
+  const rows:string[]=[];
+
+  if(configuredBase&&(!isPollinationsBase(configuredBase)||pollinationsAuthenticated)){
+    rows.push(configuredBase);
+  }
+  if(pollinationsAuthenticated)rows.push('https://gen.pollinations.ai/image/');
+
+  return [...new Set(rows
     .filter(Boolean)
-    .map(x=>x.endsWith('/')?x:x+'/');
-  return [...new Set(rows)];
+    .map(x=>x.endsWith('/')?x:x+'/'))];
+}
+
+export function normalizePollinationsImageModel(input:string){
+  const raw=String(input||'').trim();
+  const aliases:Record<string,string>={
+    flux:'black-forest-labs/flux.1-schnell',
+    kontext:'black-forest-labs/flux.1-kontext-pro',
+    turbo:'tongyi-mai/z-image-turbo'
+  };
+  return aliases[raw.toLowerCase()]||raw||aliases.flux;
 }

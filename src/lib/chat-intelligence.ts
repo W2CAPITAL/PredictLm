@@ -69,6 +69,44 @@ export function answerLooksProcedural(text:string){
 }
 
 // Shared by cloud, browser, external local runtimes, cache and learned memory.
+export function responseClearlyOffTopic(prompt:string,content:string){
+  const alignment=responseTopicAlignment(prompt,content);
+  if(alignment.relevant)return false;
+
+  const p=clean(prompt);
+  const c=clean(content);
+  if(!c)return true;
+
+  // Correct answers do not need to repeat the noun used in the prompt.
+  // Recipe/procedural answers are the common case: "omelete" may become
+  // "bata dois ovos..." without ever echoing the word "omelete".
+  if(isGenericHowTo(prompt)&&answerLooksProcedural(content))return false;
+
+  // Only turn weak lexical alignment into rejection when the answer carries
+  // strong evidence of a different technical/product topic. Public-answer
+  // gates and conversationAnswerIssue still handle leaks and malformed output.
+  const foreignDomains=[
+    ['github','repositorio','repository','pull request','commit'],
+    ['datajud','djen','cnj','tribunal','processo judicial'],
+    ['minecraft','voxel','nether','crafting'],
+    ['provider','runtime','rag','skill','knowledge pack','api gateway'],
+    ['react','typescript','javascript','python','docker','vercel']
+  ];
+  const promptDomains=new Set<number>();
+  const answerDomains=new Set<number>();
+  foreignDomains.forEach((terms,index)=>{
+    if(terms.some(term=>p.includes(clean(term))))promptDomains.add(index);
+    if(terms.some(term=>c.includes(clean(term))))answerDomains.add(index);
+  });
+  const unrelated=[...answerDomains].filter(index=>!promptDomains.has(index));
+  if(unrelated.length>=2)return true;
+
+  // Short direct answers and compact procedures are allowed to omit the noun
+  // from the question as long as they do not show cross-domain contamination.
+  if(c.length<=260&&!signalsKnowledgeGap(content))return false;
+  return false;
+}
+
 export function conversationAnswerIssue(prompt:string,content:string){
   const p=clean(prompt),out=clean(content);
   if(!out)return 'empty';

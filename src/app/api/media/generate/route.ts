@@ -11,7 +11,7 @@ import {unityFabricContext} from '@/lib/unity-fabric';
 import { buildBestImagePlan, candidateVariationDirective } from '@/lib/media/best-image-orchestrator';
 import { identityProviderDecision } from '@/lib/media/identity-provider-policy';
 import {analyzeImageIntent,imageIntentSummary} from '@/lib/media/image-intent';
-import {compactImagePromptForTransport,imageProviderOrder,imageRouteBudget} from '@/lib/media/image-runtime';
+import {compactImagePromptForTransport,imageProviderOrder,imageRouteBudget,publicImageBaseCandidates} from '@/lib/media/image-runtime';
 import {buildQwenImageRequestBody,qwenImageConfig} from '@/lib/media/qwen-image';
 import {circuitReadyProviders,recordProviderFailure,recordProviderSuccess} from '@/lib/server/provider-health';
 import {
@@ -697,12 +697,32 @@ export async function POST(req:Request){
     const fallbackModel=wantsReferenceFallback
       ? String(process.env.PREDICTLM_REFERENCE_IMAGE_MODEL||'kontext').trim()
       : requestedModel;
-    const referenceTransportVerified=Boolean(
-      String(process.env.POLLINATIONS_API_KEY||'').trim()||
-      String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim()
+    const configuredPublicBase=String(process.env.PREDICT_PUBLIC_IMAGE_URL||'').trim();
+    const pollinationsKey=String(process.env.POLLINATIONS_API_KEY||'').trim();
+    const publicFallbackBases=publicImageBaseCandidates(configuredPublicBase,Boolean(pollinationsKey));
+    const publicFallbackAvailable=publicFallbackBases.length>0;
+    const publicFallbackIsPollinations=publicFallbackBases.some(base=>/pollinations\.ai/i.test(base));
+    const configuredImageProviderAvailable=Boolean(
+      qwenKey||geminiKey||nanoKey||mediaBase||gatewayKey||comfy.enabled
     );
+    const referenceTransportVerified=publicFallbackAvailable;
     const referenceCapableFallback=wantsReferenceFallback&&referenceTransportVerified;
-    if(avoidProviders.has('pollinations-proxy')){
+
+    if(!publicFallbackAvailable){
+      return Response.json({
+        error:configuredImageProviderAvailable
+          ? INVALID_IMAGE_PROVIDER_MESSAGE
+          : 'Nenhum provider de imagem está configurado.',
+        code:configuredImageProviderAvailable?'IMAGE_PROVIDERS_FAILED':'NO_IMAGE_PROVIDER_CONFIGURED',
+        detail:configuredImageProviderAvailable
+          ? 'Os providers configurados falharam e não existe fallback de imagem autenticado.'
+          : 'Configure Qwen, Gemini/Vercel AI Gateway, um endpoint de imagem compatível ou POLLINATIONS_API_KEY.',
+        exhausted:configuredImageProviderAvailable,
+        imageIntent:{specific:imageIntent.specific,specificityScore:imageIntent.specificityScore,entities:providerIntentEntities.map(x=>x.label)}
+      },{status:configuredImageProviderAvailable?502:503,headers:{'Cache-Control':'no-store'}});
+    }
+
+    if(avoidProviders.has('pollinations-proxy')||avoidProviders.has('public-image-proxy')){
       return Response.json({
         error:INVALID_IMAGE_PROVIDER_MESSAGE,
         detail:'Os providers anteriores retornaram saída inválida e o fallback público já foi descartado nesta tentativa.',
@@ -720,7 +740,7 @@ export async function POST(req:Request){
     );
     return Response.json({
       url:localRenderUrl(transportPrompt,width,height,seed,fallbackModel,effectivePromptMode!=='literal',automaticReferenceUrls),
-      provider:'pollinations-proxy',
+      provider:publicFallbackIsPollinations?'pollinations-proxy':'public-image-proxy',
       model:fallbackModel,
       width,
       height,
@@ -753,7 +773,7 @@ export async function POST(req:Request){
         ? 'Fallback de personagem usa modelo image-to-image com transporte de referência configurado; a revisão semântica valida o resultado antes de persistir.'
         : wantsReferenceFallback
           ? 'O PredictLM encontrou referências e tentou um modelo image-to-image, mas não há transporte de referência autenticado/configurado para afirmar que o provider consumiu esses pixels; a revisão semântica decide se o resultado é aceitável.'
-          : 'Fallback público ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
+          : 'Fallback de imagem autenticado/configurado ativo e nenhuma referência visual automática utilizável foi recuperada nesta tentativa.'
     });
   }catch(error:any){
     return Response.json({
