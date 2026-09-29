@@ -146,7 +146,8 @@ export async function POST(req:Request){
         ...(download?{'Content-Disposition':'attachment; filename="'+filename+'.html"'}:{})
       }
     });
-  }catch(error:any){
-    return Response.json({error:String(error?.message||'Falha ao gerar dossiê.')},{status:500});
+  }catch(error){
+    console.error('report-dossier failed',error);
+    return Response.json({error:'Falha ao gerar dossiê.'},{status:500});
   }
 }
