@@ -33,6 +33,29 @@
 
 ---
 
+## Cognitive architecture map
+
+<p align="center">
+  <img src="docs/architecture/predictlm-brain-map.svg" alt="PredictLM cognitive architecture brain map" width="100%" />
+</p>
+
+The repository can be mapped with **Graphify Brain** before cross-cutting changes. Graphify's structural graph is used to locate dependencies and paths, then the real source and deterministic checks remain authoritative.
+
+```text
+graphify query / path / explain
+        ↓
+scoped source inspection
+        ↓
+implementation
+        ↓
+graphify update
+        ↓
+typecheck · tests · build
+```
+
+Skill: [`skills/graphify-brain/SKILL.md`](skills/graphify-brain/SKILL.md)  
+Map: [`docs/architecture/predictlm-brain-map.svg`](docs/architecture/predictlm-brain-map.svg)
+
 ## Product
 
 PredictLM is built around one idea: **the user should not have to learn the application's internal architecture to get serious work done**.
@@ -212,6 +235,21 @@ These are **control signals**, not simulated biological minds and not evidence o
 ---
 
 ## Provider Mesh
+
+### AshnaAI
+
+PredictLM supports **AshnaAI** as a server-side OpenAI-compatible chat provider. A deployment can use a foundation model or an Ashna custom agent without changing the public PredictLM identity.
+
+```dotenv
+ASHNA_API_KEY=
+ASHNA_BASE_URL=https://api.ashna.ai/v1/api
+ASHNA_MODEL=glm-5.3-flash
+ASHNA_AGENT_ID=
+```
+
+`ASHNA_AGENT_ID`, when present, takes precedence over `ASHNA_MODEL`. Credentials remain server-side. Ashna participates in the same health/cooldown and bounded provider-routing policy as the rest of the mesh.
+
+
 
 PredictLM can route work across configured remote providers while keeping provider identity out of the public product.
 
@@ -476,6 +514,8 @@ curated source registry
 ```
 
 Brag is registered as an MIT source for launch-video direction. Its bundled binary media assets are intentionally excluded from ingestion.
+
+Graphify is registered as an Apache-2.0 code-intelligence source. Its graph is used for structural navigation and impact analysis; `EXTRACTED` and `INFERRED` relationships remain distinguishable, and graph output never overrides live source/tests.
 
 Canonical behavior is still owned by:
 
