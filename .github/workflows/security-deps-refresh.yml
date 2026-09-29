@@ -1,0 +1,43 @@
+name: Security Dependency Refresh
+
+on:
+  push:
+    branches: [security/harden-api-access-20260929]
+    paths:
+      - ".github/workflows/security-deps-refresh.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: security/harden-api-access-20260929
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Upgrade security-sensitive runtime dependencies
+        run: |
+          npm install --save-exact next@15.5.26 react@19.2.8 react-dom@19.2.8
+          npm audit fix --omit=dev
+      - name: Verify production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Commit lockfile refresh
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "No dependency changes"
+            exit 0
+          fi
+          git config user.name "predictlm-security-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "fix(security): refresh vulnerable runtime dependencies"
+          git push origin HEAD:security/harden-api-access-20260929
