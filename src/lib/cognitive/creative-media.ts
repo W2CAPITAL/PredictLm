@@ -18,23 +18,28 @@ export interface CreativeMediaControl{
 
 export function buildCreativeMediaControl(state:CognitiveState,prompt:string):CreativeMediaControl{
   const novelty=clamp(
-    (state.human?.neuro?.curiosity??.5)*.28+
-    (state.fly?.exploration??.5)*.2+
-    (state.macaque?.regionalIntegration??.5)*.2+
-    (state.organism?.drives?.curiosity??.5)*.32
+    (state.human?.neuro?.curiosity??.5)*.24+
+    (state.fly?.exploration??.5)*.19+
+    (state.mouse?.exploration??.5)*.17+
+    (state.macaque?.regionalIntegration??.5)*.18+
+    (state.organism?.drives?.curiosity??.5)*.22
   );
   const fidelity=clamp(
-    (state.human?.executiveControl??.5)*.32+
-    (state.human?.metacognition??.5)*.25+
-    (1-(state.workspace?.uncertainty??.5))*.28+
-    (state.workspace?.inhibition??.5)*.15
+    (state.human?.executiveControl??.5)*.27+
+    (state.human?.metacognition??.5)*.22+
+    (state.mouse?.inhibition??.5)*.12+
+    (1-(state.mouse?.uncertainty??.5))*.10+
+    (1-(state.workspace?.uncertainty??.5))*.18+
+    (state.workspace?.inhibition??.5)*.11
   );
   const composition=clamp(
-    (state.human?.recurrentIntegration??.5)*.24+
-    (state.macaque?.visualHierarchy??.5)*.22+
-    (state.macaque?.pfcProjectionIntegration??.5)*.18+
-    (state.macaque?.claustrumIntegration??.5)*.12+
-    (state.organism?.drives?.novelty??.5)*.24
+    (state.human?.recurrentIntegration??.5)*.20+
+    (state.mouse?.visualIntegration??.5)*.18+
+    (state.mouse?.functionalCoupling??.5)*.10+
+    (state.macaque?.visualHierarchy??.5)*.20+
+    (state.macaque?.pfcProjectionIntegration??.5)*.14+
+    (state.macaque?.claustrumIntegration??.5)*.08+
+    (state.organism?.drives?.novelty??.5)*.10
   );
   const sensitive=isIdentitySensitive(prompt);
   const publicBrief=[
@@ -43,7 +48,7 @@ export function buildCreativeMediaControl(state:CognitiveState,prompt:string):Cr
     sensitive
       ? 'Identity-sensitive request: creativity may change only camera, staging, lighting, depth and effects. It must NOT change character identity, canonical anatomy, costume, colors, subject count, requested form or action.'
       : 'Use controlled novelty to improve staging, camera, lighting, depth, visual hierarchy and one meaningful alternative composition without changing the user intent.',
-    'Use the human controller as an execution/fidelity critic, macaque visual hierarchy as a composition prior, and organism novelty only after mandatory identity constraints are satisfied.',
+    'Use all four cores: fly for salience/novelty, mouse for visual integration and discrimination, macaque for visual hierarchy/composition, and human for execution/fidelity critique. Novelty only applies after mandatory identity constraints are satisfied.',
     'Prefer a readable focal subject, coherent silhouettes and visible requested action. Do not add unrelated characters, technology motifs or decorative concepts.'
   ].join('\n');
   return {novelty,fidelity,composition,publicBrief};

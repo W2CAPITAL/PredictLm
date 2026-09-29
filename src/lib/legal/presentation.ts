@@ -1,6 +1,7 @@
 import type { LegalProcessBundle, LegalTimelineItem } from './types';
 import { legalAttackFramework, tjspFilingChecklist } from './filing';
 import { isAggressiveLegalRequest } from './mode';
+import {cognitiveSurfaceFromPrompt,type CognitiveSurfaceControl} from '../cognitive/cognitive-surface';
 
 function dateBR(value?:string){
   if(!value)return '';
@@ -81,7 +82,7 @@ function eventMeaning(item:LegalTimelineItem){
   return compact(item.body||item.title,320);
 }
 
-function keyTimeline(bundle:LegalProcessBundle){
+function keyTimeline(bundle:LegalProcessBundle,control:CognitiveSurfaceControl){
   const scored=bundle.timeline.map(item=>{
     const t=((item.title||'')+' '+(item.body||'')).toLowerCase();
     let score=0;
@@ -91,6 +92,9 @@ function keyTimeline(bundle:LegalProcessBundle){
     if(/custas?\s+satisfeitas?/.test(t))score+=8;
     if(/custas?|taxa judici[aá]ria/.test(t))score+=5;
     if(item.type==='publication')score+=2;
+    if(control.verification>.58&&item.type==='publication')score+=1;
+    if(control.attention>.62&&/senten[cç]a|tr[aâ]nsito|decis[aã]o|liminar|ac[oó]rd[aã]o/.test(t))score+=2;
+    if(control.integration>.62&&/intima[cç][aã]o|peti[cç][aã]o|juntada|conclus[aã]o/.test(t))score+=1;
     return {item,score};
   });
 
@@ -99,7 +103,7 @@ function keyTimeline(bundle:LegalProcessBundle){
     const meaning=eventMeaning(row.item);
     if(selected.some(x=>eventMeaning(x)===meaning))continue;
     selected.push(row.item);
-    if(selected.length>=6)break;
+    if(selected.length>=(control.integration>.64?7:6))break;
   }
   return selected.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
 }
@@ -133,6 +137,7 @@ function sourceHealth(bundle:LegalProcessBundle){
 }
 
 export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{count:number;titles?:string[]}){
+  const cognitive=cognitiveSurfaceFromPrompt(prompt+' '+bundle.summary.sourceSummary,'legal').control;
   const d=bundle.datajud;
   const interpretation=bundle.interpretation;
   const parts:string[]=[];
@@ -164,7 +169,7 @@ export function legalChatAnswer(bundle:LegalProcessBundle,prompt='',recall?:{cou
       parts.push('### O que eu faria agora\n'+interpretation.nextActions.map((x,i)=>(i+1)+'. '+x).join('\n'));
     }
 
-    const essential=keyTimeline(bundle);
+    const essential=keyTimeline(bundle,cognitive);
     if(essential.length){
       parts.push('### Linha do tempo essencial\n'+essential.map(item=>
         '- **'+dateBR(item.date)+' — '+item.title+'** · '+eventMeaning(item)+' · '+item.source
