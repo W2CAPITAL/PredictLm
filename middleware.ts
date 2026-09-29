@@ -112,7 +112,7 @@ export async function middleware(req:NextRequest){
         code:'ACCESS_CONTROL_NOT_CONFIGURED'
       },{status:503,headers:{'Cache-Control':'no-store'}});
     }
-    // Keep the portfolio/Minecraft UI viewable even when the deployment owner has
+    // Keep the public Chat/Jurídico/Imagine shell viewable even when the deployment owner has
     // not configured a credential yet. Expensive/sensitive APIs remain disabled.
     return NextResponse.next();
   }
