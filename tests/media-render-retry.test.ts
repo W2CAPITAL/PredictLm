@@ -105,14 +105,16 @@ test('media render falls back from a configured public base to default public im
   const oldAttempts=process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS;
   const oldKey=process.env.POLLINATIONS_API_KEY;
   const calls:string[]=[];
+  const authByUrl=new Map<string,string>();
   const png=new Uint8Array(1500);
   png.set([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a],0);
   process.env.PREDICT_PUBLIC_IMAGE_URL='https://broken.example/image/';
   process.env.PREDICTLM_IMAGE_RENDER_ATTEMPTS='4';
   process.env.POLLINATIONS_API_KEY='pollinations-test';
-  globalThis.fetch=async(input:any)=>{
+  globalThis.fetch=async(input:any,init?:RequestInit)=>{
     const url=String(input);
     calls.push(url);
+    authByUrl.set(url,String((init?.headers as any)?.Authorization||''));
     if(url.startsWith('https://broken.example/')){
       return new Response(JSON.stringify({error:'down'}),{status:503,headers:{'Content-Type':'application/json'}});
     }
@@ -121,8 +123,12 @@ test('media render falls back from a configured public base to default public im
   try{
     const response=await GET(req('Naruto vs Sasuke'));
     assert.equal(response.status,200);
-    assert.ok(calls.some(url=>url.startsWith('https://broken.example/')));
-    assert.ok(calls.some(url=>url.startsWith('https://gen.pollinations.ai/image/')));
+    const custom=calls.find(url=>url.startsWith('https://broken.example/'))||'';
+    const pollinations=calls.find(url=>url.startsWith('https://gen.pollinations.ai/image/'))||'';
+    assert.ok(custom);
+    assert.ok(pollinations);
+    assert.equal(authByUrl.get(custom),'','Pollinations key must not leak to a custom image proxy');
+    assert.equal(authByUrl.get(pollinations),'Bearer pollinations-test');
   }finally{
     globalThis.fetch=original;
     if(oldBase===undefined)delete process.env.PREDICT_PUBLIC_IMAGE_URL; else process.env.PREDICT_PUBLIC_IMAGE_URL=oldBase;
