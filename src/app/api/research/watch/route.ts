@@ -30,10 +30,11 @@ export async function GET(req:Request){
     const path=id?'/watch/'+encodeURIComponent(id):'/watch';
     const r=await fetch(cfg.base+path,{headers:headers(cfg.key),cache:'no-store',signal:AbortSignal.timeout(15000)});
     const data=await r.json().catch(()=>({}));
-    if(!r.ok)return NextResponse.json({configured:true,error:'ChangeDetection HTTP '+r.status,detail:data},{status:502});
+    if(!r.ok)return NextResponse.json({configured:true,error:'ChangeDetection HTTP '+r.status},{status:502});
     return NextResponse.json({configured:true,data},{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return NextResponse.json({configured:true,error:String(error?.message||'Falha no ChangeDetection.')},{status:500});
+  }catch(error){
+    console.error('research/watch GET failed',error);
+    return NextResponse.json({configured:true,error:'Falha no ChangeDetection.'},{status:500});
   }
 }
 
@@ -61,10 +62,11 @@ export async function POST(req:Request){
       signal:AbortSignal.timeout(15000)
     });
     const data=await r.json().catch(()=>({}));
-    if(!r.ok)return NextResponse.json({error:'ChangeDetection HTTP '+r.status,detail:data},{status:502});
+    if(!r.ok)return NextResponse.json({error:'ChangeDetection HTTP '+r.status},{status:502});
     return NextResponse.json({created:true,data},{status:201,headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return NextResponse.json({error:String(error?.message||'Falha ao criar monitor.')},{status:500});
+  }catch(error){
+    console.error('research/watch POST failed',error);
+    return NextResponse.json({error:'Falha ao criar monitor.'},{status:500});
   }
 }
 
@@ -83,10 +85,11 @@ export async function DELETE(req:Request){
     });
     if(!r.ok&&r.status!==204){
       const data=await r.json().catch(()=>({}));
-      return NextResponse.json({error:'ChangeDetection HTTP '+r.status,detail:data},{status:502});
+      return NextResponse.json({error:'ChangeDetection HTTP '+r.status},{status:502});
     }
     return NextResponse.json({deleted:true,id});
-  }catch(error:any){
-    return NextResponse.json({error:String(error?.message||'Falha ao remover monitor.')},{status:500});
+  }catch(error){
+    console.error('research/watch DELETE failed',error);
+    return NextResponse.json({error:'Falha ao remover monitor.'},{status:500});
   }
 }
