@@ -20,7 +20,8 @@ export async function POST(req:Request){
       size:Number(body?.size)||100
     });
     return Response.json(result,{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||'Falha na busca DJEN.')},{status:400,headers:{'Cache-Control':'no-store'}});
+  }catch(error){
+    console.error('legal/djen-search failed',error);
+    return Response.json({error:'Falha na busca DJEN.'},{status:400,headers:{'Cache-Control':'no-store'}});
   }
 }

@@ -328,7 +328,8 @@ export async function POST(req:Request){
         }
       }
     },{headers:{'Cache-Control':'no-store'}});
-  }catch(err:any){
-    return Response.json({error:err?.message||'Agent route failed'},{status:500,headers:{'Cache-Control':'no-store'}});
+  }catch(err){
+    console.error('agent route failed',err);
+    return Response.json({error:'Agent route failed'},{status:500,headers:{'Cache-Control':'no-store'}});
   }
 }

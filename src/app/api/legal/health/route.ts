@@ -14,7 +14,7 @@ export async function GET(){
       fetchedAt:new Date().toISOString(),
       datajud:{ok:false,detail:'Falha ao verificar DataJud.'},
       djen:{ok:false,detail:'Falha ao verificar DJEN.'},
-      error:String(error?.message||error)
+      error:'Falha ao verificar serviços jurídicos.'
     },{status:503,headers:{'Cache-Control':'no-store, max-age=0'}});
   }
 }

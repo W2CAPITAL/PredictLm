@@ -80,8 +80,10 @@ export async function POST(req:Request){
         : confidence>=.72?'not-animal':'uncertain'
     },{headers:{'Cache-Control':'no-store'}});
   }catch(error:any){
-    const message=String(error?.message||'Não foi possível analisar semanticamente a imagem.');
-    const status=/JPEG|PNG|WebP|8 MB|vazia/.test(message)?400:503;
-    return Response.json({error:message},{status,headers:{'Cache-Control':'no-store'}});
+    const message=String(error?.message||'');
+    const safeValidation=/JPEG|PNG|WebP|8 MB|vazia/.test(message)?message:'';
+    if(!safeValidation)console.error('vision/identify failed',error);
+    const status=safeValidation?400:503;
+    return Response.json({error:safeValidation||'Não foi possível analisar semanticamente a imagem.'},{status,headers:{'Cache-Control':'no-store'}});
   }
 }

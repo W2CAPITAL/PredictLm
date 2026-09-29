@@ -621,7 +621,8 @@ export async function POST(req:Request){
       coverage:coverage([...web,...news]),
       ...researchMeta(query,web,news)
     });
-  }catch(err:any){
-    return Response.json({error:err?.message||'Research failed'},{status:500});
+  }catch(err){
+    console.error('research route failed',err);
+    return Response.json({error:'Research failed'},{status:500});
   }
 }

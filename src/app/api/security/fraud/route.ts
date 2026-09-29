@@ -20,7 +20,8 @@ export async function POST(req:Request){
         offensiveAutomation:false
       }
     },{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||error)},{status:400,headers:{'Cache-Control':'no-store'}});
+  }catch(error){
+    console.error('security/fraud failed',error);
+    return Response.json({error:'Falha ao analisar sinais de fraude.'},{status:400,headers:{'Cache-Control':'no-store'}});
   }
 }

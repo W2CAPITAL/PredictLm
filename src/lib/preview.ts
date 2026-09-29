@@ -45,9 +45,9 @@ export function buildPreview(files: WorkspaceFile[]) {
 
   const safeRuntime=runtime.replace(/<\/script/gi,'<\\/script');
   return '<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>'+
-    '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>'+
-    '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>'+
-    '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>'+
+    '<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>'+
+    '<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>'+
+    '<script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>'+
     '<style>'+css+'#predict-error{display:none;position:fixed;inset:16px;z-index:99999;background:#111318;color:#e7e9ee;border:1px solid #592d38;border-radius:14px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.55);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}#predict-error strong{display:block;color:#ff8799;margin-bottom:9px;font-family:Inter,system-ui}#predict-error pre{white-space:pre-wrap;overflow:auto;max-height:70vh;color:#cbd1dc;font-size:12px;line-height:1.55}</style>'+
     '</head><body><div id="root"></div><div id="predict-error"><strong></strong><pre></pre></div><script>'+safeRuntime+'</script><script>'+inspectScript+'</script></body></html>';
 }

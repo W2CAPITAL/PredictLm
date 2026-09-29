@@ -1,6 +1,6 @@
 'use client';
 
-import React,{useEffect,useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import JSZip from 'jszip';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -29,9 +29,11 @@ export function GrokBuildPanel(){
   const [busy,setBusy]=useState(false);
   const [buildMenu,setBuildMenu]=useState(false);
   const [previewError,setPreviewError]=useState('');
+  const previewFrame=useRef<HTMLIFrameElement>(null);
 
   useEffect(()=>{
     const onMessage=(event:MessageEvent)=>{
+      if(event.source!==previewFrame.current?.contentWindow)return;
       if(event.data?.type==='predictlm:preview-error')setPreviewError(String(event.data?.payload?.message||'Erro de preview'));
     };
     window.addEventListener('message',onMessage);
@@ -260,7 +262,7 @@ export function GrokBuildPanel(){
       <main className="gbuild-workspace">
         <div className="gbuild-files">{files.map(f=><button key={f.path} className={s.activeFile===f.path?'active':''} onClick={()=>s.setActiveFile(f.path)}><FileCode2 size={12}/>{f.path}</button>)}</div>
         {view==='preview'
-          ?<><iframe title="PredictLM Preview" sandbox="allow-scripts allow-forms allow-modals" srcDoc={preview}/>{previewError&&<div style={{position:'absolute',left:16,right:16,bottom:16,zIndex:20,padding:'10px 12px',borderRadius:10,background:'#2a1117',border:'1px solid #6b2d3b',color:'#ffd6dd',fontSize:12}}><b>Preview com erro:</b> {previewError}</div>}</>
+          ?<><iframe ref={previewFrame} title="PredictLM Preview" sandbox="allow-scripts allow-forms allow-modals" srcDoc={preview}/>{previewError&&<div style={{position:'absolute',left:16,right:16,bottom:16,zIndex:20,padding:'10px 12px',borderRadius:10,background:'#2a1117',border:'1px solid #6b2d3b',color:'#ffd6dd',fontSize:12}}><b>Preview com erro:</b> {previewError}</div>}</>
           :<div className="gbuild-code">{active?<CodeMirror value={active.content} theme={oneDark} height="100%" extensions={[active.language==='css'?css():javascript({jsx:true,typescript:true})]} onChange={v=>s.updateFile(active.path,v)}/>:<div className="gbuild-empty">Selecione um arquivo.</div>}</div>}
       </main>
     </div>

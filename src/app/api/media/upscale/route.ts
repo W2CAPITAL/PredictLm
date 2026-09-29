@@ -124,7 +124,8 @@ export async function POST(req:Request){
     const url=String(data?.url||data?.image||first?.url||(first?.b64_json?'data:image/png;base64,'+first.b64_json:'')).trim();
     if(!url)throw new Error('Upscaler não retornou imagem.');
     return Response.json({url,upscaled:true,provider:'configured-upscaler',model,scale,faceEnhance});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||'Falha no upscale.')},{status:502});
+  }catch(error){
+    console.error('media/upscale failed',error);
+    return Response.json({error:'Falha no upscale.'},{status:502});
   }
 }

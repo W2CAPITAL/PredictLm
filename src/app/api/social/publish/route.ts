@@ -8,8 +8,17 @@ export async function POST(req:Request){
   const item=body?.item as InfluencerContentItem|undefined;
   const mediaUrl=String(body?.mediaUrl||'').trim();
   const caption=String(body?.caption||'').trim();
+  const confirmed=body?.confirmPublish===true;
   if(!item||!mediaUrl){
     return Response.json({error:'Informe item e mediaUrl.'},{status:400});
+  }
+  if(!confirmed){
+    return Response.json({
+      published:false,
+      status:'approval-required',
+      error:'Publicação externa exige confirmação humana explícita.',
+      required:{confirmPublish:true}
+    },{status:409});
   }
 
   const manifest=buildPublisherManifest(item,mediaUrl,caption);
@@ -40,7 +49,8 @@ export async function POST(req:Request){
       return Response.json({published:false,status:'publisher-error',manifest,upstream:data},{status:502});
     }
     return Response.json({published:true,status:'confirmed',manifest,upstream:data});
-  }catch(error:any){
-    return Response.json({published:false,status:'publisher-error',manifest,error:String(error?.message||error||'Falha no publisher.')},{status:502});
+  }catch(error){
+    console.error('social/publish failed',error);
+    return Response.json({published:false,status:'publisher-error',manifest,error:'Falha no publisher social.'},{status:502});
   }
 }

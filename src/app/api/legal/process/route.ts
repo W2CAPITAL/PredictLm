@@ -11,8 +11,9 @@ export async function GET(req:Request){
   try{
     const result=await queryLegalProcess(number);
     return Response.json(result,{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return Response.json({error:String(error?.message||error)},{status:400,headers:{'Cache-Control':'no-store'}});
+  }catch(error){
+    console.error('legal/process failed',error);
+    return Response.json({error:'Falha ao consultar processo.'},{status:400,headers:{'Cache-Control':'no-store'}});
   }
 }
 

@@ -40,7 +40,8 @@ export async function POST(req:Request){
     const data=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(String(data?.message||'GitHub '+r.status));
     return Response.json({queued:true,issue:Number(data?.number)||null,url:String(data?.html_url||'')});
-  }catch(error:any){
-    return Response.json({queued:false,error:String(error?.message||'Falha ao criar proposta de aprendizado.')},{status:502});
+  }catch(error){
+    console.error('learning/propose failed',error);
+    return Response.json({queued:false,error:'Falha ao criar proposta de aprendizado.'},{status:502});
   }
 }

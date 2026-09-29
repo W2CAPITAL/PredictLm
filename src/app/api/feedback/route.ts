@@ -51,7 +51,7 @@ export async function POST(req:Request){
   try{
     const r=await fetch(url+'/rest/v1/predict_feedback_events',{
       method:'POST',
-      headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json','x-predict-workspace':w.secretHash,Prefer:'return=minimal'},
+      headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json','x-predict-workspace':w.secret,Prefer:'return=minimal'},
       body:JSON.stringify(row)
     });
     if(!r.ok)throw new Error('Supabase '+r.status);

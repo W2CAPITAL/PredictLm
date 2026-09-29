@@ -112,7 +112,8 @@ export async function POST(req:Request){
       mode,
       ...data
     },{headers:{'Cache-Control':'no-store'}});
-  }catch(error:any){
-    return NextResponse.json({error:String(error?.message||'Falha no pipeline de voz.')},{status:500});
+  }catch(error){
+    console.error('voice pipeline failed',error);
+    return NextResponse.json({error:'Falha no pipeline de voz.'},{status:500});
   }
 }
