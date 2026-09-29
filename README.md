@@ -42,7 +42,7 @@ The design goal is not “more modes”. It is **fewer product surfaces, stronge
 | **Jurídico** | Chat shortcut for CNJ / DataJud / DJEN workflows | Uses Chat |
 | **Imagine** | Lightweight direct image generation | Loaded on demand |
 
-Minecraft, neuroscience experiments, simulation engines, large connectome tooling and legacy specialist UIs remain **internal/lab modules**. They are intentionally kept out of the primary navigation and must not inflate the initial client bundle.
+Minecraft, neuroscience experiments, simulation engines, influencer tooling, large connectome tooling and legacy specialist UIs remain **internal/lab infrastructure**. They are intentionally kept out of the **primary navigation** and must not inflate the initial client bundle.
 
 ---
 
