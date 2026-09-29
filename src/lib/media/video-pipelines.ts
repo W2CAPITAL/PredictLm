@@ -136,6 +136,7 @@ export function buildGenerativeVideoPrompt(input:{
     : '';
   const pieces=[
     subject,
+    brag,
     'Generate one coherent real moving video clip, not a slideshow, not a still image with pan/zoom, and not a sequence of unrelated frames.',
     'Duration target: '+duration+' seconds. Aspect ratio: '+input.aspect+'.',
     'Visual style: '+style+'.',
@@ -144,12 +145,11 @@ export function buildGenerativeVideoPrompt(input:{
     'Specify camera position and motion only when it improves the shot; avoid impossible camera teleportation and abrupt scene cuts unless explicitly requested.',
     'For dialogue/audio requests, include dialogue, SFX and ambience as explicit audio cues. Otherwise prefer natural synchronized ambience.',
     continuity,
-    brag,
     unitySceneGuidance,
     brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
     research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
   ].filter(Boolean);
-  return compactText(pieces.join('\n'),980);
+  return compactText(pieces.join('\n'),brag?2200:980);
 }
 
 export function mediaResearchQuery(prompt:string,kind:'image'|'video',style:string){
