@@ -1,6 +1,6 @@
 'use client';
 
-import React,{useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import {Download,Image as ImageIcon,Loader2,RefreshCw,Sparkles} from 'lucide-react';
 
 const RATIOS=[
@@ -22,6 +22,16 @@ export function SimpleImaginePanel(){
   const [error,setError]=useState('');
   const [result,setResult]=useState<{url:string;provider:string;model:string;seed:number;prompt:string}|null>(null);
   const [seed,setSeed]=useState(seedNow());
+
+  useEffect(()=>{
+    try{
+      const prefill=sessionStorage.getItem('predictlm:simple-imagine-prefill');
+      if(prefill){
+        setPrompt(prefill.slice(0,6000));
+        sessionStorage.removeItem('predictlm:simple-imagine-prefill');
+      }
+    }catch{}
+  },[]);
 
   const effectivePrompt=useMemo(()=>{
     const text=prompt.trim();
