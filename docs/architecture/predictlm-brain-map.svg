@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+<title id="title">PredictLM Brain Map</title>
+<desc id="desc">Mapa cerebral da arquitetura PredictLM, com entrada, roteamento, provedores, evidência, memória, ações e verificação.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#101b2d"/></linearGradient>
+  <linearGradient id="left" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+  <linearGradient id="right" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient>
+  <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity=".28"/></filter>
+  <style>
+    .t{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#eaf2ff}.muted{fill:#9db0c9}.node{fill:#0d1b2a;stroke:#2a4664;stroke-width:1.5}.core{fill:#0b2235;stroke:#38bdf8;stroke-width:2}.edge{fill:none;stroke:#587492;stroke-width:2;stroke-linecap:round;opacity:.78}.edge2{fill:none;stroke:#a78bfa;stroke-width:2;stroke-linecap:round;opacity:.8}.label{font-size:15px;font-weight:750}.small{font-size:12px}.title{font-size:31px;font-weight:850;letter-spacing:-.03em}.sub{font-size:14px}.pill{fill:#13283d;stroke:#284964}
+  </style>
+</defs>
+<rect width="1200" height="720" rx="28" fill="url(#bg)"/>
+<text x="56" y="62" class="t title">PredictLM · Cognitive Architecture Map</text>
+<text x="56" y="88" class="t muted sub">Graphify-oriented brain map · code relationships guide navigation; tests verify behavior</text>
+
+<!-- brain outline -->
+<path d="M594 128 C505 92 397 118 342 191 C275 198 226 254 229 324 C187 362 191 438 244 474 C249 554 321 606 395 592 C444 643 538 645 594 603 Z" fill="url(#left)" opacity=".14" stroke="#38bdf8" stroke-width="3"/>
+<path d="M606 128 C695 92 803 118 858 191 C925 198 974 254 971 324 C1013 362 1009 438 956 474 C951 554 879 606 805 592 C756 643 662 645 606 603 Z" fill="url(#right)" opacity=".14" stroke="#a78bfa" stroke-width="3"/>
+<path d="M600 132 L600 603" stroke="#55718e" stroke-width="2" stroke-dasharray="6 8" opacity=".65"/>
+
+<!-- edges -->
+<path class="edge" d="M600 177 C600 205 600 215 600 240"/>
+<path class="edge" d="M600 290 C530 312 472 334 420 362"/>
+<path class="edge2" d="M600 290 C670 312 728 334 780 362"/>
+<path class="edge" d="M420 410 C470 442 510 458 555 480"/>
+<path class="edge2" d="M780 410 C730 442 690 458 645 480"/>
+<path class="edge" d="M600 515 C600 545 600 558 600 575"/>
+<path class="edge" d="M420 386 C365 395 330 421 318 458"/>
+<path class="edge2" d="M780 386 C835 395 870 421 882 458"/>
+
+<!-- nodes -->
+<rect x="470" y="140" width="260" height="74" rx="18" class="core" filter="url(#shadow)"/>
+<text x="600" y="169" text-anchor="middle" class="t label">ENTRADA · ChatShell</text>
+<text x="600" y="190" text-anchor="middle" class="t muted small">Chat · Legal · Build · Work · Tutor · Research · Imagine · Report</text>
+
+<rect x="448" y="238" width="304" height="62" rx="16" class="node"/>
+<text x="600" y="264" text-anchor="middle" class="t label">EXECUTIVO · Prompt OS + JEV + Agent Fabric</text>
+<text x="600" y="284" text-anchor="middle" class="t muted small">intenção · escopo · orçamento · ferramentas</text>
+
+<rect x="286" y="342" width="268" height="82" rx="18" class="node"/>
+<text x="420" y="369" text-anchor="middle" class="t label">RACIOCÍNIO / PROVIDERS</text>
+<text x="420" y="391" text-anchor="middle" class="t small">Provider Mesh · AshnaAI</text>
+<text x="420" y="410" text-anchor="middle" class="t muted small">Gateway · Gemini · Claude · GPT · local</text>
+
+<rect x="646" y="342" width="268" height="82" rx="18" class="node"/>
+<text x="780" y="369" text-anchor="middle" class="t label">EVIDÊNCIA / JURÍDICO</text>
+<text x="780" y="391" text-anchor="middle" class="t small">DataJud · DJEN · Research</text>
+<text x="780" y="410" text-anchor="middle" class="t muted small">GitHub Knowledge · public sources</text>
+
+<rect x="468" y="468" width="264" height="74" rx="18" class="core"/>
+<text x="600" y="495" text-anchor="middle" class="t label">MEMÓRIA / GRAPH BRAIN</text>
+<text x="600" y="517" text-anchor="middle" class="t small">Graphify · Digital Brain · Adaptive Memory</text>
+
+<rect x="242" y="454" width="188" height="66" rx="16" class="node"/>
+<text x="336" y="480" text-anchor="middle" class="t label">4 CORES</text>
+<text x="336" y="501" text-anchor="middle" class="t muted small">Fly · Mouse · Macaque · Human</text>
+
+<rect x="770" y="454" width="188" height="66" rx="16" class="node"/>
+<text x="864" y="480" text-anchor="middle" class="t label">ACTION FABRIC</text>
+<text x="864" y="501" text-anchor="middle" class="t muted small">tools · artifacts · media · code</text>
+
+<rect x="412" y="570" width="376" height="72" rx="18" class="node"/>
+<text x="600" y="598" text-anchor="middle" class="t label">VERIFICATION CORTEX</text>
+<text x="600" y="620" text-anchor="middle" class="t muted small">Council · reviewers · tests · typecheck · build · artifact gates</text>
+
+<rect x="52" y="652" width="1096" height="38" rx="12" class="pill"/>
+<text x="600" y="676" text-anchor="middle" class="t small">Graphify role: query relationships → scope the change → inspect source → implement → graphify update → verify</text>
+</svg>
