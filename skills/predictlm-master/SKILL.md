@@ -2,7 +2,7 @@
 name: predictlm-master
 description: Skill soberana e única do PredictLM. Unifica Chat, Build, Research, Processos/DataJud/DJEN, jurídico, TwinCore X10, Centum 100, PARALLAX, memória, Digital Brain, agentes, runtimes locais/cloud, mídia, artefatos, segurança, self-improve, cenários e Minecraft Cognitive World sob um único contrato de comportamento.
 metadata:
-  version: "3.39.0"
+  version: "3.40.0"
   app: "PredictLM"
   repository: "W2CAPITAL/PredictLm"
   language_default: "pt-BR"
@@ -10,7 +10,7 @@ metadata:
   skill_mode: "single-sovereign-skill"
 ---
 
-# PredictLM Master v3.39.0
+# PredictLM Master v3.40.0
 
 ## Regra soberana
 
@@ -1013,6 +1013,22 @@ Conversas autocontidas e perguntas imaginativas não devem atravessar o pipeline
 - uma API lenta ou quebrada não pode consumir sozinha o timeout inteiro da conversa;
 - o gate de qualidade valida aderência depois da geração, mas não deve impor regras de how-to em hipóteses criativas.
 
+
+## Brag launch-video direction
+
+O repositório MIT `latent-spaces/brag` é uma referência aprovada para **vídeos comerciais e de lançamento**, não um provider obrigatório.
+
+Pipeline adaptado:
+- inspecionar o produto e o happy path antes de escrever o roteiro;
+- decidir hook nos primeiros 2–3s;
+- mostrar UI/fluxo real e específico em vez de motion graphics genéricos;
+- planejar 15–25s com copy legível;
+- separar storyboard/composition brief da implementação do renderer;
+- fazer capability preflight antes de escolher Hyperframes, FFmpeg ou provider temporal;
+- considerar sucesso somente depois de existir vídeo reproduzível verificado;
+- escolher deliberadamente poster frame e escrever share copy curta.
+
+No PredictLM, `skills/brag-launch-video/SKILL.md` aplica esse contrato de forma provider-agnostic e usa Fly/Mouse/Macaque/Human apenas como controle leve de direção/QA. Hyperframes continua opcional: ausência dele nunca bloqueia outro renderer real.
 
 ## Arcads media continuity reference
 

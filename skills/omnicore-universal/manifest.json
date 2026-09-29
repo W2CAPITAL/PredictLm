@@ -319,6 +319,10 @@
       "path": "skills/game-studio-fabric/SKILL.md"
     },
     {
+      "id": "brag-launch-video",
+      "path": "skills/brag-launch-video/SKILL.md"
+    },
+    {
       "id": "grok-imagine-parity",
       "path": "skills/grok-imagine-parity/SKILL.md"
     },
@@ -1005,6 +1009,14 @@
       "runtime": "built-in"
     },
     {
+      "id": "brag-launch-video",
+      "name": "Brag Launch Video",
+      "category": "Media",
+      "description": "Direção hook-first para vídeos comerciais e de lançamento: produto real → user flow → storyboard → composition brief → preflight → render → verify → poster/share copy.",
+      "source": "skills/brag-launch-video/SKILL.md + latent-spaces/brag (MIT)",
+      "runtime": "built-in"
+    },
+    {
       "id": "temporal-video",
       "name": "Real Temporal Video",
       "category": "Media",
@@ -1054,7 +1066,7 @@
     "agentCatalog": 23,
     "orchestrationAgents": 11,
     "speciesCores": 4,
-    "skillModules": 22,
-    "pluginsAndCapabilities": 79
+    "skillModules": 23,
+    "pluginsAndCapabilities": 80
   }
 }

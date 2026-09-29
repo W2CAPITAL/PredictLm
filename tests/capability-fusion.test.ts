@@ -7,17 +7,17 @@ import {planAgenticRun,selectSkillContracts} from '../src/lib/agent-runtime/agen
 
 test('all user-requested capability sources remain registered',()=>{
   const health=fusionHealth();
-  assert.equal(health.requestedCoverage.expected,74);
-  assert.equal(health.requestedCoverage.covered,74);
+  assert.equal(health.requestedCoverage.expected,75);
+  assert.equal(health.requestedCoverage.covered,75);
   assert.deepEqual(health.requestedCoverage.missing,[]);
   assert.equal(health.requestedCoverage.complete,true);
-  assert.equal(REQUESTED_FUSION_REPOS.length,74);
+  assert.equal(REQUESTED_FUSION_REPOS.length,75);
 });
 
 test('implementation audit maps every requested source to real app surfaces',()=>{
   const audit=fusionImplementationAudit();
-  assert.equal(audit.expected,74);
-  assert.equal(audit.registered,74);
+  assert.equal(audit.expected,75);
+  assert.equal(audit.registered,75);
   assert.equal(audit.complete,true);
   assert.deepEqual(audit.missing,[]);
   for(const row of audit.rows){

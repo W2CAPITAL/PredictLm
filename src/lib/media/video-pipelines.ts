@@ -13,6 +13,7 @@ export type MediaPipelinePattern={
 export const MEDIA_PIPELINE_PATTERNS:MediaPipelinePattern[]=[
   {id:'agnes-scenes',name:'Multi-scene orchestration',repo:'lcy362/agnes-video-generator',role:'prompt → scenes → narration/subtitles → resume',runtime:'reference'},
   {id:'openmontage',name:'Agentic production pipeline',repo:'calesthio/OpenMontage',role:'research → script → assets → timeline → composition',runtime:'reference'},
+  {id:'brag-launch',name:'Brag launch-video direction',repo:'latent-spaces/brag',role:'inspect product → hook → real user flow → storyboard → composition brief → verify render → poster/share copy',runtime:'reference'},
   {id:'toonflow',name:'Storyboard production graph',repo:'HBAI-Ltd/Toonflow-app',role:'planning → characters → storyboard → supervision',runtime:'reference'},
   {id:'pixelle',name:'Video workflow nodes',repo:'ATH-MaaS/Pixelle-Video',role:'visual workflow and generation adapters',runtime:'reference'},
   {id:'openshorts',name:'Short-form assembly',repo:'mutonby/openshorts',role:'shorts pipeline',runtime:'reference'},
@@ -84,6 +85,31 @@ export function buildStoryboardFrames(prompt:string,style:string,aspect:string):
 }
 
 
+export function isLaunchVideoRequest(prompt:string){
+  const q=String(prompt||'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'');
+  return /\b(comercial|launch video|video de lancamento|video de produto|product video|teaser|promo|promocional|demo para readme|brag)\b/.test(q);
+}
+
+export function buildBragLaunchContext(input:{
+  prompt:string;
+  aspect:string;
+  durationMs:number;
+}){
+  const duration=Math.max(15,Math.min(25,Math.round(Number(input.durationMs||18000)/1000)));
+  return [
+    'BRAG LAUNCH DIRECTION — adapted from latent-spaces/brag (MIT), provider-agnostic.',
+    'Inspect/show the real product flow instead of generic SaaS filler.',
+    'Story shape: hook 2-3s -> reveal 2-4s -> 2-3 concrete product moments -> outro 2-4s.',
+    'Target '+duration+'s, aspect '+input.aspect+'. Keep critical text readable: short labels need a settled hold; sentences need enough reading time.',
+    'Center the working user flow: entry -> key action -> result. At least one scene must visibly demonstrate the actual product.',
+    'Use product-specific copy and evidence-bound claims. Do not invent testimonials, metrics, customer data or unsupported capabilities.',
+    'Before rendering: capability preflight. After rendering: verify a playable video asset, choose a strong settled poster frame, then write 1-3 sentence share copy.',
+    'For product footage, substitute fictional data for PII/secrets and never expose environment values or internal credentials.',
+    'Four-core media control stays lightweight: Fly=salience/hook; Mouse=visual discrimination/continuity; Macaque=hierarchy/composition; Human=goal/copy/QA.'
+  ].join('\n');
+}
+
+
 export function buildGenerativeVideoPrompt(input:{
   prompt:string;
   style:string;
@@ -105,8 +131,12 @@ export function buildGenerativeVideoPrompt(input:{
   const unitySceneGuidance=/\b(unity|gameplay|game|jogo|voxel|3d|camera|câmera|cinematic|cinemático)\b/i.test(input.prompt)
     ? unityFabricContext()
     : '';
+  const brag=isLaunchVideoRequest(input.prompt)
+    ? buildBragLaunchContext({prompt:input.prompt,aspect:input.aspect,durationMs:input.durationMs})
+    : '';
   const pieces=[
     subject,
+    brag,
     'Generate one coherent real moving video clip, not a slideshow, not a still image with pan/zoom, and not a sequence of unrelated frames.',
     'Duration target: '+duration+' seconds. Aspect ratio: '+input.aspect+'.',
     'Visual style: '+style+'.',
@@ -119,7 +149,7 @@ export function buildGenerativeVideoPrompt(input:{
     brief?('MEDIA DIRECTOR BRIEF: '+brief):'',
     research?('RESEARCH-GROUNDED VISUAL NOTES: '+research):''
   ].filter(Boolean);
-  return compactText(pieces.join('\n'),980);
+  return compactText(pieces.join('\n'),brag?2200:980);
 }
 
 export function mediaResearchQuery(prompt:string,kind:'image'|'video',style:string){

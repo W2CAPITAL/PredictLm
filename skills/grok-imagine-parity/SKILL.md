@@ -27,6 +27,19 @@ Uma **skill nao e o modelo de imagem**.
 
 Se o host **nao tem** gerador ligado, a resposta correta e: entregar o **prompt pronto** + dizer qual provider configurar — **nunca** inventar URL de imagem falsa.
 
+## Vídeo comercial / launch video
+
+Quando o pedido for sobre **produto/app/sistema** — comercial, teaser, launch video, demo de README ou `/brag` — delegar a direção para `skills/brag-launch-video/SKILL.md` antes da geração temporal.
+
+Contrato adicional:
+- inspecionar o produto real e escolher o user flow que merece aparecer;
+- hook específico nos primeiros 2–3s;
+- storyboard e composition brief separados do provider;
+- capability preflight antes de escolher renderer/provider;
+- só marcar como concluído após vídeo reproduzível verificado;
+- poster frame e share copy fazem parte da entrega;
+- Hyperframes é opcional, nunca requisito do PredictLM.
+
 ## Entendimento semântico de imagem
 
 Antes de gerar, resolver silenciosamente o pedido em um contrato visual:
