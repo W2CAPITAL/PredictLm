@@ -24,6 +24,7 @@ import { runtimeAutoLearningContext } from '@/lib/server/auto-learning';
 import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
+import {cognitiveSurfaceFromPrompt,type CognitiveSurface} from '@/lib/cognitive/cognitive-surface';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -603,6 +604,8 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     ? body.language as ConversationLanguage
     : resolveConversationLanguage(prompt,[]);
   const reportIntent=detectReportIntent(prompt);
+  const suppliedBrain=String(body?.brainContext||'').trim().slice(0,2600);
+  const cleanCognitive=suppliedBrain||cognitiveSurfaceFromPrompt(prompt,reportIntent.wantsReport?'report':'chat').context;
   const recent=(body?.useHistory&&Array.isArray(body?.messages)?body.messages:[])
     .filter((x:any)=>x&&(x.role==='user'||x.role==='assistant')&&typeof x.content==='string')
     .slice(-4)
@@ -663,6 +666,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
     universalAssistantContract(),
     guard,
     reportIntent.wantsReport?REPORT_DOSSIER_CONTRACT:'',
+    cleanCognitive,
     'Responda com conteúdo substantivo. Não exponha chain-of-thought, roteamento, provider, skill ou runtime.'
   ].join('\n\n');
 
@@ -734,6 +738,7 @@ async function cleanChatResponse(configured:Provider[],body:any,prompt:string,co
 
 async function mediaDirectorResponse(configured:Provider[],prompt:string){
   const skillContext=apiAgentSkillEnvelope('imagem vídeo media visual '+prompt,true,false);
+  const cognitive=cognitiveSurfaceFromPrompt(prompt,'imagine').context;
   const candidates=taskAwareProviders(configured,'media director visual production '+prompt,true).slice(0,Math.min(3,PROVIDER_ATTEMPT_LIMIT));
   if(!candidates.length)return Response.json({
     content:null,available:false,code:'MEDIA_DIRECTOR_UNAVAILABLE',mode:'media-director'
@@ -767,6 +772,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
         content:[
           'Você é um especialista visual interno do PredictLM.',
           skillContext,
+          cognitive,
           'A API/provider remoto executa esta tarefa; runtime local não define o brief final.',
           role.instruction,
           'Retorne somente um brief operacional compacto. Não exponha chain-of-thought.',
@@ -808,6 +814,7 @@ async function mediaDirectorResponse(configured:Provider[],prompt:string){
         content:[
           'Você é o finalizador visual do PredictLM.',
           skillContext,
+          cognitive,
           buildReviewContract('media'),
           'Combine os briefs especialistas em UMA instrução final de geração.',
           'Resolva contradições a favor do pedido literal do usuário e da fidelidade de identidade.',
@@ -900,7 +907,23 @@ export async function POST(req:Request){
     const researchContext=sanitizeUntrustedContext(prompt,String(body?.researchContext||''),16000);
     const localAdvisory=sanitizeUntrustedContext(prompt,String(body?.localAdvisory||''),2200);
     const answerAnchor=sanitizeUntrustedContext(prompt,String(body?.answerAnchor||''),5200);
-    const brainContext=sanitizeUntrustedContext(prompt,String(body?.brainContext||'').trim().slice(0,5200)||digitalBrainContext(prompt),5200);
+    const taskClass=providerTaskClass(prompt,Boolean(body?.deep));
+    const serverSurface:CognitiveSurface=body?.mode==='media-director'
+      ? 'imagine'
+      : researchContext||taskClass==='research'
+        ? 'research'
+        : taskClass==='legal'
+          ? 'legal'
+          : taskClass==='code'
+            ? 'build'
+            : detectReportIntent(prompt).wantsReport
+              ? 'report'
+              : 'chat';
+    const fallbackBrain=[
+      cognitiveSurfaceFromPrompt(prompt,serverSurface).context,
+      digitalBrainContext(prompt)
+    ].join('\n\n');
+    const brainContext=sanitizeUntrustedContext(prompt,String(body?.brainContext||'').trim().slice(0,5200)||fallbackBrain,5200);
 
     const configured=primaryProviders(providers());
     if(!configured.length){
