@@ -26,6 +26,7 @@ The image path is served through a same-origin render proxy, so browser canvas/v
 No video binary is uploaded to Supabase by default; only lightweight metadata/history is persisted.
 
 ### Advanced video references/adapters
+- latent-spaces/brag — MIT; direção de launch/commercial: inspect → hook → real user flow → storyboard → composition brief → render/verify → poster/share copy
 - lcy362/agnes-video-generator
 - calesthio/OpenMontage
 - HBAI-Ltd/Toonflow-app
