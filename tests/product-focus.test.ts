@@ -28,3 +28,10 @@ test('experimental breadth stays documented but outside the primary product prom
   assert.match(readme,/influencer tooling/);
   assert.match(readme,/primary navigation/);
 });
+
+
+test('health metadata separates public product surfaces from internal labs',()=>{
+  const health=fs.readFileSync(new URL('../src/app/api/health/route.ts',import.meta.url),'utf8');
+  assert.match(health,/surfaces:\{chat:true,legal:true,minecraft:true,imagine:true,portfolio:true\}/);
+  assert.match(health,/internalSurfaces:\{build:true,research:true,library:true,vision:true,plugins:true,neuroscience:true,social:true\}/);
+});
