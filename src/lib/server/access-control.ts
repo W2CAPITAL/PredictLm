@@ -37,8 +37,9 @@ export function verifyAccessToken(candidate:string){
 
 export function verifyApiKey(candidate:string){
   if(!candidate)return false;
-  if(verifyAccessToken(candidate))return true;
-  return envApiKeys().some(expected=>timingSafeEqual(digest(candidate),digest(expected)));
+  const keys=envApiKeys();
+  if(keys.length)return keys.some(expected=>timingSafeEqual(digest(candidate),digest(expected)));
+  return verifyAccessToken(candidate);
 }
 
 function signExpiry(exp:number){
