@@ -21,6 +21,29 @@ function useGithubKnowledge(input:string){
   return /\b(github|repo|codigo|code|software|typescript|javascript|python|react|next|api|backend|frontend|database|vercel|docker|mcp|bug|erro|arquitetura|datajud|djen|lexis|graphrag|sgs|bacen|starlink|spacex|quant|qubit|netdata)\b/.test(q)||classifyDomainEngines(input).length>0;
 }
 
+const runtimeLearningCache=new Map<string,{expires:number;context:string}>();
+
+async function runtimeLearningContextClient(prompt:string,surface='chat'){
+  if(typeof window==='undefined'||typeof fetch!=='function')return '';
+  const key=surface+'|'+prompt.toLowerCase().replace(/\s+/g,' ').trim().slice(0,500);
+  const cached=runtimeLearningCache.get(key);
+  if(cached&&cached.expires>Date.now())return cached.context;
+  try{
+    const controller=new AbortController();
+    const timer=window.setTimeout(()=>controller.abort(),1800);
+    const response=await fetch('/api/learning/runtime?q='+encodeURIComponent(prompt.slice(0,1500))+'&surface='+encodeURIComponent(surface),{
+      signal:controller.signal,
+      cache:'no-store'
+    });
+    window.clearTimeout(timer);
+    if(!response.ok)return '';
+    const data=await response.json();
+    const context=String(data?.context||'').slice(0,2600);
+    runtimeLearningCache.set(key,{expires:Date.now()+60_000,context});
+    return context;
+  }catch{return ''}
+}
+
 export type LocalRuntimeKind='ollama'|'openai'|'lowram';
 export type LocalRuntimeId='freellmapi'|'ollama'|'local-4891'|'local-8080'|'geniex'|'lowram';
 
@@ -301,6 +324,7 @@ export async function answerViaLocalRuntime(
   const learned=adaptiveContext(prompt,runtime.kind==='lowram'?2:3);
   const instructions=adaptiveInstructionContext(runtime.kind==='lowram'?2:4);
   const globalLessons=globalLearningContext(prompt,runtime.kind==='lowram'?2:3);
+  const runtimeLessons=await runtimeLearningContextClient(prompt,'chat');
   const humanLens=humanAdversarialContext(prompt);
   const humanPresence=humanPresenceContext(prompt);
   const masterContext=predictLMMasterContext(prompt,deepMode);
@@ -319,6 +343,7 @@ export async function answerViaLocalRuntime(
       {label:'Memória adaptativa',text:learned,priority:4},
       {label:'Instruções persistentes do usuário',text:instructions,priority:8},
       {label:'Lições globais aprovadas',text:globalLessons,priority:7},
+      {label:'Autoaprendizado operacional promovido',text:runtimeLessons,priority:8},
       {label:'PredictLM Master',text:masterContext,priority:10},
       {label:'Human Presence',text:humanPresence,priority:10},
       {label:'Human Adversarial Lens',text:humanLens,priority:9},
