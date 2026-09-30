@@ -47,8 +47,9 @@ function bearer(req:NextRequest){
 
 function apiKeys(){
   const single=String(process.env.PREDICTLM_API_KEY||'').trim();
+  const shared=String(process.env.SHEETSPREDICT_INTEGRATION_KEY||'').trim();
   const many=String(process.env.PREDICTLM_API_KEYS||'').split(/[\n,]+/).map(value=>value.trim()).filter(Boolean);
-  return [...new Set([single,...many].filter(Boolean))];
+  return [...new Set([single,shared,...many].filter(Boolean))];
 }
 
 async function matchesAny(candidate:string,values:string[]){
