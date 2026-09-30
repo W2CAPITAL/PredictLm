@@ -40,7 +40,8 @@ test('legal work and advanced capabilities stay inside Chat',()=>{
 test('experimental breadth stays documented but outside the primary product promise',()=>{
   const readme=fs.readFileSync(new URL('../README.md',import.meta.url),'utf8');
   assert.match(readme,/internal\/lab infrastructure/);
-  assert.match(readme,/influencer tooling/);
+  assert.match(readme,/Minecraft Cognitive World/);
+  assert.match(readme,/connectome/);
   assert.match(readme,/primary navigation/);
 });
 
