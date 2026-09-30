@@ -37,6 +37,18 @@ The official H01 synaptic connection export is available in Apache Avro. Cogniti
 
 `pre_id,post_id,syn_count,type,layer`
 
+## Mouse Core — MICrONS + Allen
+
+The Mouse Core keeps structural scales separate instead of presenting them as one complete mouse-brain connectome.
+
+- **MICrONS** is used as a cortical microcircuit/connectomics reference for local visual-cortex structure, cell relationships and synaptic organization.
+- **Allen Institute mouse-brain resources** are used as mesoscale anatomical and projection references where broader regional context is needed.
+- MICrONS-scale local connectivity and Allen-scale projection/anatomical references are different evidence layers and are labelled separately in PredictLM.
+- PredictLM does not claim that either source is a complete mouse brain, and does not redistribute the raw upstream datasets as part of the application.
+- Dataset use remains subject to the applicable upstream terms and provenance requirements.
+
+This separation matters in Minecraft Cognitive World: the Mouse controller may use software priors informed by these sources, but benchmark performance is not presented as biological validation.
+
 ## What "connectome-derived" means
 
 Cognitive Lab does not pretend to run 139,255 fly neurons or 150 million human synapses in the browser. It uses:
