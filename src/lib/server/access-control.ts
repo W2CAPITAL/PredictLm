@@ -7,6 +7,12 @@ function envToken(){
   return String(process.env.PREDICTLM_ACCESS_TOKEN||'').trim();
 }
 
+function envApiKeys(){
+  const single=String(process.env.PREDICTLM_API_KEY||'').trim();
+  const many=String(process.env.PREDICTLM_API_KEYS||'').split(/[\n,]+/).map(value=>value.trim()).filter(Boolean);
+  return [...new Set([single,...many].filter(Boolean))];
+}
+
 function envSessionSecret(){
   return String(process.env.PREDICTLM_SESSION_SECRET||envToken()).trim();
 }
@@ -19,10 +25,20 @@ export function accessControlConfigured(){
   return !!envToken();
 }
 
+export function apiAccessConfigured(){
+  return !!envToken()||envApiKeys().length>0;
+}
+
 export function verifyAccessToken(candidate:string){
   const expected=envToken();
   if(!expected||!candidate)return false;
   return timingSafeEqual(digest(candidate),digest(expected));
+}
+
+export function verifyApiKey(candidate:string){
+  if(!candidate)return false;
+  if(verifyAccessToken(candidate))return true;
+  return envApiKeys().some(expected=>timingSafeEqual(digest(candidate),digest(expected)));
 }
 
 function signExpiry(exp:number){
