@@ -50,3 +50,13 @@ test('health metadata separates public product surfaces from internal labs',()=>
   assert.match(health,/surfaces:\{chat:true,legal:true,imagine:true,portfolio:true\}/);
   assert.match(health,/internalSurfaces:\{build:true,research:true,minecraft:true,library:true,vision:true,plugins:true,neuroscience:true,social:true\}/);
 });
+
+
+test('capabilities endpoint exposes the live skill and agent catalogs to authenticated clients',()=>{
+  const route=fs.readFileSync(new URL('../src/app/api/capabilities/route.ts',import.meta.url),'utf8');
+  const fabric=fs.readFileSync(new URL('../src/lib/agent-runtime/agentic-fabric.ts',import.meta.url),'utf8');
+  assert.match(route,/catalog/);
+  assert.match(route,/skills\.map/);
+  assert.match(route,/AGENTIC_ROLES/);
+  assert.match(fabric,/export const AGENTIC_ROLES=/);
+});
