@@ -41,7 +41,7 @@ const CAPABILITY_HINTS:Record<OmniCoreDomain,string[]>={
   chat:['predictlm-master','human-presence','provider-mesh','prompt-os'],
   build:['predictlm-master','agent-fabric','autodev-runtime','build-review','testing','vibe-security','open-lovable-build','capability-fusion'],
   research:['predictlm-master','web-reach','deep-research','research-source-matrix','evidence-graph','grok-xai','github-knowledge'],
-  legal:['predictlm-master','lexis-twincore-x10','predictlm-scanner','datajud','report-architect','office-artifacts'],
+  legal:['predictlm-master','lexis-twincore-x10','revisao-contrato-bancario','predictlm-scanner','datajud','report-architect','office-artifacts'],
   media:['predictlm-master','grok-imagine-parity','visual-reference-grounding','media-director-deep','brag-launch-video','temporal-video','media-pipelines','image-skill'],
   simulation:['predictlm-master','game-studio-fabric','mirofish-simulation','neurocore','nvidia-accelerated'],
   artifacts:['predictlm-master','office-artifacts','report-architect'],
