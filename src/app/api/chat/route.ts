@@ -12,7 +12,7 @@ import { classifyDomainEngines } from '@/lib/domain-engine-fabric';
 import { humanAdversarialContext } from '@/lib/human-adversarial-lens';
 import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
-import { detectReportIntent, REPORT_DOSSIER_CONTRACT } from '@/lib/predict-dossier-html';
+import { detectReportIntent, REPORT_DOSSIER_CONTRACT } from '@/lib/predict-dossier-html';\nimport { revisionalBankContext } from '@/lib/legal/revisional-bank-skill';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
