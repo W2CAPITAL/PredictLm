@@ -39,6 +39,9 @@ test('dedicated API keys are distinct from the owner browser credential when con
     assert.equal(verifyApiKey('secondary-client-key'),true);
     assert.equal(verifyApiKey('owner-browser-credential'),false);
     assert.equal(verifyApiKey('wrong'),false);
+    delete process.env.PREDICTLM_API_KEY;
+    delete process.env.PREDICTLM_API_KEYS;
+    assert.equal(verifyApiKey('owner-browser-credential'),false);
   }finally{
     if(oldToken===undefined)delete process.env.PREDICTLM_ACCESS_TOKEN;else process.env.PREDICTLM_ACCESS_TOKEN=oldToken;
     if(oldApiKey===undefined)delete process.env.PREDICTLM_API_KEY;else process.env.PREDICTLM_API_KEY=oldApiKey;
