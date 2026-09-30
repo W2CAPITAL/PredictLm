@@ -1,3 +1,5 @@
+import {AGENTIC_ROLES} from '@/lib/agent-runtime/agentic-fabric';
+import {skills} from '@/lib/skills';
 import {capabilityRuntimeSnapshot} from '@/lib/fusion/runtime-adapters';
 import {fusionSourcesFor,type FusionSurface} from '@/lib/fusion/capability-fabric';
 import {fusionImplementationAudit} from '@/lib/fusion/implementation-audit';
@@ -16,8 +18,20 @@ export async function GET(req:Request){
   const snapshot=capabilityRuntimeSnapshot();
   const implementation=fusionImplementationAudit();
   const minecraft=minecraftReferenceAudit();
+  const catalog={
+    skills:skills.map(skill=>({
+      id:skill.id,
+      name:skill.name,
+      category:skill.category,
+      description:skill.description,
+      source:skill.source,
+      runtime:skill.runtime
+    })),
+    agents:[...AGENTIC_ROLES]
+  };
   return Response.json({
     ...snapshot,
+    catalog,
     implementation,
     minecraft,
     unity:{webglConfigured:unityWebGLConfigured(),fabric:'src/lib/unity-fabric.ts'},
