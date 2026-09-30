@@ -45,6 +45,18 @@ function bearer(req:NextRequest){
   return header.toLowerCase().startsWith('bearer ')?header.slice(7).trim():'';
 }
 
+function apiKeys(){
+  const single=String(process.env.PREDICTLM_API_KEY||'').trim();
+  const many=String(process.env.PREDICTLM_API_KEYS||'').split(/[\n,]+/).map(value=>value.trim()).filter(Boolean);
+  return [...new Set([single,...many].filter(Boolean))];
+}
+
+async function matchesAny(candidate:string,values:string[]){
+  if(!candidate)return false;
+  for(const value of values)if(value&&await safeEqual(candidate,value))return true;
+  return false;
+}
+
 function clientIp(req:NextRequest){
   const vercel=String(req.headers.get('x-vercel-forwarded-for')||'').split(',')[0]?.trim();
   if(process.env.VERCEL&&vercel)return vercel;
@@ -57,7 +69,7 @@ function ratePolicy(pathname:string){
 }
 
 async function identityHash(req:NextRequest,subject:string){
-  const secret=String(process.env.PREDICTLM_RATE_LIMIT_SECRET||process.env.PREDICTLM_SESSION_SECRET||process.env.PREDICTLM_ACCESS_TOKEN||'predictlm').trim();
+  const secret=String(process.env.PREDICTLM_RATE_LIMIT_SECRET||process.env.PREDICTLM_SESSION_SECRET||process.env.PREDICTLM_ACCESS_TOKEN||process.env.PREDICTLM_API_KEY||'predictlm').trim();
   return b64url(await crypto.subtle.digest('SHA-256',bytes(secret+'|'+clientIp(req)+'|'+subject)));
 }
 
@@ -103,7 +115,9 @@ export async function middleware(req:NextRequest){
   if(exempt(pathname))return NextResponse.next();
 
   const accessToken=String(process.env.PREDICTLM_ACCESS_TOKEN||'').trim();
-  if(!accessToken){
+  const dedicatedApiKeys=apiKeys();
+  const apiConfigured=!!accessToken||dedicatedApiKeys.length>0;
+  if(!apiConfigured){
     if(process.env.NODE_ENV!=='production')return NextResponse.next();
     const publicApi=pathname==='/api/health'||pathname==='/api/legal/health';
     if(pathname.startsWith('/api/')&&!publicApi){
@@ -112,15 +126,16 @@ export async function middleware(req:NextRequest){
         code:'ACCESS_CONTROL_NOT_CONFIGURED'
       },{status:503,headers:{'Cache-Control':'no-store'}});
     }
-    // Keep the public Chat/Jurídico/Imagine shell viewable even when the deployment owner has
-    // not configured a credential yet. Expensive/sensitive APIs remain disabled.
     return NextResponse.next();
   }
 
+  // API-only deployments may expose the static shell without enabling browser sessions.
+  if(!accessToken&&!pathname.startsWith('/api/'))return NextResponse.next();
+
   const direct=bearer(req);
   const cookie=req.cookies.get(ACCESS_COOKIE)?.value||'';
-  const directOk=direct?await safeEqual(direct,accessToken):false;
-  const sessionOk=!directOk&&cookie?await validSession(cookie,accessToken):false;
+  const directOk=direct?await matchesAny(direct,[accessToken,...dedicatedApiKeys]):false;
+  const sessionOk=!directOk&&accessToken&&cookie?await validSession(cookie,accessToken):false;
   if(!directOk&&!sessionOk){
     if(pathname.startsWith('/api/'))return NextResponse.json({error:'Não autorizado.',code:'UNAUTHORIZED'},{status:401,headers:{'Cache-Control':'no-store'}});
     const login=req.nextUrl.clone();login.pathname='/access';login.searchParams.set('returnTo',pathname+req.nextUrl.search);
