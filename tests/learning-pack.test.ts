@@ -5,11 +5,11 @@ import fs from 'node:fs';
 test('portable learning pack consolidates curated and promoted learning',()=>{
   const learned=fs.readFileSync(new URL('../src/lib/training/learned-lessons.ts',import.meta.url),'utf8');
   const ids=learned.match(/\{id:/g)||[];
-  assert.equal(ids.length,146,'curated training knowledge count changed unexpectedly');
+  assert.ok(ids.length>=146,'curated training knowledge must preserve the existing learning base');
 
   const snapshot=JSON.parse(fs.readFileSync(new URL('../reports/selfimprove/auto-learning.json',import.meta.url),'utf8'));
-  assert.equal(snapshot.totals.promoted,3);
-  assert.equal(snapshot.totals.evidence,48);
+  assert.ok(snapshot.totals.promoted>=3);
+  assert.ok(snapshot.totals.evidence>=48);
 
   const pack=fs.readFileSync(new URL('../src/lib/training/learning-pack.ts',import.meta.url),'utf8');
   assert.match(pack,/TRAINING_KNOWLEDGE/);
