@@ -14,6 +14,7 @@ import { buildAgentRunLedger } from '@/lib/agent-runtime/run-ledger';
 import type { WorkspaceFile } from '@/lib/types';
 import { jevRouteDecision, jevSelectWorkspaceFiles } from '@/lib/jev-policy';
 import { cognitiveSurfaceFromPrompt } from '@/lib/cognitive/cognitive-surface';
+import {learningPackContext} from '@/lib/training/learning-pack';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -153,6 +154,7 @@ export async function POST(req:Request){
     const master=predictLMMasterContext(task,deep);
     const fusion=capabilityFusionContext(task,'build');
     const cognitive=cognitiveSurfaceFromPrompt(task,'build').context;
+    const learning=await learningPackContext(task,'build',deep?6:4);
     const unityContext=/\b(unity|unity3d|gameobject|monobehaviour|rigidbody|collider|unity webgl)\b/i.test(task)
       ? unityFabricContext()
       : '';
@@ -163,6 +165,7 @@ export async function POST(req:Request){
       'Do not implement yet. Do not reveal private reasoning.',
       projectInstructions,
       skillContext,
+      learning,
       fusion,
       cognitive,
       unityContext
@@ -191,6 +194,7 @@ export async function POST(req:Request){
       'Do not output chain-of-thought.',
       projectInstructions,
       skillContext,
+      learning,
       fusion,
       cognitive,
       unityContext
@@ -218,6 +222,7 @@ export async function POST(req:Request){
       master,
       skillContext,
       projectInstructions,
+      learning,
       fusion,
       cognitive,
       unityContext,
@@ -264,6 +269,7 @@ export async function POST(req:Request){
         BUILD_SYSTEM,
         master,
         skillContext,
+        learning,
         projectInstructions,
         fusion,
         cognitive,
