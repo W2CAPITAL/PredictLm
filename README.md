@@ -551,6 +551,17 @@ live source code
 tests/
 ```
 
+### Learning Pack
+
+PredictLM consolida o aprendizado reutilizável em três camadas:
+
+- **146 lições técnicas versionadas**, recuperadas por relevância;
+- lições globais aprovadas quando existirem;
+- **autoaprendizado operacional promovido por evidência**, sem incluir feedback bruto ou dados pessoais.
+
+O pacote autenticado pode ser consumido por clientes autorizados, como o SheetsPredict. Cada runtime recupera apenas as lições relevantes ao pedido; o catálogo completo não é despejado em todos os prompts.
+
+
 ---
 
 ## Engineering principles
