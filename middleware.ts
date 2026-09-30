@@ -119,7 +119,7 @@ export async function middleware(req:NextRequest){
   const apiConfigured=!!accessToken||dedicatedApiKeys.length>0;
   if(!apiConfigured){
     if(process.env.NODE_ENV!=='production')return NextResponse.next();
-    const publicApi=pathname==='/api/health'||pathname==='/api/legal/health';
+    const publicApi=pathname==='/api/health'||pathname==='/api/legal/health'||pathname==='/api/integration/sheetspredict';
     if(pathname.startsWith('/api/')&&!publicApi){
       return NextResponse.json({
         error:'Recursos remotos protegidos não estão habilitados neste deployment.',
