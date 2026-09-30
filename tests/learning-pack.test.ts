@@ -23,4 +23,8 @@ test('portable learning pack consolidates curated and promoted learning',()=>{
   const agent=fs.readFileSync(new URL('../src/app/api/agent/route.ts',import.meta.url),'utf8');
   assert.match(agent,/learningPackContext/);
   assert.match(agent,/const learning=await learningPackContext/);
+
+  const local=fs.readFileSync(new URL('../src/lib/local-runtime-router.ts',import.meta.url),'utf8');
+  assert.match(local,/runtimeLearningContextClient/);
+  assert.match(local,/Autoaprendizado operacional promovido/);
 });
