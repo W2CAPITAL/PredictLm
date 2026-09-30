@@ -3,23 +3,27 @@ import { skills } from '@/lib/skills';
 import type { WorkspaceFile } from '@/lib/types';
 
 export type AgenticSurface='chat'|'build'|'media'|'research'|'simulation';
-export type AgenticRole=
-  | 'explorer'
-  | 'architect'
-  | 'implementer'
-  | 'researcher'
-  | 'reviewer'
-  | 'test-analyst'
-  | 'security-reviewer'
-  | 'visual-director'
-  | 'identity-reviewer'
-  | 'game-producer'
-  | 'game-designer'
-  | 'game-technical-director'
-  | 'game-art-director'
-  | 'gameplay-specialist'
-  | 'playtest-reviewer'
-  | 'verifier';
+
+export const AGENTIC_ROLES=[
+  'explorer',
+  'architect',
+  'implementer',
+  'researcher',
+  'reviewer',
+  'test-analyst',
+  'security-reviewer',
+  'visual-director',
+  'identity-reviewer',
+  'game-producer',
+  'game-designer',
+  'game-technical-director',
+  'game-art-director',
+  'gameplay-specialist',
+  'playtest-reviewer',
+  'verifier'
+] as const;
+
+export type AgenticRole=(typeof AGENTIC_ROLES)[number];
 
 export interface AgenticPlan{
   surface:AgenticSurface;
