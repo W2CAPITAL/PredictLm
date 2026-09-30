@@ -22,6 +22,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED.
 
 
+
+## Minecraft Cognitive World
+
+PredictLM's Minecraft Cognitive World is an independent research/simulation integration used to evaluate embodied software controllers in a voxel-world setting.
+
+Minecraft is a trademark of Mojang Synergies AB and Microsoft. PredictLM is not affiliated with, sponsored by, or endorsed by Mojang or Microsoft, and this repository does not grant rights to Minecraft game assets or other proprietary Minecraft content.
+
+## Connectome and neuroscience references
+
+The Cognitive Lab uses published neuroscience resources as provenance for software-control abstractions. The principal references include FlyWire, MICrONS, H01, Allen Institute resources, and explicitly labelled macaque atlas/projectome references.
+
+Dataset provenance, scope boundaries, and known license information are maintained in [CONNECTOME_SOURCES.md](CONNECTOME_SOURCES.md). PredictLM does not treat these scientific datasets as proof of consciousness and does not relicense third-party datasets under the PredictLM license.
+
+
 ## Cognitive / self-improvement research references
 
 PredictLM's knowledge/source policy may ingest or distill bounded engineering patterns from these public repositories:
