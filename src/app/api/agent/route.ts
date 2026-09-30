@@ -248,6 +248,7 @@ export async function POST(req:Request){
       'Return JSON only: {"approved":true,"confidence":0,"issues":[{"severity":"blocker|high|medium|low","file":"...","issue":"...","fix":"..."}],"missingRequirements":["..."]}.',
       'Do not redesign the whole product. Validate findings before reporting them. No chain-of-thought.',
       projectInstructions,
+      learning,
       fusion,
       cognitive,
       unityContext
