@@ -5,8 +5,9 @@ export const dynamic='force-dynamic';
 
 function keys(){
   const single=String(process.env.PREDICTLM_API_KEY||'').trim();
+  const shared=String(process.env.SHEETSPREDICT_INTEGRATION_KEY||'').trim();
   const many=String(process.env.PREDICTLM_API_KEYS||'').split(/[\n,]+/).map(v=>v.trim()).filter(Boolean);
-  return [...new Set([single,...many].filter(Boolean))];
+  return [...new Set([single,shared,...many].filter(Boolean))];
 }
 function bearer(req:Request){
   const raw=String(req.headers.get('authorization')||'');
@@ -28,6 +29,7 @@ export async function GET(req:Request){
     version:process.env.npm_package_version||'unknown',
     configured:configured.length>0,
     authorized,
+    requiredEnv:configured.length?undefined:['PREDICTLM_API_KEY','PREDICTLM_API_KEYS','SHEETSPREDICT_INTEGRATION_KEY'],
     capabilities:{chat:true,legal:true,dossiers:true,imagine:true},
     ts:new Date().toISOString()
   },{status:200,headers:{'Cache-Control':'no-store, max-age=0'}});
