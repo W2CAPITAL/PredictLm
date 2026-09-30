@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-29T06:42:21.838Z",
+  "generatedAt": "2026-09-30T09:30:00.000Z",
   "source": "public.predict_auto_lessons",
   "policy": "Only aggregated, fixed-template operational lessons are exposed. Raw feedback and personal data are not included.",
   "totals": {
     "lessons": 3,
     "promoted": 3,
-    "evidence": 47
+    "evidence": 48
   },
   "lessons": [
     {
@@ -23,13 +23,13 @@
         "artefato",
         "provider"
       ],
-      "evidenceCount": 32,
+      "evidenceCount": 33,
       "negativeCount": 0,
-      "errorCount": 32,
-      "confidence": 0.9696,
+      "errorCount": 33,
+      "confidence": 0.9732,
       "firstSeen": "2026-09-23T18:23:23.358487+00:00",
-      "lastSeen": "2026-09-28T17:28:58.131536+00:00",
-      "updatedAt": "2026-09-28T17:28:58.131536+00:00"
+      "lastSeen": "2026-09-29T20:33:30.51231+00:00",
+      "updatedAt": "2026-09-29T20:33:30.51231+00:00"
     },
     {
       "id": "chat-negative-relevance",
