@@ -134,7 +134,10 @@ export async function middleware(req:NextRequest){
 
   const direct=bearer(req);
   const cookie=req.cookies.get(ACCESS_COOKIE)?.value||'';
-  const directOk=direct?await matchesAny(direct,[accessToken,...dedicatedApiKeys]):false;
+  // Once dedicated client keys exist, Bearer access must use them. The owner
+  // credential remains reserved for signed browser sessions.
+  const bearerKeys=dedicatedApiKeys.length?dedicatedApiKeys:[accessToken];
+  const directOk=direct?await matchesAny(direct,bearerKeys):false;
   const sessionOk=!directOk&&accessToken&&cookie?await validSession(cookie,accessToken):false;
   if(!directOk&&!sessionOk){
     if(pathname.startsWith('/api/'))return NextResponse.json({error:'Não autorizado.',code:'UNAUTHORIZED'},{status:401,headers:{'Cache-Control':'no-store'}});
