@@ -1,0 +1,22 @@
+PredictLM Source-Available License
+
+Copyright (c) 2026 W2CAPITAL. All rights reserved.
+
+The PredictLM source code in this repository is made available for inspection,
+evaluation, and authorized collaboration only.
+
+Except where a separate written agreement or a third-party license expressly
+provides otherwise, no permission is granted to copy, modify, distribute,
+sublicense, sell, host, commercially exploit, or create derivative works from
+PredictLM.
+
+Third-party libraries, datasets, research references, models, media, and other
+external materials retain their respective licenses, terms, notices, and
+trademarks. Those rights are not relicensed by this file. See
+THIRD_PARTY_NOTICES.md and the relevant upstream sources for applicable terms.
+
+Use of PredictLM services, API access, or deployment credentials is subject to
+separate authorization by W2CAPITAL.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY LAW.
