@@ -393,6 +393,10 @@
     {
       "id": "graphify-brain",
       "path": "skills/graphify-brain/SKILL.md"
+    },
+    {
+      "id": "revisao-contrato-bancario",
+      "path": "skills/revisao-contrato-bancario/SKILL.md"
     }
   ],
   "pluginsAndCapabilities": [
@@ -1043,6 +1047,14 @@
       "description": "Mapeia o repositório como grafo consultável, preserva relações EXTRACTED/INFERRED e usa query/path/explain para reduzir mudanças cegas.",
       "source": "skills/graphify-brain/SKILL.md + Graphify-Labs/graphify (Apache-2.0/MIT)",
       "runtime": "bridge"
+    },
+    {
+      "id": "revisao-contrato-bancario",
+      "name": "Revisão de Contrato Bancário",
+      "category": "Legal",
+      "description": "Análise revisional com classificação do crédito, série BACEN temporal, taxa nominal x CET, cálculo, normalidade/mora, prova e jurisprudência atual; média BACEN é referencial, não teto automático.",
+      "source": "skills/revisao-contrato-bancario/SKILL.md + src/lib/legal/revisional-bank-skill.ts",
+      "runtime": "built-in"
     }
   ],
   "pluginPolicy": {
@@ -1078,7 +1090,7 @@
     "agentCatalog": 23,
     "orchestrationAgents": 11,
     "speciesCores": 4,
-    "skillModules": 24,
-    "pluginsAndCapabilities": 81
+    "skillModules": 25,
+    "pluginsAndCapabilities": 82
   }
 }
