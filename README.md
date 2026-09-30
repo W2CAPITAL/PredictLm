@@ -25,8 +25,9 @@
 
 [**Architecture**](ARCHITECTURE.md) ·
 [**Security**](SECURITY.md) ·
-[**Commercial film**](docs/commercial/predictlm-launch-film.md) ·
-[**Agent contract**](AGENTS.md) ·
+[**Connectomes**](CONNECTOME_SOURCES.md) ·
+[**Minecraft Lab**](COGNITIVE_WORLD_NEUROSCIENCE_LAB.md) ·
+[**License**](LICENSE) ·
 [**Master skill**](skills/predictlm-master/SKILL.md)
 
 </div>
@@ -72,6 +73,14 @@ Instead of splitting general chat, legal work, code execution, research, tutorin
 
 > **Public surface:** Chat · Jurídico · Imagine  
 > Build, Work, Tutor and Research are capabilities invoked from Chat, not extra top-level products.
+
+### Current product contract
+
+- **Chat** is the main entry point and can activate Build, Work, Tutor and Research without multiplying top-level tabs.
+- **Jurídico** resolves CNJ data through DataJud/DJEN and explains the procedural timeline without presenting missing data as fact.
+- **Imagine** stays lightweight and only loads media-specific code when generation is requested.
+- **API clients** authenticate with a **dedicated PredictLM API key**. Owner/browser access is a separate credential boundary.
+- Heavy simulation and neuroscience modules remain lazy/internal so the normal application does not pay their startup cost.
 
 Minecraft and connectome-driven neuroscience work remain **internal/lab infrastructure** rather than heavy top-level product surfaces. They stay outside the **primary navigation** so normal Chat and Jurídico do not inherit the cost of 3D simulation or large scientific datasets.
 
@@ -228,6 +237,25 @@ PredictLM keeps four compact neuroscience-informed **software controllers** avai
 
 These are **control signals**, not simulated biological minds and not evidence of consciousness.
 
+### Minecraft Cognitive World
+
+The **Minecraft Cognitive World** is the embodied benchmark for the four controllers. Fly, Mouse, Macaque and Human operate through the same observation → memory → decision → action contract so their behavior can be compared under the same world rules.
+
+The laboratory focuses on reproducible tasks such as navigation, exploration, survival, resource use, planning and multi-agent interaction. Minecraft performance is treated as an engineering benchmark; it is not presented as proof of biological fidelity.
+
+### Connectome provenance
+
+The four controllers keep their scientific references explicit:
+
+| Controller | Primary provenance |
+| --- | --- |
+| Fly | FlyWire / FAFB structural connectome references |
+| Mouse | MICrONS local cortical connectomics + Allen anatomical/projectome references |
+| Macaque | cortical atlas/projectome references, explicitly treated as proxy evidence |
+| Human | H01 cortical fragment, never described as a complete human brain |
+
+Full scope, evidence levels and dataset boundaries are maintained in [`CONNECTOME_SOURCES.md`](CONNECTOME_SOURCES.md). FlyWire, MICrONS, H01 and Allen references inform software-control abstractions; they are not claims that PredictLM reproduces a biological brain or consciousness.
+
 ### Performance contract
 
 - Normal product surfaces consume compact summaries only.
@@ -235,6 +263,26 @@ These are **control signals**, not simulated biological minds and not evidence o
 - Stateless server routes use deterministic state to preserve cache stability.
 - Cognitive-layer failure is non-blocking.
 - Minecraft, 3D renderers, raw connectome datasets and Cognitive Lab UI are not required for normal Chat.
+
+---
+
+## Authentication and API access
+
+PredictLM separates human access from service-to-service access.
+
+```text
+Owner / browser
+  -> owner credential
+  -> signed browser session
+
+External client
+  -> dedicated PredictLM API key
+  -> Bearer API access
+```
+
+A deployment that exposes PredictLM to another application should provision a dedicated client key. SheetsPredict, for example, is expected to use a dedicated PredictLM API key rather than reusing the owner's browser credential.
+
+Credentials remain server-side. Public documentation intentionally avoids publishing deployment addresses, live secrets, internal incident details or exploit-oriented configuration.
 
 ---
 
@@ -435,9 +483,9 @@ npm run dev
 
 ### Deployment credentials
 
-Use [`.env.example`](.env.example) as the configuration contract. Owner sessions, external API clients and model providers use separate server-side credentials; client applications such as SheetsPredict should authenticate with a dedicated PredictLM API key rather than reusing an owner login credential.
+Use [`.env.example`](.env.example) as the configuration contract. The deployment model deliberately separates owner/browser authentication, dedicated API-client credentials, model/provider credentials and deployment-only infrastructure configuration.
 
-Do not commit live credentials or private deployment addresses. Keep deployment-specific security notes outside the public repository and follow [`SECURITY.md`](SECURITY.md) for private disclosure.
+Client applications such as SheetsPredict authenticate with a dedicated PredictLM API key. Do not commit live credentials, private deployment addresses or customer data. Security findings and incident details belong in private disclosure channels described in [`SECURITY.md`](SECURITY.md).
 
 ---
 
@@ -528,9 +576,10 @@ PredictLM is an actively evolving engineering project.
 - open-domain Chat;
 - Brazilian legal-process consultation and explanation;
 - Chat-native Build / Work / Tutor / Research;
-- lightweight Imagine.
+- lightweight Imagine;
+- authenticated API consumption through dedicated client credentials.
 
-Experimental simulation, neuroscience and specialist media tooling remain available as internal modules or optional adapters without defining the public product. The Minecraft Cognitive World and four connectome-informed controllers remain first-class research components, loaded only when that laboratory is used.
+Experimental simulation, neuroscience and specialist media tooling remain available as **internal/lab infrastructure** without defining the primary navigation. The Minecraft Cognitive World and four connectome-informed controllers remain first-class research components, loaded only when that laboratory is used.
 
 ## License
 
