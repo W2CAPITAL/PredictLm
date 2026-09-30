@@ -73,7 +73,11 @@ Instead of splitting general chat, legal work, code execution, research, tutorin
 > **Public surface:** Chat · Jurídico · Imagine  
 > Build, Work, Tutor and Research are capabilities invoked from Chat, not extra top-level products.
 
-Minecraft, neuroscience experiments, simulation engines, influencer tooling, large connectome tooling and specialist legacy UIs remain **internal/lab infrastructure**. They stay outside the **primary navigation** and must not inflate the initial client bundle.
+Minecraft and connectome-driven neuroscience work remain **internal/lab infrastructure** rather than heavy top-level product surfaces. They stay outside the **primary navigation** so normal Chat and Jurídico do not inherit the cost of 3D simulation or large scientific datasets.
+
+The Minecraft Cognitive World is the embodied-agent laboratory: Fly, Mouse, Macaque and Human controllers can be evaluated against navigation, perception, memory, planning, resource use and multi-agent interaction in a voxel-world setting. It is an independent research integration; PredictLM does not redistribute Minecraft assets and is not affiliated with or endorsed by Mojang or Microsoft.
+
+The connectome layer is documented separately in [`CONNECTOME_SOURCES.md`](CONNECTOME_SOURCES.md) and [`COGNITIVE_WORLD_NEUROSCIENCE_LAB.md`](COGNITIVE_WORLD_NEUROSCIENCE_LAB.md). FlyWire, MICrONS, H01 and Allen resources are treated as scientific references/provenance for software-control abstractions, not as claims that PredictLM reproduces a biological brain or consciousness.
 
 ---
 
@@ -352,21 +356,11 @@ The goal is **honest degradation** rather than fake success.
 
 ## Security posture
 
-PredictLM is designed to fail closed around remote APIs and explicit external actions.
+PredictLM keeps deployment credentials and operational security details out of public documentation. Protected remote capabilities require authenticated access, server-only secrets and bounded external actions.
 
-<div align="center">
+Public documentation intentionally describes the security model only at a high level. Vulnerability details, private deployment addresses, credentials, incident notes and exploit reproductions should be handled through private disclosure rather than public issues or README content.
 
-[![Security policy](https://img.shields.io/badge/policy-SECURITY.md-6f42c1)](SECURITY.md)
-![Secrets](https://img.shields.io/badge/secrets-server--only-238636)
-![Sessions](https://img.shields.io/badge/session-HttpOnly%20%2B%20SameSite%3DStrict-0969DA)
-![SSRF](https://img.shields.io/badge/SSRF-DNS%20%2B%20redirect%20validation-8250DF)
-![Supply chain](https://img.shields.io/badge/CI-npm%20audit%20%2B%20tests-1F6FEB)
-
-</div>
-
-Key controls include signed expiring access sessions, same-origin checks for mutating session-authenticated APIs, rate limiting, DNS-aware URL validation, server-only provider credentials, prompt/output trust boundaries, explicit confirmation before external publishing and PR-gated automated learning changes.
-
-Read the full threat model, deployment checklist and disclosure guidance in **[SECURITY.md](SECURITY.md)**.
+See [`SECURITY.md`](SECURITY.md) for the disclosure channel and deployment principles.
 
 ---
 
@@ -439,28 +433,11 @@ cp .env.example .env.local
 npm run dev
 ```
 
-### Minimal production security configuration
+### Deployment credentials
 
-```bash
-PREDICTLM_ACCESS_TOKEN=
-PREDICTLM_SESSION_SECRET=
-PREDICTLM_RATE_LIMIT_SECRET=
+Use [`.env.example`](.env.example) as the configuration contract. Owner sessions, external API clients and model providers use separate server-side credentials; client applications such as SheetsPredict should authenticate with a dedicated PredictLM API key rather than reusing an owner login credential.
 
-AI_BASE_URL=
-AI_API_KEY=
-AI_MODEL=
-```
-
-For distributed rate limiting:
-
-```bash
-PREDICT_SUPABASE_URL=
-PREDICT_SUPABASE_SERVICE_ROLE_KEY=
-```
-
-Provider-specific settings live in [`.env.example`](.env.example). Server secrets must never use the `NEXT_PUBLIC_` prefix.
-
-Before a production rollout, follow the checklist in [`SECURITY.md`](SECURITY.md).
+Do not commit live credentials or private deployment addresses. Keep deployment-specific security notes outside the public repository and follow [`SECURITY.md`](SECURITY.md) for private disclosure.
 
 ---
 
@@ -553,14 +530,19 @@ PredictLM is an actively evolving engineering project.
 - Chat-native Build / Work / Tutor / Research;
 - lightweight Imagine.
 
-Experimental simulation, neuroscience and specialist media tooling remain available as internal modules or optional adapters without defining the public product.
+Experimental simulation, neuroscience and specialist media tooling remain available as internal modules or optional adapters without defining the public product. The Minecraft Cognitive World and four connectome-informed controllers remain first-class research components, loaded only when that laboratory is used.
 
+## License
+
+PredictLM is source-available under the terms in [`LICENSE`](LICENSE). Third-party code, models, datasets and research references retain their own licenses and notices; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+---
 <div align="center">
 
 ### PredictLM
 
 **One assistant. Verified workflows.**
 
-[Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · [Commercial film](docs/commercial/predictlm-launch-film.md)
+[Architecture](ARCHITECTURE.md) · [Security](SECURITY.md) · [License](LICENSE) · [Commercial film](docs/commercial/predictlm-launch-film.md)
 
 </div>
