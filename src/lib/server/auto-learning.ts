@@ -64,6 +64,10 @@ async function loadLessons(){
   }catch{return []}
 }
 
+export async function runtimeAutoLearningLessons(){
+  return loadLessons();
+}
+
 export async function runtimeAutoLearningContext(query:string,limit=4,surface='chat'){
   const lessons=await loadLessons();
   if(!lessons.length)return '';
