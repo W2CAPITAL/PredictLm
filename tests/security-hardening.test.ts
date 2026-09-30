@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {createAccessSession,verifyAccessSession,verifyAccessToken} from '../src/lib/server/access-control';
+import {createAccessSession,verifyAccessSession,verifyAccessToken,verifyApiKey} from '../src/lib/server/access-control';
 import {assertPublicUrl,isPrivateIp} from '../src/lib/server/public-url';
 
 test('access sessions are signed, expiring and do not contain the deployment token',()=>{
@@ -25,6 +25,27 @@ test('access sessions are signed, expiring and do not contain the deployment tok
   }
 });
 
+
+test('dedicated API keys are distinct from the owner browser credential when configured',()=>{
+  const oldToken=process.env.PREDICTLM_ACCESS_TOKEN;
+  const oldApiKey=process.env.PREDICTLM_API_KEY;
+  const oldApiKeys=process.env.PREDICTLM_API_KEYS;
+  process.env.PREDICTLM_ACCESS_TOKEN='owner-browser-credential';
+  process.env.PREDICTLM_API_KEY='sheetspredict-client-key';
+  process.env.PREDICTLM_API_KEYS='secondary-client-key';
+  try{
+    assert.equal(verifyAccessToken('owner-browser-credential'),true);
+    assert.equal(verifyApiKey('sheetspredict-client-key'),true);
+    assert.equal(verifyApiKey('secondary-client-key'),true);
+    assert.equal(verifyApiKey('owner-browser-credential'),false);
+    assert.equal(verifyApiKey('wrong'),false);
+  }finally{
+    if(oldToken===undefined)delete process.env.PREDICTLM_ACCESS_TOKEN;else process.env.PREDICTLM_ACCESS_TOKEN=oldToken;
+    if(oldApiKey===undefined)delete process.env.PREDICTLM_API_KEY;else process.env.PREDICTLM_API_KEY=oldApiKey;
+    if(oldApiKeys===undefined)delete process.env.PREDICTLM_API_KEYS;else process.env.PREDICTLM_API_KEYS=oldApiKeys;
+  }
+});
+
 test('public URL guard rejects private and loopback address families',async()=>{
   for(const ip of ['127.0.0.1','10.0.0.5','172.16.2.1','192.168.1.4','169.254.169.254','::1','fd00::1','fe80::1']){
     assert.equal(isPrivateIp(ip),true,ip);
@@ -43,6 +64,7 @@ test('security-sensitive surfaces have explicit guards',()=>{
   const dossier=fs.readFileSync(path.join(root,'src/components/DossierStudio.tsx'),'utf8');
   const ci=fs.readFileSync(path.join(root,'.github/workflows/ci.yml'),'utf8');
   assert.match(middleware,/PREDICTLM_ACCESS_TOKEN/);
+  assert.match(middleware,/PREDICTLM_API_KEY/);
   assert.match(middleware,/ACCESS_CONTROL_NOT_CONFIGURED/);
   assert.match(middleware,/publicApi=pathname===\'\/api\/health\'/);
   assert.match(middleware,/predict_take_rate_limit/);
