@@ -14,6 +14,9 @@ import { digitalBrainContext } from '@/lib/digital-brain';
 import { humanPresenceContext } from '@/lib/human-presence';
 import { detectReportIntent, REPORT_DOSSIER_CONTRACT } from '@/lib/predict-dossier-html';
 import { revisionalBankContext } from '@/lib/legal/revisional-bank-skill';
+import { findCnjNumber } from '@/lib/legal/cnj';
+import { queryLegalProcess } from '@/lib/legal/server';
+import { legalChatAnswer, legalSources } from '@/lib/legal/presentation';
 import { isScenarioSimulationRequest, predictLMMasterContext } from '@/lib/predictlm-master';
 import { buildReviewContract, planAgenticRun, skillContractContext } from '@/lib/agent-runtime/agentic-fabric';
 import { parseJsonObject } from '@/lib/server/provider-mesh';
@@ -934,6 +937,26 @@ export async function POST(req:Request){
       digitalBrainContext(prompt)
     ].join('\n\n');
     const brainContext=sanitizeUntrustedContext(prompt,String(body?.brainContext||'').trim().slice(0,5200)||fallbackBrain,5200);
+
+    // Consulta por CNJ não depende de um LLM estar saudável. DataJud/DJEN e
+    // portais oficiais formam uma resposta determinística antes do Provider Mesh.
+    const deterministicLegalCnj=taskClass==='legal'?findCnjNumber(prompt):'';
+    if(deterministicLegalCnj){
+      try{
+        const bundle=await queryLegalProcess(deterministicLegalCnj);
+        return Response.json({
+          content:legalChatAnswer(bundle,prompt),
+          provider:'PredictLM Legal',
+          model:'datajud-djen-official',
+          mode:'legal-deterministic',
+          sources:legalSources(bundle),
+          legal:{processNumber:bundle.processNumber,tribunal:bundle.tribunalLabel,summary:bundle.summary},
+          correlationId
+        },{headers:{'Cache-Control':'no-store','X-Correlation-Id':correlationId}});
+      }catch{
+        // Se as fontes oficiais falharem, segue para os providers configurados.
+      }
+    }
 
     const configured=primaryProviders(providers());
     if(!configured.length){
