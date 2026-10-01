@@ -1640,21 +1640,21 @@ export function ChatShell({onOpenLegal}:Props){
             <section className="grok-system-card">
               <header><div><ShieldCheck size={16}/><b>Status dos sistemas</b></div><span><i/>Tempo real</span></header>
 
-              <article className={'grok-source-health '+(legalHealth?.datajud.ok?'ok':'error')}>
-                <span className="health-orb">{legalHealth?.datajud.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
-                <div><b>DataJud</b><strong>{legalHealth?.datajud.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.datajud.detail||'Verificando API pública...'}</small></div>
+              <article className={'grok-source-health '+(!legalHealth?'checking':legalHealth.datajud.ok?'ok':'error')}>
+                <span className="health-orb">{!legalHealth?<RefreshCw className="spin" size={19}/>:legalHealth.datajud.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
+                <div><b>DataJud</b><strong>{!legalHealth?'Verificando':legalHealth.datajud.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.datajud.detail||'Verificando API pública...'}</small></div>
                 <button onClick={refreshLegalHealth} disabled={legalHealthBusy}>{legalHealthBusy?<RefreshCw className="spin" size={12}/>:<RefreshCw size={12}/>}Verificar</button>
               </article>
 
-              <article className={'grok-source-health '+(legalHealth?.djen.ok?'ok':'error')}>
-                <span className="health-orb">{legalHealth?.djen.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
-                <div><b>DJEN</b><strong>{legalHealth?.djen.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.djen.detail||'Verificando comunicações...'}</small></div>
+              <article className={'grok-source-health '+(!legalHealth?'checking':legalHealth.djen.ok?'ok':'error')}>
+                <span className="health-orb">{!legalHealth?<RefreshCw className="spin" size={19}/>:legalHealth.djen.ok?<CheckCircle2 size={19}/>:<AlertTriangle size={19}/>}</span>
+                <div><b>DJEN</b><strong>{!legalHealth?'Verificando':legalHealth.djen.ok?'Online':'Requer atenção'}</strong><small>{legalHealth?.djen.detail||'Verificando comunicações...'}</small></div>
                 <button onClick={refreshLegalHealth} disabled={legalHealthBusy}>{legalHealthBusy?<RefreshCw className="spin" size={12}/>:<RefreshCw size={12}/>}Verificar</button>
               </article>
             </section>
 
             <section className="grok-system-card grok-system-health">
-              <header><div><Activity size={16}/><b>Saúde do sistema</b></div><span className={(legalHealth?.datajud.ok&&legalHealth?.djen.ok)?'healthy':'attention'}><i/>{(legalHealth?.datajud.ok&&legalHealth?.djen.ok)?'Operacional':'Atenção'}</span></header>
+              <header><div><Activity size={16}/><b>Saúde do sistema</b></div><span className={!legalHealth?'checking':(legalHealth.datajud.ok&&legalHealth.djen.ok)?'healthy':'attention'}><i/>{!legalHealth?'Verificando':(legalHealth.datajud.ok&&legalHealth.djen.ok)?'Operacional':'Atenção'}</span></header>
               <div className="grok-health-row"><span><Globe2 size={13}/>Fontes jurídicas</span><b>{legalHealth?.datajud.ok&&legalHealth?.djen.ok?'2/2 online':legalHealth?'parcial':'verificando'}</b></div>
               <div className="grok-health-row"><span><Brain size={13}/>Memória adaptativa</span><b>{memoryStats?.trusted||0}/{memoryStats?.count||0} confiáveis</b></div>
               <div className="grok-health-row"><span><Library size={13}/>Base de conhecimento</span><b>{learningStats?.sources?.total||0} fontes</b></div>
@@ -1664,8 +1664,8 @@ export function ChatShell({onOpenLegal}:Props){
 
             <section className="grok-system-card grok-activity-card">
               <header><div><Bell size={16}/><b>Atividade recente</b></div></header>
-              <div className={legalHealth?.datajud.ok?'ok':'warn'}><span>{legalHealth?.datajud.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{legalHealth?.datajud.ok?'DataJud verificado':'DataJud com falha'}</b><small>{legalHealth?.datajud.detail||'Aguardando verificação.'}</small></p></div>
-              <div className={legalHealth?.djen.ok?'ok':'warn'}><span>{legalHealth?.djen.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{legalHealth?.djen.ok?'DJEN verificado':'DJEN com falha'}</b><small>{legalHealth?.djen.detail||'Aguardando verificação.'}</small></p></div>
+              <div className={!legalHealth?'info':legalHealth.datajud.ok?'ok':'warn'}><span>{!legalHealth?<RefreshCw className="spin" size={13}/>:legalHealth.datajud.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{!legalHealth?'Verificando DataJud':legalHealth.datajud.ok?'DataJud verificado':'DataJud com falha'}</b><small>{legalHealth?.datajud.detail||'Aguardando verificação.'}</small></p></div>
+              <div className={!legalHealth?'info':legalHealth.djen.ok?'ok':'warn'}><span>{!legalHealth?<RefreshCw className="spin" size={13}/>:legalHealth.djen.ok?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>}</span><p><b>{!legalHealth?'Verificando DJEN':legalHealth.djen.ok?'DJEN verificado':'DJEN com falha'}</b><small>{legalHealth?.djen.detail||'Aguardando verificação.'}</small></p></div>
               <div className="info"><span><Brain size={13}/></span><p><b>Predict Auto pronto</b><small>Chat, pesquisa, memória e runtimes continuam disponíveis.</small></p></div>
             </section>
           </aside>
