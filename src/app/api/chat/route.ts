@@ -29,6 +29,7 @@ import { jevCompactHistory, jevRouteDecision } from '@/lib/jev-policy';
 import { classifyPublicFailure, providerEndpointAllowed, publicFailurePayload, safeHistoryForModel, safeSessionScope, sanitizeUntrustedContext } from '@/lib/chat-trust-boundary';
 import { acquireChatRequest } from '@/lib/server/chat-request-guard';
 import {cognitiveSurfaceFromPrompt,type CognitiveSurface} from '@/lib/cognitive/cognitive-surface';
+import { khojConfigured, khojContext } from '@/lib/server/khoj-bridge';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -896,7 +897,8 @@ export async function GET(){
     },
     health:providerHealthSnapshot(configured),
     environment:{vercel:Boolean(process.env.VERCEL)},
-    auxiliaryLocal:auxiliary.map(x=>({name:x.name,model:x.model}))
+    auxiliaryLocal:auxiliary.map(x=>({name:x.name,model:x.model})),
+    khoj:{configured:khojConfigured(),mode:'external-rag'}
   },{headers:{'Cache-Control':'no-store'}});
 }
 
@@ -1004,6 +1006,7 @@ export async function POST(req:Request){
     const parallax=parallaxContext(prompt);
     const globalLessons=globalLearningContext(prompt,deep?5:3);
     const autoLessons=await runtimeAutoLearningContext(prompt,deep?5:3,'chat');
+    const khojRag=await khojContext(prompt,{deep,hasDocument:Boolean(body?.documentContext||body?.pdfText),maxChars:deep?7600:5200,client:'predictlm'});
     const humanLens=humanAdversarialContext(prompt);
     const humanPresence=humanPresenceContext(prompt);
     const masterContext=predictLMMasterContext(prompt,deep);
@@ -1031,6 +1034,7 @@ export async function POST(req:Request){
         {label:'Modo de resposta',text:responseGuard,priority:10},
         {label:'API Agent + Skills',text:apiAgentSkillEnvelope(prompt,deep,!!researchContext),priority:10},
         {label:'Pesquisa web verificada',text:researchContext,priority:9},
+        {label:'Khoj RAG / Second Brain',text:simpleTurn?'':khojRag,priority:8},
         {label:'Parecer do cérebro local',text:simpleTurn?'':localAdvisory,priority:8},
         {label:'Piso prático de resposta',text:answerAnchor,priority:9},
         {label:'GitHub Knowledge Engine',text:gh,priority:5}
