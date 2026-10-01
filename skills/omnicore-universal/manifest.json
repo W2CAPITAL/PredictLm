@@ -1055,6 +1055,14 @@
       "description": "Análise revisional com classificação do crédito, série BACEN temporal, taxa nominal x CET, cálculo, normalidade/mora, prova e jurisprudência atual; média BACEN é referencial, não teto automático.",
       "source": "skills/revisao-contrato-bancario/SKILL.md + src/lib/legal/revisional-bank-skill.ts",
       "runtime": "built-in"
+    },
+    {
+      "id": "khoj-second-brain",
+      "name": "Khoj Second Brain",
+      "category": "Knowledge",
+      "description": "Bridge opcional e isolado para RAG, documentos, memória e agentes via API do Khoj; não incorpora código AGPL ao core PredictLM.",
+      "source": "khoj-ai/khoj (AGPL-3.0+, external service) + src/lib/server/khoj-bridge.ts",
+      "runtime": "external"
     }
   ],
   "pluginPolicy": {
@@ -1091,6 +1099,6 @@
     "orchestrationAgents": 11,
     "speciesCores": 4,
     "skillModules": 25,
-    "pluginsAndCapabilities": 82
+    "pluginsAndCapabilities": 83
   }
 }
