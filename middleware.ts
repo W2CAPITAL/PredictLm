@@ -115,11 +115,28 @@ export async function middleware(req:NextRequest){
   const pathname=req.nextUrl.pathname;
   if(exempt(pathname))return NextResponse.next();
 
+  const isDocumentRequest=!pathname.startsWith('/api/')
+    && (req.method==='GET'||req.method==='HEAD')
+    && (req.headers.get('sec-fetch-dest')==='document'||String(req.headers.get('accept')||'').includes('text/html'));
+
+  const pageResponse=()=>{
+    const res=NextResponse.next();
+    if(isDocumentRequest){
+      // Never let a browser/CDN retain HTML that points at chunks from an older Vercel deployment.
+      res.headers.set('Cache-Control','no-store, no-cache, max-age=0, must-revalidate');
+      res.headers.set('CDN-Cache-Control','no-store');
+      res.headers.set('Vercel-CDN-Cache-Control','no-store');
+      res.headers.set('Pragma','no-cache');
+      res.headers.set('Expires','0');
+    }
+    return res;
+  };
+
   const accessToken=String(process.env.PREDICTLM_ACCESS_TOKEN||'').trim();
   const dedicatedApiKeys=apiKeys();
   const apiConfigured=!!accessToken||dedicatedApiKeys.length>0;
   if(!apiConfigured){
-    if(process.env.NODE_ENV!=='production')return NextResponse.next();
+    if(process.env.NODE_ENV!=='production')return pageResponse();
     const publicApi=pathname==='/api/health'||pathname==='/api/legal/health'||pathname==='/api/integration/sheetspredict';
     if(pathname.startsWith('/api/')&&!publicApi){
       return NextResponse.json({
@@ -127,11 +144,11 @@ export async function middleware(req:NextRequest){
         code:'ACCESS_CONTROL_NOT_CONFIGURED'
       },{status:503,headers:{'Cache-Control':'no-store'}});
     }
-    return NextResponse.next();
+    return pageResponse();
   }
 
   // API-only deployments may expose the static shell without enabling browser sessions.
-  if(!accessToken&&!pathname.startsWith('/api/'))return NextResponse.next();
+  if(!accessToken&&!pathname.startsWith('/api/'))return pageResponse();
 
   const direct=bearer(req);
   const cookie=req.cookies.get(ACCESS_COOKIE)?.value||'';
@@ -166,7 +183,7 @@ export async function middleware(req:NextRequest){
     return res;
   }
 
-  return NextResponse.next();
+  return pageResponse();
 }
 
 export const config={
