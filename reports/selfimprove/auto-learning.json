@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-30T09:30:00.000Z",
+  "generatedAt": "2026-10-03T16:32:22.383Z",
   "source": "public.predict_auto_lessons",
   "policy": "Only aggregated, fixed-template operational lessons are exposed. Raw feedback and personal data are not included.",
   "totals": {
