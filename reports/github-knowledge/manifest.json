@@ -1,8 +1,17 @@
 {
-  "generatedAt": "2026-09-29T06:34:56.028Z",
-  "knowledgeVersion": "12811a1e008d2537",
-  "chunkCount": 5040,
+  "generatedAt": "2026-10-10T21:42:44.223Z",
+  "knowledgeVersion": "41dbb1b2049ddc14",
+  "chunkCount": 5499,
   "sources": [
+    {
+      "repo": "Graphify-Labs/graphify",
+      "mode": "allow",
+      "license": "Apache-2.0",
+      "commit": "b4e6307bf170f27e0cb888c03f4af9308d531a42",
+      "files": 120,
+      "chunks": 260,
+      "error": null
+    },
     {
       "repo": "dbreunig/building-with-jev-skill",
       "mode": "reference-only",
@@ -40,6 +49,15 @@
       "error": null
     },
     {
+      "repo": "latent-spaces/brag",
+      "mode": "allow",
+      "license": "MIT",
+      "commit": "8531ccb9f471ef5099abf930079e47b55c55bb21",
+      "files": 10,
+      "chunks": 137,
+      "error": null
+    },
+    {
       "repo": "Wangnov/grok-skills",
       "mode": "allow",
       "license": "MIT",
@@ -70,9 +88,9 @@
       "repo": "NousResearch/hermes-agent",
       "mode": "allow",
       "license": "MIT",
-      "commit": "39faafb61688282a372ff2d59191581588e9a003",
+      "commit": "6e5a56d9479d1d01f10c725816924e346f55f172",
       "files": 2,
-      "chunks": 0,
+      "chunks": 33,
       "error": null
     },
     {
@@ -88,18 +106,18 @@
       "repo": "deepseek-ai/deepseek-harness",
       "mode": "allow",
       "license": "MIT",
-      "commit": "4878cdabd87d4041bdaff61d04c966883b9fd07a",
+      "commit": "d743267388641bc76f17c45ce8b4c231aed1d32c",
       "files": 9,
-      "chunks": 110,
+      "chunks": 114,
       "error": null
     },
     {
       "repo": "Alishahryar1/free-claude-code",
       "mode": "allow",
       "license": "MIT",
-      "commit": "0c3a1de257ce9cede7d81ac13a71018531d6d33d",
+      "commit": "fb3a7bb61149848fcbfc3a70aa8537010e816809",
       "files": 1,
-      "chunks": 34,
+      "chunks": 36,
       "error": null
     },
     {
@@ -133,9 +151,9 @@
       "repo": "rowboatlabs/rowboat",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "c38f69a0268711909ec53987e2d797804ea0dab8",
-      "files": 9,
-      "chunks": 137,
+      "commit": "72e9d8ca73362f16f96f7fe54925dc2010a87cda",
+      "files": 10,
+      "chunks": 149,
       "error": null
     },
     {
@@ -160,9 +178,9 @@
       "repo": "EbookFoundation/free-programming-books",
       "mode": "allow",
       "license": "CC-BY-4.0",
-      "commit": "07fdc1d3cbafe8a7ff6e5dedf2aed35778092ac7",
+      "commit": "09296e58342cd7104ed10f042044de9dd855a6ef",
       "files": 2,
-      "chunks": 187,
+      "chunks": 188,
       "error": null
     },
     {
@@ -259,9 +277,9 @@
       "repo": "WestFox-AwA/dsh-prompt-optimizer",
       "mode": "allow",
       "license": "BSD-3-Clause",
-      "commit": "e9fd231f65b3ef0f6d04325f581fd62277ac3777",
+      "commit": "89f0cc46cfb3c5af03980b6db834a0fdd2c7322a",
       "files": 3,
-      "chunks": 49,
+      "chunks": 57,
       "error": null
     },
     {
@@ -304,7 +322,7 @@
       "repo": "Mintplex-Labs/anything-llm",
       "mode": "allow",
       "license": "MIT",
-      "commit": "a355703427c67c5be17bc57c4c5d5d034e275444",
+      "commit": "2a10d052a1812d7be12c43f9024072cf26a27a8b",
       "files": 1,
       "chunks": 32,
       "error": null
@@ -394,9 +412,9 @@
       "repo": "HKUDS/DeepTutor",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "ef2d9e5c3c99fd073742c5aadc2bb9584b1e503b",
-      "files": 1,
-      "chunks": 101,
+      "commit": "6cf793bd868ba5ecbe64722936d4be8fab5a01df",
+      "files": 6,
+      "chunks": 182,
       "error": null
     },
     {
@@ -439,9 +457,9 @@
       "repo": "AIGeniusInstitute/deepthink",
       "mode": "allow",
       "license": "MIT",
-      "commit": "baaec44627100a5f4e1463c8e72ae3868fc89f7c",
+      "commit": "f58aa283751c609865dff0435dee5d637356d86e",
       "files": 1,
-      "chunks": 117,
+      "chunks": 122,
       "error": null
     },
     {
@@ -466,7 +484,7 @@
       "repo": "lutzroeder/netron",
       "mode": "allow",
       "license": "MIT",
-      "commit": "cb26882cf1ede8104359e0aaf7c0631b49fa4fb3",
+      "commit": "bfa70c3ca50c1d61eaca6b9fd7dd358689a51b7b",
       "files": 1,
       "chunks": 5,
       "error": null
@@ -637,16 +655,16 @@
       "repo": "conorbronsdon/avoid-ai-writing",
       "mode": "allow",
       "license": "MIT",
-      "commit": "e369d149a9cf842bf4594dcccd08ded48a68d994",
+      "commit": "5a5cf6a45331384d4ff68f1f6ce50da24da0da4c",
       "files": 1,
-      "chunks": 58,
+      "chunks": 59,
       "error": null
     },
     {
       "repo": "every-app/open-seo",
       "mode": "allow",
       "license": "MIT",
-      "commit": "0ffff93101043aad7600a3b6a499a0cd2887ef49",
+      "commit": "89e5a00717cdf049b7c2b4e29646edb3a7d4995b",
       "files": 1,
       "chunks": 8,
       "error": null
@@ -655,7 +673,7 @@
       "repo": "ComposioHQ/composio",
       "mode": "allow",
       "license": "MIT",
-      "commit": "c7e7da1e0542a1fbe82629bcf96c9da1d3f9da25",
+      "commit": "f9ce49953598e13371c406ac346846696a4d8385",
       "files": 1,
       "chunks": 15,
       "error": null
@@ -673,7 +691,7 @@
       "repo": "tashfeenahmed/freellmapi",
       "mode": "allow",
       "license": "MIT",
-      "commit": "c47a9e7bf8f28fc960613fc9a982e2d63e44783d",
+      "commit": "39a0ff6861bbd226902ad9adb0841318cc6d4d26",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -682,18 +700,18 @@
       "repo": "msitarzewski/agency-agents",
       "mode": "allow",
       "license": "MIT",
-      "commit": "68f01534ef30805ed3764f2d302ad03fe443707a",
+      "commit": "f99f6aa910a442b0197b768ce0ea7751e35e2060",
       "files": 1,
-      "chunks": 103,
+      "chunks": 105,
       "error": null
     },
     {
       "repo": "OpenHands/OpenHands",
       "mode": "allow",
       "license": "MIT",
-      "commit": "94e156a8c7b7a468d7c60bda3a38757bfbfd4a79",
+      "commit": "e0a26af82f0b2016423c0d53cc9ae32a357cef2d",
       "files": 1,
-      "chunks": 14,
+      "chunks": 15,
       "error": null
     },
     {
@@ -718,7 +736,7 @@
       "repo": "Panniantong/Agent-Reach",
       "mode": "allow",
       "license": "MIT",
-      "commit": "a19a171fa980a0785849596492e0af4db800c82f",
+      "commit": "94f06c1969dfc1834001269d79d3ad0972d9dee6",
       "files": 2,
       "chunks": 50,
       "error": null
@@ -727,7 +745,7 @@
       "repo": "CodebuffAI/freebuff",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "29e831c9e4094e1daeee9fd5ba60d0f00a1ac9c5",
+      "commit": "bea44256c91f8fd0e7d2951b0ad5e9c4e8ebb416",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -790,9 +808,9 @@
       "repo": "nolly-studio/cult-ui",
       "mode": "allow",
       "license": "MIT",
-      "commit": "ee98a5dd2e319b63cc2e707dd968d6af04209b7e",
+      "commit": "67a66c6ac1cd240914ba688a907611b3437a7a2b",
       "files": 1,
-      "chunks": 13,
+      "chunks": 17,
       "error": null
     },
     {
@@ -844,7 +862,7 @@
       "repo": "hugohe3/ppt-master",
       "mode": "allow",
       "license": "MIT",
-      "commit": "680de11f1bef4628b68d5daad9dffec569fbd51f",
+      "commit": "b4efe3ddf237a97a42880164759162f8e2412f2f",
       "files": 1,
       "chunks": 37,
       "error": null
@@ -880,9 +898,9 @@
       "repo": "presenton/presenton",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "0449eaa7c9acf7fc0d4ce68b4787fea484c024af",
+      "commit": "7376573fb30e4faf6225ff77d2cc74d06634b2e0",
       "files": 1,
-      "chunks": 61,
+      "chunks": 62,
       "error": null
     },
     {
@@ -898,7 +916,7 @@
       "repo": "ghiscoding/excel-builder-vanilla",
       "mode": "allow",
       "license": "MIT",
-      "commit": "6ce5a7537b6ef2bf17997d36bab2eeeaebbc8f67",
+      "commit": "50988f29dfb77d5de34b917bed79e017e04e72ab",
       "files": 1,
       "chunks": 19,
       "error": null
@@ -934,7 +952,7 @@
       "repo": "wasp-lang/open-saas",
       "mode": "allow",
       "license": "MIT",
-      "commit": "cbd30162b05d798b3a3f955ab5781940b67bec89",
+      "commit": "e60f84b7d17fabec2297f46ae1e18444f0c9cbbf",
       "files": 1,
       "chunks": 12,
       "error": null
@@ -943,9 +961,9 @@
       "repo": "Anil-matcha/awesome-generative-ai-apps",
       "mode": "allow",
       "license": "MIT",
-      "commit": "8fcaa253fbb81771412f195b215e5b30ae710ee4",
+      "commit": "98c4fbe2274736fc31a2302dffdc7e5ee9ea482d",
       "files": 1,
-      "chunks": 40,
+      "chunks": 39,
       "error": null
     },
     {
@@ -1042,7 +1060,7 @@
       "repo": "vladandreevg/salesmancrm",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "047cf8106aebdba6bd81a3e80054257d89460de9",
+      "commit": "2ce951556e30d6fd9191d1bf234684d2c446a3ce",
       "files": 1,
       "chunks": 17,
       "error": null
@@ -1258,7 +1276,7 @@
       "repo": "FTShare-Lab/FTShare-MCP",
       "mode": "allow",
       "license": "MIT",
-      "commit": "1ab492169881595490165e132a9b9fbdaa38df1c",
+      "commit": "ab41667a9bb5afa2a3d33e39904b10aa76b364ef",
       "files": 2,
       "chunks": 34,
       "error": null
@@ -1276,7 +1294,7 @@
       "repo": "FTShare-Lab/FTShare-skill",
       "mode": "allow",
       "license": "MIT",
-      "commit": "c8719e20fe872ec38821a58b4d3c26ee6fcc7e97",
+      "commit": "e59f3bdba5e34226f97ee5cf2151de3c83f8e820",
       "files": 120,
       "chunks": 260,
       "error": null
@@ -1645,9 +1663,9 @@
       "repo": "HBAI-Ltd/Toonflow-app",
       "mode": "allow",
       "license": "MIT",
-      "commit": "d86cce6b689916ab73f75bc4c1f42a2a7424516c",
-      "files": 2,
-      "chunks": 57,
+      "commit": "2c7fb257affb65777110fe4c6e60cd3c09187d9b",
+      "files": 1,
+      "chunks": 27,
       "error": null
     },
     {
@@ -1708,9 +1726,9 @@
       "repo": "Donchitos/Claude-Code-Game-Studios",
       "mode": "allow",
       "license": "MIT",
-      "commit": "7ed2c3e9c46c880c9780fbce49266e7edfa15141",
+      "commit": "be8993bbc5a1f016bc770b2846ce06272d284526",
       "files": 15,
-      "chunks": 245,
+      "chunks": 237,
       "error": null
     },
     {
@@ -1771,7 +1789,7 @@
       "repo": "zardoy/minecraft-web-client",
       "mode": "allow",
       "license": "MIT",
-      "commit": "637b62f9086d8d33844e7562d1e23a4b5ca408bb",
+      "commit": "4f5243c245c96aac44bbe147c61a4ea5612338f9",
       "files": 2,
       "chunks": 30,
       "error": null
@@ -1825,7 +1843,7 @@
       "repo": "GAIR-NLP/ASI-Evolve",
       "mode": "allow",
       "license": "Apache-2.0",
-      "commit": "fb8a67e552e25cf8b7144d4e7f1a17f665055130",
+      "commit": "210707a3d4a3bb1cee458919462c07640d7dfff1",
       "files": 5,
       "chunks": 47,
       "error": null
