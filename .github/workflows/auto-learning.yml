@@ -43,8 +43,19 @@ jobs:
           git commit -m "chore(learning): refresh autonomous-learning snapshot"
           git push --force origin HEAD:"$BRANCH"
           PR_NUMBER="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          # Repository-level "Allow GitHub Actions to create and approve pull requests"
+          # can be disabled even if the workflow token has pull-requests: write.
+          # Keep the generated branch and warn, without hiding test/build failures.
           if [ -z "$PR_NUMBER" ]; then
-            gh pr create --base main --head "$BRANCH" --title "chore(learning): refresh autonomous-learning snapshot" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+            if gh pr create --base main --head "$BRANCH" --title "chore(learning): refresh autonomous-learning snapshot" --body "Automated generated-data refresh. Review and merge explicitly after CI."; then
+              echo "Snapshot PR created" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Automated pull request unavailable in repository settings. Snapshot branch was pushed; open a PR manually from automation/auto-learning-snapshot."
+              echo "Snapshot branch: automation/auto-learning-snapshot. PR creation requires repository Actions settings or a manual PR." >> "$GITHUB_STEP_SUMMARY"
+            fi
           else
-            gh pr edit "$PR_NUMBER" --title "chore(learning): refresh autonomous-learning snapshot" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+            if ! gh pr edit "$PR_NUMBER" --title "chore(learning): refresh autonomous-learning snapshot" --body "Automated generated-data refresh. Review and merge explicitly after CI."; then
+              echo "::warning::Could not edit pull request $PR_NUMBER. Existing generated PR and branch are preserved."
+              echo "Snapshot PR $PR_NUMBER already exists; metadata update not permitted." >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
