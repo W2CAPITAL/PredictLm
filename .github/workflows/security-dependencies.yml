@@ -1,0 +1,59 @@
+name: Prepare reviewed dependency security update
+
+on:
+  push:
+    paths:
+      - .github/workflows/security-dependencies.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: predictlm-security-dependencies
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install baseline
+        run: npm ci --no-audit --no-fund
+      - name: Update vulnerable runtime dependencies
+        run: |
+          npm pkg set 'overrides.source-map-js=1.2.2'
+          npm install next@16.4.6 --save-exact --ignore-scripts --no-audit --no-fund
+      - name: Verify clean reproducible install
+        run: npm ci --no-audit --no-fund
+      - name: Security audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: Regression tests
+        run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Push reviewed changes to separate branch only
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "No changes necessary" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          branch='security/predictlm-next-16-4-6'
+          git config user.name 'predictlm-security-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git checkout -B "$branch"
+          git add package.json package-lock.json
+          git commit -m "fix(security): update Next.js and source-map-js to patched versions"
+          git push --force origin "HEAD:$branch"
+          echo "Verified audit/test/typecheck/build; security branch: $branch" >> "$GITHUB_STEP_SUMMARY"
+          echo "No automatic merge to main. Review and merge after examining the dependency diff." >> "$GITHUB_STEP_SUMMARY"
