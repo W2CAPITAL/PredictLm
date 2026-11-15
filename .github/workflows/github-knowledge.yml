@@ -53,7 +53,15 @@ jobs:
           git push --force origin HEAD:"$BRANCH"
           PR_NUMBER="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
           if [ -z "$PR_NUMBER" ]; then
-            gh pr create --base main --head "$BRANCH" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+            if gh pr create --base main --head "$BRANCH" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."; then
+              echo "Generated update PR created" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Automated pull request denied by repository Actions settings. Generated branch '$BRANCH' is preserved for manual PR."
+              echo "Generated branch: $BRANCH. Create the PR manually or enable PR creation in Actions settings." >> "$GITHUB_STEP_SUMMARY"
+            fi
           else
-            gh pr edit "$PR_NUMBER" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."
+            if ! gh pr edit "$PR_NUMBER" --title "chore(knowledge): refresh GitHub index" --body "Automated generated-data refresh. Review and merge explicitly after CI."; then
+              echo "::warning::Could not edit PR $PR_NUMBER. Generated branch and existing PR remain unchanged."
+              echo "Existing PR $PR_NUMBER could not be updated." >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
